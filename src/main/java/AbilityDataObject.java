@@ -26,7 +26,6 @@ public class AbilityDataObject {
     int otherTextOffsetComputed;
     int unknownByte0E;
     int unknownByte0F;
-    int vagueOrdering; // up to 10(?) command abilities or item abilities per value
     int anim1HighByte;
     int anim1LowByte;
     int anim2HighByte;
@@ -51,7 +50,7 @@ public class AbilityDataObject {
     int unknownProperties1F;
     int damageProperties20;
     int stealGilByte;
-    int miscProperties34;
+    int miscProperties22;
     int damageClass;
     int moveRank;
     int costMP;
@@ -120,11 +119,10 @@ public class AbilityDataObject {
     int unknownByte6;
     int unknownByte7;
     int unknownByte0A;
-    int unknownByte92;
-    int unknownByte93;
-    int unknownByte94;
-    int unknownByte95;
-    int unknownByte96;
+    int unknownByte5C;
+    int unknownByte5D;
+    int unknownByte5E;
+    int unknownByte5F;
 
     String overdriveCharacter;
     int overdriveCategory;
@@ -269,7 +267,7 @@ public class AbilityDataObject {
         damageProperties20 = b[0x20];
         stealGilByte = b[0x21];
         // Bit 0x01 could be "affected by Alchemy" flag?
-        miscProperties34 = b[0x22];
+        miscProperties22 = b[0x22];
         damageClass = b[0x23];
         moveRank = b[0x24];
         costMP = b[0x25];
@@ -328,10 +326,10 @@ public class AbilityDataObject {
         specialBuffFlags = b[0x5A];
         alwaysNull2 = b[0x5B];
         if (length > 92) {
-            unknownByte92 = b[0x5C];
-            unknownByte93 = b[0x5D];
-            unknownByte94 = b[0x5E];
-            unknownByte95 = b[0x5F];
+            unknownByte5C = b[0x5C];
+            unknownByte5D = b[0x5D];
+            unknownByte5E = b[0x5E];
+            unknownByte5F = b[0x5F];
         }
         nameOffsetComputed = nameOffsetHighByte * 256 + nameOffsetLowByte;
         dashOffsetComputed = dashOffsetHighByte * 256 + dashOffsetLowByte;
@@ -368,7 +366,7 @@ public class AbilityDataObject {
         damageTypePhysical = (damageProperties20 & 0x01) > 0;
         damageTypeMagical = (damageProperties20 & 0x02) > 0;
         canCrit = (damageProperties20 & 0x04) > 0;
-        byte32bit4 = (damageProperties20 & 0x08) > 0;
+        byte32bit4 = (damageProperties20 & 0x08) > 0; // Seems to be needed for proper evasion?
         isHealing = (damageProperties20 & 0x10) > 0;
         isCleansingStatuses = (damageProperties20 & 0x20) > 0;
         byte32bit7 = (damageProperties20 & 0x40) > 0;

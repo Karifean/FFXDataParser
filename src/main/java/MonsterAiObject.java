@@ -194,7 +194,7 @@ public class MonsterAiObject {
         } else if (opcode == 0x19) {
             stack.push(new StackObject("bool", true, "not " + p1, 0x19));
         } else if (opcode == 0x25) {
-            textAiString.append("opcode 25: (").append(p1).append(',').append(p2).append(")\n");
+            textAiString.append("Opcode:25(").append(p1).append(", ").append(p2).append(")\n");
         } else if (opcode == 0x26) {
             stack.push(new StackObject("unknown", true, "opcode:26", 0x26));
         } else if (opcode == 0x29) {
@@ -211,16 +211,24 @@ public class MonsterAiObject {
         } else if (opcode == 0x3C) {
             textAiString.append("return\n");
         } else if (opcode >= 0x36 && opcode <= 0x38) {
-            stack.push(new StackObject("unknown", true, "opcode:" + String.format("%02x", opcode) + "(" + p1 + "," + p2 + ")", opcode));
+            String prefix = typed(p1, "fieldActor") + "?.";
+            String suffix = "[" + p2.value + "]";
+            if (opcode == 0x37) {
+                String content = prefix + "animation?" + suffix;
+                stack.push(new StackObject("fieldAnimation", true, content, opcode));
+            } else {
+                String content = prefix + "opcode:" + String.format("%02x", opcode) + suffix;
+                stack.push(new StackObject("unknown", true, content, opcode));
+            }
         } else if (opcode >= 0x59 && opcode <= 0x60) {
             textAiString.append("temp").append(opcode-0x59).append(" = ").append(p1).append('\n');
             lastTempTypes.put(opcode-0x59, p1.type);
         } else if (opcode >= 0x67 && opcode <= 0x6E) {
             stack.push(new StackObject(lastTempTypes.getOrDefault(opcode-0x67, "unknown"), true, "temp"+(opcode-0x67), opcode));
         } else if (opcode == 0x77) {
-            textAiString.append("opcode 77: (").append(p1).append(',').append(p2).append(")\n");
+            textAiString.append("Opcode:77(").append(p1).append(',').append(p2).append(")\n");
         } else if (opcode == 0x79) {
-            textAiString.append("opcode 79: (").append(p1).append(',').append(p2).append(',').append(p3).append(")\n");
+            textAiString.append("Opcode:79(").append(p1).append(',').append(p2).append(',').append(p3).append(")\n");
         } else if (opcode == 0x9F) {
             boolean solo = !gatheringInfo && varEnums.containsKey(argv) && varEnums.get(argv).size() == 1;
             String vrAppend = argvsh + (solo ? "[" + varEnums.get(argv).get(0) + "]" : "");
@@ -259,8 +267,10 @@ public class MonsterAiObject {
             processD8(arg1, arg2);
         } else if (opcode == 0xB0) {
             textAiString.append("Jump to j").append(argvsh).append('\n');
+        // } else if (opcode == 0xB3) {
+            // stack.push(new StackObject("B3", true, "opcode:b3(" + argvsh + ")", argv));
         } else if (opcode != 0x00 && opcode != 0xFF) {
-            textAiString.append("U:").append(String.format("%02x", opcode)).append('/').append(argvsh).append("h\n");
+            textAiString.append("Opcode:").append(String.format("%02x", opcode)).append('.').append(argvsh).append('\n');
         }
     }
 

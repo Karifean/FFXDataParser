@@ -1,4 +1,6 @@
 import java.io.*;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.*;
 
 public class Main {
@@ -12,16 +14,17 @@ public class Main {
     private static final int MODE_READ_MONSTER_AI_WITH_ABILITY_NAMES = 7;
     private static final int MODE_READ_ITEM_PICKUPS = 8;
     private static final int MODE_READ_WEAPON_PICKUPS = 9;
+    private static final int MODE_FIND_EQUAL_FILES = 10;
     public static final Map<Integer, Character> BIN_LOOKUP = new HashMap<>();
     public static final Map<Character, Integer> BIN_REV_LOOKUP = new HashMap<>();
     private static final String PREFIX = "src/main/resources/";
     private static final String KERNEL_PATH_MODDED = PREFIX + "ffx/attacks/";
     private static final String KERNEL_PATH_REGULAR = PREFIX + "ffx/new_uspc/battle/kernel/";
     private static final String KERNEL_PATH = KERNEL_PATH_MODDED;
-    private static final String SKILL_TABLE_A_PATH = KERNEL_PATH + "command.bin";
+    private static final String SKILL_TABLE_A_PATH = KERNEL_PATH + "command.bin"; // "FILE07723.dat"; // "command.bin"; //
     private static final String SKILL_TABLE_B_PATH = KERNEL_PATH + "monmagic1.bin"; // "FILE07740.dat"; // "monmagic1.bin"; //
     private static final String SKILL_TABLE_C_PATH = KERNEL_PATH + "monmagic2.bin"; // "FILE07741.dat"; // "monmagic2.bin"; //
-    private static final String SKILL_TABLE_D_PATH = KERNEL_PATH + "item.bin";
+    private static final String SKILL_TABLE_D_PATH = KERNEL_PATH + "item.bin"; // "FILE07734.dat"; // "item.bin"; //
     private static final Map<String, Set<String>> ABILITY_USERS = new HashMap<>();
     private static final Map<String, AbilityDataObject[]> FILE_ABILITIES_CACHE = new HashMap<>();
     private static final Map<String, AbilityDataObject> ABILITY_CACHE = new HashMap<>();
@@ -80,6 +83,9 @@ public class Main {
                 for (String filename : realArgs) {
                     readWeaponPickups(PREFIX + filename, true);
                 }
+                break;
+            case MODE_FIND_EQUAL_FILES:
+                findEqualFiles(PREFIX + realArgs.get(0), PREFIX + realArgs.get(1));
                 break;
             default:
                 break;
@@ -390,6 +396,75 @@ public class Main {
             } catch (IOException ignored) {}
         }
         return null;
+    }
+
+    private static void findEqualFiles(final String source, final String target) {
+        Map<String, byte[]> map = new HashMap<>();
+        makeFileMap(target, map);
+        compareFiles(source, map);
+    }
+
+    private static void compareFiles(final String source, final Map<String, byte[]> map) {
+        File file = new File(source);
+        if (file.isDirectory()) {
+            String[] contents = file.list();
+            if (contents != null) {
+                Arrays.stream(contents).filter(sf -> !sf.startsWith(".")).sorted().forEach(sf -> compareFiles(source + '/' + sf, map));
+            }
+        } else {
+            try {
+                byte[] hash = fileHash(file);
+                int highestMatches = 0;
+                String highestKey = null;
+                for (Map.Entry<String, byte[]> entry : map.entrySet()) {
+                    int matches = 0;
+                    byte[] val = entry.getValue();
+                    int len = Math.min(val.length, hash.length);
+                    for (int i = 0; i < len; i++) {
+                        if (val[i] == hash[i]) {
+                            matches++;
+                        }
+                    }
+                    if (matches > highestMatches) {
+                        highestMatches = matches;
+                        highestKey = entry.getKey();
+                    }
+                }
+                if (highestMatches == 0) {
+                    System.out.println("No target found for " + source);
+                } else {
+                    System.out.println("mv " + source + " " + highestKey + " (matches=" + highestMatches + ")");
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    private static byte[] fileHash(final File file) throws IOException {
+        long fileSize = file.length();
+        FileInputStream stream = new FileInputStream(file);
+        byte[] fileData = new byte[(int) fileSize];
+        stream.read(fileData);
+        stream.close();
+        return fileData;
+        // return new BigInteger(1, messageDigest.digest(fileData)).toString(16);
+    }
+
+    private static void makeFileMap(final String target, final Map<String, byte[]> map) {
+        File file = new File(target);
+        if (file.isDirectory()) {
+            String[] contents = file.list();
+            if (contents != null) {
+                Arrays.stream(contents).filter(sf -> !sf.startsWith(".")).sorted().forEach(sf -> makeFileMap(target + '/' + sf, map));
+            }
+        } else {
+            try {
+                map.put(target, fileHash(file));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     private static void prepareCharMap() {

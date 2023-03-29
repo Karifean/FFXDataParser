@@ -28,7 +28,7 @@ public abstract class ScriptFuncLib {
             FUNCS[0x0000] = new ScriptFunc("waitFrames", "unknown", new ScriptField("frames", "ae"));
             putUnknownFunc(0x0001, 1);
             putUnknownFunc(0x0002, 3);
-            putUnknownFunc(0x0004, 2);
+            putUnknownFunc(0x0004, 1);
             putUnknownFunc(0x0005, 0);
             putUnknownFunc(0x0006, 3);
             putUnknownFunc(0x0007, 1);
@@ -50,6 +50,7 @@ public abstract class ScriptFuncLib {
             putUnknownFunc(0x0025, 1);
             putUnknownFunc(0x0028, 1);
             putUnknownFunc(0x0029, 1);
+            putUnknownFunc(0x002A, 1);
             putUnknownFunc(0x002B, 1);
             putUnknownFunc(0x002C, 1);
             putUnknownFunc(0x002D, 1);
@@ -70,7 +71,7 @@ public abstract class ScriptFuncLib {
             putUnknownFunc(0x0044, 0);
             putUnknownFunc(0x0046, 0);
             putUnknownFunc(0x004C, 1);
-            putUnknownFunc(0x004D, 1);
+            FUNCS[0x004D] = new ScriptFunc("controllerButtonPressed?", "bool", new ScriptField("button"));
             putUnknownFunc(0x0054, 6);
             putUnknownFunc(0x0055, 1);
             putUnknownFunc(0x0056, 1);
@@ -86,7 +87,7 @@ public abstract class ScriptFuncLib {
             putUnknownFunc(0x0061, 1);
             putUnknownFunc(0x0062, 1);
             putUnknownFunc(0x0063, 1);
-            putUnknownFunc(0x0064, 2);
+            FUNCS[0x0064] = new ScriptFunc("displayFieldSubtitle?", "unknown", new ScriptField("index?", "ae"), new ScriptField("string", "ae"));
             putUnknownFunc(0x0065, 4);
             putUnknownFunc(0x0066, 2);
             putUnknownFunc(0x0069, 3);
@@ -143,18 +144,22 @@ public abstract class ScriptFuncLib {
             putUnknownFunc(0x00BB, 1);
             putUnknownFunc(0x00BC, 1);
             putUnknownFunc(0x00BE, 1);
+            putUnknownFunc(0x00BF, 1); // \
+            putUnknownFunc(0x00C0, 1); // -- Technically these aren't certain (zkrn0300)
+            putUnknownFunc(0x00C1, 1); // /
+            putUnknownFunc(0x00C2, 1);
             putUnknownFunc(0x00C5, 4);
             putUnknownFunc(0x00C6, 0);
             putUnknownFunc(0x00C7, 1);
             putUnknownFunc(0x00C8, 3);
-            putUnknownFunc(0x00CA, 1);
-            putUnknownFunc(0x00CB, 1);
+            FUNCS[0x00CA] = new ScriptFunc("addPartyMember?", "unknown", new ScriptField("actor"));
+            FUNCS[0x00CB] = new ScriptFunc("removePartyMember?", "unknown", new ScriptField("actor"));
             putUnknownFunc(0x00CE, 1);
             putUnknownFunc(0x00CF, 1);
             putUnknownFunc(0x00D0, 0);
             putUnknownFunc(0x00D1, 0);
             putUnknownFunc(0x00D2, 0);
-            putUnknownFunc(0x00D5, 1);
+            FUNCS[0x00D5] = new ScriptFunc("playFieldVoiceLine?", "unknown", new ScriptField("voiceFileIndex", "ae"));
             putUnknownFunc(0x00D6, 0);
             putUnknownFunc(0x00D7, 0);
             putUnknownFunc(0x00D8, 0);
@@ -166,7 +171,9 @@ public abstract class ScriptFuncLib {
             putUnknownFunc(0x00E0, 1);
             putUnknownFunc(0x00E2, 1);
             putUnknownFunc(0x00E4, 1);
-            putUnknownFunc(0x00E7, 2);
+            FUNCS[0x00E7] = new ScriptFunc("putPartyMemberInSlot?", "unknown", new ScriptField("slot", "ae"), new ScriptField("actor"));
+            putUnknownFunc(0x00E8, 3);
+            putUnknownFunc(0x00E9, 1);
             putUnknownFunc(0x00EC, 1);
             putUnknownFunc(0x00ED, 0);
             putUnknownFunc(0x00EE, 1);
@@ -187,12 +194,14 @@ public abstract class ScriptFuncLib {
             putUnknownFunc(0x0108, 5);
             putUnknownFunc(0x0109, 1);
             putUnknownFunc(0x010B, 2);
+            putUnknownFunc(0x010D, 1);
+            putUnknownFunc(0x010E, 0);
             putUnknownFunc(0x0111, 0);
             putUnknownFunc(0x0112, 0);
             putUnknownFunc(0x0116, 1);
             putUnknownFunc(0x0117, 1);
             putUnknownFunc(0x0119, 1);
-            putUnknownFunc(0x0121, 1);
+            FUNCS[0x0121] = new ScriptFunc("movementStickTilt?", "ae", new ScriptField("axis", "ae"));
             putUnknownFunc(0x0126, 3);
             putUnknownFunc(0x0128, 2);
             putUnknownFunc(0x0130, 2);
@@ -215,16 +224,19 @@ public abstract class ScriptFuncLib {
             putUnknownFunc(0x0151, 1);
             putUnknownFunc(0x0158, 1);
             putUnknownFunc(0x015B, 2);
+            FUNCS[0x015B] = new ScriptFunc("obtainTreasure", "unknown", new ScriptField("index?", "ae"), new ScriptField("treasureId", "ae"));
+            putUnknownFunc(0x015D, 1);
             putUnknownFunc(0x015E, 1);
             putUnknownFunc(0x015F, 1);
+            putUnknownFunc(0x0160, 1);
             putUnknownFunc(0x0161, 1);
             putUnknownFunc(0x016A, 3);
             putUnknownFunc(0x016B, 3);
             putUnknownFunc(0x016D, 1);
             putUnknownFunc(0x016E, 2);
             putUnknownFunc(0x016F, 1);
-            putUnknownFunc(0x0171, 1);
-            putUnknownFunc(0x0172, 1);
+            FUNCS[0x0171] = new ScriptFunc("restorePartyMemberHP?", "unknown", new ScriptField("actor"));
+            FUNCS[0x0172] = new ScriptFunc("restorePartyMemberMP?", "unknown", new ScriptField("actor"));
             putUnknownFunc(0x0177, 1);
             putUnknownFunc(0x017E, 2);
             putUnknownFunc(0x017F, 1);
@@ -234,6 +246,8 @@ public abstract class ScriptFuncLib {
             putUnknownFunc(0x0189, 1);
             putUnknownFunc(0x0192, 1);
             putUnknownFunc(0x0194, 1);
+            putUnknownFunc(0x0195, 0);
+            putUnknownFunc(0x0196, 1);
             putUnknownFunc(0x0197, 1);
             putUnknownFunc(0x0198, 3);
             putUnknownFunc(0x019C, 0);
@@ -257,6 +271,7 @@ public abstract class ScriptFuncLib {
             putUnknownFunc(0x01E3, 0);
             putUnknownFunc(0x01E7, 2);
             putUnknownFunc(0x01EB, 1);
+            putUnknownFunc(0x01EE, 0);
             putUnknownFunc(0x01F0, 1);
             putUnknownFunc(0x01F9, 1);
             putUnknownFunc(0x01FA, 0);
@@ -283,6 +298,7 @@ public abstract class ScriptFuncLib {
             putUnknownFunc(0x0256, 1);
             putUnknownFunc(0x0257, 1);
             putUnknownFunc(0x0259, 2);
+            putUnknownFunc(0x025B, 1);
             putUnknownFunc(0x025C, 0);
             putUnknownFunc(0x0262, 0);
             putUnknownFunc(0x0263, 0);
@@ -320,6 +336,7 @@ public abstract class ScriptFuncLib {
             putUnknownFunc(0x401C, 1);
             putUnknownFunc(0x401D, 1);
             putUnknownFunc(0x4020, 0);
+            putUnknownFunc(0x4022, 1);
             putUnknownFunc(0x4034, 1);
             putUnknownFunc(0x4036, 3);
             putUnknownFunc(0x4039, 4);
@@ -372,6 +389,7 @@ public abstract class ScriptFuncLib {
             putUnknownFunc(0x504C, 2);
             putUnknownFunc(0x504E, 1);
             putUnknownFunc(0x504F, 1);
+            putUnknownFunc(0x5051, 0);
             putUnknownFunc(0x5052, 5);
             putUnknownFunc(0x5054, 2);
             putUnknownFunc(0x5056, 1);
@@ -414,6 +432,7 @@ public abstract class ScriptFuncLib {
             putUnknownFunc(0x6014, 4);
             putUnknownFunc(0x6015, 4);
             putUnknownFunc(0x6016, 0);
+            putUnknownFunc(0x6017, 4);
             putUnknownFunc(0x601A, 0);
             putUnknownFunc(0x601D, 4);
             putUnknownFunc(0x601F, 4);
@@ -429,6 +448,7 @@ public abstract class ScriptFuncLib {
             putUnknownFunc(0x6032, 4);
             putUnknownFunc(0x6033, 4);
             putUnknownFunc(0x6034, 0);
+            putUnknownFunc(0x6035, 4);
             putUnknownFunc(0x6038, 0);
             putUnknownFunc(0x603A, 1);
             putUnknownFunc(0x603B, 1);
@@ -447,7 +467,11 @@ public abstract class ScriptFuncLib {
             putUnknownFunc(0x604B, 0);
             putUnknownFunc(0x604C, 6);
             putUnknownFunc(0x604D, 6);
+            putUnknownFunc(0x604E, 6);
+            putUnknownFunc(0x604F, 1);
+            putUnknownFunc(0x6050, 5);
             putUnknownFunc(0x6051, 1);
+            putUnknownFunc(0x6052, 2);
             putUnknownFunc(0x6059, 2);
             putUnknownFunc(0x605A, 3);
             putUnknownFunc(0x605B, 2);
@@ -477,6 +501,7 @@ public abstract class ScriptFuncLib {
             putUnknownFunc(0x7000, 0);
             putUnknownFunc(0x7001, 1);
             putUnknownFunc(0x7002, 2); //Speculation: Launch battle? (index, transition)
+            FUNCS[0x7002] = new ScriptFunc("launchBattle", "unknown", new ScriptField("btlIndex", "ae"), new ScriptField("transition?", "ae"));
             putUnknownFunc(0x7003, 2);
             putUnknownFunc(0x7005, 0);
             putUnknownFunc(0x7006, 2);
@@ -513,7 +538,7 @@ public abstract class ScriptFuncLib {
             FUNCS[0x7025] = new ScriptFunc("defineActorSubset2?", "actor", new ScriptField("group", "actor"), new ScriptField("property", "actorProperty"), new ScriptField("unknown"), new ScriptField("selector"));
             putUnknownFunc(0x7026, 1);
             putUnknownFunc(0x7027, 0);
-            putUnknownFunc(0x7028, 3);
+            FUNCS[0x7028] = new ScriptFunc("scaleOwnSize", "unknown", new ScriptField("x?", "af"), new ScriptField("y?", "af"), new ScriptField("z?", "af"));
             FUNCS[0x7029] = new ScriptFuncAccessor("setSelfFloating", null, "=", new ScriptField("floating", "bool"));
             putUnknownFunc(0x702A, 0);
             putUnknownFunc(0x702B, 0);
@@ -569,7 +594,7 @@ public abstract class ScriptFuncLib {
             putUnknownFunc(0x7061, 0);
             putUnknownFunc(0x7062, 2);
             putUnknownFunc(0x7063, 0);
-            FUNCS[0x7064] = new ScriptFunc("playVoiceLine", "unknown", new ScriptField("voiceFileIndex", "ae"));
+            FUNCS[0x7064] = new ScriptFunc("playBattleVoiceLine", "unknown", new ScriptField("voiceFileIndex", "ae"));
             putUnknownFunc(0x7065, 0);
             putUnknownFunc(0x7066, 0);
             putUnknownFunc(0x7067, 0);
@@ -666,7 +691,7 @@ public abstract class ScriptFuncLib {
             FUNCS[0x70DC] = new ScriptFunc("changeActorName", "unknown", new ScriptField("actor"), new ScriptField("string", "ae"));
             FUNCS[0x70DE] = new ScriptFunc("SubtitlesEnabled", "bool", false);
             putUnknownFunc(0x70DF, 1);
-            FUNCS[0x70E0] = new ScriptFunc("NotCounterattack?", "bool", false);
+            FUNCS[0x70E0] = new ScriptFunc("NotCounterattack", "bool", false);
             putUnknownFunc(0x70E2, 2);
             putUnknownFunc(0x70E3, 1);
             putUnknownFunc(0x70E6, 3);
@@ -725,9 +750,15 @@ public abstract class ScriptFuncLib {
             putUnknownFunc(0x7126, 1);
             putUnknownFunc(0x7127, 2);
             putUnknownFunc(0x8000, 2);
-            putUnknownFunc(0x8002, 2);
+            FUNCS[0x8002] = new ScriptFunc("setGfxActive?", "unknown", new ScriptField("gfxIndex?", "ae"), new ScriptField("active", "bool"));
             putUnknownFunc(0x8003, 1);
+            putUnknownFunc(0x8004, 1);
+            putUnknownFunc(0x8005, 2);
+            putUnknownFunc(0x8006, 1);
+            putUnknownFunc(0x8007, 0);
+            putUnknownFunc(0x8008, 0);
             putUnknownFunc(0x8009, 2);
+            putUnknownFunc(0x800A, 4);
             putUnknownFunc(0x800B, 1);
             putUnknownFunc(0x800C, 1);
             putUnknownFunc(0x800D, 2);
@@ -746,12 +777,16 @@ public abstract class ScriptFuncLib {
             putUnknownFunc(0x8041, 1);
             putUnknownFunc(0x8045, 3);
             putUnknownFunc(0x805E, 1);
+            putUnknownFunc(0x805F, 1);
+            putUnknownFunc(0x806A, 1);
             putUnknownFunc(0xB000, 2); // Inference based on A2 popping 1 and pushing 1
             putUnknownFunc(0xB001, 0);
             putUnknownFunc(0xB003, 0);
             putUnknownFunc(0xB004, 0);
             putUnknownFunc(0xB009, 0);
+            putUnknownFunc(0xB00B, 0);
             putUnknownFunc(0xB00C, 0);
+            putUnknownFunc(0xB00D, 0);
             putUnknownFunc(0xC003, 1);
             putUnknownFunc(0xC007, 2);
             putUnknownFunc(0xC009, 1);

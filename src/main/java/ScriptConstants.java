@@ -4,7 +4,9 @@ import java.util.Map;
 public abstract class ScriptConstants {
     public static Map<Integer, String> DAMAGE_FORMULAE;
     public static Map<Integer, String> DEATH_ANIMATIONS;
-    public static Map<Integer, String> ACTOR_NAMES;
+    public static Map<Integer, String> CONTROLLER_BUTTONS;
+    public static Map<Integer, String> FIELD_ACTOR_NAMES;
+    public static Map<Integer, String> BATTLE_ACTOR_NAMES;
     public static Map<Integer, String> BATTLE_END_TYPES;
     public static Map<Integer, ScriptField> ACTOR_PROPERTIES;
     public static Map<Integer, ScriptField> MOVE_PROPERTIES;
@@ -19,6 +21,14 @@ public abstract class ScriptConstants {
             DEATH_ANIMATIONS.put(0x04, "Disintegrate-Machina (Red explosions)");
             DEATH_ANIMATIONS.put(0x05, "Steal-Machina (Same as 02 with machina SFX)");
             DEATH_ANIMATIONS.put(0x08, "YAT/YKT");
+        }
+        if (CONTROLLER_BUTTONS == null) {
+            CONTROLLER_BUTTONS = new HashMap<>();
+            CONTROLLER_BUTTONS.put(0x05, "X (Confirm)");
+            CONTROLLER_BUTTONS.put(0x12, "Down?");
+            CONTROLLER_BUTTONS.put(0x13, "Left?");
+            CONTROLLER_BUTTONS.put(0x14, "Up?");
+            CONTROLLER_BUTTONS.put(0x15, "Right?");
         }
         if (BATTLE_END_TYPES == null) {
             BATTLE_END_TYPES = new HashMap<>();
@@ -47,47 +57,61 @@ public abstract class ScriptConstants {
             DAMAGE_FORMULAE.put(0x16, "Fixed xKills");
             DAMAGE_FORMULAE.put(0x17, "Fixed x9999");
         }
-        if (ACTOR_NAMES == null) {
-            ACTOR_NAMES = new HashMap<>();
-            ACTOR_NAMES.put(0x0000, "Tidus");
-            ACTOR_NAMES.put(0x0001, "Yuna");
-            ACTOR_NAMES.put(0x0002, "Auron");
-            ACTOR_NAMES.put(0x0003, "Kimahri");
-            ACTOR_NAMES.put(0x0004, "Wakka");
-            ACTOR_NAMES.put(0x0005, "Lulu");
-            ACTOR_NAMES.put(0x0006, "Rikku");
-            ACTOR_NAMES.put(0x0007, "Seymour");
-            ACTOR_NAMES.put(0x0008, "Valefor");
-            ACTOR_NAMES.put(0x0009, "Ifrit");
-            ACTOR_NAMES.put(0x000A, "Ixion");
-            ACTOR_NAMES.put(0x000B, "Shiva");
-            ACTOR_NAMES.put(0x000C, "Bahamut");
-            ACTOR_NAMES.put(0x000D, "Anima");
-            ACTOR_NAMES.put(0x000E, "Yojimbo");
-            ACTOR_NAMES.put(0x000F, "Cindy");
-            ACTOR_NAMES.put(0x0010, "Sandy");
-            ACTOR_NAMES.put(0x0011, "Mindy");
+        if (FIELD_ACTOR_NAMES == null) {
+            FIELD_ACTOR_NAMES = new HashMap<>();
+            FIELD_ACTOR_NAMES.put(0x0000, "Tidus");
+            FIELD_ACTOR_NAMES.put(0x0001, "Yuna");
+            FIELD_ACTOR_NAMES.put(0x0002, "Auron");
+            FIELD_ACTOR_NAMES.put(0x0003, "Kimahri");
+            FIELD_ACTOR_NAMES.put(0x0004, "Wakka");
+            FIELD_ACTOR_NAMES.put(0x0005, "Lulu");
+            FIELD_ACTOR_NAMES.put(0x0006, "Rikku");
+            FIELD_ACTOR_NAMES.put(0x0007, "Seymour");
             for (int i = 1; i <= 10; i++) {
-                ACTOR_NAMES.put(0x0013 + i, "Monster#" + i);
+                FIELD_ACTOR_NAMES.put(0x0007 + i, "FieldActor#" + i);
             }
-            ACTOR_NAMES.put(0x00FF, "Actor:None");
-            ACTOR_NAMES.put(0xFFE9, "AllCharsAndAeons");
-            ACTOR_NAMES.put(0xFFEB, "AllChars");
-            ACTOR_NAMES.put(0xFFEC, "AllAeons");
-            ACTOR_NAMES.put(0xFFEF, "LastAttacker");
-            ACTOR_NAMES.put(0xFFF0, "PredefinedGroup");
-            ACTOR_NAMES.put(0xFFF1, "AllMonsters");
-            ACTOR_NAMES.put(0xFFF2, "FrontlineChars");
-            ACTOR_NAMES.put(0xFFF3, "Self");
-            ACTOR_NAMES.put(0xFFF4, "CharacterReserve#4");
-            ACTOR_NAMES.put(0xFFF5, "CharacterReserve#3");
-            ACTOR_NAMES.put(0xFFF6, "CharacterReserve#2");
-            ACTOR_NAMES.put(0xFFF7, "CharacterReserve#1");
-            ACTOR_NAMES.put(0xFFF8, "Character#3");
-            ACTOR_NAMES.put(0xFFF9, "Character#2");
-            ACTOR_NAMES.put(0xFFFA, "Character#1");
-            ACTOR_NAMES.put(0xFFFB, "AllActors");
-            ACTOR_NAMES.put(0xFFFF, "Actor:Null");
+        }
+        if (BATTLE_ACTOR_NAMES == null) {
+            BATTLE_ACTOR_NAMES = new HashMap<>();
+            BATTLE_ACTOR_NAMES.put(0x0000, "Tidus");
+            BATTLE_ACTOR_NAMES.put(0x0001, "Yuna");
+            BATTLE_ACTOR_NAMES.put(0x0002, "Auron");
+            BATTLE_ACTOR_NAMES.put(0x0003, "Kimahri");
+            BATTLE_ACTOR_NAMES.put(0x0004, "Wakka");
+            BATTLE_ACTOR_NAMES.put(0x0005, "Lulu");
+            BATTLE_ACTOR_NAMES.put(0x0006, "Rikku");
+            BATTLE_ACTOR_NAMES.put(0x0007, "Seymour");
+            BATTLE_ACTOR_NAMES.put(0x0008, "Valefor");
+            BATTLE_ACTOR_NAMES.put(0x0009, "Ifrit");
+            BATTLE_ACTOR_NAMES.put(0x000A, "Ixion");
+            BATTLE_ACTOR_NAMES.put(0x000B, "Shiva");
+            BATTLE_ACTOR_NAMES.put(0x000C, "Bahamut");
+            BATTLE_ACTOR_NAMES.put(0x000D, "Anima");
+            BATTLE_ACTOR_NAMES.put(0x000E, "Yojimbo");
+            BATTLE_ACTOR_NAMES.put(0x000F, "Cindy");
+            BATTLE_ACTOR_NAMES.put(0x0010, "Sandy");
+            BATTLE_ACTOR_NAMES.put(0x0011, "Mindy");
+            for (int i = 1; i <= 10; i++) {
+                BATTLE_ACTOR_NAMES.put(0x0013 + i, "Monster#" + i);
+            }
+            BATTLE_ACTOR_NAMES.put(0x00FF, "Actor:None");
+            BATTLE_ACTOR_NAMES.put(0xFFE9, "AllCharsAndAeons");
+            BATTLE_ACTOR_NAMES.put(0xFFEB, "AllChars");
+            BATTLE_ACTOR_NAMES.put(0xFFEC, "AllAeons");
+            BATTLE_ACTOR_NAMES.put(0xFFEF, "LastAttacker");
+            BATTLE_ACTOR_NAMES.put(0xFFF0, "PredefinedGroup");
+            BATTLE_ACTOR_NAMES.put(0xFFF1, "AllMonsters");
+            BATTLE_ACTOR_NAMES.put(0xFFF2, "FrontlineChars");
+            BATTLE_ACTOR_NAMES.put(0xFFF3, "Self");
+            BATTLE_ACTOR_NAMES.put(0xFFF4, "CharacterReserve#4");
+            BATTLE_ACTOR_NAMES.put(0xFFF5, "CharacterReserve#3");
+            BATTLE_ACTOR_NAMES.put(0xFFF6, "CharacterReserve#2");
+            BATTLE_ACTOR_NAMES.put(0xFFF7, "CharacterReserve#1");
+            BATTLE_ACTOR_NAMES.put(0xFFF8, "Character#3");
+            BATTLE_ACTOR_NAMES.put(0xFFF9, "Character#2");
+            BATTLE_ACTOR_NAMES.put(0xFFFA, "Character#1");
+            BATTLE_ACTOR_NAMES.put(0xFFFB, "AllActors");
+            BATTLE_ACTOR_NAMES.put(0xFFFF, "Actor:Null");
         }
         if (ACTOR_PROPERTIES == null) {
             ACTOR_PROPERTIES = new HashMap<>();
@@ -141,6 +165,8 @@ public abstract class ScriptConstants {
             putActorProperty(0x0039, "StatusDurationSlow", "ae");
             putActorProperty(0x003D, "CounterAttack", "bool");
             putActorProperty(0x003E, "?EvadeAndCounter", "bool");
+            putActorProperty(0x0042, "?MagicBooster", "bool");
+            putActorProperty(0x0047, "?Auto-Phoenix", "bool");
             putActorProperty(0x004F, "DeathAnimation", "deathAnim");
             putActorProperty(0x0051, "?GetsTurns", "bool");
             putActorProperty(0x0052, "?Targetable", "bool");
@@ -184,7 +210,7 @@ public abstract class ScriptConstants {
             putActorProperty(0x0090, "StatusDistillPower", "bool");
             putActorProperty(0x0091, "?StatusDistillMana", "bool");
             putActorProperty(0x0092, "?StatusDistillSpeed", "bool");
-            putActorProperty(0x0093, "?StatusUnused1", "bool");
+            putActorProperty(0x0093, "StatusUnusedDash", "bool");
             putActorProperty(0x0094, "?StatusDistillAbility", "bool");
             putActorProperty(0x0095, "StatusShield", "bool");
             putActorProperty(0x0096, "StatusBoost", "bool");
