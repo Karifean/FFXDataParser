@@ -543,11 +543,12 @@ public class MonsterAiObject {
             OPCODE_STACKPOPS[0x2B] = 1; // Seems to be "duplicate"
             OPCODE_STACKPOPS[0x2C] = 1;
             OPCODE_STACKPOPS[0x34] = 0;
-            OPCODE_STACKPOPS[0x36] = 2; // Almost CERTAINLY wrong, used together with 0x25
-            OPCODE_STACKPOPS[0x37] = 2; // Almost CERTAINLY wrong, used together with 0x25
-            OPCODE_STACKPOPS[0x38] = 2; // Almost CERTAINLY wrong, used together with 0x25
+            OPCODE_STACKPOPS[0x36] = 2;
+            OPCODE_STACKPOPS[0x37] = 2;
+            OPCODE_STACKPOPS[0x38] = 2;
             OPCODE_STACKPOPS[0x3C] = 0;
             OPCODE_STACKPOPS[0x3D] = 1;
+            OPCODE_STACKPOPS[0x46] = 1;
             OPCODE_STACKPOPS[0x54] = 0;
             OPCODE_STACKPOPS[0x59] = 1;
             OPCODE_STACKPOPS[0x5A] = 1;
@@ -569,8 +570,8 @@ public class MonsterAiObject {
             OPCODE_STACKPOPS[0x79] = 3;
             OPCODE_STACKPOPS[0x9F] = 0;
             OPCODE_STACKPOPS[0xA0] = 1;
-            OPCODE_STACKPOPS[0xA2] = 1; // Unknown if accurate, could work differently.
-            OPCODE_STACKPOPS[0xA3] = 2; // This doesn't seem right, it uses 2 (sometimes?)
+            OPCODE_STACKPOPS[0xA2] = 1;
+            OPCODE_STACKPOPS[0xA3] = 2;
             OPCODE_STACKPOPS[0xA7] = 1;
             OPCODE_STACKPOPS[0xAD] = 0;
             OPCODE_STACKPOPS[0xAE] = 0;

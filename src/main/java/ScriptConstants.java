@@ -5,6 +5,7 @@ public abstract class ScriptConstants {
     public static Map<Integer, String> DAMAGE_FORMULAE;
     public static Map<Integer, String> DEATH_ANIMATIONS;
     public static Map<Integer, String> CONTROLLER_BUTTONS;
+    public static Map<Integer, String> MUSIC_FILE_NAMES;
     public static Map<Integer, String> FIELD_ACTOR_NAMES;
     public static Map<Integer, String> BATTLE_ACTOR_NAMES;
     public static Map<Integer, String> BATTLE_END_TYPES;
@@ -29,6 +30,13 @@ public abstract class ScriptConstants {
             CONTROLLER_BUTTONS.put(0x13, "Left?");
             CONTROLLER_BUTTONS.put(0x14, "Up?");
             CONTROLLER_BUTTONS.put(0x15, "Right?");
+        }
+        if (MUSIC_FILE_NAMES == null) {
+            MUSIC_FILE_NAMES = new HashMap<>();
+            MUSIC_FILE_NAMES.put(0x000A, "Unwavering Determination?");
+            MUSIC_FILE_NAMES.put(0x000C, "Boss Theme?");
+            MUSIC_FILE_NAMES.put(0x0082, "To Zanarkand?");
+            MUSIC_FILE_NAMES.put(0x0091, "Challenge?");
         }
         if (BATTLE_END_TYPES == null) {
             BATTLE_END_TYPES = new HashMap<>();

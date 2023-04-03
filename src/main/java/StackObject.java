@@ -56,6 +56,8 @@ public class StackObject {
                 return ScriptConstants.DEATH_ANIMATIONS.getOrDefault(value, "DeathAnim?") + hexSuffix;
             } else if ("button".equals(type)) {
                 return ScriptConstants.CONTROLLER_BUTTONS.getOrDefault(value, "Button?") + hexSuffix;
+            } else if ("musicfile".equals(type)) {
+                return ScriptConstants.MUSIC_FILE_NAMES.getOrDefault(value, "MusicFile?") + hexSuffix;
             } else if ("battleEndType".equals(type)) {
                 return ScriptConstants.BATTLE_END_TYPES.getOrDefault(value, "BattleEndType?") + hexSuffix;
             } else if ("selector".equals(type)) {
