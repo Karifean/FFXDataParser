@@ -3,10 +3,6 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class MonsterAiObject {
-    private static int[] OPCODE_ARGC;
-    private static int[] OPCODE_STACKPOPS;
-    private static List<Integer> OPCODE_ENDLINE;
-    private static Map<Integer, String> COMP_OPERATORS;
     File file;
     DataInputStream data;
     Stack<StackObject> stack = new Stack<>();
@@ -183,7 +179,7 @@ public class MonsterAiObject {
             return;
         }
         if (opcode >= 0x01 && opcode <= 0x18) {
-            String op = COMP_OPERATORS.get(opcode);
+            String op = ScriptConstants.COMP_OPERATORS.get(opcode);
             String type = opcode <= 0x0F ? "bool" : (p1.type.equals(p2.type) ? p1.type : (p1.type+"/"+p2.type));
             String asType = p1.type;
             if ("var".equals(asType)) {
@@ -193,6 +189,8 @@ public class MonsterAiObject {
             stack.push(new StackObject(type, true, content, opcode));
         } else if (opcode == 0x19) {
             stack.push(new StackObject("bool", true, "not " + p1, 0x19));
+        } else if (opcode == 0x1A) {
+            stack.push(new StackObject("unknown", true, "OPUMINUS", 0x1A));
         } else if (opcode == 0x25) {
             textAiString.append("Opcode:25(").append(p1).append(", ").append(p2).append(")\n");
         } else if (opcode == 0x26) {
@@ -207,36 +205,36 @@ public class MonsterAiObject {
         } else if (opcode == 0x2C) {
             textAiString.append("switch ").append(p1).append(' ');
         } else if (opcode == 0x34) {
-            textAiString.append("hard cut?\n");
+            textAiString.append("return from subroutine\n");
+        } else if (opcode >= 0x36 && opcode <= 0x38) {
+            String content = "Opcode:" + String.format("%02x", opcode) + "(" + p1 + ", " + p2 + ")";
+            stack.push(new StackObject("unknown", true, content, opcode));
         } else if (opcode == 0x3C) {
             textAiString.append("return\n");
-        } else if (opcode >= 0x36 && opcode <= 0x38) {
-            String prefix = typed(p1, "fieldActor") + "?.";
-            String suffix = "[" + p2.value + "]";
-            if (opcode == 0x37) {
-                String content = prefix + "animation?" + suffix;
-                stack.push(new StackObject("fieldAnimation", true, content, opcode));
-            } else {
-                String content = prefix + "opcode:" + String.format("%02x", opcode) + suffix;
-                stack.push(new StackObject("unknown", true, content, opcode));
-            }
-        } else if (opcode >= 0x59 && opcode <= 0x60) {
-            textAiString.append("temp").append(opcode-0x59).append(" = ").append(p1).append('\n');
+        } else if (opcode >= 0x59 && opcode <= 0x5C) {
+            textAiString.append("tempI").append(opcode-0x59).append(" = ").append(p1).append('\n');
             lastTempTypes.put(opcode-0x59, p1.type);
-        } else if (opcode >= 0x67 && opcode <= 0x6E) {
-            stack.push(new StackObject(lastTempTypes.getOrDefault(opcode-0x67, "unknown"), true, "temp"+(opcode-0x67), opcode));
+        } else if (opcode >= 0x5D && opcode <= 0x66) {
+            textAiString.append("tempF").append(opcode-0x5D).append(" = ").append(p1).append('\n');
+            lastTempTypes.put(opcode-0x59, p1.type);
+        } else if (opcode >= 0x67 && opcode <= 0x6A) {
+            stack.push(new StackObject(lastTempTypes.getOrDefault(opcode-0x67, "unknown"), true, "tempI"+(opcode-0x67), opcode));
+        } else if (opcode >= 0x6B && opcode <= 0x74) {
+            stack.push(new StackObject(lastTempTypes.getOrDefault(opcode-0x67, "unknown"), true, "tempF"+(opcode-0x6B), opcode));
         } else if (opcode == 0x77) {
             textAiString.append("Opcode:77(").append(p1).append(',').append(p2).append(")\n");
         } else if (opcode == 0x79) {
             textAiString.append("Opcode:79(").append(p1).append(',').append(p2).append(',').append(p3).append(")\n");
         } else if (opcode == 0x9F) {
+            stack.push(new StackObject("var", true, "var"+argvsh, argv));
+            /*
             boolean solo = !gatheringInfo && varEnums.containsKey(argv) && varEnums.get(argv).size() == 1;
             String vrAppend = argvsh + (solo ? "[" + varEnums.get(argv).get(0) + "]" : "");
             if (constants.containsKey(argv)) {
                 stack.push(new StackObject(constants.get(argv).type, true, "const"+vrAppend, argv));
             } else {
                 stack.push(new StackObject("var", true, "var"+vrAppend, argv));
-            }
+            } */
         } else if (opcode == 0xA0) {
             addVarType(argv, "var".equals(p1.type) ? varTypes.get(p1.value) : p1.type);
             if (gatheringInfo) {
@@ -245,7 +243,7 @@ public class MonsterAiObject {
                 }
                 varEnums.get(argv).add(p1);
             }
-            textAiString.append("Set ").append(constants.containsKey(argv) ? "const" : "var").append(argvsh).append(" = ").append(typed(p1, varTypes.get(argv))).append('\n');
+            textAiString.append("Set var").append(argvsh).append(" = ").append(typed(p1, varTypes.get(argv))).append('\n');
         } else if (opcode == 0xA2) {
             String globalIdx = argvsh + String.format("%04x", p1.value);
             stack.push(new StackObject("global", true, "global:"+globalIdx, argv));
@@ -255,8 +253,12 @@ public class MonsterAiObject {
         } else if (opcode == 0xA7) {
             String globalIdx = argvsh + String.format("%04x", p1.value);
             stack.push(new StackObject("a7", true, "a7:"+globalIdx, argv));
-        } else if (opcode == 0xAD || opcode == 0xAE || opcode == 0xAF) {
-            stack.push(new StackObject(String.format("%02x", opcode), false, argvsd + " [" + argvsh + "h]", argv));
+        } else if (opcode == 0xAD) {
+            stack.push(new StackObject("ad", true, "ref:" + argvsd + " [" + argvsh + "h]", argv));
+        } else if (opcode == 0xAE) {
+            stack.push(new StackObject("ae", false, argvsd + " [" + argvsh + "h]", argv));
+        } else if (opcode == 0xAF) {
+            stack.push(new StackObject("af", true, "af:" + argvsd + " [" + argvsh + "h]", argv));
         } else if (opcode == 0xB5) {
             processB5(arg1, arg2);
         } else if (opcode == 0xD6) {
@@ -458,7 +460,7 @@ public class MonsterAiObject {
     }
 
     private int getStackPops(int opcode) {
-        int stackpops = OPCODE_STACKPOPS[opcode];
+        int stackpops = ScriptConstants.OPCODE_STACKPOPS[opcode];
         if (stackpops < 0) {
             hexAiString.append("\nundefined stackpops for opcode ").append(String.format("%02x", opcode)).append('\n');
             return 0;
@@ -476,7 +478,7 @@ public class MonsterAiObject {
     }
 
     private static boolean getLineEnd(int opcode) {
-        return OPCODE_ENDLINE.contains(opcode);
+        return ScriptConstants.OPCODE_ENDLINE.contains(opcode);
     }
 
     private void inferEnums() {
@@ -499,115 +501,6 @@ public class MonsterAiObject {
     private static void prepare() {
         ScriptConstants.initialize();
         ScriptFuncLib.initialize();
-        if (OPCODE_ARGC == null) {
-            OPCODE_ARGC = new int[0x100];
-        }
-        if (OPCODE_ENDLINE == null) {
-            OPCODE_ENDLINE = new ArrayList<>();
-            OPCODE_ENDLINE.add(0x25);
-            OPCODE_ENDLINE.add(0x2A);
-            OPCODE_ENDLINE.add(0x34);
-            OPCODE_ENDLINE.add(0x3C);
-            OPCODE_ENDLINE.add(0x3D);
-            OPCODE_ENDLINE.add(0x54);
-            OPCODE_ENDLINE.add(0x59);
-            OPCODE_ENDLINE.add(0x5A);
-            OPCODE_ENDLINE.add(0x5B);
-            OPCODE_ENDLINE.add(0x5C);
-            OPCODE_ENDLINE.add(0x5D);
-            OPCODE_ENDLINE.add(0x5E);
-            OPCODE_ENDLINE.add(0x5F);
-            OPCODE_ENDLINE.add(0x60);
-            OPCODE_ENDLINE.add(0x77);
-            OPCODE_ENDLINE.add(0x79);
-            OPCODE_ENDLINE.add(0xA0);
-            OPCODE_ENDLINE.add(0xA3);
-            OPCODE_ENDLINE.add(0xB0);
-            OPCODE_ENDLINE.add(0xB3);
-            OPCODE_ENDLINE.add(0xD6);
-            OPCODE_ENDLINE.add(0xD7);
-            OPCODE_ENDLINE.add(0xD8);
-        }
-        if (OPCODE_STACKPOPS == null) {
-            OPCODE_STACKPOPS = new int[0x100];
-            Arrays.fill(OPCODE_STACKPOPS, -1);
-            OPCODE_STACKPOPS[0x00] = 0;
-            for (int i = 0x01; i <= 0x18; i++) {
-                OPCODE_STACKPOPS[i] = 2;
-            }
-            OPCODE_STACKPOPS[0x19] = 1;
-            OPCODE_STACKPOPS[0x25] = 2;
-            OPCODE_STACKPOPS[0x26] = 0;
-            OPCODE_STACKPOPS[0x29] = 0;
-            OPCODE_STACKPOPS[0x2A] = 1; // Seems to be "pop and ignore"?
-            OPCODE_STACKPOPS[0x2B] = 1; // Seems to be "duplicate"
-            OPCODE_STACKPOPS[0x2C] = 1;
-            OPCODE_STACKPOPS[0x34] = 0;
-            OPCODE_STACKPOPS[0x36] = 2;
-            OPCODE_STACKPOPS[0x37] = 2;
-            OPCODE_STACKPOPS[0x38] = 2;
-            OPCODE_STACKPOPS[0x3C] = 0;
-            OPCODE_STACKPOPS[0x3D] = 1;
-            OPCODE_STACKPOPS[0x46] = 1;
-            OPCODE_STACKPOPS[0x54] = 0;
-            OPCODE_STACKPOPS[0x59] = 1;
-            OPCODE_STACKPOPS[0x5A] = 1;
-            OPCODE_STACKPOPS[0x5B] = 1;
-            OPCODE_STACKPOPS[0x5C] = 1;
-            OPCODE_STACKPOPS[0x5D] = 1;
-            OPCODE_STACKPOPS[0x5E] = 1;
-            OPCODE_STACKPOPS[0x5F] = 1;
-            OPCODE_STACKPOPS[0x60] = 1;
-            OPCODE_STACKPOPS[0x67] = 0;
-            OPCODE_STACKPOPS[0x68] = 0;
-            OPCODE_STACKPOPS[0x69] = 0;
-            OPCODE_STACKPOPS[0x6A] = 0;
-            OPCODE_STACKPOPS[0x6B] = 0;
-            OPCODE_STACKPOPS[0x6C] = 0;
-            OPCODE_STACKPOPS[0x6D] = 0;
-            OPCODE_STACKPOPS[0x6E] = 0;
-            OPCODE_STACKPOPS[0x77] = 2;
-            OPCODE_STACKPOPS[0x79] = 3;
-            OPCODE_STACKPOPS[0x9F] = 0;
-            OPCODE_STACKPOPS[0xA0] = 1;
-            OPCODE_STACKPOPS[0xA2] = 1;
-            OPCODE_STACKPOPS[0xA3] = 2;
-            OPCODE_STACKPOPS[0xA7] = 1;
-            OPCODE_STACKPOPS[0xAD] = 0;
-            OPCODE_STACKPOPS[0xAE] = 0;
-            OPCODE_STACKPOPS[0xAF] = 0;
-            OPCODE_STACKPOPS[0xB0] = 0;
-            OPCODE_STACKPOPS[0xB3] = 0;
-            OPCODE_STACKPOPS[0xB5] = 0;
-            OPCODE_STACKPOPS[0xD6] = 1;
-            OPCODE_STACKPOPS[0xD7] = 1;
-            OPCODE_STACKPOPS[0xD8] = 0;
-            OPCODE_STACKPOPS[0xF6] = 0;
-        }
-        if (COMP_OPERATORS == null) {
-            COMP_OPERATORS = new HashMap<>();
-            COMP_OPERATORS.put(0x01, "or");
-            COMP_OPERATORS.put(0x02, "and");
-            COMP_OPERATORS.put(0x03, "bitOr");
-            COMP_OPERATORS.put(0x04, "?04?");
-            COMP_OPERATORS.put(0x05, "bitAnd");
-            COMP_OPERATORS.put(0x06, "==");
-            COMP_OPERATORS.put(0x07, "!=");
-            COMP_OPERATORS.put(0x08, "?08?");
-            COMP_OPERATORS.put(0x09, "?09?");
-            COMP_OPERATORS.put(0x0A, ">");
-            COMP_OPERATORS.put(0x0B, "<");
-            COMP_OPERATORS.put(0x0C, "?0C?");
-            COMP_OPERATORS.put(0x0D, "?0D?");
-            COMP_OPERATORS.put(0x0E, ">=");
-            COMP_OPERATORS.put(0x0F, "<=");
-            COMP_OPERATORS.put(0x12, "?12?");
-            COMP_OPERATORS.put(0x14, "+");
-            COMP_OPERATORS.put(0x15, "-");
-            COMP_OPERATORS.put(0x16, "*");
-            COMP_OPERATORS.put(0x17, "/");
-            COMP_OPERATORS.put(0x18, "mod");
-        }
     }
 
     private void readRemainingText() throws IOException {

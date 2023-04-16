@@ -434,6 +434,7 @@ public class AbilityDataObject {
         return "{ " +
                 (!usableInCombat ? "Unusable, " : "") +
                 damageKind() +
+                (usesWeaponProperties ? ", Uses Weapon Properties" : "") +
                 (breaksDamageLimit ? ", BDL" : "") +
                 ", " + targeting() +
                 ", Rank=" + moveRank +
@@ -482,7 +483,7 @@ public class AbilityDataObject {
 
     private String damageKind() {
         String damageType = damageTypePhysical ? "Physical" : (damageTypeMagical ? "Magical" : "Special");
-        String formula = usesWeaponProperties ? ", Formula=WPN" : ifG0(damageFormula, "Formula=", "");
+        String formula = ifG0(damageFormula, "Formula=", "");
         String hits = ifG0(hitCount, "", "-hit");
         if (damageClassHP || damageClassMP || damageClassCTB) {
             String damageClassString = "";
@@ -496,7 +497,7 @@ public class AbilityDataObject {
                 damageClassString += "CTB/";
             }
             if (damageClassUnknown) {
-                damageClassString += "Unknown(" + String.format("%02x", damageClass) + ")";
+                damageClassString += "Unknown(" + String.format("%02x", damageClass) + ")/";
             }
             damageClassString = damageClassString.substring(0, damageClassString.length() - 1);
             return damageType + ' ' + damageClassString + ' ' + (isHealing ? "Restore" : (absorbDamage ? "Absorb" : "Damage")) + hits + formula + ", Power=" + attackPower;

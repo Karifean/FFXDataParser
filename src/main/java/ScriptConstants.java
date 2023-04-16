@@ -1,7 +1,10 @@
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 public abstract class ScriptConstants {
+    public static int[] OPCODE_ARGC;
+    public static int[] OPCODE_STACKPOPS;
+    public static List<Integer> OPCODE_ENDLINE;
+    public static Map<Integer, String> COMP_OPERATORS;
     public static Map<Integer, String> DAMAGE_FORMULAE;
     public static Map<Integer, String> DEATH_ANIMATIONS;
     public static Map<Integer, String> CONTROLLER_BUTTONS;
@@ -13,6 +16,119 @@ public abstract class ScriptConstants {
     public static Map<Integer, ScriptField> MOVE_PROPERTIES;
 
     public static void initialize() {
+        if (OPCODE_ARGC == null) {
+            OPCODE_ARGC = new int[0x100];
+        }
+        if (OPCODE_ENDLINE == null) {
+            OPCODE_ENDLINE = new ArrayList<>();
+            OPCODE_ENDLINE.add(0x25);
+            OPCODE_ENDLINE.add(0x2A);
+            OPCODE_ENDLINE.add(0x34);
+            OPCODE_ENDLINE.add(0x3C);
+            OPCODE_ENDLINE.add(0x3D);
+            OPCODE_ENDLINE.add(0x54);
+            OPCODE_ENDLINE.add(0x59);
+            OPCODE_ENDLINE.add(0x5A);
+            OPCODE_ENDLINE.add(0x5B);
+            OPCODE_ENDLINE.add(0x5C);
+            OPCODE_ENDLINE.add(0x5D);
+            OPCODE_ENDLINE.add(0x5E);
+            OPCODE_ENDLINE.add(0x5F);
+            OPCODE_ENDLINE.add(0x60);
+            OPCODE_ENDLINE.add(0x77);
+            OPCODE_ENDLINE.add(0x79);
+            OPCODE_ENDLINE.add(0xA0);
+            OPCODE_ENDLINE.add(0xA3);
+            OPCODE_ENDLINE.add(0xB0);
+            OPCODE_ENDLINE.add(0xB3);
+            OPCODE_ENDLINE.add(0xD6);
+            OPCODE_ENDLINE.add(0xD7);
+            OPCODE_ENDLINE.add(0xD8);
+        }
+        if (OPCODE_STACKPOPS == null) {
+            OPCODE_STACKPOPS = new int[0x100];
+            Arrays.fill(OPCODE_STACKPOPS, -1);
+            OPCODE_STACKPOPS[0x00] = 0;
+            for (int i = 0x01; i <= 0x18; i++) {
+                OPCODE_STACKPOPS[i] = 2;
+            }
+            OPCODE_STACKPOPS[0x19] = 1;
+            OPCODE_STACKPOPS[0x25] = 2;
+            OPCODE_STACKPOPS[0x26] = 0;
+            OPCODE_STACKPOPS[0x29] = 0;
+            OPCODE_STACKPOPS[0x2A] = 1; // Seems to be "pop and ignore"?
+            OPCODE_STACKPOPS[0x2B] = 1; // Seems to be "duplicate"
+            OPCODE_STACKPOPS[0x2C] = 1;
+            OPCODE_STACKPOPS[0x34] = 0;
+            OPCODE_STACKPOPS[0x36] = 2;
+            OPCODE_STACKPOPS[0x37] = 2;
+            OPCODE_STACKPOPS[0x38] = 2;
+            OPCODE_STACKPOPS[0x3C] = 0;
+            OPCODE_STACKPOPS[0x3D] = 1;
+            OPCODE_STACKPOPS[0x46] = 1;
+            OPCODE_STACKPOPS[0x54] = 0;
+            OPCODE_STACKPOPS[0x59] = 1;
+            OPCODE_STACKPOPS[0x5A] = 1;
+            OPCODE_STACKPOPS[0x5B] = 1;
+            OPCODE_STACKPOPS[0x5C] = 1;
+            OPCODE_STACKPOPS[0x5D] = 1;
+            OPCODE_STACKPOPS[0x5E] = 1;
+            OPCODE_STACKPOPS[0x5F] = 1;
+            OPCODE_STACKPOPS[0x60] = 1;
+            OPCODE_STACKPOPS[0x67] = 0;
+            OPCODE_STACKPOPS[0x68] = 0;
+            OPCODE_STACKPOPS[0x69] = 0;
+            OPCODE_STACKPOPS[0x6A] = 0;
+            OPCODE_STACKPOPS[0x6B] = 0;
+            OPCODE_STACKPOPS[0x6C] = 0;
+            OPCODE_STACKPOPS[0x6D] = 0;
+            OPCODE_STACKPOPS[0x6E] = 0;
+            OPCODE_STACKPOPS[0x77] = 2;
+            OPCODE_STACKPOPS[0x79] = 3;
+            OPCODE_STACKPOPS[0x9F] = 0;
+            OPCODE_STACKPOPS[0xA0] = 1;
+            OPCODE_STACKPOPS[0xA1] = 1;
+            OPCODE_STACKPOPS[0xA2] = 1;
+            OPCODE_STACKPOPS[0xA3] = 2;
+            OPCODE_STACKPOPS[0xA7] = 1;
+            OPCODE_STACKPOPS[0xAD] = 0;
+            OPCODE_STACKPOPS[0xAE] = 0;
+            OPCODE_STACKPOPS[0xAF] = 0;
+            OPCODE_STACKPOPS[0xB0] = 0;
+            OPCODE_STACKPOPS[0xB3] = 0;
+            OPCODE_STACKPOPS[0xB5] = 0;
+            OPCODE_STACKPOPS[0xD6] = 1;
+            OPCODE_STACKPOPS[0xD7] = 1;
+            OPCODE_STACKPOPS[0xD8] = 0;
+            OPCODE_STACKPOPS[0xF6] = 0;
+        }
+        if (COMP_OPERATORS == null) {
+            COMP_OPERATORS = new HashMap<>();
+            COMP_OPERATORS.put(0x01, "or");
+            COMP_OPERATORS.put(0x02, "and");
+            COMP_OPERATORS.put(0x03, "bitOr");
+            COMP_OPERATORS.put(0x04, "bitXor");
+            COMP_OPERATORS.put(0x05, "bitAnd");
+            COMP_OPERATORS.put(0x06, "==");
+            COMP_OPERATORS.put(0x07, "!=");
+            COMP_OPERATORS.put(0x08, "> (unsigned)");
+            COMP_OPERATORS.put(0x09, "< (unsigned");
+            COMP_OPERATORS.put(0x0A, ">");
+            COMP_OPERATORS.put(0x0B, "<");
+            COMP_OPERATORS.put(0x0C, ">= (unsigned)");
+            COMP_OPERATORS.put(0x0D, "<= (unsigned)");
+            COMP_OPERATORS.put(0x0E, ">=");
+            COMP_OPERATORS.put(0x0F, "<=");
+            COMP_OPERATORS.put(0x10, "OP-B-ON");
+            COMP_OPERATORS.put(0x11, "OP-B-OFF");
+            COMP_OPERATORS.put(0x12, "OP-SL-L");
+            COMP_OPERATORS.put(0x13, "OP-SR-L");
+            COMP_OPERATORS.put(0x14, "+");
+            COMP_OPERATORS.put(0x15, "-");
+            COMP_OPERATORS.put(0x16, "*");
+            COMP_OPERATORS.put(0x17, "/");
+            COMP_OPERATORS.put(0x18, "mod");
+        }
         if (DEATH_ANIMATIONS == null) {
             DEATH_ANIMATIONS = new HashMap<>();
             DEATH_ANIMATIONS.put(0x00, "Character (Body remains and targetable)");
@@ -266,7 +382,7 @@ public abstract class ScriptConstants {
             putActorProperty(0x0108, "NullMagic", "bool");
             putActorProperty(0x0109, "NullPhysical", "bool");
             putActorProperty(0x010A, "LearnableRonsoRage", "move");
-            putActorProperty(0x010C, "?OverkillThreshold", "ae");
+            putActorProperty(0x010C, "OverkillThreshold", "ae");
             putActorProperty(0x0111, "YojimboCompatibility", "ae");
             putActorProperty(0x0112, "YojimboGivenGil", "ae");
             putActorProperty(0x0113, "ZanmatoLevel", "ae");

@@ -91,6 +91,11 @@ public class StackObject {
                     AbilityDataObject ability = Main.getAbility(hex);
                     return (ability != null ? '"'+ability.name+'"' : "????") + hexSuffix;
                 }
+            } else if ("charMove".equals(type)) {
+                String adjustedHex = String.format("%04x", value + 0x3000).toUpperCase();
+                String adjustedHexSuffix = " [" + adjustedHex + "h]";
+                AbilityDataObject ability = Main.getAbility(adjustedHex);
+                return (ability != null ? '"'+ability.name+'"' : "????") + adjustedHexSuffix;
             } else if ("ad".equals(type)) {
                 return "r:" + hex;
             } else if ("af".equals(type)) {

@@ -2,6 +2,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public abstract class ScriptFuncLib {
+    private static String[] FUNCGROUPS;
     private static ScriptFunc[] FUNCS;
 
     private static ScriptFunc putUnknownFunc(int idx, int inputs) {
@@ -9,7 +10,8 @@ public abstract class ScriptFuncLib {
         for (int i = 1; i <= inputs; i++) {
             inputList.add(new ScriptField("p" + i, "unknown"));
         }
-        ScriptFunc func = new ScriptFunc("Unknown:" + String.format("%04x", idx), "unknown", inputList);
+        String group = FUNCGROUPS[idx / 0x1000];
+        ScriptFunc func = new ScriptFunc(group + "." + String.format("%04x", idx), "unknown", inputList);
         FUNCS[idx] = func;
         return func;
     }
@@ -23,6 +25,25 @@ public abstract class ScriptFuncLib {
     }
 
     public static void initialize() {
+        if (FUNCGROUPS == null) {
+            FUNCGROUPS = new String[0x10];
+            FUNCGROUPS[0x0] = "Common";
+            FUNCGROUPS[0x1] = "Math";
+            FUNCGROUPS[0x2] = "Unknown2";
+            FUNCGROUPS[0x3] = "Unknown3";
+            FUNCGROUPS[0x4] = "SgEvent";
+            FUNCGROUPS[0x5] = "ChEvent";
+            FUNCGROUPS[0x6] = "Camera";
+            FUNCGROUPS[0x7] = "Battle";
+            FUNCGROUPS[0x8] = "Map";
+            FUNCGROUPS[0x9] = "Mount";
+            FUNCGROUPS[0xA] = "UnknownA";
+            FUNCGROUPS[0xB] = "Movie";
+            FUNCGROUPS[0xC] = "Debug";
+            FUNCGROUPS[0xD] = "AbilityMap";
+            FUNCGROUPS[0xE] = "UnknownE";
+            FUNCGROUPS[0xF] = "UnknownF";
+        }
         if (FUNCS == null) {
             FUNCS = new ScriptFunc[0x10000];
             FUNCS[0x0000] = new ScriptFunc("waitFrames", "unknown", new ScriptField("frames", "ae"));
@@ -74,6 +95,7 @@ public abstract class ScriptFuncLib {
             putUnknownFunc(0x0046, 0);
             putUnknownFunc(0x004C, 1);
             FUNCS[0x004D] = new ScriptFunc("controllerButtonPressed?", "bool", new ScriptField("button"));
+            putUnknownFunc(0x0051, 1);
             putUnknownFunc(0x0054, 6);
             putUnknownFunc(0x0055, 1);
             putUnknownFunc(0x0056, 1);
@@ -253,6 +275,7 @@ public abstract class ScriptFuncLib {
             putUnknownFunc(0x014A, 3);
             putUnknownFunc(0x0151, 1);
             putUnknownFunc(0x0155, 1);
+            putUnknownFunc(0x0157, 1);
             putUnknownFunc(0x0158, 1);
             putUnknownFunc(0x0159, 2);
             FUNCS[0x015B] = new ScriptFunc("obtainTreasure", "unknown", new ScriptField("index?", "ae"), new ScriptField("treasureId", "ae"));
@@ -329,10 +352,12 @@ public abstract class ScriptFuncLib {
             putUnknownFunc(0x01F9, 1);
             putUnknownFunc(0x01FA, 0);
             putUnknownFunc(0x01FB, 0);
+            FUNCS[0x01FC] = new ScriptFunc("teachAbilityToPartyMember?", "unknown", new ScriptField("actor"), new ScriptField("charMove"));
             putUnknownFunc(0x0200, 1);
             putUnknownFunc(0x0202, 1);
             putUnknownFunc(0x0203, 1);
             putUnknownFunc(0x0205, 0);
+            putUnknownFunc(0x0206, 0);
             putUnknownFunc(0x0207, 0);
             putUnknownFunc(0x0209, 0);
             putUnknownFunc(0x020B, 0);
@@ -506,6 +531,7 @@ public abstract class ScriptFuncLib {
             putUnknownFunc(0x5081, 1);
             putUnknownFunc(0x5084, 1);
             putUnknownFunc(0x5085, 1);
+            putUnknownFunc(0x5086, 0);
             putUnknownFunc(0x5087, 0);
             putUnknownFunc(0x5088, 2);
             putUnknownFunc(0x5089, 5);
@@ -595,6 +621,8 @@ public abstract class ScriptFuncLib {
             putUnknownFunc(0x6080, 1);
             putUnknownFunc(0x6085, 3);
             putUnknownFunc(0x6086, 3);
+            putUnknownFunc(0x6087, 0);
+            putUnknownFunc(0x6088, 0);
             putUnknownFunc(0x7000, 0);
             putUnknownFunc(0x7001, 1);
             FUNCS[0x7002] = new ScriptFunc("launchBattle", "unknown", new ScriptField("btlIndex", "ae"), new ScriptField("transition?", "ae"));
@@ -644,7 +672,7 @@ public abstract class ScriptFuncLib {
             putUnknownFunc(0x7032, 2);
             FUNCS[0x7032] = new ScriptFuncAccessor("setActorFacingAngle", "actor", "=", new ScriptField("facingAngle", "ae"));
             putUnknownFunc(0x7033, 1);
-            FUNCS[0x7034] = new ScriptFunc("endBattle", "unknown",new ScriptField("battleEndType"));
+            FUNCS[0x7034] = new ScriptFunc("endBattle", "unknown", new ScriptField("battleEndType"));
             FUNCS[0x7035] = new ScriptFunc("BattleEndType", "battleEndType", false);
             putUnknownFunc(0x7036, 3);
             FUNCS[0x7037] = new ScriptFunc("addMove", "unknown", new ScriptField("actor"), new ScriptField("move"));
@@ -721,6 +749,7 @@ public abstract class ScriptFuncLib {
             putUnknownFunc(0x7086, 0);
             putUnknownFunc(0x7087, 3);
             putUnknownFunc(0x7088, 2);
+            putUnknownFunc(0x708C, 2);
             putUnknownFunc(0x708D, 0);
             putUnknownFunc(0x708E, 0);
             putUnknownFunc(0x708F, 1);
@@ -794,6 +823,7 @@ public abstract class ScriptFuncLib {
             putUnknownFunc(0x70EB, 1); // Could be 0 if EE is 2 but doubtful
             FUNCS[0x70ED] = new ScriptFunc("getItem", "unknown", new ScriptField("item", "move"), new ScriptField("quantity", "ae"));
             putUnknownFunc(0x70EE, 1); // Could be 2 if EB is 0 but doubtful
+            FUNCS[0x70ED] = new ScriptFunc("RollYojimboMove", "move", new ScriptField("motivation", "ae"));
             putUnknownFunc(0x70EF, 2);
             FUNCS[0x70F1] = new ScriptFunc("clearOwnMoves?", "unknown", true);
             FUNCS[0x70F2] = new ScriptFunc("addMoveToSelf?", "unknown", new ScriptField("move"));
@@ -858,6 +888,7 @@ public abstract class ScriptFuncLib {
             putUnknownFunc(0x800F, 1);
             putUnknownFunc(0x8010, 1);
             putUnknownFunc(0x8011, 3);
+            putUnknownFunc(0x8014, 2);
             putUnknownFunc(0x801D, 2);
             putUnknownFunc(0x801E, 1);
             putUnknownFunc(0x801F, 1);
@@ -902,6 +933,7 @@ public abstract class ScriptFuncLib {
             putUnknownFunc(0xC02F, 2);
             putUnknownFunc(0xC051, 1);
             putUnknownFunc(0xC052, 0);
+            putUnknownFunc(0xC05B, 1);
         }
     }
 }

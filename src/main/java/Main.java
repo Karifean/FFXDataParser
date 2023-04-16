@@ -2,6 +2,7 @@ import java.io.*;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class Main {
 
@@ -15,6 +16,7 @@ public class Main {
     private static final int MODE_READ_ITEM_PICKUPS = 8;
     private static final int MODE_READ_WEAPON_PICKUPS = 9;
     private static final int MODE_FIND_EQUAL_FILES = 10;
+    private static final int MODE_READ_STRING_FILE = 11;
     public static final Map<Integer, Character> BIN_LOOKUP = new HashMap<>();
     public static final Map<Character, Integer> BIN_REV_LOOKUP = new HashMap<>();
     private static final String PREFIX = "src/main/resources/";
@@ -87,6 +89,11 @@ public class Main {
             case MODE_FIND_EQUAL_FILES:
                 findEqualFiles(PREFIX + realArgs.get(0), PREFIX + realArgs.get(1));
                 break;
+            case MODE_READ_STRING_FILE:
+                for (String filename : realArgs) {
+                    readStringFile(PREFIX + filename);
+                }
+                break;
             default:
                 break;
         }
@@ -132,8 +139,80 @@ public class Main {
         final StringBuilder regular = new StringBuilder();
         str.chars().map(ch -> BIN_REV_LOOKUP.get((char) ch)).forEach(bc -> regular.append(Integer.toHexString(bc)));
         search.append("\" .");
+        System.out.println(str);
         System.out.println(regular);
         System.out.println(search);
+        System.out.println("");
+    }
+
+    private static List<String> readStringData(DataInputStream data, int count, boolean print) throws IOException {
+        final boolean untilStrings = count < 0;
+        if (untilStrings) {
+            data.mark(4);
+            int first = data.read();
+            first += data.read() * 0x100;
+            first += data.read() * 0x10000;
+            first += data.read() * 0x1000000;
+            data.reset();
+            count = first / 8;
+        }
+        List<Integer> offsets = new ArrayList<>(count);
+        Map<Integer, Integer> optionCount = new HashMap<>();
+        data.mark(count * 8);
+        for (int i = 0; i < count; i++) {
+            int offset = data.read();
+            offset += data.read() * 0x100;
+            offset += data.read() * 0x10000;
+            int choosableOptions = data.read();
+            offsets.add(offset);
+            optionCount.put(i, choosableOptions);
+            int clonedOffset = data.read();
+            clonedOffset += data.read() * 0x100;
+            clonedOffset += data.read() * 0x10000;
+            int clonedChoosableOptions = data.read();
+            if (offset != clonedOffset) {
+                System.err.println("offset not cloned: offset " + offset + "; other " + clonedOffset);
+            }
+            if (choosableOptions != clonedChoosableOptions) {
+                System.err.println("choosableOptions not cloned: original " + choosableOptions + "; other " + clonedChoosableOptions);
+            }
+        }
+        data.reset();
+        List<String> strings = new ArrayList<>(count);
+        for (int i = 0; i < count; i++) {
+            int offset = offsets.get(i);
+            StringBuilder out = new StringBuilder();
+            data.mark(offset + 0xFFFF);
+            if (print) {
+                int options = optionCount.get(i);
+                String choosable = options > 0 ? " (" + options + " selectable)" : "";
+                System.out.print("String " + i + " [" + String.format("%04x", offset) + "]" + choosable + ":");
+            }
+            try {
+                data.skipNBytes(offset);
+                while (data.available() > 0) {
+                    int idx = data.read();
+                    if (idx == 0x00) {
+                        break;
+                    } else if (BIN_LOOKUP.containsKey(idx)) {
+                        out.append(BIN_LOOKUP.get(idx));
+                    }
+                }
+                System.out.println(out);
+                strings.add(out.toString());
+            } catch (IOException e) {
+                // e.printStackTrace();
+                System.out.println(e.getLocalizedMessage());
+                strings.add(e.toString());
+            } finally {
+                try {
+                    data.reset();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        return strings;
     }
 
     private static void translate(String str) {
@@ -264,8 +343,6 @@ public class Main {
                 inputStream.skipBytes(6);
                 for (int i = 0; i <= length; i++) {
                     abilities[i] = new AbilityDataObject(inputStream, individualLength);
-                    // String prefix = String.format("%-20s", Integer.toHexString(i) + ": " + names[i]);
-                    // System.out.println(prefix + ability);
                 }
                 byte[] stringBytes = inputStream.readAllBytes();
                 int stringsLength = stringBytes.length;
@@ -396,6 +473,22 @@ public class Main {
             } catch (IOException ignored) {}
         }
         return null;
+    }
+
+    private static void readStringFile(String filename) {
+        System.out.println("--- " + filename + " ---");
+        File file = new File(filename);
+        if (file.isDirectory()) {
+            String[] contents = file.list();
+            if (contents != null) {
+                Arrays.stream(contents).filter(sf -> !sf.startsWith(".")).sorted().forEach(sf -> readStringFile(filename + '/' + sf));
+            }
+        } else {
+            try {
+                DataInputStream inputStream = new DataInputStream(new BufferedInputStream(new FileInputStream(file)));
+                readStringData(inputStream, -1, true);
+            } catch (IOException ignored) {}
+        }
     }
 
     private static void findEqualFiles(final String source, final String target) {
