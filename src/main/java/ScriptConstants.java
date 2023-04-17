@@ -38,6 +38,7 @@ public abstract class ScriptConstants {
             OPCODE_ENDLINE.add(0x77);
             OPCODE_ENDLINE.add(0x79);
             OPCODE_ENDLINE.add(0xA0);
+            OPCODE_ENDLINE.add(0xA1);
             OPCODE_ENDLINE.add(0xA3);
             OPCODE_ENDLINE.add(0xB0);
             OPCODE_ENDLINE.add(0xB3);
@@ -53,16 +54,18 @@ public abstract class ScriptConstants {
                 OPCODE_STACKPOPS[i] = 2;
             }
             OPCODE_STACKPOPS[0x19] = 1;
-            OPCODE_STACKPOPS[0x25] = 2;
+            OPCODE_STACKPOPS[0x25] = 1;
             OPCODE_STACKPOPS[0x26] = 0;
+            OPCODE_STACKPOPS[0x27] = 0;
+            OPCODE_STACKPOPS[0x28] = 0;
             OPCODE_STACKPOPS[0x29] = 0;
             OPCODE_STACKPOPS[0x2A] = 1; // Seems to be "pop and ignore"?
-            OPCODE_STACKPOPS[0x2B] = 1; // Seems to be "duplicate"
+            OPCODE_STACKPOPS[0x2B] = 1;
             OPCODE_STACKPOPS[0x2C] = 1;
             OPCODE_STACKPOPS[0x34] = 0;
-            OPCODE_STACKPOPS[0x36] = 2;
-            OPCODE_STACKPOPS[0x37] = 2;
-            OPCODE_STACKPOPS[0x38] = 2;
+            OPCODE_STACKPOPS[0x36] = 3;
+            OPCODE_STACKPOPS[0x37] = 3;
+            OPCODE_STACKPOPS[0x38] = 3;
             OPCODE_STACKPOPS[0x3C] = 0;
             OPCODE_STACKPOPS[0x3D] = 1;
             OPCODE_STACKPOPS[0x46] = 1;

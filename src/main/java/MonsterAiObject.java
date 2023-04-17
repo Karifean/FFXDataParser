@@ -13,8 +13,8 @@ public class MonsterAiObject {
     Map<Integer, String> varTypes = new HashMap<>();
     Map<Integer, List<StackObject>> varEnums = new HashMap<>();
     Map<Integer, StackObject> constants = new HashMap<>();
+    String lastCallType = "unknown";
     boolean gatheringInfo = true;
-    boolean writeJumps = true;
     int byteCursor = 0;
     int firstEarlierJump;
     int[] aiBytes;
@@ -72,11 +72,6 @@ public class MonsterAiObject {
         inferEnums();
         gatheringInfo = false;
         parseAiLinear(scriptLength);
-        /* newDataStream();
-        data.skipNBytes(textPartAddress + 0x80);
-        try {
-            readRemainingText();
-        } catch (IOException ignored) {} */
     }
 
     private void parseJumps(int amount) throws IOException {
@@ -192,13 +187,16 @@ public class MonsterAiObject {
         } else if (opcode == 0x1A) {
             stack.push(new StackObject("unknown", true, "OPUMINUS", 0x1A));
         } else if (opcode == 0x25) {
-            textAiString.append("Opcode:25(").append(p1).append(", ").append(p2).append(")\n");
+            lastCallType = p1.type;
+            textAiString.append("call ").append(p1).append(";\n");
         } else if (opcode == 0x26) {
-            stack.push(new StackObject("unknown", true, "opcode:26", 0x26));
+            stack.push(new StackObject(lastCallType, true, "LastCallResult", 0x26));
+        } else if (opcode == 0x28) {
+            stack.push(new StackObject("unknown", true, "rX", 0x28));
         } else if (opcode == 0x29) {
             stack.push(new StackObject("case", true, "case", 0x29));
         } else if (opcode == 0x2A) {
-            textAiString.append("pop and ?ignore ").append(p1).append('\n');
+            textAiString.append("Set rX = ").append(p1).append('\n');
         } else if (opcode == 0x2B) {
             stack.push(new StackObject(p1.type, p1));
             stack.push(new StackObject(p1.type, p1));
@@ -207,10 +205,18 @@ public class MonsterAiObject {
         } else if (opcode == 0x34) {
             textAiString.append("return from subroutine\n");
         } else if (opcode >= 0x36 && opcode <= 0x38) {
-            String content = "Opcode:" + String.format("%02x", opcode) + "(" + p1 + ", " + p2 + ")";
-            stack.push(new StackObject("unknown", true, content, opcode));
+            String type = "queueScript";
+            if (opcode == 0x37) {
+                type += "Sync";
+            } else if (opcode == 0x38) {
+               type += "Async";
+            }
+            String content = "(" + p1 + ", " + p2 + ", " + p3 + ")";
+            stack.push(new StackObject(type, true, type + content, opcode));
         } else if (opcode == 0x3C) {
             textAiString.append("return\n");
+        } else if (opcode == 0x54) {
+            textAiString.append("direct return?\n");
         } else if (opcode >= 0x59 && opcode <= 0x5C) {
             textAiString.append("tempI").append(opcode-0x59).append(" = ").append(p1).append('\n');
             lastTempTypes.put(opcode-0x59, p1.type);
@@ -222,20 +228,12 @@ public class MonsterAiObject {
         } else if (opcode >= 0x6B && opcode <= 0x74) {
             stack.push(new StackObject(lastTempTypes.getOrDefault(opcode-0x67, "unknown"), true, "tempF"+(opcode-0x6B), opcode));
         } else if (opcode == 0x77) {
-            textAiString.append("Opcode:77(").append(p1).append(',').append(p2).append(")\n");
+            textAiString.append("await script(").append(p1).append(", ").append(p2).append(")\n");
         } else if (opcode == 0x79) {
-            textAiString.append("Opcode:79(").append(p1).append(',').append(p2).append(',').append(p3).append(")\n");
+            textAiString.append("REQCHG(").append(p1).append(',').append(p2).append(',').append(p3).append(")\n");
         } else if (opcode == 0x9F) {
             stack.push(new StackObject("var", true, "var"+argvsh, argv));
-            /*
-            boolean solo = !gatheringInfo && varEnums.containsKey(argv) && varEnums.get(argv).size() == 1;
-            String vrAppend = argvsh + (solo ? "[" + varEnums.get(argv).get(0) + "]" : "");
-            if (constants.containsKey(argv)) {
-                stack.push(new StackObject(constants.get(argv).type, true, "const"+vrAppend, argv));
-            } else {
-                stack.push(new StackObject("var", true, "var"+vrAppend, argv));
-            } */
-        } else if (opcode == 0xA0) {
+        } else if (opcode == 0xA0 || opcode == 0xA1) {
             addVarType(argv, "var".equals(p1.type) ? varTypes.get(p1.value) : p1.type);
             if (gatheringInfo) {
                 if (!varEnums.containsKey(argv)) {
@@ -243,22 +241,30 @@ public class MonsterAiObject {
                 }
                 varEnums.get(argv).add(p1);
             }
-            textAiString.append("Set var").append(argvsh).append(" = ").append(typed(p1, varTypes.get(argv))).append('\n');
+            textAiString.append("Set var").append(argvsh);
+            if (opcode == 0xA1) {
+                textAiString.append('L');
+            }
+            textAiString.append(" = ").append(typed(p1, varTypes.get(argv))).append('\n');
         } else if (opcode == 0xA2) {
             String globalIdx = argvsh + String.format("%04x", p1.value);
-            stack.push(new StackObject("global", true, "global:"+globalIdx, argv));
-        } else if (opcode == 0xA3) {
+            stack.push(new StackObject("int", true, "global:"+globalIdx, argv));
+        } else if (opcode == 0xA3 || opcode == 0xA4) {
             String globalIdx = argvsh + String.format("%04x", p1.value);
-            textAiString.append("Set global:").append(globalIdx).append(" = ").append(p2).append('\n');
+            textAiString.append("Set global");
+            if (opcode == 0xA4) {
+                textAiString.append('L');
+            }
+            textAiString.append(':').append(globalIdx).append(" = ").append(p2).append('\n');
         } else if (opcode == 0xA7) {
             String globalIdx = argvsh + String.format("%04x", p1.value);
-            stack.push(new StackObject("a7", true, "a7:"+globalIdx, argv));
+            stack.push(new StackObject("int", true, "globalP:"+globalIdx, argv));
         } else if (opcode == 0xAD) {
-            stack.push(new StackObject("ad", true, "ref:" + argvsd + " [" + argvsh + "h]", argv));
+            stack.push(new StackObject("int", true, "refI:" + argvsd + " [" + argvsh + "h]", argv));
         } else if (opcode == 0xAE) {
-            stack.push(new StackObject("ae", false, argvsd + " [" + argvsh + "h]", argv));
+            stack.push(new StackObject("int", false, argvsd + " [" + argvsh + "h]", argv));
         } else if (opcode == 0xAF) {
-            stack.push(new StackObject("af", true, "af:" + argvsd + " [" + argvsh + "h]", argv));
+            stack.push(new StackObject("float", true, "refF:" + argvsd + " [" + argvsh + "h]", argv));
         } else if (opcode == 0xB5) {
             processB5(arg1, arg2);
         } else if (opcode == 0xD6) {
@@ -269,8 +275,8 @@ public class MonsterAiObject {
             processD8(arg1, arg2);
         } else if (opcode == 0xB0) {
             textAiString.append("Jump to j").append(argvsh).append('\n');
-        // } else if (opcode == 0xB3) {
-            // stack.push(new StackObject("B3", true, "opcode:b3(" + argvsh + ")", argv));
+        } else if (opcode == 0xB3) {
+            textAiString.append("Jump to subroutine ").append(argvsd).append(" [").append(argvsh).append("h]").append('\n');
         } else if (opcode != 0x00 && opcode != 0xFF) {
             textAiString.append("Opcode:").append(String.format("%02x", opcode)).append('.').append(argvsh).append('\n');
         }
@@ -333,12 +339,13 @@ public class MonsterAiObject {
         int idx = opcode + group * 256;
         ScriptFunc func = ScriptFuncLib.get(idx, params);
         if (func == null) {
-            func = new ScriptFunc("Unknown:" + String.format("%04x", idx), "unknown", false);
+            func = new ScriptFunc("Unknown." + String.format("%04x", idx), "unknown", false);
         } else if (func.inputs != null) {
             for (int i = 0; i < func.inputs.size(); i++) {
                 typed(params.get(i), func.inputs.get(i).type);
             }
         }
+        lastCallType = func.getType(params);
         textAiString.append(func.callD8(params)).append(";\n");
     }
 
@@ -357,7 +364,7 @@ public class MonsterAiObject {
     }
 
     private static boolean isWeakType(String type) {
-        return type == null || "ae".equals(type) || "af".equals(type);
+        return type == null || "int".equals(type) || "unknown".equals(type);
     }
 
     private int[] skipUntil(int[] untilA, int[] untilB) throws IOException {
@@ -422,31 +429,6 @@ public class MonsterAiObject {
         } else {
             return "p" + String.format("%02x", j).toUpperCase();
         }
-        /* if (j > 10) {
-        } else if (j == 0) {
-            return "Begin0";
-        } else if (j == 1) {
-            return "Begin1";
-        } else if (j == 2) {
-            return "Begin2";
-        } else if (j == 3) {
-            return "Begin3";
-        } else if (j == 4) {
-            return "Begin4";
-        } else if (j == 5) {
-            return "BeforeTurn";
-        } else if (j == 6) {
-            return "Turn";
-        } else if (j == 7) {
-            return "TurnMid";
-        } else if (j == 8) {
-            return "PreCounter";
-        } else if (j == 9) {
-            return "Counter";
-        } else if (j == 10) {
-            return "Death";
-        }
-        return "Unknown" + j; */
     }
 
     private static int getArgc(int opcode) {
