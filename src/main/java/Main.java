@@ -386,8 +386,8 @@ public class Main {
             System.out.println(aiObj.textAiString);
             System.out.println("- Hex AI -");
             System.out.println(aiObj.hexAiString.toString().toUpperCase());
-            System.out.println("- Remaining Text -");
-            System.out.println(aiObj.monsterText);
+            System.out.println("- Monster Data -");
+            System.out.println(aiObj.monsterData);
         }
     }
 

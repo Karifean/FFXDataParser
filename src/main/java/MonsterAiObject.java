@@ -5,6 +5,7 @@ import java.util.stream.Collectors;
 public class MonsterAiObject {
     File file;
     DataInputStream data;
+    MonsterDataObject monsterData;
     Stack<StackObject> stack = new Stack<>();
     StringBuilder hexAiString = new StringBuilder();
     StringBuilder textAiString = new StringBuilder();
@@ -18,6 +19,8 @@ public class MonsterAiObject {
     int byteCursor = 0;
     int firstEarlierJump;
     int[] aiBytes;
+    int[] statBytes = new int[0x8C];
+    int[] spoilsBytes;
     List<Integer> jumpDestinations = new ArrayList<>();
     Map<Integer, List<Integer>> reverseJumpDestinations = new HashMap<>();
 
@@ -38,8 +41,8 @@ public class MonsterAiObject {
         int unknownChunkAddress = read4Bytes();
         int valuesBeginAddress = read4Bytes();
         int nullAddress1 = read4Bytes();
-        int dropsBeginAddress = read4Bytes();
-        int dropsEndAddress = read4Bytes();
+        int spoilsBeginAddress = read4Bytes();
+        int spoilsEndAddress = read4Bytes();
         int textPartAddress = read4Bytes();
         int totalFileBytes = read4Bytes();
         data.reset();
@@ -72,6 +75,21 @@ public class MonsterAiObject {
         inferEnums();
         gatheringInfo = false;
         parseAiLinear(scriptLength);
+        newDataStream();
+        data.mark(valuesBeginAddress + 0x8C);
+        data.skipNBytes(valuesBeginAddress);
+        for (int i = 0; i < 0x8C; i++) {
+            statBytes[i] = data.read();
+        }
+        data.reset();
+        data.mark(spoilsEndAddress);
+        data.skipNBytes(spoilsBeginAddress);
+        int spoilsLength = spoilsEndAddress - spoilsBeginAddress;
+        spoilsBytes = new int[spoilsLength];
+        for (int i = 0; i < spoilsLength; i++) {
+            spoilsBytes[i] = data.read();
+        }
+        monsterData = new MonsterDataObject(statBytes, spoilsBytes);
     }
 
     private void parseJumps(int amount) throws IOException {
