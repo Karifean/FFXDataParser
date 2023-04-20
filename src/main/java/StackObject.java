@@ -96,10 +96,8 @@ public class StackObject {
                 String adjustedHexSuffix = " [" + adjustedHex + "h]";
                 AbilityDataObject ability = Main.getAbility(adjustedHex);
                 return (ability != null ? '"'+ability.name+'"' : "????") + adjustedHexSuffix;
-            } else if ("ad".equals(type)) {
-                return "r:" + hex;
-            } else if ("af".equals(type)) {
-                return "af:" + hex;
+            } else if ("float".equals(type)) {
+                return "float:" + hex;
             }
         }
         return content;

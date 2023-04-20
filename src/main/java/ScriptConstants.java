@@ -23,6 +23,7 @@ public abstract class ScriptConstants {
             OPCODE_ENDLINE = new ArrayList<>();
             OPCODE_ENDLINE.add(0x25);
             OPCODE_ENDLINE.add(0x2A);
+            OPCODE_ENDLINE.add(0x2C);
             OPCODE_ENDLINE.add(0x34);
             OPCODE_ENDLINE.add(0x3C);
             OPCODE_ENDLINE.add(0x3D);
@@ -40,7 +41,10 @@ public abstract class ScriptConstants {
             OPCODE_ENDLINE.add(0xA0);
             OPCODE_ENDLINE.add(0xA1);
             OPCODE_ENDLINE.add(0xA3);
+            OPCODE_ENDLINE.add(0xA4);
             OPCODE_ENDLINE.add(0xB0);
+            OPCODE_ENDLINE.add(0xB1);
+            OPCODE_ENDLINE.add(0xB2);
             OPCODE_ENDLINE.add(0xB3);
             OPCODE_ENDLINE.add(0xD6);
             OPCODE_ENDLINE.add(0xD7);
@@ -124,8 +128,8 @@ public abstract class ScriptConstants {
             COMP_OPERATORS.put(0x0F, "<=");
             COMP_OPERATORS.put(0x10, "OP-B-ON");
             COMP_OPERATORS.put(0x11, "OP-B-OFF");
-            COMP_OPERATORS.put(0x12, "OP-SL-L");
-            COMP_OPERATORS.put(0x13, "OP-SR-L");
+            COMP_OPERATORS.put(0x12, "<<");
+            COMP_OPERATORS.put(0x13, ">>");
             COMP_OPERATORS.put(0x14, "+");
             COMP_OPERATORS.put(0x15, "-");
             COMP_OPERATORS.put(0x16, "*");

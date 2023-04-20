@@ -315,7 +315,9 @@ public abstract class ScriptFuncLib {
             putUnknownFunc(0x01A5, 2);
             putUnknownFunc(0x01A6, 0);
             putUnknownFunc(0x01A7, 1); // Speculation: Silently give takara.bin index?
+            putUnknownFunc(0x01AC, 1);
             putUnknownFunc(0x01AD, 1);
+            putUnknownFunc(0x01AF, 2);
             putUnknownFunc(0x01B0, 2);
             putUnknownFunc(0x01B1, 0);
             putUnknownFunc(0x01B5, 0);
@@ -362,10 +364,13 @@ public abstract class ScriptFuncLib {
             putUnknownFunc(0x0209, 0);
             putUnknownFunc(0x020B, 0);
             putUnknownFunc(0x020D, 1);
+            putUnknownFunc(0x0210, 1);
             putUnknownFunc(0x0213, 1);
             putUnknownFunc(0x0215, 2);
             putUnknownFunc(0x0216, 3);
             putUnknownFunc(0x0217, 0);
+            putUnknownFunc(0x021A, 2);
+            putUnknownFunc(0x021B, 2);
             putUnknownFunc(0x021D, 0);
             putUnknownFunc(0x021E, 0);
             putUnknownFunc(0x0220, 1);
@@ -376,9 +381,11 @@ public abstract class ScriptFuncLib {
             putUnknownFunc(0x0234, 0);
             putUnknownFunc(0x0235, 0);
             putUnknownFunc(0x0236, 2);
-            putUnknownFunc(0x0237, 1); // Inferred based on A7 being a line ender
+            putUnknownFunc(0x0237, 1);
             putUnknownFunc(0x0239, 1);
             putUnknownFunc(0x023A, 1);
+            putUnknownFunc(0x023B, 1); // These two could add up to 3 differently...
+            putUnknownFunc(0x023C, 2); // But this seems most reasonable. Check nagi0700
             putUnknownFunc(0x023D, 0);
             putUnknownFunc(0x023F, 1);
             putUnknownFunc(0x0241, 1);
@@ -386,6 +393,7 @@ public abstract class ScriptFuncLib {
             putUnknownFunc(0x0243, 0);
             putUnknownFunc(0x024A, 1);
             putUnknownFunc(0x024B, 2);
+            putUnknownFunc(0x024D, 1);
             putUnknownFunc(0x0253, 0);
             putUnknownFunc(0x0254, 1);
             putUnknownFunc(0x0256, 1);

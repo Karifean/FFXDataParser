@@ -201,7 +201,7 @@ public class MonsterAiObject {
             stack.push(new StackObject(p1.type, p1));
             stack.push(new StackObject(p1.type, p1));
         } else if (opcode == 0x2C) {
-            textAiString.append("switch ").append(p1).append(' ');
+            textAiString.append("switch ").append(p1).append('\n');
         } else if (opcode == 0x34) {
             textAiString.append("return from subroutine\n");
         } else if (opcode >= 0x36 && opcode <= 0x38) {
@@ -222,15 +222,14 @@ public class MonsterAiObject {
             lastTempTypes.put(opcode-0x59, p1.type);
         } else if (opcode >= 0x5D && opcode <= 0x66) {
             textAiString.append("tempF").append(opcode-0x5D).append(" = ").append(p1).append('\n');
-            lastTempTypes.put(opcode-0x59, p1.type);
         } else if (opcode >= 0x67 && opcode <= 0x6A) {
             stack.push(new StackObject(lastTempTypes.getOrDefault(opcode-0x67, "unknown"), true, "tempI"+(opcode-0x67), opcode));
         } else if (opcode >= 0x6B && opcode <= 0x74) {
-            stack.push(new StackObject(lastTempTypes.getOrDefault(opcode-0x67, "unknown"), true, "tempF"+(opcode-0x6B), opcode));
+            stack.push(new StackObject("float", true, "tempF"+(opcode-0x6B), opcode));
         } else if (opcode == 0x77) {
             textAiString.append("await script(").append(p1).append(", ").append(p2).append(")\n");
         } else if (opcode == 0x79) {
-            textAiString.append("REQCHG(").append(p1).append(',').append(p2).append(',').append(p3).append(")\n");
+            textAiString.append("REQCHG(").append(p1).append(", ").append(p2).append(", ").append(p3).append(")\n");
         } else if (opcode == 0x9F) {
             stack.push(new StackObject("var", true, "var"+argvsh, argv));
         } else if (opcode == 0xA0 || opcode == 0xA1) {
@@ -241,24 +240,25 @@ public class MonsterAiObject {
                 }
                 varEnums.get(argv).add(p1);
             }
-            textAiString.append("Set var").append(argvsh);
+            textAiString.append("Set ");
             if (opcode == 0xA1) {
-                textAiString.append('L');
+                textAiString.append("(limit) ");
             }
-            textAiString.append(" = ").append(typed(p1, varTypes.get(argv))).append('\n');
+            textAiString.append("var").append(argvsh).append(" = ").append(typed(p1, varTypes.get(argv))).append('\n');
         } else if (opcode == 0xA2) {
-            String globalIdx = argvsh + String.format("%04x", p1.value);
-            stack.push(new StackObject("int", true, "global:"+globalIdx, argv));
+            String arrayIndex = '[' + String.format("%04x", p1.value) + ']';
+            stack.push(new StackObject("int", true, "var"+argvsh+arrayIndex, argv));
         } else if (opcode == 0xA3 || opcode == 0xA4) {
-            String globalIdx = argvsh + String.format("%04x", p1.value);
-            textAiString.append("Set global");
+            String arrayIndex = '[' + String.format("%04x", p1.value) + ']';
+            textAiString.append("Set ");
             if (opcode == 0xA4) {
-                textAiString.append('L');
+                textAiString.append("(limit) ");
             }
-            textAiString.append(':').append(globalIdx).append(" = ").append(p2).append('\n');
+            textAiString.append("var").append(argvsh);
+            textAiString.append(arrayIndex).append(" = ").append(p2).append('\n');
         } else if (opcode == 0xA7) {
-            String globalIdx = argvsh + String.format("%04x", p1.value);
-            stack.push(new StackObject("int", true, "globalP:"+globalIdx, argv));
+            String arrayIndex = '[' + String.format("%04x", p1.value) + ']';
+            stack.push(new StackObject("int", true, "ArrayPointer:var"+argvsh+arrayIndex, argv));
         } else if (opcode == 0xAD) {
             stack.push(new StackObject("int", true, "refI:" + argvsd + " [" + argvsh + "h]", argv));
         } else if (opcode == 0xAE) {
