@@ -22,7 +22,7 @@ public class Main {
     private static final String PREFIX = "src/main/resources/";
     private static final String KERNEL_PATH_MODDED = PREFIX + "ffx/attacks/";
     private static final String KERNEL_PATH_REGULAR = PREFIX + "ffx/new_uspc/battle/kernel/";
-    private static final String KERNEL_PATH = KERNEL_PATH_MODDED;
+    private static final String KERNEL_PATH = KERNEL_PATH_REGULAR;
     private static final String SKILL_TABLE_A_PATH = KERNEL_PATH + "command.bin"; // "FILE07723.dat"; // "command.bin"; //
     private static final String SKILL_TABLE_B_PATH = KERNEL_PATH + "monmagic1.bin"; // "FILE07740.dat"; // "monmagic1.bin"; //
     private static final String SKILL_TABLE_C_PATH = KERNEL_PATH + "monmagic2.bin"; // "FILE07741.dat"; // "monmagic2.bin"; //
@@ -178,13 +178,17 @@ public class Main {
             }
         }
         data.reset();
+        return readStringsAtOffsets(count, offsets, data, print, optionCount);
+    }
+
+    public static List<String> readStringsAtOffsets(int count, List<Integer> offsets, DataInputStream data, boolean print, Map<Integer, Integer> optionCount) {
         List<String> strings = new ArrayList<>(count);
         for (int i = 0; i < count; i++) {
             int offset = offsets.get(i);
             StringBuilder out = new StringBuilder();
             data.mark(offset + 0xFFFF);
             if (print) {
-                int options = optionCount.get(i);
+                int options = optionCount != null ? optionCount.get(i) : 0;
                 String choosable = options > 0 ? " (" + options + " selectable)" : "";
                 System.out.print("String " + i + " [" + String.format("%04x", offset) + "]" + choosable + ":");
             }
@@ -198,11 +202,15 @@ public class Main {
                         out.append(BIN_LOOKUP.get(idx));
                     }
                 }
-                System.out.println(out);
+                if (print) {
+                    System.out.println(out);
+                }
                 strings.add(out.toString());
             } catch (IOException e) {
                 // e.printStackTrace();
-                System.out.println(e.getLocalizedMessage());
+                if (print) {
+                    System.out.println(e.getLocalizedMessage());
+                }
                 strings.add(e.toString());
             } finally {
                 try {
@@ -376,7 +384,8 @@ public class Main {
                 Arrays.stream(contents).filter(sf -> !sf.startsWith(".")).sorted().forEach(sf -> readMonsterAi(filename + '/' + sf));
             }
         } else {
-            MonsterAiObject aiObj = new MonsterAiObject(file);
+            boolean isMonsterFile = file.getPath().contains("/mon/");
+            MonsterAiObject aiObj = new MonsterAiObject(file, isMonsterFile);
             try {
                 aiObj.run();
             } catch (Exception e) {
@@ -386,8 +395,12 @@ public class Main {
             System.out.println(aiObj.textAiString);
             System.out.println("- Hex AI -");
             System.out.println(aiObj.hexAiString.toString().toUpperCase());
-            System.out.println("- Monster Data -");
-            System.out.println(aiObj.monsterData);
+            if (isMonsterFile) {
+                System.out.println("- Monster Data -");
+                System.out.println(aiObj.monsterData);
+                System.out.println("- Monster Text -");
+                System.out.println(aiObj.monsterText);
+            }
         }
     }
 

@@ -111,7 +111,7 @@ public abstract class ScriptFuncLib {
             putUnknownFunc(0x0061, 1);
             putUnknownFunc(0x0062, 1);
             putUnknownFunc(0x0063, 1);
-            FUNCS[0x0064] = new ScriptFunc("displayFieldSubtitle?", "unknown", new ScriptField("index?", "int"), new ScriptField("string", "int"));
+            FUNCS[0x0064] = new ScriptFunc("displayFieldSubtitle", "unknown", new ScriptField("index?", "int"), new ScriptField("string", "int"));
             putUnknownFunc(0x0065, 4);
             putUnknownFunc(0x0066, 2);
             putUnknownFunc(0x0069, 3);
@@ -187,7 +187,7 @@ public abstract class ScriptFuncLib {
             putUnknownFunc(0x00D0, 0);
             putUnknownFunc(0x00D1, 0);
             putUnknownFunc(0x00D2, 0);
-            FUNCS[0x00D5] = new ScriptFunc("playFieldVoiceLine?", "unknown", new ScriptField("voiceFileIndex", "int"));
+            FUNCS[0x00D5] = new ScriptFunc("playFieldVoiceLine", "unknown", new ScriptField("voiceFileIndex", "int"));
             putUnknownFunc(0x00D6, 0);
             putUnknownFunc(0x00D7, 0);
             putUnknownFunc(0x00D8, 0);
@@ -217,10 +217,10 @@ public abstract class ScriptFuncLib {
             putUnknownFunc(0x00FD, 3);
             putUnknownFunc(0x00FE, 2);
             putUnknownFunc(0x0100, 3);
-            FUNCS[0x0102] = new ScriptFunc("setBackgroundMusic?", "unknown", new ScriptField("bgm", "int"));
+            FUNCS[0x0102] = new ScriptFunc("setBgmToLoad?", "unknown", new ScriptField("bgm", "musicfile"));
             putUnknownFunc(0x0103, 1);
-            putUnknownFunc(0x0104, 1);
-            FUNCS[0x0105] = new ScriptFunc("playBackgroundMusic?", "unknown", true);
+            FUNCS[0x0104] = new ScriptFunc("playBgm?", "unknown", new ScriptField("bgm", "musicfile"));
+            FUNCS[0x0105] = new ScriptFunc("loadBgm?", "unknown", true);
             putUnknownFunc(0x0106, 3);
             putUnknownFunc(0x0108, 5);
             putUnknownFunc(0x0109, 1);

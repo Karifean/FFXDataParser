@@ -16,6 +16,7 @@ public class MonsterAiObject {
     Map<Integer, StackObject> constants = new HashMap<>();
     String lastCallType = "unknown";
     boolean gatheringInfo = true;
+    boolean isMonsterFile;
     int byteCursor = 0;
     int firstEarlierJump;
     int[] aiBytes;
@@ -24,8 +25,9 @@ public class MonsterAiObject {
     List<Integer> jumpDestinations = new ArrayList<>();
     Map<Integer, List<Integer>> reverseJumpDestinations = new HashMap<>();
 
-    public MonsterAiObject(File file) {
+    public MonsterAiObject(File file, boolean isMonsterFile) {
         this.file = file;
+        this.isMonsterFile = isMonsterFile;
         prepare();
     }
 
@@ -75,21 +77,38 @@ public class MonsterAiObject {
         inferEnums();
         gatheringInfo = false;
         parseAiLinear(scriptLength);
-        newDataStream();
-        data.mark(valuesBeginAddress + 0x8C);
-        data.skipNBytes(valuesBeginAddress);
-        for (int i = 0; i < 0x8C; i++) {
-            statBytes[i] = data.read();
+        if (isMonsterFile) {
+            newDataStream();
+            data.mark(valuesBeginAddress + 0x8C);
+            data.skipNBytes(valuesBeginAddress);
+            for (int i = 0; i < 0x8C; i++) {
+                statBytes[i] = data.read();
+            }
+            data.reset();
+            data.mark(spoilsEndAddress);
+            data.skipNBytes(spoilsBeginAddress);
+            int spoilsLength = spoilsEndAddress - spoilsBeginAddress;
+            spoilsBytes = new int[spoilsLength];
+            for (int i = 0; i < spoilsLength; i++) {
+                spoilsBytes[i] = data.read();
+            }
+            monsterData = new MonsterDataObject(statBytes, spoilsBytes);
+            data.reset();
+            data.skipNBytes(textPartAddress);
+            int nameOffset = read2Bytes();
+            data.skipNBytes(2);
+            int sensorOffset = read2Bytes();
+            data.skipNBytes(2);
+            int sensorDashOffset = read2Bytes();
+            data.skipNBytes(2);
+            int scanOffset = read2Bytes();
+            data.skipNBytes(2);
+            int scanDashOffset = read2Bytes();
+            data.skipNBytes(0x6E);
+            List<Integer> offsets = List.of(nameOffset, sensorOffset, sensorDashOffset, scanOffset, scanDashOffset);
+            List<String> strings = Main.readStringsAtOffsets(5, offsets, data, false, null);
+            strings.forEach(s -> monsterText.append(s).append('\n'));
         }
-        data.reset();
-        data.mark(spoilsEndAddress);
-        data.skipNBytes(spoilsBeginAddress);
-        int spoilsLength = spoilsEndAddress - spoilsBeginAddress;
-        spoilsBytes = new int[spoilsLength];
-        for (int i = 0; i < spoilsLength; i++) {
-            spoilsBytes[i] = data.read();
-        }
-        monsterData = new MonsterDataObject(statBytes, spoilsBytes);
     }
 
     private void parseJumps(int amount) throws IOException {

@@ -156,9 +156,12 @@ public abstract class ScriptConstants {
         }
         if (MUSIC_FILE_NAMES == null) {
             MUSIC_FILE_NAMES = new HashMap<>();
-            MUSIC_FILE_NAMES.put(0x000A, "Unwavering Determination?");
-            MUSIC_FILE_NAMES.put(0x000C, "Boss Theme?");
-            MUSIC_FILE_NAMES.put(0x0082, "To Zanarkand?");
+            MUSIC_FILE_NAMES.put(0x000A, "Unwavering Determination");
+            MUSIC_FILE_NAMES.put(0x000B, "Secret Maneuvers");
+            MUSIC_FILE_NAMES.put(0x000C, "Boss Theme");
+            MUSIC_FILE_NAMES.put(0x000D, "The Summoning");
+            MUSIC_FILE_NAMES.put(0x000E, "Macalania Woods");
+            MUSIC_FILE_NAMES.put(0x0082, "To Zanarkand");
             MUSIC_FILE_NAMES.put(0x0091, "Challenge?");
         }
         if (BATTLE_END_TYPES == null) {
