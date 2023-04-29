@@ -58,7 +58,7 @@ public class ScriptFuncAccessor extends ScriptFunc {
         str.append('.');
         ScriptField predicate = fixedPredicate != null ? fixedPredicate : accessMap.get(params.get(predicateParamIndex).value);
         if (predicate != null) {
-            str.append(predicate.name);
+            str.append(predicate);
         } else {
             StackObject predParam = params.get(predicateParamIndex);
             StackObject typed = predParam.expression ? predParam : new StackObject(predicateType, predParam);

@@ -2,7 +2,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public abstract class ScriptFuncLib {
-    private static String[] FUNCGROUPS;
     private static ScriptFunc[] FUNCS;
 
     private static ScriptFunc putUnknownFunc(int idx, int inputs) {
@@ -10,8 +9,13 @@ public abstract class ScriptFuncLib {
         for (int i = 1; i <= inputs; i++) {
             inputList.add(new ScriptField("p" + i, "unknown"));
         }
-        String group = FUNCGROUPS[idx / 0x1000];
-        ScriptFunc func = new ScriptFunc(group + "." + String.format("%04x", idx), "unknown", inputList);
+        ScriptFunc func = new ScriptFunc(null, "unknown", inputList);
+        return putFuncWithIdx(idx, func);
+    }
+
+    private static ScriptFunc putFuncWithIdx(int idx, ScriptFunc func) {
+        func.idx = idx;
+        func.group = idx / 0x1000;
         FUNCS[idx] = func;
         return func;
     }
@@ -25,28 +29,9 @@ public abstract class ScriptFuncLib {
     }
 
     public static void initialize() {
-        if (FUNCGROUPS == null) {
-            FUNCGROUPS = new String[0x10];
-            FUNCGROUPS[0x0] = "Common";
-            FUNCGROUPS[0x1] = "Math";
-            FUNCGROUPS[0x2] = "Unknown2";
-            FUNCGROUPS[0x3] = "Unknown3";
-            FUNCGROUPS[0x4] = "SgEvent";
-            FUNCGROUPS[0x5] = "ChEvent";
-            FUNCGROUPS[0x6] = "Camera";
-            FUNCGROUPS[0x7] = "Battle";
-            FUNCGROUPS[0x8] = "Map";
-            FUNCGROUPS[0x9] = "Mount";
-            FUNCGROUPS[0xA] = "UnknownA";
-            FUNCGROUPS[0xB] = "Movie";
-            FUNCGROUPS[0xC] = "Debug";
-            FUNCGROUPS[0xD] = "AbilityMap";
-            FUNCGROUPS[0xE] = "UnknownE";
-            FUNCGROUPS[0xF] = "UnknownF";
-        }
         if (FUNCS == null) {
             FUNCS = new ScriptFunc[0x10000];
-            FUNCS[0x0000] = new ScriptFunc("waitFrames", "unknown", new ScriptField("frames", "int"));
+            putFuncWithIdx(0x0000, new ScriptFunc("waitFrames", "unknown", new ScriptField("frames", "int")));
             putUnknownFunc(0x0001, 1);
             putUnknownFunc(0x0002, 3);
             putUnknownFunc(0x0003, 1);
@@ -94,7 +79,7 @@ public abstract class ScriptFuncLib {
             putUnknownFunc(0x0044, 0);
             putUnknownFunc(0x0046, 0);
             putUnknownFunc(0x004C, 1);
-            FUNCS[0x004D] = new ScriptFunc("controllerButtonPressed?", "bool", new ScriptField("button"));
+            putFuncWithIdx(0x004D, new ScriptFunc("controllerButtonPressed?", "bool", new ScriptField("button")));
             putUnknownFunc(0x0051, 1);
             putUnknownFunc(0x0054, 6);
             putUnknownFunc(0x0055, 1);
@@ -111,7 +96,7 @@ public abstract class ScriptFuncLib {
             putUnknownFunc(0x0061, 1);
             putUnknownFunc(0x0062, 1);
             putUnknownFunc(0x0063, 1);
-            FUNCS[0x0064] = new ScriptFunc("displayFieldSubtitle", "unknown", new ScriptField("index?", "int"), new ScriptField("string", "int"));
+            putFuncWithIdx(0x0064, new ScriptFunc("displayFieldSubtitle", "unknown", new ScriptField("index?", "int"), new ScriptField("string", "int")));
             putUnknownFunc(0x0065, 4);
             putUnknownFunc(0x0066, 2);
             putUnknownFunc(0x0069, 3);
@@ -160,7 +145,7 @@ public abstract class ScriptFuncLib {
             putUnknownFunc(0x00A6, 1);
             putUnknownFunc(0x00A7, 1);
             putUnknownFunc(0x00A8, 1);
-            FUNCS[0x00A9] = new ScriptFunc("RandomValue", "int", false);
+            putFuncWithIdx(0x00A9, new ScriptFunc("RandomValue", "int", false));
             putUnknownFunc(0x00AA, 1);
             putUnknownFunc(0x00AB, 2);
             putUnknownFunc(0x00B1, 1);
@@ -180,14 +165,14 @@ public abstract class ScriptFuncLib {
             putUnknownFunc(0x00C7, 1);
             putUnknownFunc(0x00C8, 3);
             putUnknownFunc(0x00C9, 1);
-            FUNCS[0x00CA] = new ScriptFunc("addPartyMember?", "unknown", new ScriptField("actor"));
-            FUNCS[0x00CB] = new ScriptFunc("removePartyMember?", "unknown", new ScriptField("actor"));
+            putFuncWithIdx(0x00CA, new ScriptFunc("addPartyMember?", "unknown", new ScriptField("actor")));
+            putFuncWithIdx(0x00CB, new ScriptFunc("removePartyMember?", "unknown", new ScriptField("actor")));
             putUnknownFunc(0x00CE, 1);
             putUnknownFunc(0x00CF, 1);
             putUnknownFunc(0x00D0, 0);
             putUnknownFunc(0x00D1, 0);
             putUnknownFunc(0x00D2, 0);
-            FUNCS[0x00D5] = new ScriptFunc("playFieldVoiceLine", "unknown", new ScriptField("voiceFileIndex", "int"));
+            putFuncWithIdx(0x00D5, new ScriptFunc("playFieldVoiceLine", "unknown", new ScriptField("voiceFileIndex", "int")));
             putUnknownFunc(0x00D6, 0);
             putUnknownFunc(0x00D7, 0);
             putUnknownFunc(0x00D8, 0);
@@ -200,7 +185,7 @@ public abstract class ScriptFuncLib {
             putUnknownFunc(0x00E2, 1);
             putUnknownFunc(0x00E3, 1);
             putUnknownFunc(0x00E4, 1);
-            FUNCS[0x00E7] = new ScriptFunc("putPartyMemberInSlot?", "unknown", new ScriptField("slot", "int"), new ScriptField("actor"));
+            putFuncWithIdx(0x00E7, new ScriptFunc("putPartyMemberInSlot?", "unknown", new ScriptField("slot", "int"), new ScriptField("actor")));
             putUnknownFunc(0x00E8, 3);
             putUnknownFunc(0x00E9, 1);
             putUnknownFunc(0x00EC, 1);
@@ -217,10 +202,10 @@ public abstract class ScriptFuncLib {
             putUnknownFunc(0x00FD, 3);
             putUnknownFunc(0x00FE, 2);
             putUnknownFunc(0x0100, 3);
-            FUNCS[0x0102] = new ScriptFunc("setBgmToLoad?", "unknown", new ScriptField("bgm", "musicfile"));
+            putFuncWithIdx(0x0102, new ScriptFunc("setBgmToLoad?", "unknown", new ScriptField("bgm", "musicfile")));
             putUnknownFunc(0x0103, 1);
-            FUNCS[0x0104] = new ScriptFunc("playBgm?", "unknown", new ScriptField("bgm", "musicfile"));
-            FUNCS[0x0105] = new ScriptFunc("loadBgm?", "unknown", true);
+            putFuncWithIdx(0x0104, new ScriptFunc("playBgm?", "unknown", new ScriptField("bgm", "musicfile")));
+            putFuncWithIdx(0x0105, new ScriptFunc("loadBgm?", "unknown", true));
             putUnknownFunc(0x0106, 3);
             putUnknownFunc(0x0108, 5);
             putUnknownFunc(0x0109, 1);
@@ -244,7 +229,7 @@ public abstract class ScriptFuncLib {
             putUnknownFunc(0x011D, 2);
             putUnknownFunc(0x011F, 3);
             putUnknownFunc(0x0120, 3);
-            FUNCS[0x0121] = new ScriptFunc("movementStickTilt?", "int", new ScriptField("axis", "int"));
+            putFuncWithIdx(0x0121, new ScriptFunc("movementStickTilt?", "int", new ScriptField("axis", "int")));
             putUnknownFunc(0x0122, 1);
             putUnknownFunc(0x0126, 3);
             putUnknownFunc(0x0128, 2);
@@ -264,8 +249,9 @@ public abstract class ScriptFuncLib {
             putUnknownFunc(0x013B, 7);
             putUnknownFunc(0x013E, 1);
             putUnknownFunc(0x013F, 2);
+            putUnknownFunc(0x0140, 6);
             putUnknownFunc(0x0141, 3);
-            putUnknownFunc(0x0142, 3);
+            putUnknownFunc(0x0142, 2); // Corrected from 3, must be 2 due to bltz0200.ebp
             putUnknownFunc(0x0143, 1);
             putUnknownFunc(0x0144, 1);
             putUnknownFunc(0x0145, 2);
@@ -278,7 +264,7 @@ public abstract class ScriptFuncLib {
             putUnknownFunc(0x0157, 1);
             putUnknownFunc(0x0158, 1);
             putUnknownFunc(0x0159, 2);
-            FUNCS[0x015B] = new ScriptFunc("obtainTreasure", "unknown", new ScriptField("index?", "int"), new ScriptField("treasureId", "int"));
+            putFuncWithIdx(0x015B, new ScriptFunc("obtainTreasure", "unknown", new ScriptField("index?", "int"), new ScriptField("treasureId", "int")));
             putUnknownFunc(0x015D, 1);
             putUnknownFunc(0x015E, 1);
             putUnknownFunc(0x015F, 1);
@@ -290,8 +276,8 @@ public abstract class ScriptFuncLib {
             putUnknownFunc(0x016D, 1);
             putUnknownFunc(0x016E, 2);
             putUnknownFunc(0x016F, 1);
-            FUNCS[0x0171] = new ScriptFunc("restorePartyMemberHP?", "unknown", new ScriptField("actor"));
-            FUNCS[0x0172] = new ScriptFunc("restorePartyMemberMP?", "unknown", new ScriptField("actor"));
+            putFuncWithIdx(0x0171, new ScriptFunc("restorePartyMemberHP?", "unknown", new ScriptField("actor")));
+            putFuncWithIdx(0x0172, new ScriptFunc("restorePartyMemberMP?", "unknown", new ScriptField("actor")));
             putUnknownFunc(0x0177, 1);
             putUnknownFunc(0x017A, 1);
             putUnknownFunc(0x017E, 2);
@@ -315,6 +301,7 @@ public abstract class ScriptFuncLib {
             putUnknownFunc(0x01A5, 2);
             putUnknownFunc(0x01A6, 0);
             putUnknownFunc(0x01A7, 1); // Speculation: Silently give takara.bin index?
+            putUnknownFunc(0x01AB, 0);
             putUnknownFunc(0x01AC, 1);
             putUnknownFunc(0x01AD, 1);
             putUnknownFunc(0x01AF, 2);
@@ -354,7 +341,7 @@ public abstract class ScriptFuncLib {
             putUnknownFunc(0x01F9, 1);
             putUnknownFunc(0x01FA, 0);
             putUnknownFunc(0x01FB, 0);
-            FUNCS[0x01FC] = new ScriptFunc("teachAbilityToPartyMember?", "unknown", new ScriptField("actor"), new ScriptField("charMove"));
+            putFuncWithIdx(0x01FC, new ScriptFunc("teachAbilityToPartyMember?", "unknown", new ScriptField("actor"), new ScriptField("charMove")));
             putUnknownFunc(0x0200, 1);
             putUnknownFunc(0x0202, 1);
             putUnknownFunc(0x0203, 1);
@@ -633,42 +620,43 @@ public abstract class ScriptFuncLib {
             putUnknownFunc(0x6088, 0);
             putUnknownFunc(0x7000, 0);
             putUnknownFunc(0x7001, 1);
-            FUNCS[0x7002] = new ScriptFunc("launchBattle", "unknown", new ScriptField("btlIndex", "int"), new ScriptField("transition?", "int"));
+            putFuncWithIdx(0x7002, new ScriptFunc("launchBattle", "unknown", new ScriptField("btlIndex", "int"), new ScriptField("transition?", "int")));
             putUnknownFunc(0x7003, 2);
-            putUnknownFunc(0x7005, 0);
+            putFuncWithIdx(0x7005, new ScriptFunc("isWater?", "int", false));
             putUnknownFunc(0x7006, 2);
             putUnknownFunc(0x7007, 1);
-            putUnknownFunc(0x7008, 0);
-            putUnknownFunc(0x7009, 1);
-            putUnknownFunc(0x700A, 2);
-            FUNCS[0x700B] = new ScriptFunc("performMove", "bool", new ScriptField("target", "actor"), new ScriptField("move"));
+            putFuncWithIdx(0x7007, new ScriptFunc("startMotion?", "unknown", new ScriptField("int")));
+            putFuncWithIdx(0x7008, new ScriptFunc("awaitMotion?", "unknown", true));
+            putFuncWithIdx(0x7009, new ScriptFunc("setGravity?", "unknown", new ScriptField("bool")));
+            putFuncWithIdx(0x700A, new ScriptFunc("setHeight?", "unknown", new ScriptField("int"), new ScriptField("float")));
+            putFuncWithIdx(0x700B, new ScriptFunc("performMove", "bool", new ScriptField("target", "actor"), new ScriptField("move")));
             putUnknownFunc(0x700C, 8);
             putUnknownFunc(0x700D, 2);
-            putUnknownFunc(0x700E, 1);
-            FUNCS[0x700F] = new ScriptFuncAccessor("readActorProperty", "actor", null, ScriptConstants.ACTOR_PROPERTIES, "actorProperty");
-            FUNCS[0x7010] = new ScriptFunc("defineActorSubset", "actor", new ScriptField("group", "actor"), new ScriptField("property", "actorProperty"), new ScriptField("unknown"), new ScriptField("selector"));
+            putFuncWithIdx(0x700E, new ScriptFunc("setDamage?", "unknown", new ScriptField("int")));
+            putFuncWithIdx(0x700F, new ScriptFuncAccessor("readActorProperty", "actor", null, ScriptConstants.ACTOR_PROPERTIES, "actorProperty"));
+            putFuncWithIdx(0x7010, new ScriptFunc("defineActorSubset", "actor", new ScriptField("group", "actor"), new ScriptField("property", "actorProperty"), new ScriptField("unknown"), new ScriptField("selector")));
             putUnknownFunc(0x7012, 0);
-            FUNCS[0x7014] = new ScriptFunc("chosenMove?", "move", false);
-            putUnknownFunc(0x7015, 1);
-            putUnknownFunc(0x7016, 1);
+            putFuncWithIdx(0x7014, new ScriptFunc("chosenMove?", "move", false));
+            putFuncWithIdx(0x7015, new ScriptFunc("print?", "unknown", new ScriptField("int")));
+            putFuncWithIdx(0x7016, new ScriptFunc("stopMotion?", "unknown", new ScriptField("int")));
             putUnknownFunc(0x7017, 2);
-            FUNCS[0x7018] = new ScriptFuncAccessor("writeActorProperty", "actor", "=", ScriptConstants.ACTOR_PROPERTIES, "actorProperty");
-            FUNCS[0x7019] = new ScriptFunc("usedMove", "move", false);
-            FUNCS[0x701A] = new ScriptFuncAccessor("readMoveProperty", "move", null, ScriptConstants.MOVE_PROPERTIES, "moveProperty");
-            FUNCS[0x701B] = new ScriptFunc("overrideAttemptedAction", "unknown", new ScriptField("target", "actor"), new ScriptField("move"));
+            putFuncWithIdx(0x7018, new ScriptFuncAccessor("writeActorProperty", "actor", "=", ScriptConstants.ACTOR_PROPERTIES, "actorProperty"));
+            putFuncWithIdx(0x7019, new ScriptFunc("usedMove", "move", false));
+            putFuncWithIdx(0x701A, new ScriptFuncAccessor("readMoveProperty", "move", null, ScriptConstants.MOVE_PROPERTIES, "moveProperty"));
+            putFuncWithIdx(0x701B, new ScriptFunc("overrideAttemptedAction", "unknown", new ScriptField("target", "actor"), new ScriptField("move")));
             putUnknownFunc(0x701C, 1);
             putUnknownFunc(0x701D, 0);
-            FUNCS[0x701E] = new ScriptFunc("countActorsIn", "int", new ScriptField("within", "actor"), new ScriptField("actor"));
+            putFuncWithIdx(0x701E, new ScriptFunc("countActorsIn", "int", new ScriptField("within", "actor"), new ScriptField("actor")));
             putUnknownFunc(0x701F, 1);
-            FUNCS[0x7021] = new ScriptFunc("dereferenceCharacter", "actor", new ScriptField("actor"));
-            FUNCS[0x7022] = new ScriptFunc("SetAmbushState", "unknown", new ScriptField("ambushState"));
+            putFuncWithIdx(0x7021, new ScriptFunc("dereferenceCharacter", "actor", new ScriptField("actor")));
+            putFuncWithIdx(0x7022, new ScriptFunc("SetAmbushState", "unknown", new ScriptField("ambushState")));
             putUnknownFunc(0x7023, 1);
-            FUNCS[0x7024] = new ScriptFunc("battleVariant", "ad", false);
-            FUNCS[0x7025] = new ScriptFunc("defineActorSubset2?", "actor", new ScriptField("group", "actor"), new ScriptField("property", "actorProperty"), new ScriptField("unknown"), new ScriptField("selector"));
+            putFuncWithIdx(0x7024, new ScriptFunc("battleVariant", "ad", false));
+            putFuncWithIdx(0x7025, new ScriptFunc("defineActorSubset2?", "actor", new ScriptField("group", "actor"), new ScriptField("property", "actorProperty"), new ScriptField("unknown"), new ScriptField("selector")));
             putUnknownFunc(0x7026, 1);
             putUnknownFunc(0x7027, 0);
-            FUNCS[0x7028] = new ScriptFunc("scaleOwnSize", "unknown", new ScriptField("x?", "float"), new ScriptField("y?", "float"), new ScriptField("z?", "float"));
-            FUNCS[0x7029] = new ScriptFuncAccessor("setSelfFloating", null, "=", new ScriptField("floating", "bool"));
+            putFuncWithIdx(0x7028, new ScriptFunc("scaleOwnSize", "unknown", new ScriptField("x?", "float"), new ScriptField("y?", "float"), new ScriptField("z?", "float")));
+            putFuncWithIdx(0x7029, new ScriptFuncAccessor("setSelfFloating", null, "=", new ScriptField("floating", "bool")));
             putUnknownFunc(0x702A, 0);
             putUnknownFunc(0x702B, 0);
             putUnknownFunc(0x702C, 9);
@@ -678,25 +666,25 @@ public abstract class ScriptFuncLib {
             putUnknownFunc(0x7030, 0);
             putUnknownFunc(0x7031, 0);
             putUnknownFunc(0x7032, 2);
-            FUNCS[0x7032] = new ScriptFuncAccessor("setActorFacingAngle", "actor", "=", new ScriptField("facingAngle", "int"));
+            putFuncWithIdx(0x7032, new ScriptFuncAccessor("setActorFacingAngle", "actor", "=", new ScriptField("facingAngle", "int")));
             putUnknownFunc(0x7033, 1);
-            FUNCS[0x7034] = new ScriptFunc("endBattle", "unknown", new ScriptField("battleEndType"));
-            FUNCS[0x7035] = new ScriptFunc("BattleEndType", "battleEndType", false);
+            putFuncWithIdx(0x7034, new ScriptFunc("endBattle", "unknown", new ScriptField("battleEndType")));
+            putFuncWithIdx(0x7035, new ScriptFunc("BattleEndType", "battleEndType", false));
             putUnknownFunc(0x7036, 3);
-            FUNCS[0x7037] = new ScriptFunc("addMove", "unknown", new ScriptField("actor"), new ScriptField("move"));
-            FUNCS[0x7038] = new ScriptFunc("removeMove", "unknown", new ScriptField("actor"), new ScriptField("move"));
+            putFuncWithIdx(0x7037, new ScriptFunc("addMove", "unknown", new ScriptField("actor"), new ScriptField("move")));
+            putFuncWithIdx(0x7038, new ScriptFunc("removeMove", "unknown", new ScriptField("actor"), new ScriptField("move")));
             putUnknownFunc(0x7039, 0);
             putUnknownFunc(0x703A, 1);
-            FUNCS[0x703B] = new ScriptFunc("setMoveDisabled", "unknown", new ScriptField("actor"), new ScriptField("move"), new ScriptField("disabled", "bool"));
-            FUNCS[0x703C] = new ScriptFunc("runBattleScriptA", "unknown", new ScriptField("index", "int"));
+            putFuncWithIdx(0x703B, new ScriptFunc("setMoveDisabled", "unknown", new ScriptField("actor"), new ScriptField("move"), new ScriptField("disabled", "bool")));
+            putFuncWithIdx(0x703C, new ScriptFunc("runBattleScriptA", "unknown", new ScriptField("index", "int")));
             putUnknownFunc(0x703D, 0);
             putUnknownFunc(0x703E, 0);
             putUnknownFunc(0x703F, 2);
             putUnknownFunc(0x7040, 1);
             putUnknownFunc(0x7041, 0);
-            FUNCS[0x7042] = new ScriptFunc("displayTextBox", "unknown", new ScriptField("index?", "int"), new ScriptField("string", "int"), new ScriptField("x?", "int"), new ScriptField("y?", "int"), new ScriptField("p5", "unknown"));
-            FUNCS[0x7043] = new ScriptFunc("closeTextOnConfirm", "unknown", new ScriptField("index", "int"));
-            FUNCS[0x7044] = new ScriptFunc("closeTextImmediately", "unknown", new ScriptField("index", "int"));
+            putFuncWithIdx(0x7042, new ScriptFunc("displayTextBox", "unknown", new ScriptField("index?", "int"), new ScriptField("string", "int"), new ScriptField("x?", "int"), new ScriptField("y?", "int"), new ScriptField("p5", "unknown")));
+            putFuncWithIdx(0x7043, new ScriptFunc("closeTextOnConfirm", "unknown", new ScriptField("index", "int")));
+            putFuncWithIdx(0x7044, new ScriptFunc("closeTextImmediately", "unknown", new ScriptField("index", "int")));
             putUnknownFunc(0x7045, 1);
             putUnknownFunc(0x7046, 1);
             putUnknownFunc(0x7047, 2);
@@ -705,9 +693,9 @@ public abstract class ScriptFuncLib {
             putUnknownFunc(0x704A, 1);
             putUnknownFunc(0x704B, 3);
             putUnknownFunc(0x704C, 1);
-            FUNCS[0x7050] = new ScriptFunc("revive/reinitialize", "unknown", new ScriptField("actor"));
+            putFuncWithIdx(0x7050, new ScriptFunc("revive/reinitialize", "unknown", new ScriptField("actor")));
             putUnknownFunc(0x7051, 0);
-            FUNCS[0x7052] = new ScriptFunc("attachActor", "unknown", new ScriptField( "actor"), new ScriptField( "host","actor"), new ScriptField( "attachmentPoint","int"));
+            putFuncWithIdx(0x7052, new ScriptFunc("attachActor", "unknown", new ScriptField( "actor"), new ScriptField( "host","actor"), new ScriptField( "attachmentPoint","int")));
             putUnknownFunc(0x7053, 9);
             putUnknownFunc(0x7054, 3);
             putUnknownFunc(0x7055, 1);
@@ -715,7 +703,7 @@ public abstract class ScriptFuncLib {
             putUnknownFunc(0x7057, 4);
             putUnknownFunc(0x7058, 2);
             putUnknownFunc(0x7059, 1);
-            FUNCS[0x705A] = new ScriptFunc("forcePerformMove", "bool", new ScriptField("target", "actor"), new ScriptField("move"));
+            putFuncWithIdx(0x705A, new ScriptFunc("forcePerformMove", "bool", new ScriptField("target", "actor"), new ScriptField("move")));
             putUnknownFunc(0x705B, 1);
             putUnknownFunc(0x705C, 1);
             putUnknownFunc(0x705D, 2);
@@ -723,7 +711,7 @@ public abstract class ScriptFuncLib {
             putUnknownFunc(0x7061, 0);
             putUnknownFunc(0x7062, 2);
             putUnknownFunc(0x7063, 0);
-            FUNCS[0x7064] = new ScriptFunc("playBattleVoiceLine", "unknown", new ScriptField("voiceFileIndex", "int"));
+            putFuncWithIdx(0x7064, new ScriptFunc("playBattleVoiceLine", "unknown", new ScriptField("voiceFileIndex", "int")));
             putUnknownFunc(0x7065, 0);
             putUnknownFunc(0x7066, 0);
             putUnknownFunc(0x7067, 0);
@@ -735,13 +723,13 @@ public abstract class ScriptFuncLib {
             putUnknownFunc(0x706F, 1);
             putUnknownFunc(0x7070, 0);
             putUnknownFunc(0x7071, 0);
-            FUNCS[0x7072] = new ScriptFunc("displayDialogueLine", "unknown", new ScriptField("index?", "int"), new ScriptField("string", "int"));
+            putFuncWithIdx(0x7072, new ScriptFunc("displayDialogueLine", "unknown", new ScriptField("index?", "int"), new ScriptField("string", "int")));
             putUnknownFunc(0x7073, 1);
             putUnknownFunc(0x7074, 1);
             putUnknownFunc(0x7075, 3);
             putUnknownFunc(0x7076, 3);
             putUnknownFunc(0x7077, 2);
-            FUNCS[0x7078] = new ScriptFuncAccessor("readMovePropertyForActor", "move", null, ScriptConstants.MOVE_PROPERTIES, "moveProperty", new ScriptField("actor"));
+            putFuncWithIdx(0x7078, new ScriptFuncAccessor("readMovePropertyForActor", "move", null, ScriptConstants.MOVE_PROPERTIES, "moveProperty", new ScriptField("actor")));
             putUnknownFunc(0x7079, 0);
             putUnknownFunc(0x707A, 1);
             putUnknownFunc(0x707B, 2);
@@ -758,7 +746,7 @@ public abstract class ScriptFuncLib {
             putUnknownFunc(0x7087, 3);
             putUnknownFunc(0x7088, 2);
             putUnknownFunc(0x708C, 2);
-            FUNCS[0x708C] = new ScriptFunc("setEncounterEnabled?", "unknown", new ScriptField("encounter"), new ScriptField("active", "bool"));
+            putFuncWithIdx(0x708C, new ScriptFunc("setEncounterEnabled?", "unknown", new ScriptField("encounter"), new ScriptField("active", "bool")));
             putUnknownFunc(0x708D, 0);
             putUnknownFunc(0x708E, 0);
             putUnknownFunc(0x708F, 1);
@@ -768,7 +756,7 @@ public abstract class ScriptFuncLib {
             putUnknownFunc(0x7094, 3);
             putUnknownFunc(0x7095, 0);
             putUnknownFunc(0x7096, 0);
-            FUNCS[0x7097] = new ScriptFunc("runBattleScriptB", "unknown", new ScriptField("index", "int"));
+            putFuncWithIdx(0x7097, new ScriptFunc("runBattleScriptB", "unknown", new ScriptField("index", "int")));
             putUnknownFunc(0x7098, 0);
             putUnknownFunc(0x7099, 1);
             putUnknownFunc(0x709C, 2);
@@ -776,7 +764,7 @@ public abstract class ScriptFuncLib {
             putUnknownFunc(0x709E, 3);
             putUnknownFunc(0x709F, 1);
             putUnknownFunc(0x70A0, 1);
-            FUNCS[0x70A1] = new ScriptFunc("dereferenceEnemy", "actor", new ScriptField("actor"));
+            putFuncWithIdx(0x70A1, new ScriptFunc("dereferenceEnemy", "actor", new ScriptField("actor")));
             putUnknownFunc(0x70A2, 1);
             putUnknownFunc(0x70A3, 1);
             putUnknownFunc(0x70A4, 0);
@@ -784,8 +772,8 @@ public abstract class ScriptFuncLib {
             putUnknownFunc(0x70A6, 1);
             putUnknownFunc(0x70A8, 3);
             putUnknownFunc(0x70A9, 1);
-            FUNCS[0x70AA] = new ScriptFuncAccessor("readActorProperty", null, null, ScriptConstants.ACTOR_PROPERTIES, "actorProperty");
-            FUNCS[0x70AB] = new ScriptFuncAccessor("addActorProperty", null, "+=", ScriptConstants.ACTOR_PROPERTIES, "actorProperty");
+            putFuncWithIdx(0x70AA, new ScriptFuncAccessor("readActorProperty", null, null, ScriptConstants.ACTOR_PROPERTIES, "actorProperty"));
+            putFuncWithIdx(0x70AB, new ScriptFuncAccessor("addActorProperty", null, "+=", ScriptConstants.ACTOR_PROPERTIES, "actorProperty"));
             putUnknownFunc(0x70AC, 1);
             putUnknownFunc(0x70AD, 0);
             putUnknownFunc(0x70AE, 0);
@@ -807,10 +795,10 @@ public abstract class ScriptFuncLib {
             putUnknownFunc(0x70C3, 1);
             putUnknownFunc(0x70C5, 0);
             putUnknownFunc(0x70C9, 2);
-            FUNCS[0x70CC] = new ScriptFunc("initializePredefinedGroupTo", "unknown", new ScriptField("actor"));
-            FUNCS[0x70CD] = new ScriptFunc("addToPredefinedGroup", "unknown", new ScriptField("actor"));
-            FUNCS[0x70CE] = new ScriptFunc("removeFromPredefinedGroup", "unknown", new ScriptField("actor"));
-            FUNCS[0x70CF] = new ScriptFunc("voiceLanguage?", "language", false);
+            putFuncWithIdx(0x70CC, new ScriptFunc("initializePredefinedGroupTo", "unknown", new ScriptField("actor")));
+            putFuncWithIdx(0x70CD, new ScriptFunc("addToPredefinedGroup", "unknown", new ScriptField("actor")));
+            putFuncWithIdx(0x70CE, new ScriptFunc("removeFromPredefinedGroup", "unknown", new ScriptField("actor")));
+            putFuncWithIdx(0x70CF, new ScriptFunc("voiceLanguage?", "language", false));
             putUnknownFunc(0x70D0, 1);
             putUnknownFunc(0x70D1, 1);
             putUnknownFunc(0x70D3, 3);
@@ -819,24 +807,23 @@ public abstract class ScriptFuncLib {
             putUnknownFunc(0x70D8, 1);
             putUnknownFunc(0x70D9, 0);
             putUnknownFunc(0x70DA, 0);
-            FUNCS[0x70DC] = new ScriptFunc("changeActorName", "unknown", new ScriptField("actor"), new ScriptField("string", "int"));
-            FUNCS[0x70DE] = new ScriptFunc("SubtitlesEnabled?", "bool", false);
+            putFuncWithIdx(0x70DC, new ScriptFunc("changeActorName", "unknown", new ScriptField("actor"), new ScriptField("string", "int")));
+            putFuncWithIdx(0x70DE, new ScriptFunc("SubtitlesEnabled?", "bool", false));
             putUnknownFunc(0x70DF, 1);
-            FUNCS[0x70E0] = new ScriptFunc("NotCounterattack", "bool", false);
+            putFuncWithIdx(0x70E0, new ScriptFunc("NotCounterattack", "bool", false));
             putUnknownFunc(0x70E2, 2);
             putUnknownFunc(0x70E3, 1);
             putUnknownFunc(0x70E6, 3);
             putUnknownFunc(0x70E7, 1);
-            FUNCS[0x70E8] = new ScriptFunc("PlayerTotalGil", "int", false);
-            FUNCS[0x70E9] = new ScriptFunc("YojimboHireAnswer", "int", false);
+            putFuncWithIdx(0x70E8, new ScriptFunc("PlayerTotalGil", "int", false));
+            putFuncWithIdx(0x70E9, new ScriptFunc("YojimboHireAnswer", "int", false));
             putUnknownFunc(0x70EB, 1); // Could be 0 if EE is 2 but doubtful
-            FUNCS[0x70ED] = new ScriptFunc("getItem", "unknown", new ScriptField("item", "move"), new ScriptField("quantity", "int"));
-            putUnknownFunc(0x70EE, 1); // Could be 2 if EB is 0 but doubtful
-            FUNCS[0x70ED] = new ScriptFunc("RollYojimboMove", "move", new ScriptField("motivation", "int"));
+            putFuncWithIdx(0x70ED, new ScriptFunc("getItem", "unknown", new ScriptField("item", "move"), new ScriptField("quantity", "int")));
+            putFuncWithIdx(0x70EE, new ScriptFunc("RollYojimboMove", "move", new ScriptField("motivation", "int")));
             putUnknownFunc(0x70EF, 2);
-            FUNCS[0x70F1] = new ScriptFunc("clearOwnMoves?", "unknown", true);
-            FUNCS[0x70F2] = new ScriptFunc("addMoveToSelf?", "unknown", new ScriptField("move"));
-            FUNCS[0x70F3] = new ScriptFunc("RollRandomIn256", "bool", new ScriptField("unknown"), new ScriptField("chance", "int"));
+            putFuncWithIdx(0x70F1, new ScriptFunc("clearOwnMoves?", "unknown", true));
+            putFuncWithIdx(0x70F2, new ScriptFunc("addMoveToSelf?", "unknown", new ScriptField("move")));
+            putFuncWithIdx(0x70F3, new ScriptFunc("RollRandomIn256", "bool", new ScriptField("unknown"), new ScriptField("chance", "int")));
             putUnknownFunc(0x70F6, 0);
             putUnknownFunc(0x70F7, 1);
             putUnknownFunc(0x70F8, 0);
@@ -848,12 +835,12 @@ public abstract class ScriptFuncLib {
             putUnknownFunc(0x70FF, 0);
             putUnknownFunc(0x7100, 1);
             putUnknownFunc(0x7101, 0);
-            FUNCS[0x7102] = new ScriptFunc("makeActorHeadFaceActor?", "unknown", new ScriptField("actor"), new ScriptField("target","actor"));
+            putFuncWithIdx(0x7102, new ScriptFunc("makeActorHeadFaceActor?", "unknown", new ScriptField("actor"), new ScriptField("target","actor")));
             putUnknownFunc(0x7103, 4);
             putUnknownFunc(0x7104, 3);
-            FUNCS[0x7104] = new ScriptFunc("changeMoveAnimation", "unknown", new ScriptField("move"), new ScriptField("anim1", "int"), new ScriptField("anim2", "int"));
+            putFuncWithIdx(0x7104, new ScriptFunc("changeMoveAnimation", "unknown", new ScriptField("move"), new ScriptField("anim1", "int"), new ScriptField("anim2", "int")));
             putUnknownFunc(0x7105, 0);
-            FUNCS[0x7106] = new ScriptFunc("doesActorKnowMove", "bool", new ScriptField("actor"), new ScriptField("move"));
+            putFuncWithIdx(0x7106, new ScriptFunc("doesActorKnowMove", "bool", new ScriptField("actor"), new ScriptField("move")));
             putUnknownFunc(0x7107, 1);
             putUnknownFunc(0x7108, 2);
             putUnknownFunc(0x7109, 3);
@@ -869,20 +856,20 @@ public abstract class ScriptFuncLib {
             putUnknownFunc(0x7114, 0);
             putUnknownFunc(0x7115, 0);
             putUnknownFunc(0x7116, 0);
-            FUNCS[0x7117] = new ScriptFunc("overrideDeathAnimationWithAction", "unknown", new ScriptField("target", "actor"), new ScriptField("move"));
+            putFuncWithIdx(0x7117, new ScriptFunc("overrideDeathAnimationWithAction", "unknown", new ScriptField("target", "actor"), new ScriptField("move")));
             putUnknownFunc(0x7118, 1);
             putUnknownFunc(0x7119, 1);
             putUnknownFunc(0x711A, 4);
             putUnknownFunc(0x711C, 1);
             putUnknownFunc(0x711D, 1);
-            FUNCS[0x7120] = new ScriptFunc("displayBattleSubtitle?", "unknown", new ScriptField("index?", "int"), new ScriptField("string", "int"));
+            putFuncWithIdx(0x7120, new ScriptFunc("displayBattleSubtitle?", "unknown", new ScriptField("index?", "int"), new ScriptField("string", "int")));
             putUnknownFunc(0x7123, 1);
             putUnknownFunc(0x7124, 1);
             putUnknownFunc(0x7125, 0);
             putUnknownFunc(0x7126, 1);
             putUnknownFunc(0x7127, 2);
             putUnknownFunc(0x8000, 2);
-            FUNCS[0x8002] = new ScriptFunc("setGfxActive?", "unknown", new ScriptField("gfxIndex?", "int"), new ScriptField("active", "bool"));
+            putFuncWithIdx(0x8002, new ScriptFunc("setGfxActive?", "unknown", new ScriptField("gfxIndex?", "int"), new ScriptField("active", "bool")));
             putUnknownFunc(0x8003, 1);
             putUnknownFunc(0x8004, 1);
             putUnknownFunc(0x8005, 2);

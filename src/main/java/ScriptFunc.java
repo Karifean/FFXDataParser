@@ -2,8 +2,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ScriptFunc extends ScriptField {
+    protected static final boolean SHOW_FULL_TAG = false;
 
     public List<ScriptField> inputs;
+    public int group;
+    public String internalName;
 
     public ScriptFunc(String name, String type, boolean brackets) {
         super(name, type);
@@ -66,18 +69,28 @@ public class ScriptFunc extends ScriptField {
 
     @Override
     public String toString() {
-        return name;
+        if (name == null || name.isEmpty()) {
+            String groupStr = ScriptConstants.FUNCGROUPS[idx / 0x1000];
+            return groupStr + '.' + getHexIndex();
+        }
+        return super.toString();
     }
 
     public String callB5(List<StackObject> params) {
         int len = params.size();
         if (len != (inputs == null ? 0 : inputs.size())) {
-            return "ERROR, func " + name + " called with " + len + " params but needs " + (inputs == null ? 0 : inputs.size()) + "!";
+            return "ERROR, func " + this + " called with " + len + " params but needs " + (inputs == null ? 0 : inputs.size()) + "!";
+        }
+        String groupStr = ScriptConstants.FUNCGROUPS[idx / 0x1000];
+        StringBuilder str = new StringBuilder();
+        if (SHOW_FULL_TAG) {
+            str.append(groupStr).append('.').append(name == null ? "?" : name).append(getHexSuffix().substring(1));
+        } else {
+            str.append(this);
         }
         if (inputs == null) {
-            return name;
+            return str.toString();
         }
-        StringBuilder str = new StringBuilder(name);
         str.append('(');
         if (len == 0) {
             return str.toString() + ')';
@@ -85,7 +98,7 @@ public class ScriptFunc extends ScriptField {
         for (int i = 0; i < len; i++) {
             StackObject obj = params.get(i);
             StackObject typed = obj.expression ? obj : new StackObject(inputs.get(i).type, false, obj.content, obj.value);
-            str.append(inputs.get(i)).append('=').append(typed).append(", ");
+            str.append(inputs.get(i).name).append('=').append(typed).append(", ");
         }
         return str.substring(0, str.length() - 2) + ')';
     }

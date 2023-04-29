@@ -223,6 +223,8 @@ public class MonsterAiObject {
             stack.push(new StackObject("bool", true, "not " + p1, 0x19));
         } else if (opcode == 0x1A) {
             stack.push(new StackObject("unknown", true, "OPUMINUS", 0x1A));
+        } else if (opcode == 0x1C) {
+            stack.push(new StackObject(p1.type, true, "bitNot " + p1, 0x1C));
         } else if (opcode == 0x25) {
             lastCallType = p1.type;
             textAiString.append("call ").append(p1).append(";\n");

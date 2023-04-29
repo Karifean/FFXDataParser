@@ -1,6 +1,7 @@
 import java.util.*;
 
 public abstract class ScriptConstants {
+    public static String[] FUNCGROUPS;
     public static int[] OPCODE_ARGC;
     public static int[] OPCODE_STACKPOPS;
     public static List<Integer> OPCODE_ENDLINE;
@@ -16,6 +17,25 @@ public abstract class ScriptConstants {
     public static Map<Integer, ScriptField> MOVE_PROPERTIES;
 
     public static void initialize() {
+        if (FUNCGROUPS == null) {
+            FUNCGROUPS = new String[0x10];
+            FUNCGROUPS[0x0] = "Common";
+            FUNCGROUPS[0x1] = "Math";
+            FUNCGROUPS[0x2] = "Unknown2";
+            FUNCGROUPS[0x3] = "Unknown3";
+            FUNCGROUPS[0x4] = "SgEvent";
+            FUNCGROUPS[0x5] = "ChEvent";
+            FUNCGROUPS[0x6] = "Camera";
+            FUNCGROUPS[0x7] = "Battle";
+            FUNCGROUPS[0x8] = "Map";
+            FUNCGROUPS[0x9] = "Mount";
+            FUNCGROUPS[0xA] = "UnknownA";
+            FUNCGROUPS[0xB] = "Movie";
+            FUNCGROUPS[0xC] = "Debug";
+            FUNCGROUPS[0xD] = "AbilityMap";
+            FUNCGROUPS[0xE] = "UnknownE";
+            FUNCGROUPS[0xF] = "UnknownF";
+        }
         if (OPCODE_ARGC == null) {
             OPCODE_ARGC = new int[0x100];
         }
@@ -58,6 +78,7 @@ public abstract class ScriptConstants {
                 OPCODE_STACKPOPS[i] = 2;
             }
             OPCODE_STACKPOPS[0x19] = 1;
+            OPCODE_STACKPOPS[0x1C] = 1;
             OPCODE_STACKPOPS[0x25] = 1;
             OPCODE_STACKPOPS[0x26] = 0;
             OPCODE_STACKPOPS[0x27] = 0;
@@ -161,6 +182,7 @@ public abstract class ScriptConstants {
             MUSIC_FILE_NAMES.put(0x000C, "Boss Theme");
             MUSIC_FILE_NAMES.put(0x000D, "The Summoning");
             MUSIC_FILE_NAMES.put(0x000E, "Macalania Woods");
+            MUSIC_FILE_NAMES.put(0x001B, "Blitz Off!");
             MUSIC_FILE_NAMES.put(0x0082, "To Zanarkand");
             MUSIC_FILE_NAMES.put(0x0091, "Challenge?");
         }
@@ -427,11 +449,15 @@ public abstract class ScriptConstants {
         }
     }
 
-    private static void putActorProperty(int hex, String name, String type) {
-        ACTOR_PROPERTIES.put(hex, new ScriptField(name, type));
+    private static void putActorProperty(int idx, String name, String type) {
+        ScriptField field = new ScriptField(name, type);
+        field.idx = idx;
+        ACTOR_PROPERTIES.put(idx, field);
     }
 
-    private static void putMoveProperty(int hex, String name, String type) {
-        MOVE_PROPERTIES.put(hex, new ScriptField(name, type));
+    private static void putMoveProperty(int idx, String name, String type) {
+        ScriptField field = new ScriptField(name, type);
+        field.idx = idx;
+        MOVE_PROPERTIES.put(idx, field);
     }
 }

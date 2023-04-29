@@ -42,13 +42,13 @@ public class StackObject {
                 }
             } else if ("actorProperty".equals(type)) {
                 if (ScriptConstants.ACTOR_PROPERTIES.containsKey(value)) {
-                    return ScriptConstants.ACTOR_PROPERTIES.get(value).name;
+                    return ScriptConstants.ACTOR_PROPERTIES.get(value).toString();
                 } else {
                     return "ActorProp:" + hex4;
                 }
             } else if ("moveProperty".equals(type)) {
                 if (ScriptConstants.MOVE_PROPERTIES.containsKey(value)) {
-                    return ScriptConstants.MOVE_PROPERTIES.get(value).name;
+                    return ScriptConstants.MOVE_PROPERTIES.get(value).toString();
                 } else {
                     return "MoveProp:" + hex;
                 }
