@@ -345,7 +345,7 @@ public class MonsterAiObject {
         int idx = opcode + group * 256;
         ScriptFunc func = ScriptFuncLib.get(idx, params);
         if (func == null) {
-            func = new ScriptFunc("Unknown:" + String.format("%04x", idx), "unknown", false);
+            func = new ScriptFunc("Unknown:" + String.format("%04x", idx), "unknown", null, false);
         } else if (func.inputs != null) {
             for (int i = 0; i < func.inputs.size(); i++) {
                 typed(params.get(i), func.inputs.get(i).type);
@@ -378,7 +378,7 @@ public class MonsterAiObject {
         int idx = opcode + group * 256;
         ScriptFunc func = ScriptFuncLib.get(idx, params);
         if (func == null) {
-            func = new ScriptFunc("Unknown." + String.format("%04x", idx), "unknown", false);
+            func = new ScriptFunc("Unknown." + String.format("%04x", idx), "unknown", null, false);
         } else if (func.inputs != null) {
             for (int i = 0; i < func.inputs.size(); i++) {
                 typed(params.get(i), func.inputs.get(i).type);

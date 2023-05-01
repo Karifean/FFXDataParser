@@ -16,8 +16,8 @@ public class ScriptFuncAccessor extends ScriptFunc {
     private int valueParamIndex;
     private int extraParams;
 
-    public ScriptFuncAccessor(String name, String subjectType, String write, ScriptField predicate, ScriptField... extras) {
-        super(name, "accessor", true);
+    public ScriptFuncAccessor(String name, String subjectType, String internalName, String write, ScriptField predicate, ScriptField... extras) {
+        super(name, "accessor", internalName, true);
         setInputs(subjectType, write != null, false, extras);
         this.subjectType = subjectType;
         this.predicateType = predicate.type;
@@ -26,8 +26,8 @@ public class ScriptFuncAccessor extends ScriptFunc {
         this.fixedPredicate = predicate;
     }
 
-    public ScriptFuncAccessor(String name, String subjectType, String write, Map<Integer, ScriptField> accessMap, String predicateType, ScriptField... extras) {
-        super(name, "accessor", true);
+    public ScriptFuncAccessor(String name, String subjectType, String internalName, String write, Map<Integer, ScriptField> accessMap, String predicateType, ScriptField... extras) {
+        super(name, "accessor", internalName, true);
         setInputs(subjectType, write != null, true, extras);
         this.subjectType = subjectType;
         this.predicateType = predicateType;

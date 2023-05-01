@@ -73,15 +73,45 @@ public class StackObject {
                     return "Selector?" + hexSuffix;
                 }
             } else if ("ambushState".equals(type)) {
-                if (value == 2) {
+                if (value == 0) {
+                    return "Randomized" + hexSuffix;
+                } else if (value == 1) {
+                    return "Preemptive" + hexSuffix;
+                } else if (value == 2) {
                     return "Ambush" + hexSuffix;
+                } else if (value == 3) {
+                    return "Normal" + hexSuffix;
                 } else {
                     return "AmbushState?" + hexSuffix;
+                }
+            } else if ("yojimboResponse".equals(type)) {
+                if (value == 0) {
+                    return "Null" + hexSuffix;
+                } else if (value == 1) {
+                    return "Normal" + hexSuffix;
+                } else if (value == 2) {
+                    return "Nod" + hexSuffix;
+                } else if (value == 3) {
+                    return "Headshake" + hexSuffix;
+                } else {
+                    return "YojimboResponse?" + hexSuffix;
                 }
             } else if ("damageType".equals(type)) {
                 return (value == 1 ? "Physic" : (value == 2 ? "Magic" : "Speci")) + "alDmg" + hexSuffix;
             } else if ("damageFormula".equals(type)) {
                 return "F" + value + " " + ScriptConstants.DAMAGE_FORMULAE.get(value) + hexSuffix;
+            } else if ("targetType".equals(type)) {
+                if (value == 0) {
+                    return "Single" + hexSuffix;
+                } else if (value == 1) {
+                    return "Multi" + hexSuffix;
+                } else if (value == 2) {
+                    return "AllActors?" + hexSuffix;
+                } else if (value == 3) {
+                    return "Self" + hexSuffix;
+                } else {
+                    return "TargetType?" + hexSuffix;
+                }
             } else if ("move".equals(type)) {
                 if (value == 0) {
                     return "Null Move" + hexSuffix;

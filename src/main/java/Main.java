@@ -1,8 +1,5 @@
 import java.io.*;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.*;
-import java.util.stream.Collectors;
 
 public class Main {
 
@@ -20,13 +17,15 @@ public class Main {
     public static final Map<Integer, Character> BIN_LOOKUP = new HashMap<>();
     public static final Map<Character, Integer> BIN_REV_LOOKUP = new HashMap<>();
     private static final String PREFIX = "src/main/resources/";
-    private static final String KERNEL_PATH_MODDED = PREFIX + "ffx/attacks/";
-    private static final String KERNEL_PATH_REGULAR = PREFIX + "ffx/new_uspc/battle/kernel/";
-    private static final String KERNEL_PATH = KERNEL_PATH_REGULAR;
-    private static final String SKILL_TABLE_A_PATH = KERNEL_PATH + "command.bin"; // "FILE07723.dat"; // "command.bin"; //
-    private static final String SKILL_TABLE_B_PATH = KERNEL_PATH + "monmagic1.bin"; // "FILE07740.dat"; // "monmagic1.bin"; //
-    private static final String SKILL_TABLE_C_PATH = KERNEL_PATH + "monmagic2.bin"; // "FILE07741.dat"; // "monmagic2.bin"; //
-    private static final String SKILL_TABLE_D_PATH = KERNEL_PATH + "item.bin"; // "FILE07734.dat"; // "item.bin"; //
+    private static final String PATH_FFX_ROOT = PREFIX + "ffx_ps2/ffx/master/";
+    private static final String ORIGINALS_KERNEL_PATH_REGULAR = PATH_FFX_ROOT + "jppc/battle/kernel/";
+    private static final String LOCALIZED_KERNEL_PATH_REGULAR = PATH_FFX_ROOT + "new_uspc/battle/kernel/";
+    private static final String LOCALIZED_KERNEL_PATH_MODDED = PREFIX + "ffx/attacks/";
+    private static final String LOCALIZED_KERNEL_PATH = LOCALIZED_KERNEL_PATH_REGULAR;
+    private static final String SKILL_TABLE_A_PATH = LOCALIZED_KERNEL_PATH + "command.bin"; // "FILE07723.dat"; // "command.bin"; //
+    private static final String SKILL_TABLE_B_PATH = LOCALIZED_KERNEL_PATH + "monmagic1.bin"; // "FILE07740.dat"; // "monmagic1.bin"; //
+    private static final String SKILL_TABLE_C_PATH = LOCALIZED_KERNEL_PATH + "monmagic2.bin"; // "FILE07741.dat"; // "monmagic2.bin"; //
+    private static final String SKILL_TABLE_D_PATH = LOCALIZED_KERNEL_PATH + "item.bin"; // "FILE07734.dat"; // "item.bin"; //
     private static final Map<String, Set<String>> ABILITY_USERS = new HashMap<>();
     private static final Map<String, AbilityDataObject[]> FILE_ABILITIES_CACHE = new HashMap<>();
     private static final Map<String, AbilityDataObject> ABILITY_CACHE = new HashMap<>();
@@ -76,7 +75,7 @@ public class Main {
                 }
                 break;
             case MODE_READ_ITEM_PICKUPS:
-                GearDataObject[] gear = readWeaponPickups(PREFIX + "ffx/battle/kernel/buki_get.bin", false);
+                GearDataObject[] gear = readWeaponPickups(ORIGINALS_KERNEL_PATH_REGULAR + "buki_get.bin", false);
                 for (String filename : realArgs) {
                     readItemPickups(PREFIX + filename, gear);
                 }
