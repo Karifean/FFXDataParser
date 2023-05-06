@@ -1,3 +1,5 @@
+package script.model;
+
 import java.util.*;
 
 public abstract class ScriptConstants {
@@ -5,7 +7,8 @@ public abstract class ScriptConstants {
     public static int[] OPCODE_ARGC;
     public static int[] OPCODE_STACKPOPS;
     public static List<Integer> OPCODE_ENDLINE;
-    public static Map<Integer, String> COMP_OPERATORS;
+    public static Map<String, Map<Integer, ScriptField>> ENUMERATIONS = new HashMap<>();
+    public static Map<Integer, ScriptField> COMP_OPERATORS;
     public static Map<Integer, String> DAMAGE_FORMULAE;
     public static Map<Integer, String> DEATH_ANIMATIONS;
     public static Map<Integer, String> CONTROLLER_BUTTONS;
@@ -132,30 +135,30 @@ public abstract class ScriptConstants {
         }
         if (COMP_OPERATORS == null) {
             COMP_OPERATORS = new HashMap<>();
-            COMP_OPERATORS.put(0x01, "or");
-            COMP_OPERATORS.put(0x02, "and");
-            COMP_OPERATORS.put(0x03, "bitOr");
-            COMP_OPERATORS.put(0x04, "bitXor");
-            COMP_OPERATORS.put(0x05, "bitAnd");
-            COMP_OPERATORS.put(0x06, "==");
-            COMP_OPERATORS.put(0x07, "!=");
-            COMP_OPERATORS.put(0x08, "> (unsigned)");
-            COMP_OPERATORS.put(0x09, "< (unsigned");
-            COMP_OPERATORS.put(0x0A, ">");
-            COMP_OPERATORS.put(0x0B, "<");
-            COMP_OPERATORS.put(0x0C, ">= (unsigned)");
-            COMP_OPERATORS.put(0x0D, "<= (unsigned)");
-            COMP_OPERATORS.put(0x0E, ">=");
-            COMP_OPERATORS.put(0x0F, "<=");
-            COMP_OPERATORS.put(0x10, "OP-B-ON");
-            COMP_OPERATORS.put(0x11, "OP-B-OFF");
-            COMP_OPERATORS.put(0x12, "<<");
-            COMP_OPERATORS.put(0x13, ">>");
-            COMP_OPERATORS.put(0x14, "+");
-            COMP_OPERATORS.put(0x15, "-");
-            COMP_OPERATORS.put(0x16, "*");
-            COMP_OPERATORS.put(0x17, "/");
-            COMP_OPERATORS.put(0x18, "mod");
+            putCompOperator(0x01, "or", "bool", "OPLOR");
+            putCompOperator(0x02, "and", "bool", "OPLAND");
+            putCompOperator(0x03, "bitOr", "int", "OPOR");
+            putCompOperator(0x04, "bitXor", "int", "OPEOR");
+            putCompOperator(0x05, "bitAnd", "int", "OPAND");
+            putCompOperator(0x06, "==", "bool", "OPEQ");
+            putCompOperator(0x07, "!=", "bool", "OPNE");
+            putCompOperator(0x08, "> (unsigned)", "bool", "OPGTU");
+            putCompOperator(0x09, "< (unsigned)", "bool", "OPLSU");
+            putCompOperator(0x0A, ">", "bool", "OPGT");
+            putCompOperator(0x0B, "<", "bool", "OPLS");
+            putCompOperator(0x0C, ">= (unsigned)", "bool", "OPGTEU");
+            putCompOperator(0x0D, "<= (unsigned)", "bool", "OPLSEU");
+            putCompOperator(0x0E, ">=", "bool", "OPGTE");
+            putCompOperator(0x0F, "<=", "bool", "OPLSE");
+            putCompOperator(0x10, "OP-B-ON", "unknown", "OPBON");
+            putCompOperator(0x11, "OP-B-OFF", "unknown", "OPBOFF");
+            putCompOperator(0x12, "<<", "int", "OPSLL");
+            putCompOperator(0x13, ">>", "int", "OPSRL");
+            putCompOperator(0x14, "+", "int", "OPADD");
+            putCompOperator(0x15, "-", "int", "OPSUB");
+            putCompOperator(0x16, "*", "int", "OPMUL");
+            putCompOperator(0x17, "/", "int", "OPDIV");
+            putCompOperator(0x18, "mod", "int", "OPMOD");
         }
         if (DEATH_ANIMATIONS == null) {
             DEATH_ANIMATIONS = new HashMap<>();
@@ -527,7 +530,7 @@ public abstract class ScriptConstants {
             putActorProperty(0x00FD, null, "unknown", "stat_own_attack_near");
             putActorProperty(0x00FE, null, "unknown", "stat_talk_stat3");
             putActorProperty(0x00FF, null, "unknown", "stat_command_set");
-            putActorProperty(0x0100, "?ForcedAction", "move", "stat_prov_command_flag");
+            putActorProperty(0x0100, "?RetainsControlWhenProvoked", "bool", "stat_prov_command_flag");
             putActorProperty(0x0101, "ProvokerActor", "actor", "stat_prov_chr");
             putActorProperty(0x0102, null, "bool", "stat_use_mp0");
             putActorProperty(0x0103, "?CTBIcon", "int", "stat_icon_number");
@@ -625,6 +628,21 @@ public abstract class ScriptConstants {
             putMoveProperty(0x0009, "elementFire", "bool");
             putMoveProperty(0x000A, "targetType", "targetType");
         }
+    }
+
+    private static void putEnum(String type, int idx, String name, String internalName) {
+        if (!ENUMERATIONS.containsKey(type)) {
+            ENUMERATIONS.put(type, new HashMap<>());
+        }
+        ScriptField field = new ScriptField(name, type, internalName);
+        field.idx = idx;
+        ENUMERATIONS.get(type).put(idx, field);
+    }
+
+    private static void putCompOperator(int idx, String name, String type, String internalName) {
+        ScriptField field = new ScriptField(name, type, internalName);
+        field.idx = idx;
+        COMP_OPERATORS.put(idx, field);
     }
 
     private static void putActorProperty(int idx, String name, String type, String internalName) {

@@ -1,117 +1,122 @@
-import java.io.*;
+package script;
+
+import script.model.*;
+
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class MonsterAiObject {
-    File file;
-    DataInputStream data;
-    MonsterDataObject monsterData;
+public class ScriptObject {
+    protected int[] bytes;
+    protected int[] actualScriptCodeBytes;
+    protected int byteCursor = 0;
+    protected int[] refFloats;
+    protected int[] refInts;
+    protected int scriptCodeStartAddress;
+    public StringBuilder hexAiString = new StringBuilder();
+    public StringBuilder textAiString = new StringBuilder();
     Stack<StackObject> stack = new Stack<>();
-    StringBuilder hexAiString = new StringBuilder();
-    StringBuilder textAiString = new StringBuilder();
-    StringBuilder monsterText = new StringBuilder();
     Map<Integer, String> lastTempTypes = new HashMap<>();
     Map<Integer, String> varTypes = new HashMap<>();
     Map<Integer, List<StackObject>> varEnums = new HashMap<>();
     Map<Integer, StackObject> constants = new HashMap<>();
     String lastCallType = "unknown";
     boolean gatheringInfo = true;
-    boolean isMonsterFile;
-    int byteCursor = 0;
     int firstEarlierJump;
-    int[] aiBytes;
-    int[] statBytes = new int[0x8C];
-    int[] spoilsBytes;
     List<Integer> jumpDestinations = new ArrayList<>();
     Map<Integer, List<Integer>> reverseJumpDestinations = new HashMap<>();
 
-    public MonsterAiObject(File file, boolean isMonsterFile) {
-        this.file = file;
-        this.isMonsterFile = isMonsterFile;
+    public ScriptObject(int[] bytes) {
+        this.bytes = bytes;
         prepare();
     }
 
-    private void newDataStream() throws FileNotFoundException {
-        data = new DataInputStream(new BufferedInputStream(new FileInputStream(file)));
-    }
-
-    public void run() throws IOException {
-        newDataStream();
-        int absoluteBeginAddress = read4Bytes();
-        int addressListLength = read4Bytes();
-        data.mark(addressListLength);
-        int unknownChunkAddress = read4Bytes();
-        int valuesBeginAddress = read4Bytes();
-        int nullAddress1 = read4Bytes();
-        int spoilsBeginAddress = read4Bytes();
-        int spoilsEndAddress = read4Bytes();
-        int textPartAddress = read4Bytes();
-        int totalFileBytes = read4Bytes();
-        data.reset();
-        data.skipNBytes(addressListLength - 8);
-        data.mark(52);
+    public void run() {
+        byteCursor = 0;
         int scriptLength = read4Bytes();
+        // System.out.println("Script Length: " + scriptLength);
         int nullAddress2 = read4Bytes();
         int creatorTagAddress = read4Bytes();
         int numberPartAddress = read4Bytes();
         int jumpsEndAddress = read4Bytes();
-        data.skipBytes(20);
+        skipBytes(0x14);
         int jumpsStartAddress = read4Bytes();
-        data.skipBytes(4);
-        int scriptStartAddress = read4Bytes();
-        data.reset();
-        data.mark(scriptStartAddress + scriptLength);
-        data.skipBytes(scriptStartAddress);
-        aiBytes = new int[scriptLength];
-        for (int i = 0; i < scriptLength; i++) {
-            aiBytes[i] = data.read();
+        int weirdRandomFlagsAddress = read4Bytes();
+        scriptCodeStartAddress = read4Bytes();
+        int numberOfScripts = read2Bytes();
+        int numberOfScripts2 = read2Bytes();
+        // System.out.println("Number of Scripts: " + numberOfScripts + " / " + numberOfScripts2);
+        int[] scriptHeaderOffsets = new int[numberOfScripts];
+        for (int i = 0; i < numberOfScripts; i++) {
+            scriptHeaderOffsets[i] = read4Bytes();
         }
-        data.reset();
-        data.mark(jumpsEndAddress);
-        data.skipNBytes(jumpsStartAddress);
+        List<ScriptHeader> headers = Arrays.stream(scriptHeaderOffsets).mapToObj(headerStart -> {
+            byteCursor = headerStart;
+            // int[] headerBytes = null; Arrays.copyOfRange(bytes, byteCursor, byteCursor + 0x34);
+            return parseScriptHeader();
+        }).collect(Collectors.toList());
+        parseReferenceFloatsAndInts(headers);
+        byteCursor = jumpsStartAddress;
         parseJumps((jumpsEndAddress - jumpsStartAddress) / 4);
-        parseAiLinear(scriptLength);
+        int scriptCodeEndAddress = scriptCodeStartAddress + scriptLength;
+        actualScriptCodeBytes = Arrays.copyOfRange(bytes, scriptCodeStartAddress, scriptCodeEndAddress);
+        parseScriptCode(scriptCodeEndAddress);
         if (!stack.empty()) {
             System.err.println("Stack not empty: " + stack.size() + " els: " + stack.stream().map(StackObject::toString).collect(Collectors.joining("::")));
         }
         inferEnums();
         gatheringInfo = false;
-        parseAiLinear(scriptLength);
-        if (isMonsterFile) {
-            newDataStream();
-            data.mark(valuesBeginAddress + 0x8C);
-            data.skipNBytes(valuesBeginAddress);
-            for (int i = 0; i < 0x8C; i++) {
-                statBytes[i] = data.read();
+        parseScriptCode(scriptCodeEndAddress);
+    }
+
+    private ScriptHeader parseScriptHeader() {
+        ScriptHeader header = new ScriptHeader();
+        header.count1 = read2Bytes();
+        header.someRefsCount = read2Bytes();
+        header.refIntCount = read2Bytes();
+        header.refFloatCount = read2Bytes();
+        header.entryPointCount = read2Bytes();
+        header.maybeJumpCount = read2Bytes();
+        header.alwaysZero1 = read4Bytes();
+        header.alwaysZero2 = read4Bytes();
+        header.someRefsOffset = read4Bytes();
+        header.intTableOffset = read4Bytes();
+        header.floatTableOffset = read4Bytes();
+        header.scriptEntryPointsOffset = read4Bytes();
+        header.jumpsOffset = read4Bytes();
+        header.alwaysZero3 = read4Bytes();
+        header.alwaysZero4 = read4Bytes();
+        header.weirdoOffset = read4Bytes();
+        return header;
+    }
+
+    private void parseReferenceFloatsAndInts(List<ScriptHeader> headers) {
+        int lastRefIntTableOffset = -1;
+        int lastRefFloatTableOffset = -1;
+        for (ScriptHeader h : headers) {
+            if (lastRefFloatTableOffset < 0) {
+                lastRefFloatTableOffset = h.floatTableOffset;
+                byteCursor = h.floatTableOffset;
+                refFloats = new int[h.refFloatCount];
+                for (int i = 0; i < h.refFloatCount; i++) {
+                    refFloats[i] = read4Bytes();
+                }
+            } else if (h.floatTableOffset != lastRefFloatTableOffset) {
+                System.err.println("WARNING, float table mismatch!");
             }
-            data.reset();
-            data.mark(spoilsEndAddress);
-            data.skipNBytes(spoilsBeginAddress);
-            int spoilsLength = spoilsEndAddress - spoilsBeginAddress;
-            spoilsBytes = new int[spoilsLength];
-            for (int i = 0; i < spoilsLength; i++) {
-                spoilsBytes[i] = data.read();
+            if (lastRefIntTableOffset < 0) {
+                lastRefIntTableOffset = h.intTableOffset;
+                byteCursor = h.intTableOffset;
+                refInts = new int[h.refIntCount];
+                for (int i = 0; i < h.refIntCount; i++) {
+                    refInts[i] = read4Bytes();
+                }
+            } else if (h.intTableOffset != lastRefIntTableOffset) {
+                System.err.println("WARNING, int table mismatch!");
             }
-            monsterData = new MonsterDataObject(statBytes, spoilsBytes);
-            data.reset();
-            data.skipNBytes(textPartAddress);
-            int nameOffset = read2Bytes();
-            data.skipNBytes(2);
-            int sensorOffset = read2Bytes();
-            data.skipNBytes(2);
-            int sensorDashOffset = read2Bytes();
-            data.skipNBytes(2);
-            int scanOffset = read2Bytes();
-            data.skipNBytes(2);
-            int scanDashOffset = read2Bytes();
-            data.skipNBytes(0x6E);
-            List<Integer> offsets = List.of(nameOffset, sensorOffset, sensorDashOffset, scanOffset, scanDashOffset);
-            List<String> strings = Main.readStringsAtOffsets(5, offsets, data, false, null);
-            strings.forEach(s -> monsterText.append(s).append('\n'));
         }
     }
 
-    private void parseJumps(int amount) throws IOException {
+    private void parseJumps(int amount) {
         firstEarlierJump = -1;
         int lastJump = -1;
         int thisJump;
@@ -132,34 +137,24 @@ public class MonsterAiObject {
         }
     }
 
-    private void parseAiLinear(int scriptLength) {
-        byteCursor = 0;
+    protected void parseScriptCode(int scriptEnd) {
+        byteCursor = scriptCodeStartAddress;
         hexAiString = new StringBuilder();
         textAiString = new StringBuilder();
-        int opcode = 0;
-        while (opcode != 0xFF && byteCursor < scriptLength) {
+        int opcode;
+        while (byteCursor < scriptEnd) {
             opcode = nextAiByte();
             int arg1 = 0;
             int arg2 = 0;
-            int arg3 = 0;
             switch (getArgc(opcode)) {
-                case 3:
-                    arg1 = nextAiByte();
-                    arg2 = nextAiByte();
-                    arg3 = nextAiByte();
-                    break;
                 case 2:
                     arg1 = nextAiByte();
                     arg2 = nextAiByte();
-                    break;
-                case 1:
-                    arg1 = nextAiByte();
-                    break;
                 case 0:
                 default:
                     break;
             }
-            process(opcode, arg1, arg2, arg3);
+            process(opcode, arg1, arg2);
             if (getLineEnd(opcode)) {
                 if (!stack.empty()) {
                     hexAiString.append(" STACK NOT EMPTY: ").append(stack);
@@ -172,32 +167,32 @@ public class MonsterAiObject {
         }
     }
 
-    private int nextAiByte() {
-        if (reverseJumpDestinations.containsKey(byteCursor) && (hexAiString.isEmpty() || hexAiString.charAt(hexAiString.length() - 1) == '\n')) {
-            String jumpLabels = reverseJumpDestinations.get(byteCursor).stream().map(j -> getJLabel(j)).collect(Collectors.joining(",")) + ":\n";
+    protected int nextAiByte() {
+        int scriptCodeByteCursor = byteCursor - scriptCodeStartAddress;
+        if (reverseJumpDestinations.containsKey(scriptCodeByteCursor) && (hexAiString.isEmpty() || hexAiString.charAt(hexAiString.length() - 1) == '\n')) {
+            String jumpLabels = reverseJumpDestinations.get(scriptCodeByteCursor).stream().map(j -> getJLabel(j)).collect(Collectors.joining(",")) + ":\n";
             textAiString.append(jumpLabels);
             hexAiString.append(jumpLabels);
         }
-        int rd = aiBytes[byteCursor];
-        byteCursor++;
+        int rd = readByte();
         hexAiString.append(String.format("%02x", rd));
         return rd;
     }
 
-    private void process(int opcode, int arg1, int arg2, int arg3) {
-        int argv = arg1 + arg2 * 256 + arg3 * 65536;
+    protected void process(int opcode, int arg1, int arg2) {
+        int argv = arg1 + arg2 * 0x100;
         int argvSigned = argv < 0x8000 ? argv : (argv - 0x10000);
         String argvsd = ""+argvSigned;
-        String argvsh = String.format(arg3 > 0 ? "%06x" : (arg2 > 0 ? "%04x" : "%02x"), argv).toUpperCase();
+        String argvsh = String.format(arg2 > 0 ? "%04x" : "%02x", argv).toUpperCase();
         StackObject p1 = null, p2 = null, p3 = null, p4 = null, p5 = null, p6 = null, p7 = null, p8 = null;
         try {
             switch (getStackPops(opcode)) {
-            case 8: p8 = stack.pop();
-            case 7: p7 = stack.pop();
-            case 6: p6 = stack.pop();
-            case 5: p5 = stack.pop();
-            case 4: p4 = stack.pop();
-            case 3: p3 = stack.pop();
+                case 8: p8 = stack.pop();
+                case 7: p7 = stack.pop();
+                case 6: p6 = stack.pop();
+                case 5: p5 = stack.pop();
+                case 4: p4 = stack.pop();
+                case 3: p3 = stack.pop();
                 case 2:
                     p2 = stack.pop();
                 case 1:
@@ -211,14 +206,14 @@ public class MonsterAiObject {
             return;
         }
         if (opcode >= 0x01 && opcode <= 0x18) {
-            String op = ScriptConstants.COMP_OPERATORS.get(opcode);
-            String type = opcode <= 0x0F ? "bool" : (p1.type.equals(p2.type) ? p1.type : (p1.type+"/"+p2.type));
+            ScriptField op = ScriptConstants.COMP_OPERATORS.get(opcode);
+            String resultType = op.type;
             String asType = p1.type;
             if ("var".equals(asType)) {
                 asType = varTypes.containsKey(p1.value) ? varTypes.get(p1.value) : p2.type;
             }
-            String content = "(" + p1 + " " + op + " " + typed(p2, asType) + ")";
-            stack.push(new StackObject(type, true, content, opcode));
+            String content = "(" + p1 + " " + op.name + " " + typed(p2, asType) + ")";
+            stack.push(new StackObject(resultType, true, content, opcode));
         } else if (opcode == 0x19) {
             stack.push(new StackObject("bool", true, "not " + p1, 0x19));
         } else if (opcode == 0x1A) {
@@ -233,7 +228,7 @@ public class MonsterAiObject {
         } else if (opcode == 0x28) {
             stack.push(new StackObject("unknown", true, "rX", 0x28));
         } else if (opcode == 0x29) {
-            stack.push(new StackObject("case", true, "case", 0x29));
+            stack.push(new StackObject("unknown", true, "case", 0x29));
         } else if (opcode == 0x2A) {
             textAiString.append("Set rX = ").append(p1).append('\n');
         } else if (opcode == 0x2B) {
@@ -248,7 +243,7 @@ public class MonsterAiObject {
             if (opcode == 0x37) {
                 type += "Sync";
             } else if (opcode == 0x38) {
-               type += "Async";
+                type += "Async";
             }
             String content = "(" + p1 + ", " + p2 + ", " + p3 + ")";
             stack.push(new StackObject(type, true, type + content, opcode));
@@ -299,11 +294,13 @@ public class MonsterAiObject {
             String arrayIndex = '[' + String.format("%04x", p1.value) + ']';
             stack.push(new StackObject("int", true, "ArrayPointer:var"+argvsh+arrayIndex, argv));
         } else if (opcode == 0xAD) {
-            stack.push(new StackObject("int", true, "refI:" + argvsd + " [" + argvsh + "h]", argv));
+            int refInt = refInts[argv];
+            stack.push(new StackObject("int", false, "rI[" + argvsh + "h]:" + refInt + " [" + String.format("%08x", refInt).toUpperCase() + "h]", refInt));
         } else if (opcode == 0xAE) {
             stack.push(new StackObject("int", false, argvsd + " [" + argvsh + "h]", argv));
         } else if (opcode == 0xAF) {
-            stack.push(new StackObject("float", true, "refF:" + argvsd + " [" + argvsh + "h]", argv));
+            int refFloat = refFloats[argv];
+            stack.push(new StackObject("float", false, "rF[" + argvsh + "h]:" + Float.intBitsToFloat(refFloat), refFloat));
         } else if (opcode == 0xB5) {
             processB5(arg1, arg2);
         } else if (opcode == 0xD6) {
@@ -321,10 +318,11 @@ public class MonsterAiObject {
         }
     }
 
-    private void processB5(int opcode, int group) {
+    protected List<StackObject> popParamsForFunc(int idx) {
         List<StackObject> params = new ArrayList<>();
         try {
-            switch (getFunctionParamCount(opcode, group)) {
+            int functionParamCount = getFunctionParamCount(idx);
+            switch (functionParamCount) {
                 case 9: params.add(0, stack.pop());
                 case 8: params.add(0, stack.pop());
                 case 7: params.add(0, stack.pop());
@@ -339,10 +337,12 @@ public class MonsterAiObject {
                     break;
             }
         } catch (EmptyStackException e) {
-            hexAiString.append("\nEmpty stack at byteCursor ").append(byteCursor).append(" for B5 opcode ").append(String.format("%02x", opcode)).append(" group ").append(String.format("%02x", group)).append('\n');
-            return;
+            hexAiString.append("\nEmpty stack at byteCursor ").append(byteCursor).append(" for func ").append(String.format("%04x", idx)).append('\n');
         }
-        int idx = opcode + group * 256;
+        return params;
+    }
+
+    protected ScriptFunc getAndTypeFuncCall(int idx, List<StackObject> params) {
         ScriptFunc func = ScriptFuncLib.get(idx, params);
         if (func == null) {
             func = new ScriptFunc("Unknown:" + String.format("%04x", idx), "unknown", null, false);
@@ -351,44 +351,25 @@ public class MonsterAiObject {
                 typed(params.get(i), func.inputs.get(i).type);
             }
         }
+        return func;
+    }
+
+    protected void processB5(int opcode, int group) {
+        int idx = opcode + group * 0x100;
+        List<StackObject> params = popParamsForFunc(idx);
+        ScriptFunc func = getAndTypeFuncCall(idx, params);
         stack.push(new StackObject(func.getType(params), true, func.callB5(params), idx));
     }
 
-    private void processD8(int opcode, int group) {
-        List<StackObject> params = new ArrayList<>();
-        try {
-            switch (getFunctionParamCount(opcode, group)) {
-                case 9: params.add(0, stack.pop());
-                case 8: params.add(0, stack.pop());
-                case 7: params.add(0, stack.pop());
-                case 6: params.add(0, stack.pop());
-                case 5: params.add(0, stack.pop());
-                case 4: params.add(0, stack.pop());
-                case 3: params.add(0, stack.pop());
-                case 2: params.add(0, stack.pop());
-                case 1: params.add(0, stack.pop());
-                case 0:
-                default:
-                    break;
-            }
-        } catch (EmptyStackException e) {
-            hexAiString.append("\nEmpty stack at byteCursor ").append(byteCursor).append(" for D8 opcode ").append(String.format("%02x", opcode)).append(" group ").append(String.format("%02x", group)).append('\n');
-            return;
-        }
-        int idx = opcode + group * 256;
-        ScriptFunc func = ScriptFuncLib.get(idx, params);
-        if (func == null) {
-            func = new ScriptFunc("Unknown." + String.format("%04x", idx), "unknown", null, false);
-        } else if (func.inputs != null) {
-            for (int i = 0; i < func.inputs.size(); i++) {
-                typed(params.get(i), func.inputs.get(i).type);
-            }
-        }
+    protected void processD8(int opcode, int group) {
+        int idx = opcode + group * 0x100;
+        List<StackObject> params = popParamsForFunc(idx);
+        ScriptFunc func = getAndTypeFuncCall(idx, params);
         lastCallType = func.getType(params);
         textAiString.append(func.callD8(params)).append(";\n");
     }
 
-    private void addVarType(int var, String type) {
+    protected void addVarType(int var, String type) {
         if (!gatheringInfo) {
             return;
         }
@@ -402,59 +383,18 @@ public class MonsterAiObject {
         }
     }
 
-    private static boolean isWeakType(String type) {
-        return type == null || "int".equals(type) || "unknown".equals(type);
+    protected static boolean isWeakType(String type) {
+        return type == null || "int".equals(type) || "unknown".equals(type) || type.isBlank();
     }
 
-    private int[] skipUntil(int[] untilA, int[] untilB) throws IOException {
-        int count = 0;
-        int rd;
-        int finding = 0;
-        while (data.available() > 0) {
-            rd = data.read();
-            if (finding == 1) {
-                if (rd == untilA[count]) {
-                    count++;
-                    if (count >= untilA.length) {
-                        return untilA;
-                    }
-                } else {
-                    finding = 0;
-                    count = 0;
-                }
-            }
-            if (finding == 2) {
-                if (rd == untilB[count]) {
-                    count++;
-                    if (count >= untilB.length) {
-                        return untilB;
-                    }
-                } else {
-                    finding = 0;
-                    count = 0;
-                }
-            }
-            if (finding == 0) {
-                if (untilA != null && rd == untilA[count]) {
-                    count = 1;
-                    finding = 1;
-                } else if (untilB != null && rd == untilB[count]) {
-                    count = 1;
-                    finding = 2;
-                }
-            }
-        }
-        throw new IOException();
-    }
-
-    private String typed(StackObject obj, String type) {
+    protected String typed(StackObject obj, String type) {
         if (obj == null) {
             return type + ":null";
         } else {
             if ("var".equals(obj.type)) {
                 addVarType(obj.value, type);
             }
-            if (obj.expression) {
+            if (obj.expression || "unknown".equals(type)) {
                 return obj.toString();
             } else {
                 return new StackObject(type, obj).toString();
@@ -462,7 +402,7 @@ public class MonsterAiObject {
         }
     }
 
-    private String getJLabel(int j) {
+    protected String getJLabel(int j) {
         if (j >= firstEarlierJump) {
             return "j" + String.format("%02x", j - firstEarlierJump).toUpperCase();
         } else {
@@ -470,7 +410,7 @@ public class MonsterAiObject {
         }
     }
 
-    private static int getArgc(int opcode) {
+    protected static int getArgc(int opcode) {
         if (opcode == 0xff) {
             return 0;
         } else if (opcode >= 0x80) {
@@ -480,7 +420,7 @@ public class MonsterAiObject {
         }
     }
 
-    private int getStackPops(int opcode) {
+    protected int getStackPops(int opcode) {
         int stackpops = ScriptConstants.OPCODE_STACKPOPS[opcode];
         if (stackpops < 0) {
             hexAiString.append("\nundefined stackpops for opcode ").append(String.format("%02x", opcode)).append('\n');
@@ -489,20 +429,20 @@ public class MonsterAiObject {
         return stackpops;
     }
 
-    private int getFunctionParamCount(int opcode, int group) {
-        ScriptFunc func = ScriptFuncLib.get(opcode + group * 256, null);
+    protected int getFunctionParamCount(int idx) {
+        ScriptFunc func = ScriptFuncLib.get(idx, null);
         if (func == null) {
-            hexAiString.append("\nundefined stackpops for func ").append(String.format("%02x", opcode)).append(" ").append(String.format("%02x", group)).append('\n');
+            hexAiString.append("\nundefined stackpops for func ").append(String.format("%04x", idx)).append('\n');
             return 0;
         }
         return func.inputs != null ? func.inputs.size() : 0;
     }
 
-    private static boolean getLineEnd(int opcode) {
+    protected static boolean getLineEnd(int opcode) {
         return ScriptConstants.OPCODE_ENDLINE.contains(opcode);
     }
 
-    private void inferEnums() {
+    protected void inferEnums() {
         for (Map.Entry<Integer, String> entry : varTypes.entrySet()) {
             Integer varIdx = entry.getKey();
             if (isWeakType(entry.getValue()) && varEnums.containsKey(varIdx)) {
@@ -519,31 +459,53 @@ public class MonsterAiObject {
         }
     }
 
-    private static void prepare() {
+    protected static void prepare() {
         ScriptConstants.initialize();
         ScriptFuncLib.initialize();
     }
 
-    private void readRemainingText() throws IOException {
-        while (data.available() > 0) {
-            int character = data.read();
-            if (Main.BIN_LOOKUP.containsKey(character)) {
-                monsterText.append(Main.BIN_LOOKUP.get(character));
-            }
-        }
+    private int readByte() {
+        int rd = bytes[byteCursor];
+        byteCursor++;
+        return rd;
     }
 
-    private int read2Bytes() throws IOException {
-        int val = data.read();
-        val += data.read() * 0x100;
-        return val;
+    private int read2Bytes() {
+        int a = readByte();
+        int b = readByte() * 0x100;
+        return a + b;
     }
 
-    private int read4Bytes() throws IOException {
-        int val = data.read();
-        val += data.read() * 0x100;
-        val += data.read() * 0x10000;
-        val += data.read() * 0x1000000;
-        return val;
+    private int read4Bytes() {
+        int a = read2Bytes();
+        int b = read2Bytes() * 0x10000;
+        return a + b;
+    }
+
+    private void skipBytes(int amount) {
+        byteCursor += amount;
+    }
+
+    private double convertToFloat(int uint32) {
+        return Float.intBitsToFloat(uint32);
+    }
+
+    private static class ScriptHeader {
+        int count1;
+        int someRefsCount;
+        int refIntCount;
+        int refFloatCount;
+        int entryPointCount;
+        int maybeJumpCount;
+        int alwaysZero1;
+        int alwaysZero2;
+        int someRefsOffset;
+        int intTableOffset;
+        int floatTableOffset;
+        int scriptEntryPointsOffset;
+        int jumpsOffset;
+        int alwaysZero3;
+        int alwaysZero4;
+        int weirdoOffset;
     }
 }

@@ -1,10 +1,12 @@
+package script.model;
+
 public class ScriptField {
-    private static final boolean PRINT_WITH_HEX_SUFFIX = false;
+    private static final boolean PRINT_WITH_HEX_SUFFIX = true;
 
     public String name;
     public String internalName;
     public String type;
-    public int idx;
+    public Integer idx;
 
     public ScriptField(String typeAndName) {
         this.name = typeAndName;
@@ -42,10 +44,17 @@ public class ScriptField {
     }
 
     public String getHexIndex() {
+        if (idx == null) {
+            return null;
+        }
         return String.format("%04x", idx).toUpperCase();
     }
 
     public String getHexSuffix() {
-        return " [" + getHexIndex() + "h]";
+        String hexIndex = getHexIndex();
+        if (hexIndex == null) {
+            return "";
+        }
+        return " [" + hexIndex + "h]";
     }
 }

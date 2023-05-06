@@ -1,3 +1,7 @@
+package script.model;
+
+import model.AbilityDataObject;
+
 public class StackObject {
     public String type;
     public boolean expression;
@@ -28,7 +32,7 @@ public class StackObject {
                 return (value > 0 ? "true" : "false") + hexSuffix;
             } else if ("actor".equals(type)) {
                 if (ScriptConstants.BATTLE_ACTOR_NAMES.containsKey(value)) {
-                    return ScriptConstants.BATTLE_ACTOR_NAMES.get(value);
+                    return ScriptConstants.BATTLE_ACTOR_NAMES.get(value) + hexSuffix;
                 } else if (value >= 0x1000 && value <= 0x1200) {
                     return "Actors:MonsterType=" + String.format("%04x", value - 0x1000).toUpperCase();
                 } else {
@@ -41,17 +45,9 @@ public class StackObject {
                     return "FieldActor:" + hex4;
                 }
             } else if ("actorProperty".equals(type)) {
-                if (ScriptConstants.ACTOR_PROPERTIES.containsKey(value)) {
-                    return ScriptConstants.ACTOR_PROPERTIES.get(value).toString();
-                } else {
-                    return "ActorProp:" + hex4;
-                }
+                return ScriptConstants.ACTOR_PROPERTIES.getOrDefault(value, new ScriptField("ActorProp?" + hex4, "unknown")).toString();
             } else if ("moveProperty".equals(type)) {
-                if (ScriptConstants.MOVE_PROPERTIES.containsKey(value)) {
-                    return ScriptConstants.MOVE_PROPERTIES.get(value).toString();
-                } else {
-                    return "MoveProp:" + hex;
-                }
+                return ScriptConstants.MOVE_PROPERTIES.getOrDefault(value, new ScriptField("MoveProp?" + hex, "unknown")).toString();
             } else if ("deathAnim".equals(type)) {
                 return ScriptConstants.DEATH_ANIMATIONS.getOrDefault(value, "DeathAnim?") + hexSuffix;
             } else if ("button".equals(type)) {
@@ -127,7 +123,7 @@ public class StackObject {
                 AbilityDataObject ability = Main.getAbility(adjustedHex);
                 return (ability != null ? '"'+ability.name+'"' : "????") + adjustedHexSuffix;
             } else if ("float".equals(type)) {
-                return "float:" + hex;
+                return "float:" + Float.intBitsToFloat(value);
             }
         }
         return content;

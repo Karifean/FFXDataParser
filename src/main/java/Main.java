@@ -1,3 +1,6 @@
+import model.AbilityDataObject;
+import model.GearDataObject;
+
 import java.io.*;
 import java.util.*;
 
@@ -21,7 +24,7 @@ public class Main {
     private static final String ORIGINALS_KERNEL_PATH_REGULAR = PATH_FFX_ROOT + "jppc/battle/kernel/";
     private static final String LOCALIZED_KERNEL_PATH_REGULAR = PATH_FFX_ROOT + "new_uspc/battle/kernel/";
     private static final String LOCALIZED_KERNEL_PATH_MODDED = PREFIX + "ffx/attacks/";
-    private static final String LOCALIZED_KERNEL_PATH = LOCALIZED_KERNEL_PATH_REGULAR;
+    private static final String LOCALIZED_KERNEL_PATH = LOCALIZED_KERNEL_PATH_MODDED;
     private static final String SKILL_TABLE_A_PATH = LOCALIZED_KERNEL_PATH + "command.bin"; // "FILE07723.dat"; // "command.bin"; //
     private static final String SKILL_TABLE_B_PATH = LOCALIZED_KERNEL_PATH + "monmagic1.bin"; // "FILE07740.dat"; // "monmagic1.bin"; //
     private static final String SKILL_TABLE_C_PATH = LOCALIZED_KERNEL_PATH + "monmagic2.bin"; // "FILE07741.dat"; // "monmagic2.bin"; //
@@ -384,16 +387,16 @@ public class Main {
             }
         } else {
             boolean isMonsterFile = file.getPath().contains("/mon/");
-            MonsterAiObject aiObj = new MonsterAiObject(file, isMonsterFile);
+            MonsterObject aiObj = new MonsterObject(file, isMonsterFile);
             try {
                 aiObj.run();
             } catch (Exception e) {
                 e.printStackTrace();
             }
             System.out.println("- Text AI -");
-            System.out.println(aiObj.textAiString);
+            System.out.println(aiObj.monsterAi.textAiString);
             System.out.println("- Hex AI -");
-            System.out.println(aiObj.hexAiString.toString().toUpperCase());
+            System.out.println(aiObj.monsterAi.hexAiString.toString().toUpperCase());
             if (isMonsterFile) {
                 System.out.println("- Monster Data -");
                 System.out.println(aiObj.monsterData);

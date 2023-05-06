@@ -1,3 +1,5 @@
+package script.model;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -274,7 +276,7 @@ public abstract class ScriptFuncLib {
             putUnknownFunc(0x015F, 1);
             putUnknownFunc(0x0160, 1);
             putUnknownFunc(0x0161, 1);
-            putUnknownFunc(0x016A, 3);
+            putUnknownFunc(0x016A, 2); // maca0200.ebp
             putUnknownFunc(0x016B, 3);
             putUnknownFunc(0x016C, 0);
             putUnknownFunc(0x016D, 1);
@@ -685,8 +687,8 @@ public abstract class ScriptFuncLib {
             putUnknownFunc(0x703D, 0);
             putUnknownFunc(0x703E, 0);
             putUnknownFunc(0x703F, 2);
-            putUnknownFunc(0x7040, "MagicStart", 1);
-            putUnknownFunc(0x7041, "MagicEnd", 0);
+            putUnknownFunc(0x7040, "btlMagicStart", 1);
+            putUnknownFunc(0x7041, "btlMagicEnd", 0);
             putFuncWithIdx(0x7042, new ScriptFunc("displayTextBox", "unknown", "btlmes", new ScriptField("index?", "int"), new ScriptField("string", "int"), new ScriptField("x?", "int"), new ScriptField("y?", "int"), new ScriptField("p5", "unknown")));
             putFuncWithIdx(0x7043, new ScriptFunc("closeTextOnConfirm", "unknown", "btlmeswait", new ScriptField("index", "int")));
             putFuncWithIdx(0x7044, new ScriptFunc("closeTextImmediately", "unknown", "btlmesclose", new ScriptField("index", "int")));
@@ -854,7 +856,7 @@ public abstract class ScriptFuncLib {
             putUnknownFunc(0x710C, 0);
             putUnknownFunc(0x710D, 0);
             putUnknownFunc(0x7110, 1);
-            // may be FUNC7111 instead FUNCS[0x7110] = new ScriptFunc("focusCameraOnActor", "unknown", new ScriptField("actor"));
+            // may be FUNC7111 instead FUNCS[0x7110] = new script.model.ScriptFunc("focusCameraOnActor", "unknown", new script.model.ScriptField("actor"));
             putUnknownFunc(0x7111, 1);
             putUnknownFunc(0x7112, 4);
             putUnknownFunc(0x7113, 0);

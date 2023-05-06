@@ -1,3 +1,5 @@
+package script.model;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -48,6 +50,9 @@ public class ScriptFuncAccessor extends ScriptFunc {
             return "ERROR, func " + name + " called with " + len + " params but needs " + (inputs == null ? 0 : inputs.size()) + "!";
         }
         StringBuilder str = new StringBuilder();
+        if (SHOW_FULL_TAG) {
+            str.append(getHexSuffix().substring(1)).append(' ');
+        }
         if (self) {
             str.append("Self");
         } else {

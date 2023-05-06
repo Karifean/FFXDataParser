@@ -1,8 +1,10 @@
+package script.model;
+
 import java.util.ArrayList;
 import java.util.List;
 
 public class ScriptFunc extends ScriptField {
-    protected static final boolean SHOW_FULL_TAG = false;
+    protected static final boolean SHOW_FULL_TAG = true;
 
     public List<ScriptField> inputs;
     public int group;

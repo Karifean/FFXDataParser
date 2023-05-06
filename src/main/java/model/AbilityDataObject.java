@@ -1,3 +1,5 @@
+package model;
+
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -13,17 +15,17 @@ public class AbilityDataObject {
     byte[] raw;
     int[] b;
 
-    String name;
-    String dash;
-    String description;
-    String otherText;
+    public String name;
+    public String dash;
+    public String description;
+    public String otherText;
     int nameOffsetLowByte;
     int nameOffsetHighByte;
-    int nameOffsetComputed;
+    public int nameOffsetComputed;
     int unknownByte0B;
     int otherTextOffsetLowByte;
     int otherTextOffsetHighByte;
-    int otherTextOffsetComputed;
+    public int otherTextOffsetComputed;
     int unknownByte0E;
     int unknownByte0F;
     int anim1HighByte;
@@ -112,10 +114,10 @@ public class AbilityDataObject {
     int unknownByte3;
     int dashOffsetLowByte;
     int dashOffsetHighByte;
-    int dashOffsetComputed;
+    public int dashOffsetComputed;
     int descriptionOffsetLowByte;
     int descriptionOffsetHighByte;
-    int descriptionOffsetComputed;
+    public int descriptionOffsetComputed;
     int unknownByte6;
     int unknownByte7;
     int unknownByte0A;
@@ -132,7 +134,7 @@ public class AbilityDataObject {
     boolean byte28bit4; // Maybe "Get Piercing trait from Weapon or sth?)
     boolean byte28bit6; // ONLY set on all 6 of Yuna's controllable aeon normal attacks
     boolean affectedByDarkness;
-    boolean displayMoveName;
+    public boolean displayMoveName;
     boolean canMiss;
     boolean canBeReflected;
     boolean absorbDamage;

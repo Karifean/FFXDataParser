@@ -1,3 +1,7 @@
+package model;
+
+import script.model.StackObject;
+
 public class MonsterDataObject {
 
     private int[] stats;
