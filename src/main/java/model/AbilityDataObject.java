@@ -233,6 +233,13 @@ public class AbilityDataObject {
         mapFlags();
     }
 
+    public String getName() {
+        if (!displayMoveName) {
+            return "[" + name + "]";
+        }
+        return name;
+    }
+
     private void mapBytes() {
         nameOffsetLowByte = b[0x00];
         nameOffsetHighByte = b[0x01];

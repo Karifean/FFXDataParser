@@ -7,12 +7,12 @@ import java.util.Map;
 
 public class ScriptFuncAccessor extends ScriptFunc {
 
-    private Map<Integer, ScriptField> accessMap;
-    private String subjectType;
-    private String predicateType;
-    private ScriptField fixedPredicate;
-    private boolean self;
-    private String write;
+    private final Map<Integer, ScriptField> accessMap;
+    private final String subjectType;
+    private final String predicateType;
+    private final ScriptField fixedPredicate;
+    private final boolean self;
+    private final String write;
     private int subjectParamIndex;
     private int predicateParamIndex;
     private int valueParamIndex;
@@ -26,16 +26,18 @@ public class ScriptFuncAccessor extends ScriptFunc {
         this.self = subjectType == null;
         this.write = write;
         this.fixedPredicate = predicate;
+        this.accessMap = null;
     }
 
-    public ScriptFuncAccessor(String name, String subjectType, String internalName, String write, Map<Integer, ScriptField> accessMap, String predicateType, ScriptField... extras) {
+    public ScriptFuncAccessor(String name, String subjectType, String internalName, String write, String predicateType, ScriptField... extras) {
         super(name, "accessor", internalName, true);
         setInputs(subjectType, write != null, true, extras);
         this.subjectType = subjectType;
         this.predicateType = predicateType;
         this.self = subjectType == null;
         this.write = write;
-        this.accessMap = accessMap;
+        this.fixedPredicate = null;
+        this.accessMap = ScriptConstants.getEnumMap(predicateType);
     }
 
     public String getType(List<StackObject> params) {

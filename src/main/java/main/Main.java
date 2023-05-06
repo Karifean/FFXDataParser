@@ -1,5 +1,8 @@
+package main;
+
 import model.AbilityDataObject;
 import model.GearDataObject;
+import model.MonsterObject;
 
 import java.io.*;
 import java.util.*;
@@ -327,7 +330,7 @@ public class Main {
             System.out.println("--- " + filename + " ---");
             for (int i = 0; i < abilities.length; i++) {
                 AbilityDataObject ab = abilities[i];
-                String prefix = String.format("%-20s", Integer.toHexString(i) + ": " + ab.name);
+                String prefix = String.format("%-20s", Integer.toHexString(i) + ": " + ab.getName());
                 String dash = (ab.dashOffsetComputed > 0 && !"-".equals(ab.dash) ? "DH=" + ab.dash + " / " : "");
                 String description = (ab.descriptionOffsetComputed > 0 && !"-".equals(ab.description) ? ab.description : "");
                 String soText = (ab.otherTextOffsetComputed > 0 && !"-".equals(ab.otherText) ? " / OT=" + ab.otherText : "");
@@ -364,9 +367,6 @@ public class Main {
                 for (int i = 0; i <= length; i++) {
                     AbilityDataObject ability = abilities[i];
                     ability.name = getStringAtLookupOffset(allStrings, ability.nameOffsetComputed);
-                    if (!ability.displayMoveName) {
-                        ability.name = "[" + ability.name + "]";
-                    }
                     ability.dash = getStringAtLookupOffset(allStrings, ability.dashOffsetComputed);
                     ability.description = getStringAtLookupOffset(allStrings, ability.descriptionOffsetComputed);
                     ability.otherText = getStringAtLookupOffset(allStrings, ability.otherTextOffsetComputed);
@@ -435,17 +435,18 @@ public class Main {
                     int typeLow = inputStream.read();
                     int type = inputStream.read() * 256 + typeLow;
                     String typeString = String.format("%02x", type);
+                    String hexSuffix = " [" + typeString + "h]";
                     if (kind == 0x02) {
                         System.out.println("Item: " + quantity + "x " + getAbility(typeString).name);
                     } else if (kind == 0x00) {
-                        System.out.println("Gil: " + quantity * 100 + (type != 0 ? " T=" + type + " (" + typeString + "h)" : ""));
+                        System.out.println("Gil: " + quantity * 100 + (type != 0 ? " T=" + type + hexSuffix : ""));
                     } else if (kind == 0x05) {
                         GearDataObject obj = gear != null ? gear[type] : null;
                         System.out.println("Gear: buki_get #" + type + (quantity != 1 ? " Q=" + quantity : "") + " " + obj);
                     } else if (kind == 0x0A) {
-                        System.out.println("Key Item?: #" + typeLow + " (" + typeString + "h)");
+                        System.out.println("Key Item: #" + typeLow + hexSuffix);
                     } else {
-                        System.out.println("Unknown K=" + kind + "; Q=" + quantity + "; T=" + type + " (" + typeString + "h)");
+                        System.out.println("Unknown K=" + kind + "; Q=" + quantity + "; T=" + type + hexSuffix);
                     }
                 }
             } catch (IOException ignored) {}

@@ -1,4 +1,6 @@
-import model.MonsterDataObject;
+package model;
+
+import main.Main;
 import script.ScriptObject;
 
 import java.io.*;
@@ -7,10 +9,10 @@ import java.util.*;
 public class MonsterObject {
     File file;
     DataInputStream data;
-    ScriptObject monsterAi;
-    MonsterDataObject monsterData;
-    boolean isMonsterFile;
-    StringBuilder monsterText = new StringBuilder();
+    public ScriptObject monsterAi;
+    public MonsterDataObject monsterData;
+    public boolean isMonsterFile;
+    public StringBuilder monsterText = new StringBuilder();
     int[] aiBytes;
     int[] statBytes = new int[0x8C];
     int[] spoilsBytes;
@@ -39,11 +41,11 @@ public class MonsterObject {
         data.reset();
         data.skipNBytes(scriptBeginAddress);
         int totalScriptLength = unknownChunkAddress - scriptBeginAddress;
-        int[] scriptBytes = new int[totalScriptLength];
+        aiBytes = new int[totalScriptLength];
         for (int i = 0; i < totalScriptLength; i++) {
-            scriptBytes[i] = data.read();
+            aiBytes[i] = data.read();
         }
-        monsterAi = new ScriptObject(scriptBytes);
+        monsterAi = new ScriptObject(aiBytes);
         monsterAi.run();
         if (isMonsterFile) {
             newDataStream();

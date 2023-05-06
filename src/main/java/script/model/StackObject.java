@@ -1,6 +1,9 @@
 package script.model;
 
 import model.AbilityDataObject;
+import main.Main;
+
+import java.util.Map;
 
 public class StackObject {
     public String type;
@@ -30,100 +33,28 @@ public class StackObject {
             String hexSuffix = " [" + hex + "h]";
             if ("bool".equals(type)) {
                 return (value > 0 ? "true" : "false") + hexSuffix;
-            } else if ("actor".equals(type)) {
-                if (ScriptConstants.BATTLE_ACTOR_NAMES.containsKey(value)) {
-                    return ScriptConstants.BATTLE_ACTOR_NAMES.get(value) + hexSuffix;
-                } else if (value >= 0x1000 && value <= 0x1200) {
-                    return "Actors:MonsterType=" + String.format("%04x", value - 0x1000).toUpperCase();
-                } else {
-                    return "Actor:" + hex4;
-                }
-            } else if ("fieldActor".equals(type)) {
-                if (ScriptConstants.FIELD_ACTOR_NAMES.containsKey(value)) {
-                    return ScriptConstants.FIELD_ACTOR_NAMES.get(value);
-                } else {
-                    return "FieldActor:" + hex4;
-                }
-            } else if ("actorProperty".equals(type)) {
-                return ScriptConstants.ACTOR_PROPERTIES.getOrDefault(value, new ScriptField("ActorProp?" + hex4, "unknown")).toString();
-            } else if ("moveProperty".equals(type)) {
-                return ScriptConstants.MOVE_PROPERTIES.getOrDefault(value, new ScriptField("MoveProp?" + hex, "unknown")).toString();
-            } else if ("deathAnim".equals(type)) {
-                return ScriptConstants.DEATH_ANIMATIONS.getOrDefault(value, "DeathAnim?") + hexSuffix;
-            } else if ("button".equals(type)) {
-                return ScriptConstants.CONTROLLER_BUTTONS.getOrDefault(value, "Button?") + hexSuffix;
-            } else if ("musicfile".equals(type)) {
-                return ScriptConstants.MUSIC_FILE_NAMES.getOrDefault(value, "MusicFile?") + hexSuffix;
-            } else if ("battleEndType".equals(type)) {
-                return ScriptConstants.BATTLE_END_TYPES.getOrDefault(value, "BattleEndType?") + hexSuffix;
-            } else if ("selector".equals(type)) {
-                if (value == 0) {
-                    return "Any/All" + hexSuffix;
-                } else if (value == 1) {
-                    return "Highest" + hexSuffix;
-                } else if (value == 2) {
-                    return "Lowest" + hexSuffix;
-                } else if (value == 0x80) {
-                    return "Not" + hexSuffix;
-                } else {
-                    return "Selector?" + hexSuffix;
-                }
-            } else if ("ambushState".equals(type)) {
-                if (value == 0) {
-                    return "Randomized" + hexSuffix;
-                } else if (value == 1) {
-                    return "Preemptive" + hexSuffix;
-                } else if (value == 2) {
-                    return "Ambush" + hexSuffix;
-                } else if (value == 3) {
-                    return "Normal" + hexSuffix;
-                } else {
-                    return "AmbushState?" + hexSuffix;
-                }
-            } else if ("yojimboResponse".equals(type)) {
-                if (value == 0) {
-                    return "Null" + hexSuffix;
-                } else if (value == 1) {
-                    return "Normal" + hexSuffix;
-                } else if (value == 2) {
-                    return "Nod" + hexSuffix;
-                } else if (value == 3) {
-                    return "Headshake" + hexSuffix;
-                } else {
-                    return "YojimboResponse?" + hexSuffix;
-                }
-            } else if ("damageType".equals(type)) {
-                return (value == 1 ? "Physic" : (value == 2 ? "Magic" : "Speci")) + "alDmg" + hexSuffix;
-            } else if ("damageFormula".equals(type)) {
-                return "F" + value + " " + ScriptConstants.DAMAGE_FORMULAE.get(value) + hexSuffix;
-            } else if ("targetType".equals(type)) {
-                if (value == 0) {
-                    return "Single" + hexSuffix;
-                } else if (value == 1) {
-                    return "Multi" + hexSuffix;
-                } else if (value == 2) {
-                    return "AllActors?" + hexSuffix;
-                } else if (value == 3) {
-                    return "Self" + hexSuffix;
-                } else {
-                    return "TargetType?" + hexSuffix;
-                }
-            } else if ("move".equals(type)) {
+            }
+            if ("float".equals(type)) {
+                return "float:" + Float.intBitsToFloat(value);
+            }
+            if ("move".equals(type)) {
                 if (value == 0) {
                     return "Null Move" + hexSuffix;
                 } else if (value <= 0x11) {
-                    return "Switch/Summon:" + ScriptConstants.BATTLE_ACTOR_NAMES.get(value) + hexSuffix;
+                    return "Switch/Summon:" + ScriptConstants.getEnumMap("actor").get(value) + hexSuffix;
                 } else {
                     AbilityDataObject ability = Main.getAbility(hex);
-                    return (ability != null ? '"'+ability.name+'"' : "????") + hexSuffix;
+                    return (ability != null ? '"'+ability.getName()+'"' : "????") + hexSuffix;
                 }
             } else if ("charMove".equals(type)) {
                 String adjustedHex = String.format("%04x", value + 0x3000).toUpperCase();
                 String adjustedHexSuffix = " [" + adjustedHex + "h]";
                 AbilityDataObject ability = Main.getAbility(adjustedHex);
-                return (ability != null ? '"'+ability.name+'"' : "????") + adjustedHexSuffix;
-            } else if ("float".equals(type)) {
-                return "float:" + Float.intBitsToFloat(value);
+                return (ability != null ? '"'+ability.getName()+'"' : "????") + adjustedHexSuffix;
+            }
+            if (ScriptConstants.ENUMERATIONS.containsKey(type)) {
+                Map<Integer, ScriptField> map = ScriptConstants.ENUMERATIONS.get(type);
+                return map.getOrDefault(value, new ScriptField('?' + type + ':' + hex4, "unknown")).toString();
             }
         }
         return content;
