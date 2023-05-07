@@ -147,13 +147,13 @@ public abstract class ScriptConstants {
         putCompOperator(0x17, "/", "int", "OPDIV");
         putCompOperator(0x18, "mod", "int", "OPMOD");
 
-        putEnum("deathAnimation", 0x00, "Character (Body remains and targetable)");
-        putEnum("deathAnimation", 0x01, "Boss (Body remains but untargetable)");
-        putEnum("deathAnimation", 0x02, "Humanoid (No Pyreflies, body fades out)");
-        putEnum("deathAnimation", 0x03, "Fiend (Pyrefly dissipation)");
-        putEnum("deathAnimation", 0x04, "Disintegrate-Machina (Red explosions)");
-        putEnum("deathAnimation", 0x05, "Steal-Machina (Same as 02 with machina SFX)");
-        putEnum("deathAnimation", 0x08, "YAT/YKT");
+        putEnum("deathAnimation", 0x00, "Character (Body remains and targetable)", "death_normal");
+        putEnum("deathAnimation", 0x01, "Boss (Body remains but untargetable)", "death_nop");
+        putEnum("deathAnimation", 0x02, "Humanoid (No Pyreflies, body fades out)", "death_fadeout");
+        putEnum("deathAnimation", 0x03, "Fiend (Pyrefly dissipation)", "death_phantom");
+        putEnum("deathAnimation", 0x04, "Disintegrate-Machina (Red explosions)", "death_exp");
+        putEnum("deathAnimation", 0x05, "Steal-Machina (Same as 02 with machina SFX)", "death_break");
+        putEnum("deathAnimation", 0x08, "YAT/YKT", "death_break2");
 
         putEnum("selector", 0x00, "Any/All");
         putEnum("selector", 0x01, "Highest");
@@ -209,24 +209,26 @@ public abstract class ScriptConstants {
         putEnum("damageFormula", 0x16, "Fixed xKills");
         putEnum("damageFormula", 0x17, "Fixed x9999");
 
-        putEnum("actor", 0x0000, "Tidus");
-        putEnum("actor", 0x0001, "Yuna");
-        putEnum("actor", 0x0002, "Auron");
-        putEnum("actor", 0x0003, "Kimahri");
-        putEnum("actor", 0x0004, "Wakka");
-        putEnum("actor", 0x0005, "Lulu");
-        putEnum("actor", 0x0006, "Rikku");
-        putEnum("actor", 0x0007, "Seymour");
-        putEnum("actor", 0x0008, "Valefor");
-        putEnum("actor", 0x0009, "Ifrit");
-        putEnum("actor", 0x000A, "Ixion");
-        putEnum("actor", 0x000B, "Shiva");
-        putEnum("actor", 0x000C, "Bahamut");
-        putEnum("actor", 0x000D, "Anima");
-        putEnum("actor", 0x000E, "Yojimbo");
-        putEnum("actor", 0x000F, "Cindy");
-        putEnum("actor", 0x0010, "Sandy");
-        putEnum("actor", 0x0011, "Mindy");
+        putEnum("actor", 0x0000, "Tidus", "PC_TIDUS");
+        putEnum("actor", 0x0001, "Yuna", "PC_YUNA");
+        putEnum("actor", 0x0002, "Auron", "PC_AURON");
+        putEnum("actor", 0x0003, "Kimahri", "PC_KIMAHRI");
+        putEnum("actor", 0x0004, "Wakka", "PC_WAKKA");
+        putEnum("actor", 0x0005, "Lulu", "PC_LULU");
+        putEnum("actor", 0x0006, "Rikku", "PC_RIKKU");
+        putEnum("actor", 0x0007, "Seymour", "PC_SEYMOUR");
+        putEnum("actor", 0x0008, "Valefor", "PC_VALEFOR");
+        putEnum("actor", 0x0009, "Ifrit", "PC_IFRIT");
+        putEnum("actor", 0x000A, "Ixion", "PC_IXION");
+        putEnum("actor", 0x000B, "Shiva", "PC_SHIVA");
+        putEnum("actor", 0x000C, "Bahamut", "PC_BAHAMUT");
+        putEnum("actor", 0x000D, "Anima", "PC_ANIMA");
+        putEnum("actor", 0x000E, "Yojimbo", "PC_YOJIMBO");
+        putEnum("actor", 0x000F, "Cindy", "PC_MAGUS1");
+        putEnum("actor", 0x0010, "Sandy", "PC_MAGUS2");
+        putEnum("actor", 0x0011, "Mindy", "PC_MAGUS3");
+        putEnum("actor", 0x0012, null, "PC_DUMMY");
+        putEnum("actor", 0x0013, null, "PC_DUMMY2");
         for (int i = 1; i <= 10; i++) {
             putEnum("actor", 0x0013 + i, "Monster#" + i);
         }
@@ -235,23 +237,32 @@ public abstract class ScriptConstants {
         for (int i = 0x1000; i <= 0x1200; i++) {
             putEnum("actor", i, "Actors:MonsterType=" + String.format("%04x", i - 0x1000).toUpperCase());
         }
-        putEnum("actor", 0xFFE9, "AllCharsAndAeons");
-        putEnum("actor", 0xFFEB, "AllChars");
-        putEnum("actor", 0xFFEC, "AllAeons");
-        putEnum("actor", 0xFFEF, "LastAttacker");
-        putEnum("actor", 0xFFF0, "PredefinedGroup");
-        putEnum("actor", 0xFFF1, "AllMonsters");
-        putEnum("actor", 0xFFF2, "FrontlineChars");
-        putEnum("actor", 0xFFF3, "Self");
-        putEnum("actor", 0xFFF4, "CharacterReserve#4");
-        putEnum("actor", 0xFFF5, "CharacterReserve#3");
-        putEnum("actor", 0xFFF6, "CharacterReserve#2");
-        putEnum("actor", 0xFFF7, "CharacterReserve#1");
-        putEnum("actor", 0xFFF8, "Character#3");
-        putEnum("actor", 0xFFF9, "Character#2");
-        putEnum("actor", 0xFFFA, "Character#1");
-        putEnum("actor", 0xFFFB, "AllActors");
-        putEnum("actor", 0xFFFF, "Actor:Null");
+        putEnum("actor", 0xFFE6, null, "CHR_OWN_TARGET0");
+        putEnum("actor", 0xFFE7, null, "CHR_ALL_PLY3");
+        putEnum("actor", 0xFFE8, null, "CHR_ALL_PLAYER2");
+        putEnum("actor", 0xFFE9, "AllCharsAndAeons", "CHR_ALL_PLAYER");
+        putEnum("actor", 0xFFEA, null, "CHR_PARENT");
+        putEnum("actor", 0xFFEB, "AllChars", "CHR_ALL2");
+        putEnum("actor", 0xFFEC, "AllAeons", "CHR_ALL_SUMMON");
+        putEnum("actor", 0xFFED, null, "CHR_ALL_PLY2");
+        putEnum("actor", 0xFFEE, null, "CHR_INPUT");
+        putEnum("actor", 0xFFEF, "LastAttacker", "CHR_REACTION");
+        putEnum("actor", 0xFFF0, "PredefinedGroup", "CHR_OWN_TARGET");
+        putEnum("actor", 0xFFF1, "AllMonsters", "CHR_ALL_MON");
+        putEnum("actor", 0xFFF2, "FrontlineChars", "CHR_ALL_PLY");
+        putEnum("actor", 0xFFF3, "Self", "CHR_OWN");
+        putEnum("actor", 0xFFF4, "CharacterReserve#4", "CHR_PARTY7");
+        putEnum("actor", 0xFFF5, "CharacterReserve#3", "CHR_PARTY6");
+        putEnum("actor", 0xFFF6, "CharacterReserve#2", "CHR_PARTY5");
+        putEnum("actor", 0xFFF7, "CharacterReserve#1", "CHR_PARTY4");
+        putEnum("actor", 0xFFF8, "Character#3", "CHR_PARTY3");
+        putEnum("actor", 0xFFF9, "Character#2", "CHR_PARTY2");
+        putEnum("actor", 0xFFFA, "Character#1", "CHR_PARTY1");
+        putEnum("actor", 0xFFFB, "AllActors", "CHR_ALL");
+        putEnum("actor", 0xFFFC, null, "CHR_TARGET_NOW");
+        putEnum("actor", 0xFFFD, null, "CHR_TARGET");
+        putEnum("actor", 0xFFFE, "ActiveActors", "CHR_ACTIVE");
+        putEnum("actor", 0xFFFF, "Actor:Null", "CHR_NOP");
 
         putActorProperty(0x0000, "HP", "int", "stat_hp");
         putActorProperty(0x0001, "MP", "int", "stat_mp");
