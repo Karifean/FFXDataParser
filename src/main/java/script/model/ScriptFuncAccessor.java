@@ -52,7 +52,7 @@ public class ScriptFuncAccessor extends ScriptFunc {
             return "ERROR, func " + name + " called with " + len + " params but needs " + (inputs == null ? 0 : inputs.size()) + "!";
         }
         StringBuilder str = new StringBuilder();
-        if (SHOW_FULL_TAG) {
+        if (PRINT_WITH_HEX_SUFFIX && !isNameless()) {
             str.append(getHexSuffix().substring(1)).append(' ');
         }
         if (self) {

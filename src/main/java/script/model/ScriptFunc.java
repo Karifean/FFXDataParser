@@ -4,8 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ScriptFunc extends ScriptField {
-    protected static final boolean SHOW_FULL_TAG = true;
-
     public List<ScriptField> inputs;
     public int group;
 
@@ -70,11 +68,11 @@ public class ScriptFunc extends ScriptField {
 
     @Override
     public String toString() {
-        if ((name == null || name.isEmpty()) && (internalName == null || internalName.isEmpty())) {
-            String groupStr = ScriptConstants.FUNCGROUPS[idx / 0x1000];
-            return groupStr + '.' + getHexIndex();
+        String groupStr = idx != null ? ScriptConstants.FUNCGROUPS[idx / 0x1000] + '.' : "";
+        if (isNameless()) {
+            return groupStr + getHexIndex();
         }
-        return super.toString();
+        return groupStr + super.toString();
     }
 
     public String callB5(List<StackObject> params) {
@@ -82,13 +80,8 @@ public class ScriptFunc extends ScriptField {
         if (len != (inputs == null ? 0 : inputs.size())) {
             return "ERROR, func " + this + " called with " + len + " params but needs " + (inputs == null ? 0 : inputs.size()) + "!";
         }
-        String groupStr = ScriptConstants.FUNCGROUPS[idx / 0x1000];
         StringBuilder str = new StringBuilder();
-        if (SHOW_FULL_TAG) {
-            str.append(groupStr).append('.').append(name == null ? (internalName == null ? "?" : internalName) : name).append(getHexSuffix().substring(1));
-        } else {
-            str.append(this);
-        }
+        str.append(this);
         if (inputs == null) {
             return str.toString();
         }
@@ -106,5 +99,9 @@ public class ScriptFunc extends ScriptField {
 
     public String callD8(List<StackObject> params) {
         return "call " + callB5(params);
+    }
+
+    protected boolean isNameless() {
+        return (name == null || name.isEmpty()) && (internalName == null || internalName.isEmpty());
     }
 }

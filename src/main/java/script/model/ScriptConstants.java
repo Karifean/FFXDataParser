@@ -161,7 +161,7 @@ public abstract class ScriptConstants {
 
         putEnum("ambushState", 0x00, "Randomized", "first_attack_normal");
         putEnum("ambushState", 0x01, "Preemptive", "first_attack_player");
-        putEnum("ambushState", 0x02, "Ambush", "first_attack_monster");
+        putEnum("ambushState", 0x02, "Ambushed", "first_attack_monster");
         putEnum("ambushState", 0x03, "Neither", "first_attack_random_off");
 
         putEnum("yojimboReaction", 0x00, "NullReaction");

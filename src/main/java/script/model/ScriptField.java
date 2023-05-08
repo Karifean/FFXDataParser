@@ -1,7 +1,7 @@
 package script.model;
 
 public class ScriptField {
-    private static final boolean PRINT_WITH_HEX_SUFFIX = true;
+    protected static final boolean PRINT_WITH_HEX_SUFFIX = true;
 
     public String name;
     public String internalName;
@@ -34,13 +34,6 @@ public class ScriptField {
             }
         }
         return PRINT_WITH_HEX_SUFFIX ? name + getHexSuffix() : name;
-    }
-
-    public String getNameOrHex() {
-        if (name == null || name.isEmpty()) {
-            return getHexIndex();
-        }
-        return name;
     }
 
     public String getHexIndex() {

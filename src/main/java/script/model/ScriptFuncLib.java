@@ -715,7 +715,7 @@ public abstract class ScriptFuncLib {
             putFuncWithIdx(0x7021, new ScriptFunc("dereferenceCharacter", "actor", "btlGetChrNum", new ScriptField("actor")));
             putFuncWithIdx(0x7022, new ScriptFunc("SetAmbushState", "unknown", "btlSetFirstAttack", new ScriptField("ambushState")));
             putUnknownFunc(0x7023, "btlDistTarget", 1);
-            putFuncWithIdx(0x7024, new ScriptFunc("battleVariant", "int", "btlGetBtlScene", false));
+            putFuncWithIdx(0x7024, new ScriptFunc("CurrentEncounterIndex", "int", "btlGetBtlScene", false));
             putFuncWithIdx(0x7025, new ScriptFunc("defineActorSubset2?", "actor", "btlSearchChr2", new ScriptField("group", "actor"), new ScriptField("property", "actorProperty"), new ScriptField("unknown"), new ScriptField("selector")));
             putUnknownFunc(0x7026, "btlSetWeak", 1);
             putUnknownFunc(0x7027, "btlGetWeak", 0);

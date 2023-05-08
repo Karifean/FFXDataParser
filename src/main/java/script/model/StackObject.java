@@ -28,14 +28,13 @@ public class StackObject {
     @Override
     public String toString() {
         if (!expression && !"unknown".equals(type)) {
-            String hex4 = String.format("%04x", value).toUpperCase();
             String hex = String.format(value >= 0x100 ? "%04x" : "%02x", value).toUpperCase();
             String hexSuffix = " [" + hex + "h]";
             if ("bool".equals(type)) {
                 return (value > 0 ? "true" : "false") + hexSuffix;
             }
             if ("float".equals(type)) {
-                return "float:" + Float.intBitsToFloat(value);
+                return Float.intBitsToFloat(value) + hexSuffix;
             }
             if ("move".equals(type)) {
                 if (value == 0) {
@@ -54,7 +53,7 @@ public class StackObject {
             }
             if (ScriptConstants.ENUMERATIONS.containsKey(type)) {
                 Map<Integer, ScriptField> map = ScriptConstants.ENUMERATIONS.get(type);
-                return map.getOrDefault(value, new ScriptField('?' + type + ':' + hex4, "unknown")).toString();
+                return map.getOrDefault(value, new ScriptField('?' + type + ':' + hex, "unknown")).toString();
             }
         }
         return content;
