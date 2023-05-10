@@ -10,7 +10,8 @@ public class MonsterObject {
     File file;
     DataInputStream data;
     public ScriptObject monsterAi;
-    public MonsterDataObject monsterData;
+    public MonsterStatDataObject monsterStatData;
+    public MonsterSpoilsDataObject monsterSpoilsData;
     public boolean isMonsterFile;
     public String monsterName;
     public String monsterSensorText;
@@ -68,7 +69,8 @@ public class MonsterObject {
             for (int i = 0; i < spoilsLength; i++) {
                 spoilsBytes[i] = data.read();
             }
-            monsterData = new MonsterDataObject(statBytes, spoilsBytes);
+            monsterStatData = new MonsterStatDataObject(statBytes);
+            monsterSpoilsData = new MonsterSpoilsDataObject(spoilsBytes);
             data.reset();
             data.skipNBytes(textPartAddress);
             int nameOffset = read2Bytes();

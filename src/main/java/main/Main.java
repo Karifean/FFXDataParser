@@ -418,15 +418,17 @@ public class Main {
                 e.printStackTrace();
             }
             if (isMonsterFile) {
-                System.out.println(" -- " + aiObj.monsterName + " -- ");
+                System.out.println(aiObj.monsterName);
             }
             System.out.println("- Text Script Code -");
             System.out.println(aiObj.monsterAi.textAiString);
             System.out.println("- Hex Script Code -");
             System.out.println(aiObj.monsterAi.hexAiString.toString().toUpperCase());
             if (isMonsterFile) {
-                System.out.println("- Monster Data -");
-                System.out.println(aiObj.monsterData);
+                System.out.println("- Monster Stats -");
+                System.out.println(aiObj.monsterStatData);
+                System.out.println("- Monster Spoils -");
+                System.out.println(aiObj.monsterSpoilsData);
                 System.out.println("- Sensor Text -");
                 System.out.println(aiObj.monsterSensorText);
                 System.out.println(aiObj.monsterSensorDash);
