@@ -1,8 +1,8 @@
 package model;
 
-import java.io.EOFException;
+import main.Main;
+
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -13,18 +13,14 @@ public class AbilityDataObject {
     boolean isCharacterAbility;
     int length;
     byte[] raw;
-    int[] b;
+    int[] bytes;
 
     public String name;
     public String dash;
     public String description;
     public String otherText;
-    int nameOffsetLowByte;
-    int nameOffsetHighByte;
     public int nameOffsetComputed;
     int unknownByte0B;
-    int otherTextOffsetLowByte;
-    int otherTextOffsetHighByte;
     public int otherTextOffsetComputed;
     int unknownByte0E;
     int unknownByte0F;
@@ -112,11 +108,7 @@ public class AbilityDataObject {
     int alwaysNull2;
     int unknownByte2;
     int unknownByte3;
-    int dashOffsetLowByte;
-    int dashOffsetHighByte;
     public int dashOffsetComputed;
-    int descriptionOffsetLowByte;
-    int descriptionOffsetHighByte;
     public int descriptionOffsetComputed;
     int unknownByte6;
     int unknownByte7;
@@ -217,20 +209,13 @@ public class AbilityDataObject {
 
     public AbilityDataObject() {}
 
-    public AbilityDataObject(InputStream inputStream, int individualLength) throws IOException {
-        isCharacterAbility = (individualLength == 96);
-        length = individualLength;
-        raw = new byte[length];
-        b = new int[length];
-        if (inputStream.read(raw) < length) {
-            throw new EOFException("Did not read all bytes");
-        }
-        for (int i = 0; i < length; i++) {
-            b[i] = Byte.toUnsignedInt(raw[i]);
-        }
+    public AbilityDataObject(int[] bytes, int[] stringBytes) throws IOException {
+        isCharacterAbility = (bytes.length == 96);
+        this.bytes = bytes;
         prepareMaps();
         mapBytes();
         mapFlags();
+        mapStrings(stringBytes);
     }
 
     public String getName() {
@@ -241,109 +226,101 @@ public class AbilityDataObject {
     }
 
     private void mapBytes() {
-        nameOffsetLowByte = b[0x00];
-        nameOffsetHighByte = b[0x01];
-        unknownByte2 = b[0x02];
-        unknownByte3 = b[0x03];
-        dashOffsetLowByte = b[0x04];
-        dashOffsetHighByte = b[0x05];
-        unknownByte6 = b[0x06];
-        unknownByte7 = b[0x07];
-        descriptionOffsetLowByte = b[0x08];
-        descriptionOffsetHighByte = b[0x09];
-        unknownByte0A = b[0x0A];
-        unknownByte0B = b[0x0B];
-        otherTextOffsetLowByte = b[0x0C];
-        otherTextOffsetHighByte = b[0x0D];
-        unknownByte0E = b[0x0E];
-        unknownByte0F = b[0x0F];
-        anim1HighByte = b[0x10];
-        anim1LowByte = b[0x11];
-        anim2HighByte = b[0x12];
-        anim2LowByte = b[0x13];
-        icon = b[0x14];
-        casterAnimation = b[0x15];
-        unknownByte16 = b[0x16];
-        subsubMenuCategorization = b[0x17];
-        subMenuCategorization = b[0x18];
-        characterUser = b[0x19];
-        targetingFlags = b[0x1A];
-        unknownProperties1B = b[0x1B];
-        miscProperties1C = b[0x1C];
-        miscProperties1D = b[0x1D];
-        miscProperties1E = b[0x1E];
-        unknownProperties1F = b[0x1F];
-        damageProperties20 = b[0x20];
-        stealGilByte = b[0x21];
+        nameOffsetComputed = read2Bytes(0x00);
+        unknownByte2 = bytes[0x02];
+        unknownByte3 = bytes[0x03];
+        dashOffsetComputed = read2Bytes(0x04);
+        unknownByte6 = bytes[0x06];
+        unknownByte7 = bytes[0x07];
+        descriptionOffsetComputed = read2Bytes(0x08);
+        unknownByte0A = bytes[0x0A];
+        unknownByte0B = bytes[0x0B];
+        otherTextOffsetComputed = read2Bytes(0x0C);
+        unknownByte0E = bytes[0x0E];
+        unknownByte0F = bytes[0x0F];
+        anim1HighByte = bytes[0x10];
+        anim1LowByte = bytes[0x11];
+        anim2HighByte = bytes[0x12];
+        anim2LowByte = bytes[0x13];
+        icon = bytes[0x14];
+        casterAnimation = bytes[0x15];
+        unknownByte16 = bytes[0x16];
+        subsubMenuCategorization = bytes[0x17];
+        subMenuCategorization = bytes[0x18];
+        characterUser = bytes[0x19];
+        targetingFlags = bytes[0x1A];
+        unknownProperties1B = bytes[0x1B];
+        miscProperties1C = bytes[0x1C];
+        miscProperties1D = bytes[0x1D];
+        miscProperties1E = bytes[0x1E];
+        unknownProperties1F = bytes[0x1F];
+        damageProperties20 = bytes[0x20];
+        stealGilByte = bytes[0x21];
         // Bit 0x01 could be "affected by Alchemy" flag?
-        miscProperties22 = b[0x22];
-        damageClass = b[0x23];
-        moveRank = b[0x24];
-        costMP = b[0x25];
-        costOD = b[0x26];
-        attackCritBonus = b[0x27];
-        damageFormula = b[0x28];
-        attackAccuracy = b[0x29];
-        attackPower = b[0x2A];
-        hitCount = b[0x2B];
-        shatterChance = b[0x2C];
-        elementFlags = b[0x2D];
-        statusChanceDeath = b[0x2E];
-        statusChanceZombie = b[0x2F];
-        statusChancePetrify = b[0x30];
-        statusChancePoison = b[0x31];
-        statusChancePowerBreak = b[0x32];
-        statusChanceMagicBreak = b[0x33];
-        statusChanceArmorBreak = b[0x34];
-        statusChanceMentalBreak = b[0x35];
-        statusChanceConfuse = b[0x36];
-        statusChanceBerserk = b[0x37];
-        statusChanceProvoke = b[0x38];
-        statusChanceThreaten = b[0x39];
-        statusChanceSleep = b[0x3A];
-        statusChanceSilence = b[0x3B];
-        statusChanceDarkness = b[0x3C];
-        statusChanceShell = b[0x3D];
-        statusChanceProtect = b[0x3E];
-        statusChanceReflect = b[0x3F];
-        statusChanceNTide = b[0x40];
-        statusChanceNBlaze = b[0x41];
-        statusChanceNShock = b[0x42];
-        statusChanceNFrost = b[0x43];
-        statusChanceRegen = b[0x44];
-        statusChanceHaste = b[0x45];
-        statusChanceSlow = b[0x46];
-        statusDurationSleep = b[0x47];
-        statusDurationSilence = b[0x48];
-        statusDurationDarkness = b[0x49];
-        statusDurationShell = b[0x4A];
-        statusDurationProtect = b[0x4B];
-        statusDurationReflect = b[0x4C];
-        statusDurationNTide = b[0x4D];
-        statusDurationNBlaze = b[0x4E];
-        statusDurationNShock = b[0x4F];
-        statusDurationNFrost = b[0x50];
-        statusDurationRegen = b[0x51];
-        statusDurationHaste = b[0x52];
-        statusDurationSlow = b[0x53];
-        extraStatusFlags1 = b[0x54];
-        extraStatusFlags2 = b[0x55];
-        statBuffFlags = b[0x56];
-        alwaysNull1 = b[0x57];
-        overdriveCategorizationByte = b[0x58];
-        statBuffValue = b[0x59];
-        specialBuffFlags = b[0x5A];
-        alwaysNull2 = b[0x5B];
+        miscProperties22 = bytes[0x22];
+        damageClass = bytes[0x23];
+        moveRank = bytes[0x24];
+        costMP = bytes[0x25];
+        costOD = bytes[0x26];
+        attackCritBonus = bytes[0x27];
+        damageFormula = bytes[0x28];
+        attackAccuracy = bytes[0x29];
+        attackPower = bytes[0x2A];
+        hitCount = bytes[0x2B];
+        shatterChance = bytes[0x2C];
+        elementFlags = bytes[0x2D];
+        statusChanceDeath = bytes[0x2E];
+        statusChanceZombie = bytes[0x2F];
+        statusChancePetrify = bytes[0x30];
+        statusChancePoison = bytes[0x31];
+        statusChancePowerBreak = bytes[0x32];
+        statusChanceMagicBreak = bytes[0x33];
+        statusChanceArmorBreak = bytes[0x34];
+        statusChanceMentalBreak = bytes[0x35];
+        statusChanceConfuse = bytes[0x36];
+        statusChanceBerserk = bytes[0x37];
+        statusChanceProvoke = bytes[0x38];
+        statusChanceThreaten = bytes[0x39];
+        statusChanceSleep = bytes[0x3A];
+        statusChanceSilence = bytes[0x3B];
+        statusChanceDarkness = bytes[0x3C];
+        statusChanceShell = bytes[0x3D];
+        statusChanceProtect = bytes[0x3E];
+        statusChanceReflect = bytes[0x3F];
+        statusChanceNTide = bytes[0x40];
+        statusChanceNBlaze = bytes[0x41];
+        statusChanceNShock = bytes[0x42];
+        statusChanceNFrost = bytes[0x43];
+        statusChanceRegen = bytes[0x44];
+        statusChanceHaste = bytes[0x45];
+        statusChanceSlow = bytes[0x46];
+        statusDurationSleep = bytes[0x47];
+        statusDurationSilence = bytes[0x48];
+        statusDurationDarkness = bytes[0x49];
+        statusDurationShell = bytes[0x4A];
+        statusDurationProtect = bytes[0x4B];
+        statusDurationReflect = bytes[0x4C];
+        statusDurationNTide = bytes[0x4D];
+        statusDurationNBlaze = bytes[0x4E];
+        statusDurationNShock = bytes[0x4F];
+        statusDurationNFrost = bytes[0x50];
+        statusDurationRegen = bytes[0x51];
+        statusDurationHaste = bytes[0x52];
+        statusDurationSlow = bytes[0x53];
+        extraStatusFlags1 = bytes[0x54];
+        extraStatusFlags2 = bytes[0x55];
+        statBuffFlags = bytes[0x56];
+        alwaysNull1 = bytes[0x57];
+        overdriveCategorizationByte = bytes[0x58];
+        statBuffValue = bytes[0x59];
+        specialBuffFlags = bytes[0x5A];
+        alwaysNull2 = bytes[0x5B];
         if (length > 92) {
-            unknownByte5C = b[0x5C];
-            unknownByte5D = b[0x5D];
-            unknownByte5E = b[0x5E];
-            unknownByte5F = b[0x5F];
+            unknownByte5C = bytes[0x5C];
+            unknownByte5D = bytes[0x5D];
+            unknownByte5E = bytes[0x5E];
+            unknownByte5F = bytes[0x5F];
         }
-        nameOffsetComputed = nameOffsetHighByte * 256 + nameOffsetLowByte;
-        dashOffsetComputed = dashOffsetHighByte * 256 + dashOffsetLowByte;
-        descriptionOffsetComputed = descriptionOffsetHighByte * 256 + descriptionOffsetLowByte;
-        otherTextOffsetComputed = otherTextOffsetHighByte * 256 + otherTextOffsetLowByte;
     }
 
     private void mapFlags() {
@@ -436,6 +413,13 @@ public class AbilityDataObject {
             overdriveCharacter = characters.get(overdriveCategorizationByte % 0x10);
             overdriveCategory = overdriveCategorizationByte / 0x10;
         }
+    }
+
+    private void mapStrings(int[] stringBytes) {
+        name = Main.getStringAtLookupOffset(stringBytes, nameOffsetComputed);
+        dash = Main.getStringAtLookupOffset(stringBytes, dashOffsetComputed);
+        description = Main.getStringAtLookupOffset(stringBytes, descriptionOffsetComputed);
+        otherText = Main.getStringAtLookupOffset(stringBytes, otherTextOffsetComputed);
     }
 
     @Override
@@ -810,5 +794,11 @@ public class AbilityDataObject {
             submenus.put(21, "Gil (Bribe/SC)");
             submenus.put(22, "Gil (Pay Yoji)");
         }
+    }
+
+    private int read2Bytes(int offset) {
+        int val = bytes[offset];
+        val += bytes[offset+1] * 0x100;
+        return val;
     }
 }

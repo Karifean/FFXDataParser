@@ -2,6 +2,7 @@ package main;
 
 import model.AbilityDataObject;
 import model.GearDataObject;
+import model.KeyItemDataObject;
 import model.MonsterObject;
 
 import java.io.*;
@@ -13,7 +14,7 @@ public class Main {
     private static final int MODE_GREP = 2;
     private static final int MODE_TRANSLATE = 3;
     private static final int MODE_READ_ALL_ABILITIES = 4;
-    private static final int MODE_READ_SPECIFIC_ABILITY = 5;
+    private static final int MODE_READ_KEY_ITEMS = 5;
     private static final int MODE_READ_MONSTER_AI = 6;
     private static final int MODE_READ_MONSTER_AI_WITH_ABILITY_NAMES = 7;
     private static final int MODE_READ_ITEM_PICKUPS = 8;
@@ -77,14 +78,16 @@ public class Main {
                 break;
             case MODE_READ_ITEM_PICKUPS:
                 GearDataObject[] gear = readWeaponPickups(ORIGINALS_KERNEL_PATH_REGULAR + "buki_get.bin", false);
-                for (String filename : realArgs) {
-                    readItemPickups(PREFIX + filename, gear);
-                }
+                KeyItemDataObject[] keyItems = readKeyItemsFromFile(LOCALIZED_KERNEL_PATH_REGULAR + "important.bin", false);
+                readItemPickups(ORIGINALS_KERNEL_PATH_REGULAR + "takara.bin", gear, keyItems);
                 break;
             case MODE_READ_WEAPON_PICKUPS:
                 for (String filename : realArgs) {
                     readWeaponPickups(PREFIX + filename, true);
                 }
+                break;
+            case MODE_READ_KEY_ITEMS:
+                readKeyItemsFromFile(LOCALIZED_KERNEL_PATH_REGULAR + "important.bin", true);
                 break;
             case MODE_FIND_EQUAL_FILES:
                 findEqualFiles(PREFIX + realArgs.get(0), PREFIX + realArgs.get(1));
@@ -229,7 +232,7 @@ public class Main {
         System.out.println(out);
     }
 
-    private static String getStringAtLookupOffset(int[] table, int offset) {
+    public static String getStringAtLookupOffset(int[] table, int offset) {
         if (offset >= table.length) {
             return "(OOB)";
         }
@@ -336,17 +339,19 @@ public class Main {
     private static AbilityDataObject[] readAbilitiesFromFile(String filename) {
         File file = new File(filename);
         if (!file.isDirectory()) {
-            try {
-                DataInputStream inputStream = new DataInputStream(new BufferedInputStream(new FileInputStream(file)));
-                inputStream.skipBytes(10);
-                int length = inputStream.read();
-                length += inputStream.read() * 256;
-                AbilityDataObject[] abilities = new AbilityDataObject[length+1];
+            try (DataInputStream inputStream = new DataInputStream(new BufferedInputStream(new FileInputStream(file)))) {
+                inputStream.skipBytes(0xA);
+                int count = inputStream.read();
+                count += inputStream.read() * 0x100;
+                AbilityDataObject[] moves = new AbilityDataObject[count+1];
                 int individualLength = inputStream.read();
-                individualLength += inputStream.read() * 256;
-                inputStream.skipBytes(6);
-                for (int i = 0; i <= length; i++) {
-                    abilities[i] = new AbilityDataObject(inputStream, individualLength);
+                individualLength += inputStream.read() * 0x100;
+                int totalLength = inputStream.read();
+                totalLength += inputStream.read() * 0x100;
+                inputStream.skipBytes(4);
+                int[] moveBytes = new int[totalLength];
+                for (int i = 0; i < totalLength; i++) {
+                    moveBytes[i] = inputStream.read();
                 }
                 byte[] stringBytes = inputStream.readAllBytes();
                 int stringsLength = stringBytes.length;
@@ -354,15 +359,46 @@ public class Main {
                 for (int i = 0; i < stringsLength; i++) {
                     allStrings[i] = Byte.toUnsignedInt(stringBytes[i]);
                 }
-                inputStream.close();
-                for (int i = 0; i <= length; i++) {
-                    AbilityDataObject ability = abilities[i];
-                    ability.name = getStringAtLookupOffset(allStrings, ability.nameOffsetComputed);
-                    ability.dash = getStringAtLookupOffset(allStrings, ability.dashOffsetComputed);
-                    ability.description = getStringAtLookupOffset(allStrings, ability.descriptionOffsetComputed);
-                    ability.otherText = getStringAtLookupOffset(allStrings, ability.otherTextOffsetComputed);
+                for (int i = 0; i <= count; i++) {
+                    moves[i] = new AbilityDataObject(Arrays.copyOfRange(moveBytes, i * individualLength, (i+1) * individualLength), allStrings);
                 }
-                return abilities;
+                return moves;
+            } catch (IOException ignored) {}
+        }
+        return null;
+    }
+
+    private static KeyItemDataObject[] readKeyItemsFromFile(String filename, boolean print) {
+        File file = new File(filename);
+        if (!file.isDirectory()) {
+            try (DataInputStream inputStream = new DataInputStream(new BufferedInputStream(new FileInputStream(file)))) {
+                inputStream.skipBytes(0xA);
+                int count = inputStream.read();
+                count += inputStream.read() * 0x100;
+                KeyItemDataObject[] keyItems = new KeyItemDataObject[count+1];
+                int individualLength = inputStream.read();
+                individualLength += inputStream.read() * 0x100;
+                int totalLength = inputStream.read();
+                totalLength += inputStream.read() * 0x100;
+                inputStream.skipBytes(4);
+                int[] keyItemBytes = new int[totalLength];
+                for (int i = 0; i < totalLength; i++) {
+                    keyItemBytes[i] = inputStream.read();
+                }
+                byte[] stringBytes = inputStream.readAllBytes();
+                int stringsLength = stringBytes.length;
+                int[] allStrings = new int[stringsLength];
+                for (int i = 0; i < stringsLength; i++) {
+                    allStrings[i] = Byte.toUnsignedInt(stringBytes[i]);
+                }
+                for (int i = 0; i <= count; i++) {
+                    keyItems[i] = new KeyItemDataObject(Arrays.copyOfRange(keyItemBytes, i * individualLength, (i+1) * individualLength), allStrings);
+                    if (print) {
+                        String offset = String.format("%04x", (i * individualLength) + 20);
+                        System.out.println("Index " + i + " [" + String.format("%02x", i) + "h] (Offset " + offset + ") - " + keyItems[i]);
+                    }
+                }
+                return keyItems;
             } catch (IOException ignored) {}
         }
         return null;
@@ -404,13 +440,13 @@ public class Main {
         }
     }
 
-    private static void readItemPickups(String filename, GearDataObject[] gear) {
+    private static void readItemPickups(String filename, GearDataObject[] gear, KeyItemDataObject[] keyItems) {
         System.out.println("--- " + filename + " ---");
         File file = new File(filename);
         if (file.isDirectory()) {
             String[] contents = file.list();
             if (contents != null) {
-                Arrays.stream(contents).filter(sf -> !sf.startsWith(".")).sorted().forEach(sf -> readItemPickups(filename + '/' + sf, gear));
+                Arrays.stream(contents).filter(sf -> !sf.startsWith(".")).sorted().forEach(sf -> readItemPickups(filename + '/' + sf, gear, keyItems));
             }
         } else {
             try {
@@ -442,7 +478,8 @@ public class Main {
                         GearDataObject obj = gear != null ? gear[type] : null;
                         System.out.println("Gear: buki_get #" + type + (quantity != 1 ? " Q=" + quantity : "") + " " + obj);
                     } else if (kind == 0x0A) {
-                        System.out.println("Key Item: #" + typeLow + hexSuffix);
+                        KeyItemDataObject obj = keyItems != null ? keyItems[typeLow] : null;
+                        System.out.println("Key Item: #" + typeLow + ' ' + (obj != null ? obj.getName() : "invalid"));
                     } else {
                         System.out.println("Unknown K=" + kind + "; Q=" + quantity + "; T=" + type + hexSuffix);
                     }
@@ -462,28 +499,28 @@ public class Main {
                 Arrays.stream(contents).filter(sf -> !sf.startsWith(".")).sorted().forEach(sf -> readWeaponPickups(filename + '/' + sf, print));
             }
         } else {
-            try {
-                DataInputStream inputStream = new DataInputStream(new BufferedInputStream(new FileInputStream(file)));
-                inputStream.skipBytes(10);
-                int entriesLow = inputStream.read();
-                int entries = inputStream.read() * 256 + entriesLow + 1;
-                int entrySizeLow = inputStream.read();
-                int entrySize = inputStream.read() * 256 + entrySizeLow;
-                int sizeLow = inputStream.read();
-                int size = inputStream.read() * 256 + sizeLow;
+            try (DataInputStream inputStream = new DataInputStream(new BufferedInputStream(new FileInputStream(file)))) {
+                inputStream.skipBytes(0xA);
+                int count = inputStream.read();
+                count += inputStream.read() * 0x100;
+                GearDataObject[] gear = new GearDataObject[count+1];
+                int individualLength = inputStream.read();
+                individualLength += inputStream.read() * 0x100;
+                int totalLength = inputStream.read();
+                totalLength += inputStream.read() * 0x100;
                 inputStream.skipBytes(4);
-                int j = 0;
-                GearDataObject[] data = new GearDataObject[entries];
-                for (int i = 0; i < entries; i++) {
-                    GearDataObject obj = new GearDataObject(inputStream, entrySize);
-                    data[i] = obj;
-                    if (print) {
-                        String offset = String.format("%04x", (i * entrySize) + 20);
-                        System.out.println("Index " + j + " [" + String.format("%02x", j) + "h] (Offset " + offset + ") - " + obj);
-                    }
-                    j++;
+                int[] gearBytes = new int[totalLength];
+                for (int i = 0; i < totalLength; i++) {
+                    gearBytes[i] = inputStream.read();
                 }
-                return data;
+                for (int i = 0; i <= count; i++) {
+                    gear[i] = new GearDataObject(Arrays.copyOfRange(gearBytes, i * individualLength, (i+1) * individualLength));
+                    if (print) {
+                        String offset = String.format("%04x", (i * individualLength) + 20);
+                        System.out.println("Index " + i + " [" + String.format("%02x", i) + "h] (Offset " + offset + ") - " + gear[i]);
+                    }
+                }
+                return gear;
             } catch (IOException ignored) {}
         }
         return null;
