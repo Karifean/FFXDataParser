@@ -5,7 +5,7 @@ import java.util.List;
 
 public class ScriptFunc extends ScriptField {
     public List<ScriptField> inputs;
-    public int group;
+    public int funcspace;
 
     public ScriptFunc(String name, String type, String internalName, boolean brackets) {
         super(name, type, internalName);
@@ -68,7 +68,7 @@ public class ScriptFunc extends ScriptField {
 
     @Override
     public String toString() {
-        String groupStr = idx != null ? ScriptConstants.FUNCGROUPS[idx / 0x1000] + '.' : "";
+        String groupStr = idx != null ? ScriptConstants.FUNCSPACES[idx / 0x1000] + '.' : "";
         if (isNameless()) {
             return groupStr + getHexIndex();
         }
@@ -91,7 +91,8 @@ public class ScriptFunc extends ScriptField {
         }
         for (int i = 0; i < len; i++) {
             StackObject obj = params.get(i);
-            StackObject typed = obj.expression ? obj : new StackObject(inputs.get(i).type, false, obj.content, obj.value);
+            String paramType = inputs.get(i).type;
+            StackObject typed = obj.expression || "unknown".equals(paramType) ? obj : new StackObject(paramType, obj);
             str.append(inputs.get(i).name).append('=').append(typed).append(", ");
         }
         return str.substring(0, str.length() - 2) + ')';

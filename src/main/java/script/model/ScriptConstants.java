@@ -3,7 +3,7 @@ package script.model;
 import java.util.*;
 
 public abstract class ScriptConstants {
-    public static String[] FUNCGROUPS;
+    public static String[] FUNCSPACES;
     public static int[] OPCODE_STACKPOPS;
     public static List<Integer> OPCODE_ENDLINE;
     public static Map<String, Map<Integer, ScriptField>> ENUMERATIONS = new HashMap<>();
@@ -16,23 +16,23 @@ public abstract class ScriptConstants {
             return;
         }
         initialized = true;
-        FUNCGROUPS = new String[0x10];
-        FUNCGROUPS[0x0] = "Common";
-        FUNCGROUPS[0x1] = "Math";
-        FUNCGROUPS[0x2] = "Unknown2";
-        FUNCGROUPS[0x3] = "Unknown3";
-        FUNCGROUPS[0x4] = "SgEvent";
-        FUNCGROUPS[0x5] = "ChEvent";
-        FUNCGROUPS[0x6] = "Camera";
-        FUNCGROUPS[0x7] = "Battle";
-        FUNCGROUPS[0x8] = "Map";
-        FUNCGROUPS[0x9] = "Mount";
-        FUNCGROUPS[0xA] = "UnknownA";
-        FUNCGROUPS[0xB] = "Movie";
-        FUNCGROUPS[0xC] = "Debug";
-        FUNCGROUPS[0xD] = "AbilityMap";
-        FUNCGROUPS[0xE] = "UnknownE";
-        FUNCGROUPS[0xF] = "UnknownF";
+        FUNCSPACES = new String[0x10];
+        FUNCSPACES[0x0] = "Common";
+        FUNCSPACES[0x1] = "Math";
+        FUNCSPACES[0x2] = "Unknown2";
+        FUNCSPACES[0x3] = "Unknown3";
+        FUNCSPACES[0x4] = "SgEvent";
+        FUNCSPACES[0x5] = "ChEvent";
+        FUNCSPACES[0x6] = "Camera";
+        FUNCSPACES[0x7] = "Battle";
+        FUNCSPACES[0x8] = "Map";
+        FUNCSPACES[0x9] = "Mount";
+        FUNCSPACES[0xA] = "UnknownA";
+        FUNCSPACES[0xB] = "Movie";
+        FUNCSPACES[0xC] = "Debug";
+        FUNCSPACES[0xD] = "AbilityMap";
+        FUNCSPACES[0xE] = "UnknownE";
+        FUNCSPACES[0xF] = "UnknownF";
         OPCODE_ENDLINE = new ArrayList<>();
         OPCODE_ENDLINE.add(0x25);
         OPCODE_ENDLINE.add(0x2A);
@@ -158,6 +158,7 @@ public abstract class ScriptConstants {
         putEnum("selector", 0x00, "Any/All");
         putEnum("selector", 0x01, "Highest");
         putEnum("selector", 0x02, "Lowest");
+        putEnum("selector", 0x80, "Not");
 
         putEnum("ambushState", 0x00, "Randomized", "first_attack_normal");
         putEnum("ambushState", 0x01, "Preemptive", "first_attack_player");
@@ -259,8 +260,8 @@ public abstract class ScriptConstants {
         putEnum("actor", 0xFFF9, "Character#2", "CHR_PARTY2");
         putEnum("actor", 0xFFFA, "Character#1", "CHR_PARTY1");
         putEnum("actor", 0xFFFB, "AllActors", "CHR_ALL");
-        putEnum("actor", 0xFFFC, null, "CHR_TARGET_NOW");
-        putEnum("actor", 0xFFFD, null, "CHR_TARGET");
+        putEnum("actor", 0xFFFC, "?TargetActorsImmediate", "CHR_TARGET_NOW");
+        putEnum("actor", 0xFFFD, "TargetActors", "CHR_TARGET");
         putEnum("actor", 0xFFFE, "ActiveActors", "CHR_ACTIVE");
         putEnum("actor", 0xFFFF, "Actor:Null", "CHR_NOP");
 
@@ -272,7 +273,7 @@ public abstract class ScriptConstants {
         putActorProperty(0x0005, "StatusPoison", "bool", "stat_poison");
         putActorProperty(0x0006, "StatusPetrify", "bool", "stat_stone");
         putActorProperty(0x0007, "StatusZombie", "bool", "stat_zombie");
-        putActorProperty(0x0008, null, "unknown", "stat_weak");
+        putActorProperty(0x0008, "?StatusYellowHP", "bool", "stat_weak");
         putActorProperty(0x0009, "STR", "int", "stat_str");
         putActorProperty(0x000A, "DEF", "int", "stat_vit");
         putActorProperty(0x000B, "MAG", "int", "stat_mag");
@@ -298,8 +299,8 @@ public abstract class ScriptConstants {
         putActorProperty(0x001F, null, "bool", "stat_group");
         putActorProperty(0x0020, "Armored", "bool", "stat_sp_hard");
         putActorProperty(0x0021, "?ImmuneToFractionalDmg", "bool", "stat_sp_ratio");
-        putActorProperty(0x0022, null, "bool", "stat_sp_zombie");
-        putActorProperty(0x0023, null, "bool", "stat_sp_see");
+        putActorProperty(0x0022, "?ImmuneToLife", "bool", "stat_sp_zombie");
+        putActorProperty(0x0023, "?ImmuneToSensor", "bool", "stat_sp_see");
         putActorProperty(0x0024, null, "bool", "stat_sp_live");
         putActorProperty(0x0025, "StatusPowerBreak", "bool", "stat_power_break");
         putActorProperty(0x0026, "StatusMagicBreak", "bool", "stat_magic_break");
@@ -323,8 +324,8 @@ public abstract class ScriptConstants {
         putActorProperty(0x0038, "StatusDurationHaste", "int", "stat_haste");
         putActorProperty(0x0039, "StatusDurationSlow", "int", "stat_slow");
         putActorProperty(0x003A, "?Sensor", "bool", "ability_see");
-        putActorProperty(0x003B, null, "bool", "ability_lead");
-        putActorProperty(0x003C, null, "bool", "ability_first");
+        putActorProperty(0x003B, "?FirstStrike", "bool", "ability_lead");
+        putActorProperty(0x003C, "?Initiative", "bool", "ability_first");
         putActorProperty(0x003D, "CounterAttack", "bool", "ability_counter");
         putActorProperty(0x003E, "?EvadeAndCounter", "bool", "ability_counter2");
         putActorProperty(0x003F, null, "bool", "ability_dark");
@@ -345,8 +346,8 @@ public abstract class ScriptConstants {
         putActorProperty(0x004E, null, "bool", "ability_nonencount");
         putActorProperty(0x004F, "DeathAnimation", "deathAnimation", "stat_death_pattern");
         putActorProperty(0x0050, null, "unknown", "stat_event_chr");
-        putActorProperty(0x0051, "?GetsTurns", "bool", "stat_action");
-        putActorProperty(0x0052, "?Targetable", "bool", "stat_cursor");
+        putActorProperty(0x0051, "GetsTurns", "bool", "stat_action");
+        putActorProperty(0x0052, "Targetable", "bool", "stat_cursor");
         putActorProperty(0x0053, "VisibleOnCTB", "bool", "stat_ctb_list");
         putActorProperty(0x0054, null, "unknown", "stat_visible");
         putActorProperty(0x0055, "?Location1", "int", "stat_move_area");
@@ -355,7 +356,7 @@ public abstract class ScriptConstants {
         putActorProperty(0x0058, null, "unknown", "stat_model");
         putActorProperty(0x0059, "?Host", "actor", "stat_damage_chr");
         putActorProperty(0x005A, null, "unknown", "stat_move_target");
-        putActorProperty(0x005B, "?AnimationsVariant", "int", "stat_motionlv");
+        putActorProperty(0x005B, "AnimationsVariant", "int", "stat_motionlv");
         putActorProperty(0x005C, null, "unknown", "stat_nop");
         putActorProperty(0x005D, null, "bool", "stat_move_flag");
         putActorProperty(0x005E, null, "unknown", "stat_live_motion");

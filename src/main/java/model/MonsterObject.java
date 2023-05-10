@@ -12,6 +12,11 @@ public class MonsterObject {
     public ScriptObject monsterAi;
     public MonsterDataObject monsterData;
     public boolean isMonsterFile;
+    public String monsterName;
+    public String monsterSensorText;
+    public String monsterSensorDash;
+    public String monsterScanText;
+    public String monsterScanDash;
     public StringBuilder monsterText = new StringBuilder();
     int[] aiBytes;
     int[] statBytes = new int[0x8C];
@@ -40,7 +45,8 @@ public class MonsterObject {
         int totalFileBytes = read4Bytes();
         data.reset();
         data.skipNBytes(scriptBeginAddress);
-        int totalScriptLength = unknownChunkAddress - scriptBeginAddress;
+        int nextChunkAfterScript = unknownChunkAddress > 0 ? unknownChunkAddress : valuesBeginAddress;
+        int totalScriptLength = nextChunkAfterScript - scriptBeginAddress;
         aiBytes = new int[totalScriptLength];
         for (int i = 0; i < totalScriptLength; i++) {
             aiBytes[i] = data.read();
@@ -77,6 +83,11 @@ public class MonsterObject {
             data.skipNBytes(0x6E);
             List<Integer> offsets = List.of(nameOffset, sensorOffset, sensorDashOffset, scanOffset, scanDashOffset);
             List<String> strings = Main.readStringsAtOffsets(5, offsets, data, false, null);
+            monsterName = strings.get(0);
+            monsterSensorText = strings.get(1);
+            monsterSensorDash = strings.get(2);
+            monsterScanText = strings.get(3);
+            monsterScanDash = strings.get(4);
             strings.forEach(s -> monsterText.append(s).append('\n'));
         }
     }

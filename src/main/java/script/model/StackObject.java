@@ -28,7 +28,7 @@ public class StackObject {
     @Override
     public String toString() {
         if (!expression && !"unknown".equals(type)) {
-            String hex = String.format(value >= 0x100 ? "%04x" : "%02x", value).toUpperCase();
+            String hex = String.format(value >= 0x10000 ? "%08x" : value >= 0x100 ? "%04x" : "%02x", value).toUpperCase();
             String hexSuffix = " [" + hex + "h]";
             if ("bool".equals(type)) {
                 return (value > 0 ? "true" : "false") + hexSuffix;
@@ -36,19 +36,27 @@ public class StackObject {
             if ("float".equals(type)) {
                 return Float.intBitsToFloat(value) + hexSuffix;
             }
+            if ("uint".equals(type)) {
+                return value + hexSuffix;
+            }
+            if ("int".equals(type)) {
+                int signed = value < 0x8000 ? value : (value - 0x10000);
+                return signed + hexSuffix;
+            }
             if ("move".equals(type)) {
                 if (value == 0) {
                     return "Null Move" + hexSuffix;
                 } else if (value <= 0x11) {
                     return "Switch/Summon:" + ScriptConstants.getEnumMap("actor").get(value) + hexSuffix;
                 } else {
-                    AbilityDataObject ability = Main.getAbility(hex);
+                    AbilityDataObject ability = Main.getAbility(value);
                     return (ability != null ? '"'+ability.getName()+'"' : "????") + hexSuffix;
                 }
             } else if ("charMove".equals(type)) {
-                String adjustedHex = String.format("%04x", value + 0x3000).toUpperCase();
+                int adjustedValue = value + 0x3000;
+                String adjustedHex = String.format("%04x", adjustedValue).toUpperCase();
                 String adjustedHexSuffix = " [" + adjustedHex + "h]";
-                AbilityDataObject ability = Main.getAbility(adjustedHex);
+                AbilityDataObject ability = Main.getAbility(adjustedValue);
                 return (ability != null ? '"'+ability.getName()+'"' : "????") + adjustedHexSuffix;
             }
             if (ScriptConstants.ENUMERATIONS.containsKey(type)) {

@@ -25,7 +25,6 @@ public class ScriptObject {
     Map<Integer, StackObject> constants = new HashMap<>();
     String lastCallType = "unknown";
     boolean gatheringInfo = true;
-    int firstEarlierJump;
     List<Integer> jumpDestinations = new ArrayList<>();
     Map<Integer, List<String>> reverseJumpDestinations = new HashMap<>();
 
@@ -225,11 +224,7 @@ public class ScriptObject {
         if (opcode >= 0x01 && opcode <= 0x18) {
             ScriptField op = ScriptConstants.COMP_OPERATORS.get(opcode);
             String resultType = op.type;
-            String asType = p1.type;
-            if ("var".equals(asType)) {
-                asType = varTypes.containsKey(p1.value) ? varTypes.get(p1.value) : p2.type;
-            }
-            String content = "(" + p1 + " " + op.name + " " + typed(p2, asType) + ")";
+            String content = "(" + p1 + " " + op.name + " " + p2 + ")";
             stack.push(new StackObject(resultType, true, content, opcode));
         } else if (opcode == 0x19) {
             stack.push(new StackObject("bool", true, "not " + p1, 0x19));
@@ -334,7 +329,7 @@ public class ScriptObject {
         } else if (opcode == 0xB0) {
             textAiString.append("Jump to j").append(argvsh).append('\n');
         } else if (opcode == 0xB3) {
-            textAiString.append("Jump to subroutine ").append(argvsd).append(" [").append(argvsh).append("h]").append('\n');
+            textAiString.append("Jump to subroutine s").append(argvsh).append('\n');
         } else if (opcode != 0x00 && opcode != 0xFF) {
             textAiString.append("Opcode:").append(String.format("%02x", opcode)).append('.').append(argvsh).append('\n');
         }

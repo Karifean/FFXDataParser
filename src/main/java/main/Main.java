@@ -27,14 +27,14 @@ public class Main {
     private static final String ORIGINALS_KERNEL_PATH_REGULAR = PATH_FFX_ROOT + "jppc/battle/kernel/";
     private static final String LOCALIZED_KERNEL_PATH_REGULAR = PATH_FFX_ROOT + "new_uspc/battle/kernel/";
     private static final String LOCALIZED_KERNEL_PATH_MODDED = PREFIX + "ffx/attacks/";
-    private static final String LOCALIZED_KERNEL_PATH = LOCALIZED_KERNEL_PATH_MODDED;
+    private static final String LOCALIZED_KERNEL_PATH = LOCALIZED_KERNEL_PATH_REGULAR;
     private static final String SKILL_TABLE_A_PATH = LOCALIZED_KERNEL_PATH + "command.bin"; // "FILE07723.dat"; // "command.bin"; //
     private static final String SKILL_TABLE_B_PATH = LOCALIZED_KERNEL_PATH + "monmagic1.bin"; // "FILE07740.dat"; // "monmagic1.bin"; //
     private static final String SKILL_TABLE_C_PATH = LOCALIZED_KERNEL_PATH + "monmagic2.bin"; // "FILE07741.dat"; // "monmagic2.bin"; //
     private static final String SKILL_TABLE_D_PATH = LOCALIZED_KERNEL_PATH + "item.bin"; // "FILE07734.dat"; // "item.bin"; //
     private static final Map<String, Set<String>> ABILITY_USERS = new HashMap<>();
     private static final Map<String, AbilityDataObject[]> FILE_ABILITIES_CACHE = new HashMap<>();
-    private static final Map<String, AbilityDataObject> ABILITY_CACHE = new HashMap<>();
+    private static final AbilityDataObject[] ABILITY_CACHE = new AbilityDataObject[0x10000];
 
     public static void main(String[] args) {
         int mode = Integer.parseInt(args[0], 10);
@@ -75,11 +75,6 @@ public class Main {
                     readMonsterAi(PREFIX + filename);
                 }
                 break;
-            case MODE_READ_SPECIFIC_ABILITY:
-                for (String abilityid : realArgs) {
-                    System.out.println(abilityid + ": " + readAbility(abilityid));
-                }
-                break;
             case MODE_READ_ITEM_PICKUPS:
                 GearDataObject[] gear = readWeaponPickups(ORIGINALS_KERNEL_PATH_REGULAR + "buki_get.bin", false);
                 for (String filename : realArgs) {
@@ -104,33 +99,29 @@ public class Main {
         }
     }
 
-    public static AbilityDataObject getAbility(String abilityid) {
-        return ABILITY_CACHE.computeIfAbsent(abilityid, Main::readAbility);
+    public static AbilityDataObject getAbility(int abilityid) {
+        if (ABILITY_CACHE[abilityid] == null) {
+            ABILITY_CACHE[abilityid] = Main.readAbility(abilityid);
+        }
+        return ABILITY_CACHE[abilityid];
     }
 
-    private static AbilityDataObject readAbility(String abilityid) {
-        if (abilityid == null || abilityid.equals("0000")) {
+    private static AbilityDataObject readAbility(int abilityid) {
+        if (abilityid == 0) {
             AbilityDataObject nullAbility = new AbilityDataObject();
             nullAbility.name = "No Move";
             return nullAbility;
         } else {
-            int offset = Integer.parseInt(abilityid.substring(2, 4), 16);
-            if (abilityid.startsWith("30")) {
-                return getAbilitiesFromFile(SKILL_TABLE_A_PATH, offset);
-            } else if (abilityid.startsWith("31")) {
-                return getAbilitiesFromFile(SKILL_TABLE_A_PATH, offset + 256);
-            } else if (abilityid.startsWith("40")) {
-                return getAbilitiesFromFile(SKILL_TABLE_B_PATH, offset);
-            } else if (abilityid.startsWith("41")) {
-                return getAbilitiesFromFile(SKILL_TABLE_B_PATH, offset + 256);
-            } else if (abilityid.startsWith("60")) {
-                return getAbilitiesFromFile(SKILL_TABLE_C_PATH, offset);
-            } else if (abilityid.startsWith("61")) {
-                return getAbilitiesFromFile(SKILL_TABLE_C_PATH, offset + 256);
-            } else if (abilityid.startsWith("20")) {
-                return getAbilitiesFromFile(SKILL_TABLE_D_PATH, offset);
-            } else if (abilityid.startsWith("21")) {
-                return getAbilitiesFromFile(SKILL_TABLE_D_PATH, offset + 256);
+            int group = abilityid / 0x1000;
+            int idx = abilityid & 0x0FFF;
+            if (group == 3) {
+                return getAbilitiesFromFile(SKILL_TABLE_A_PATH, idx);
+            } else if (group == 4) {
+                return getAbilitiesFromFile(SKILL_TABLE_B_PATH, idx);
+            } else if (group == 6) {
+                return getAbilitiesFromFile(SKILL_TABLE_C_PATH, idx);
+            } else if (group == 2) {
+                return getAbilitiesFromFile(SKILL_TABLE_D_PATH, idx);
             } else {
                 System.out.println("invalid abilityid! " + abilityid);
                 return null;
@@ -393,15 +384,22 @@ public class Main {
             } catch (Exception e) {
                 e.printStackTrace();
             }
-            System.out.println("- Text AI -");
+            if (isMonsterFile) {
+                System.out.println(" -- " + aiObj.monsterName + " -- ");
+            }
+            System.out.println("- Text Script Code -");
             System.out.println(aiObj.monsterAi.textAiString);
-            System.out.println("- Hex AI -");
+            System.out.println("- Hex Script Code -");
             System.out.println(aiObj.monsterAi.hexAiString.toString().toUpperCase());
             if (isMonsterFile) {
                 System.out.println("- Monster Data -");
                 System.out.println(aiObj.monsterData);
-                System.out.println("- Monster Text -");
-                System.out.println(aiObj.monsterText);
+                System.out.println("- Sensor Text -");
+                System.out.println(aiObj.monsterSensorText);
+                System.out.println(aiObj.monsterSensorDash);
+                System.out.println("- Scan Text -");
+                System.out.println(aiObj.monsterScanText);
+                System.out.println(aiObj.monsterScanDash);
             }
         }
     }
@@ -433,11 +431,11 @@ public class Main {
                     int kind = inputStream.read();
                     int quantity = inputStream.read();
                     int typeLow = inputStream.read();
-                    int type = inputStream.read() * 256 + typeLow;
+                    int type = inputStream.read() * 0x100 + typeLow;
                     String typeString = String.format("%02x", type);
                     String hexSuffix = " [" + typeString + "h]";
                     if (kind == 0x02) {
-                        System.out.println("Item: " + quantity + "x " + getAbility(typeString).name);
+                        System.out.println("Item: " + quantity + "x " + getAbility(type).name);
                     } else if (kind == 0x00) {
                         System.out.println("Gil: " + quantity * 100 + (type != 0 ? " T=" + type + hexSuffix : ""));
                     } else if (kind == 0x05) {
