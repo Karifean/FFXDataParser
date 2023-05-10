@@ -1,9 +1,6 @@
 package main;
 
-import model.AbilityDataObject;
-import model.GearDataObject;
-import model.KeyItemDataObject;
-import model.MonsterObject;
+import model.*;
 
 import java.io.*;
 import java.util.*;
@@ -17,7 +14,7 @@ public class Main {
     private static final int MODE_READ_KEY_ITEMS = 5;
     private static final int MODE_READ_MONSTER_AI = 6;
     private static final int MODE_READ_MONSTER_AI_WITH_ABILITY_NAMES = 7;
-    private static final int MODE_READ_ITEM_PICKUPS = 8;
+    private static final int MODE_READ_TREASURES = 8;
     private static final int MODE_READ_WEAPON_PICKUPS = 9;
     private static final int MODE_FIND_EQUAL_FILES = 10;
     private static final int MODE_READ_STRING_FILE = 11;
@@ -76,10 +73,10 @@ public class Main {
                     readMonsterAi(PREFIX + filename);
                 }
                 break;
-            case MODE_READ_ITEM_PICKUPS:
-                GearDataObject[] gear = readWeaponPickups(ORIGINALS_KERNEL_PATH_REGULAR + "buki_get.bin", false);
-                KeyItemDataObject[] keyItems = readKeyItemsFromFile(LOCALIZED_KERNEL_PATH_REGULAR + "important.bin", false);
-                readItemPickups(ORIGINALS_KERNEL_PATH_REGULAR + "takara.bin", gear, keyItems);
+            case MODE_READ_TREASURES:
+                DataAccess.WEAPON_PICKUPS = readWeaponPickups(ORIGINALS_KERNEL_PATH_REGULAR + "buki_get.bin", false);
+                DataAccess.KEY_ITEMS = readKeyItemsFromFile(LOCALIZED_KERNEL_PATH_REGULAR + "important.bin", false);
+                DataAccess.TREASURES = readTreasures(ORIGINALS_KERNEL_PATH_REGULAR + "takara.bin", true);
                 break;
             case MODE_READ_WEAPON_PICKUPS:
                 for (String filename : realArgs) {
@@ -440,52 +437,41 @@ public class Main {
         }
     }
 
-    private static void readItemPickups(String filename, GearDataObject[] gear, KeyItemDataObject[] keyItems) {
+    private static TreasureDataObject[] readTreasures(String filename, boolean print) {
         System.out.println("--- " + filename + " ---");
         File file = new File(filename);
         if (file.isDirectory()) {
             String[] contents = file.list();
             if (contents != null) {
-                Arrays.stream(contents).filter(sf -> !sf.startsWith(".")).sorted().forEach(sf -> readItemPickups(filename + '/' + sf, gear, keyItems));
+                Arrays.stream(contents).filter(sf -> !sf.startsWith(".")).sorted().forEach(sf -> readTreasures(filename + '/' + sf, print));
             }
         } else {
-            try {
-                DataInputStream inputStream = new DataInputStream(new BufferedInputStream(new FileInputStream(file)));
-                inputStream.skipBytes(10);
-                int entriesLow = inputStream.read();
-                int entries = inputStream.read() * 256 + entriesLow + 1;
-                int entrySizeLow = inputStream.read();
-                int entrySize = inputStream.read() * 256 + entrySizeLow;
-                int sizeLow = inputStream.read();
-                int size = inputStream.read() * 256 + sizeLow;
+            try (DataInputStream inputStream = new DataInputStream(new BufferedInputStream(new FileInputStream(file)))) {
+                inputStream.skipBytes(0xA);
+                int count = inputStream.read();
+                count += inputStream.read() * 0x100;
+                TreasureDataObject[] treasures = new TreasureDataObject[count+1];
+                int individualLength = inputStream.read();
+                individualLength += inputStream.read() * 0x100;
+                int totalLength = inputStream.read();
+                totalLength += inputStream.read() * 0x100;
                 inputStream.skipBytes(4);
-                int j = 0;
-                for (int i = 0; i < entries; i++) {
-                    String offset = String.format("%04x", (i * entrySize) + 20);
-                    System.out.print("Index " + j + " (Offset " + offset + ") - ");
-                    j++;
-                    int kind = inputStream.read();
-                    int quantity = inputStream.read();
-                    int typeLow = inputStream.read();
-                    int type = inputStream.read() * 0x100 + typeLow;
-                    String typeString = String.format("%02x", type);
-                    String hexSuffix = " [" + typeString + "h]";
-                    if (kind == 0x02) {
-                        System.out.println("Item: " + quantity + "x " + getAbility(type).name);
-                    } else if (kind == 0x00) {
-                        System.out.println("Gil: " + quantity * 100 + (type != 0 ? " T=" + type + hexSuffix : ""));
-                    } else if (kind == 0x05) {
-                        GearDataObject obj = gear != null ? gear[type] : null;
-                        System.out.println("Gear: buki_get #" + type + (quantity != 1 ? " Q=" + quantity : "") + " " + obj);
-                    } else if (kind == 0x0A) {
-                        KeyItemDataObject obj = keyItems != null ? keyItems[typeLow] : null;
-                        System.out.println("Key Item: #" + typeLow + ' ' + (obj != null ? obj.getName() : "invalid"));
-                    } else {
-                        System.out.println("Unknown K=" + kind + "; Q=" + quantity + "; T=" + type + hexSuffix);
+                int[] treasureBytes = new int[totalLength];
+                for (int i = 0; i < totalLength; i++) {
+                    treasureBytes[i] = inputStream.read();
+                }
+                for (int i = 0; i < count; i++) {
+                    String offset = String.format("%04x", (i * individualLength) + 20);
+                    treasures[i] = new TreasureDataObject(Arrays.copyOfRange(treasureBytes, i * individualLength, (i + 1) * individualLength));
+                    if (print) {
+                        System.out.print("Index " + i + " [" + String.format("%02x", i) + "h] (Offset " + offset + ") - ");
+                        System.out.println(treasures[i]);
                     }
                 }
+                return treasures;
             } catch (IOException ignored) {}
         }
+        return null;
     }
 
     private static GearDataObject[] readWeaponPickups(String filename, boolean print) {
