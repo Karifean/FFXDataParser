@@ -4,6 +4,7 @@ import model.*;
 
 import java.io.*;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class Main {
 
@@ -18,13 +19,16 @@ public class Main {
     private static final int MODE_READ_WEAPON_PICKUPS = 9;
     private static final int MODE_FIND_EQUAL_FILES = 10;
     private static final int MODE_READ_STRING_FILE = 11;
+    private static final int MODE_READ_GEAR_ABILITIES = 12;
     public static final Map<Integer, Character> BIN_LOOKUP = new HashMap<>();
     public static final Map<Character, Integer> BIN_REV_LOOKUP = new HashMap<>();
     private static final String PREFIX = "src/main/resources/";
     private static final String PATH_FFX_ROOT = PREFIX + "ffx_ps2/ffx/master/";
     private static final String ORIGINALS_KERNEL_PATH_REGULAR = PATH_FFX_ROOT + "jppc/battle/kernel/";
     private static final String LOCALIZED_KERNEL_PATH_REGULAR = PATH_FFX_ROOT + "new_uspc/battle/kernel/";
+    private static final String ORIGINALS_KERNEL_PATH_MODDED = PREFIX + "ffx/battle/kernel/";
     private static final String LOCALIZED_KERNEL_PATH_MODDED = PREFIX + "ffx/attacks/";
+    private static final String ORIGINALS_KERNEL_PATH = ORIGINALS_KERNEL_PATH_REGULAR;
     private static final String LOCALIZED_KERNEL_PATH = LOCALIZED_KERNEL_PATH_REGULAR;
     private static final String SKILL_TABLE_A_PATH = LOCALIZED_KERNEL_PATH + "command.bin"; // "FILE07723.dat"; // "command.bin"; //
     private static final String SKILL_TABLE_B_PATH = LOCALIZED_KERNEL_PATH + "monmagic1.bin"; // "FILE07740.dat"; // "monmagic1.bin"; //
@@ -74,17 +78,22 @@ public class Main {
                 }
                 break;
             case MODE_READ_TREASURES:
-                DataAccess.WEAPON_PICKUPS = readWeaponPickups(ORIGINALS_KERNEL_PATH_REGULAR + "buki_get.bin", false);
-                DataAccess.KEY_ITEMS = readKeyItemsFromFile(LOCALIZED_KERNEL_PATH_REGULAR + "important.bin", false);
-                DataAccess.TREASURES = readTreasures(ORIGINALS_KERNEL_PATH_REGULAR + "takara.bin", true);
+                DataAccess.GEAR_ABILITIES = readGearAbilitiesFromFile(LOCALIZED_KERNEL_PATH + "a_ability.bin", false);
+                DataAccess.WEAPON_PICKUPS = readWeaponPickups(ORIGINALS_KERNEL_PATH + "buki_get.bin", false);
+                DataAccess.KEY_ITEMS = readKeyItemsFromFile(LOCALIZED_KERNEL_PATH + "important.bin", false);
+                DataAccess.TREASURES = readTreasures(ORIGINALS_KERNEL_PATH + "takara.bin", true);
                 break;
             case MODE_READ_WEAPON_PICKUPS:
+                DataAccess.GEAR_ABILITIES = readGearAbilitiesFromFile(LOCALIZED_KERNEL_PATH + "a_ability.bin", false);
                 for (String filename : realArgs) {
                     readWeaponPickups(PREFIX + filename, true);
                 }
                 break;
             case MODE_READ_KEY_ITEMS:
-                readKeyItemsFromFile(LOCALIZED_KERNEL_PATH_REGULAR + "important.bin", true);
+                readKeyItemsFromFile(LOCALIZED_KERNEL_PATH + "important.bin", true);
+                break;
+            case MODE_READ_GEAR_ABILITIES:
+                readGearAbilitiesFromFile(LOCALIZED_KERNEL_PATH + "a_ability.bin", true);
                 break;
             case MODE_FIND_EQUAL_FILES:
                 findEqualFiles(PREFIX + realArgs.get(0), PREFIX + realArgs.get(1));
@@ -100,10 +109,10 @@ public class Main {
     }
 
     public static AbilityDataObject getAbility(int abilityid) {
-        if (ABILITY_CACHE[abilityid] == null) {
-            ABILITY_CACHE[abilityid] = Main.readAbility(abilityid);
+        if (DataAccess.MOVES[abilityid] == null) {
+            DataAccess.MOVES[abilityid] = Main.readAbility(abilityid);
         }
-        return ABILITY_CACHE[abilityid];
+        return DataAccess.MOVES[abilityid];
     }
 
     private static AbilityDataObject readAbility(int abilityid) {
@@ -322,9 +331,9 @@ public class Main {
             for (int i = 0; i < abilities.length; i++) {
                 AbilityDataObject ab = abilities[i];
                 String prefix = String.format("%-20s", Integer.toHexString(i) + ": " + ab.getName());
-                String dash = (ab.dashOffsetComputed > 0 && !"-".equals(ab.dash) ? "DH=" + ab.dash + " / " : "");
-                String description = (ab.descriptionOffsetComputed > 0 && !"-".equals(ab.description) ? ab.description : "");
-                String soText = (ab.otherTextOffsetComputed > 0 && !"-".equals(ab.otherText) ? " / OT=" + ab.otherText : "");
+                String dash = (ab.dashOffset > 0 && !"-".equals(ab.dash) ? "DH=" + ab.dash + " / " : "");
+                String description = (ab.descriptionOffset > 0 && !"-".equals(ab.description) ? ab.description : "");
+                String soText = (ab.otherTextOffset > 0 && !"-".equals(ab.otherText) ? " / OT=" + ab.otherText : "");
                 System.out.println(prefix + ab + ' ' + dash + description + soText);
             }
             return null;
@@ -401,6 +410,55 @@ public class Main {
         return null;
     }
 
+    private static GearAbilityDataObject[] readGearAbilitiesFromFile(String filename, boolean print) {
+        File file = new File(filename);
+        if (!file.isDirectory()) {
+            try (DataInputStream inputStream = new DataInputStream(new BufferedInputStream(new FileInputStream(file)))) {
+                inputStream.skipBytes(0xA);
+                int count = inputStream.read();
+                count += inputStream.read() * 0x100;
+                GearAbilityDataObject[] gearAbilities = new GearAbilityDataObject[count+1];
+                int individualLength = inputStream.read();
+                individualLength += inputStream.read() * 0x100;
+                int totalLength = inputStream.read();
+                totalLength += inputStream.read() * 0x100;
+                inputStream.skipBytes(4);
+                int[] gearAbilityBytes = new int[totalLength];
+                for (int i = 0; i < totalLength; i++) {
+                    gearAbilityBytes[i] = inputStream.read();
+                }
+                byte[] stringBytes = inputStream.readAllBytes();
+                int stringsLength = stringBytes.length;
+                int[] allStrings = new int[stringsLength];
+                for (int i = 0; i < stringsLength; i++) {
+                    allStrings[i] = Byte.toUnsignedInt(stringBytes[i]);
+                }
+                for (int i = 0; i <= count; i++) {
+                    gearAbilities[i] = new GearAbilityDataObject(Arrays.copyOfRange(gearAbilityBytes, i * individualLength, (i+1) * individualLength), allStrings);
+                    if (print) {
+                        String offset = String.format("%04x", (i * individualLength) + 20);
+                        System.out.println("Index " + i + " [" + String.format("%02x", i) + "h] (Offset " + offset + ") - " + gearAbilities[i]);
+                    }
+                }
+                if (print) {
+                    Set<Integer> groups = new HashSet<>();
+                    List<Integer> untakenGroups = new ArrayList<>();
+                    for (GearAbilityDataObject gearAbility : gearAbilities) {
+                        groups.add(gearAbility.groupIndex);
+                    }
+                    for (int i = 0; i <= 0x82; i++) {
+                        if (!groups.contains(i)) {
+                            untakenGroups.add(i);
+                        }
+                    }
+                    System.out.println("Untaken Groups: " + untakenGroups.stream().map(i -> ""+i).collect(Collectors.joining(",")));
+                }
+                return gearAbilities;
+            } catch (IOException ignored) {}
+        }
+        return null;
+    }
+
     private static void readMonsterAi(String filename) {
         System.out.println("--- " + filename + " ---");
         File file = new File(filename);
@@ -462,7 +520,7 @@ public class Main {
                 for (int i = 0; i < totalLength; i++) {
                     treasureBytes[i] = inputStream.read();
                 }
-                for (int i = 0; i < count; i++) {
+                for (int i = 0; i <= count; i++) {
                     String offset = String.format("%04x", (i * individualLength) + 20);
                     treasures[i] = new TreasureDataObject(Arrays.copyOfRange(treasureBytes, i * individualLength, (i + 1) * individualLength));
                     if (print) {

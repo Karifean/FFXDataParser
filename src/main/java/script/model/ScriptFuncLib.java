@@ -279,7 +279,7 @@ public abstract class ScriptFuncLib {
         putUnknownFunc(0x0157, 1);
         putUnknownFunc(0x0158, 1);
         putUnknownFunc(0x0159, 2);
-        putFuncWithIdx(0x015B, new ScriptFunc("obtainTreasure", "unknown", null, new ScriptField("textboxIndex", "int"), new ScriptField("treasureId", "int")));
+        putFuncWithIdx(0x015B, new ScriptFunc("obtainTreasure", "unknown", null, new ScriptField("textboxIndex", "int"), new ScriptField("treasure")));
         putUnknownFunc(0x015D, 1);
         putUnknownFunc(0x015E, 1);
         putUnknownFunc(0x015F, 1);
@@ -315,7 +315,7 @@ public abstract class ScriptFuncLib {
         putUnknownFunc(0x01A0, 3);
         putUnknownFunc(0x01A5, 2);
         putUnknownFunc(0x01A6, 0);
-        putFuncWithIdx(0x01A7, new ScriptFunc("obtainTreasureSilently", "unknown", null, new ScriptField("treasureId", "int")));
+        putFuncWithIdx(0x01A7, new ScriptFunc("obtainTreasureSilently", "unknown", null, new ScriptField("treasure")));
         putUnknownFunc(0x01AB, 0);
         putUnknownFunc(0x01AC, 1);
         putUnknownFunc(0x01AD, 1);

@@ -1,13 +1,45 @@
 package main;
 
-import model.AbilityDataObject;
-import model.GearDataObject;
-import model.KeyItemDataObject;
-import model.TreasureDataObject;
+import model.*;
 
 public class DataAccess {
-    public static AbilityDataObject[] MOVES;
+    public static AbilityDataObject[] MOVES = new AbilityDataObject[0x10000];
+    public static GearAbilityDataObject[] GEAR_ABILITIES;
     public static KeyItemDataObject[] KEY_ITEMS;
     public static TreasureDataObject[] TREASURES;
     public static GearDataObject[] WEAPON_PICKUPS;
+
+    public static GearAbilityDataObject getGearAbility(int idx) {
+        if (idx == 0x00FF) {
+            return null;
+        }
+        if (GEAR_ABILITIES == null) {
+            throw new UnsupportedOperationException();
+        }
+        int actual = idx - 0x8000;
+        if (actual >= 0 && actual < GEAR_ABILITIES.length) {
+            return GEAR_ABILITIES[actual];
+        } else {
+            return null;
+        }
+    }
+
+    public static KeyItemDataObject getKeyItem(int idx) {
+        if (KEY_ITEMS == null) {
+            throw new UnsupportedOperationException();
+        }
+        int actual = idx - 0xA000;
+        if (actual >= 0 && actual < KEY_ITEMS.length) {
+            return KEY_ITEMS[actual];
+        } else {
+            return null;
+        }
+    }
+
+    public static TreasureDataObject getTreasure(int idx) {
+        if (TREASURES == null) {
+            throw new UnsupportedOperationException();
+        }
+        return TREASURES[idx];
+    }
 }

@@ -1,5 +1,6 @@
 package model;
 
+import main.DataAccess;
 import script.model.ScriptConstants;
 
 import java.io.EOFException;
@@ -28,10 +29,10 @@ public class GearDataObject {
     int power;
     int crit;
     int slots;
-    String ability1;
-    String ability2;
-    String ability3;
-    String ability4;
+    int ability1;
+    int ability2;
+    int ability3;
+    int ability4;
 
     boolean armor;
     boolean flag1;
@@ -68,10 +69,10 @@ public class GearDataObject {
         slots = bytes[0x0B];
         unknownC = bytes[0x0C];
         unknownD = bytes[0x0D];
-        ability1 = abilities.get(read2Bytes(0x0E));
-        ability2 = abilities.get(read2Bytes(0x10));
-        ability3 = abilities.get(read2Bytes(0x12));
-        ability4 = abilities.get(read2Bytes(0x14));
+        ability1 = read2Bytes(0x0E);
+        ability2 = read2Bytes(0x10);
+        ability3 = read2Bytes(0x12);
+        ability4 = read2Bytes(0x14);
     }
 
     private void mapBytesBukiGet() {
@@ -84,10 +85,10 @@ public class GearDataObject {
         power = bytes[0x05];
         crit = bytes[0x06];
         slots = bytes[0x07];
-        ability1 = abilities.get(read2Bytes(0x08));
-        ability2 = abilities.get(read2Bytes(0x0A));
-        ability3 = abilities.get(read2Bytes(0x0C));
-        ability4 = abilities.get(read2Bytes(0x0E));
+        ability1 = read2Bytes(0x08);
+        ability2 = read2Bytes(0x0A);
+        ability3 = read2Bytes(0x0C);
+        ability4 = read2Bytes(0x0E);
     }
 
     private void mapFlags() {
@@ -124,14 +125,18 @@ public class GearDataObject {
 
     private String getAbilityString() {
         String abilityString = "[";
+        String ability1Str = getGearAbilityName(ability1);
+        String ability2Str = getGearAbilityName(ability2);
+        String ability3Str = getGearAbilityName(ability3);
+        String ability4Str = getGearAbilityName(ability4);
         if (slots >= 1) {
-            abilityString += ability1;
-            if (slots >= 2 || !ability2.equals("Empty")) {
-                abilityString += ", " + (slots < 2 ? "!" : "") + ability2;
-                if (slots >= 3 || !ability3.equals("Empty")) {
-                    abilityString += ", " + (slots < 3 ? "!" : "") + ability3;
-                    if (slots >= 4 || !ability4.equals("Empty")) {
-                        abilityString += ", " + (slots < 4 ? "!" : "") + ability4;
+            abilityString += ability1Str;
+            if (slots >= 2 || !ability2Str.equals("Empty")) {
+                abilityString += ", " + (slots < 2 ? "!" : "") + ability2Str;
+                if (slots >= 3 || !ability3Str.equals("Empty")) {
+                    abilityString += ", " + (slots < 3 ? "!" : "") + ability3Str;
+                    if (slots >= 4 || !ability4Str.equals("Empty")) {
+                        abilityString += ", " + (slots < 4 ? "!" : "") + ability4Str;
                     }
                 }
             }
@@ -166,6 +171,19 @@ public class GearDataObject {
 
     private static String formatUnknownByte(int bt) {
         return String.format("%02x", bt) + '=' + String.format("%03d", bt) + '(' + String.format("%8s", Integer.toBinaryString(bt)).replace(' ', '0') + ')';
+    }
+
+    private static String getGearAbilityName(int ability) {
+        if (ability == 0x00FF) {
+            return "Empty";
+        } else {
+            GearAbilityDataObject obj = DataAccess.getGearAbility(ability);
+            if (obj == null) {
+                return "null";
+            } else {
+                return obj.getName();
+            }
+        }
     }
 
     private static void prepareMaps() {

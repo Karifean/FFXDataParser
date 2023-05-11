@@ -1,7 +1,9 @@
 package script.model;
 
+import main.DataAccess;
 import model.AbilityDataObject;
 import main.Main;
+import model.TreasureDataObject;
 
 import java.util.Map;
 
@@ -43,6 +45,12 @@ public class StackObject {
                 int signed = value < 0x8000 ? value : (value - 0x10000);
                 return signed + hexSuffix;
             }
+            if ("treasure".equals(type)) {
+                TreasureDataObject obj = DataAccess.getTreasure(value);
+                if (obj != null) {
+                    return obj + hexSuffix;
+                }
+            }
             if ("move".equals(type)) {
                 if (value == 0) {
                     return "Null Move" + hexSuffix;
@@ -53,11 +61,8 @@ public class StackObject {
                     return (ability != null ? '"'+ability.getName()+'"' : "????") + hexSuffix;
                 }
             } else if ("charMove".equals(type)) {
-                int adjustedValue = value + 0x3000;
-                String adjustedHex = String.format("%04x", adjustedValue).toUpperCase();
-                String adjustedHexSuffix = " [" + adjustedHex + "h]";
-                AbilityDataObject ability = Main.getAbility(adjustedValue);
-                return (ability != null ? '"'+ability.getName()+'"' : "????") + adjustedHexSuffix;
+                AbilityDataObject ability = Main.getAbility(value + 0x3000);
+                return (ability != null ? '"'+ability.getName()+'"' : "????") + hexSuffix;
             }
             if (ScriptConstants.ENUMERATIONS.containsKey(type)) {
                 Map<Integer, ScriptField> map = ScriptConstants.ENUMERATIONS.get(type);

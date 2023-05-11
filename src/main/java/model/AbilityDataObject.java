@@ -19,9 +19,9 @@ public class AbilityDataObject {
     public String dash;
     public String description;
     public String otherText;
-    public int nameOffsetComputed;
+    public int nameOffset;
     int unknownByte0B;
-    public int otherTextOffsetComputed;
+    public int otherTextOffset;
     int unknownByte0E;
     int unknownByte0F;
     int anim1HighByte;
@@ -64,27 +64,27 @@ public class AbilityDataObject {
     int statusChanceZombie;
     int statusChancePetrify;
     int statusChancePoison;
-    int statusChanceConfuse;
-    int statusChanceBerserk;
-    int statusChanceProvoke;
-    int statusChanceThreaten;
     int statusChancePowerBreak;
     int statusChanceMagicBreak;
     int statusChanceArmorBreak;
     int statusChanceMentalBreak;
+    int statusChanceConfuse;
+    int statusChanceBerserk;
+    int statusChanceProvoke;
+    int statusChanceThreaten;
     int statusChanceSleep;
     int statusChanceSilence;
     int statusChanceDarkness;
     int statusChanceShell;
     int statusChanceProtect;
     int statusChanceReflect;
-    int statusChanceRegen;
-    int statusChanceSlow;
-    int statusChanceHaste;
-    int statusChanceNBlaze;
-    int statusChanceNFrost;
-    int statusChanceNShock;
     int statusChanceNTide;
+    int statusChanceNBlaze;
+    int statusChanceNShock;
+    int statusChanceNFrost;
+    int statusChanceRegen;
+    int statusChanceHaste;
+    int statusChanceSlow;
     int statusDurationSleep;
     int statusDurationSilence;
     int statusDurationDarkness;
@@ -108,8 +108,8 @@ public class AbilityDataObject {
     int alwaysNull2;
     int unknownByte2;
     int unknownByte3;
-    public int dashOffsetComputed;
-    public int descriptionOffsetComputed;
+    public int dashOffset;
+    public int descriptionOffset;
     int unknownByte6;
     int unknownByte7;
     int unknownByte0A;
@@ -226,16 +226,16 @@ public class AbilityDataObject {
     }
 
     private void mapBytes() {
-        nameOffsetComputed = read2Bytes(0x00);
+        nameOffset = read2Bytes(0x00);
         unknownByte2 = bytes[0x02];
         unknownByte3 = bytes[0x03];
-        dashOffsetComputed = read2Bytes(0x04);
+        dashOffset = read2Bytes(0x04);
         unknownByte6 = bytes[0x06];
         unknownByte7 = bytes[0x07];
-        descriptionOffsetComputed = read2Bytes(0x08);
+        descriptionOffset = read2Bytes(0x08);
         unknownByte0A = bytes[0x0A];
         unknownByte0B = bytes[0x0B];
-        otherTextOffsetComputed = read2Bytes(0x0C);
+        otherTextOffset = read2Bytes(0x0C);
         unknownByte0E = bytes[0x0E];
         unknownByte0F = bytes[0x0F];
         anim1HighByte = bytes[0x10];
@@ -416,10 +416,10 @@ public class AbilityDataObject {
     }
 
     private void mapStrings(int[] stringBytes) {
-        name = Main.getStringAtLookupOffset(stringBytes, nameOffsetComputed);
-        dash = Main.getStringAtLookupOffset(stringBytes, dashOffsetComputed);
-        description = Main.getStringAtLookupOffset(stringBytes, descriptionOffsetComputed);
-        otherText = Main.getStringAtLookupOffset(stringBytes, otherTextOffsetComputed);
+        name = Main.getStringAtLookupOffset(stringBytes, nameOffset);
+        dash = Main.getStringAtLookupOffset(stringBytes, dashOffset);
+        description = Main.getStringAtLookupOffset(stringBytes, descriptionOffset);
+        otherText = Main.getStringAtLookupOffset(stringBytes, otherTextOffset);
     }
 
     @Override
@@ -691,7 +691,7 @@ public class AbilityDataObject {
         if (chance > 0) {
             builder.append(' ').append(name);
             if (!isCleansingStatuses || chance < 254) {
-                builder.append(": ").append(statusChanceString(chance));
+                builder.append(" (").append(statusChanceString(chance)).append(')');
             }
             builder.append(';');
         }
@@ -701,7 +701,7 @@ public class AbilityDataObject {
         if (chance > 0) {
             builder.append(' ').append(name);
             if (!isCleansingStatuses || chance < 254 || duration < 254) {
-                builder.append(": ").append(statusChanceString(chance)).append(" (").append(statusDurationString(duration, blocks)).append(')');
+                builder.append(" (").append(statusChanceString(chance)).append(", ").append(statusDurationString(duration, blocks)).append(')');
             }
             builder.append(';');
         }

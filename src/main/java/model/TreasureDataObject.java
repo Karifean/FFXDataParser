@@ -28,15 +28,15 @@ public class TreasureDataObject {
     @Override
     public String toString() {
         if (kind == 0x02) {
-            return "Item: " + quantity + "x " + Main.getAbility(type).name;
+            return "Item: " + quantity + "x " + Main.getAbility(type).name + " [" + String.format("%04x", type).toUpperCase() + "h]";
         } else if (kind == 0x00) {
-            return "Gil: " + quantity * 100 + (type != 0 ? unexpectedTypeSuffix() : "");
+            return "Gil: " + quantity * 100 + (type != 0 ? unexpectedTypeSuffix() : "") + " [" + String.format("%02x", quantity).toUpperCase() + "h]";
         } else if (kind == 0x05) {
             GearDataObject obj = DataAccess.WEAPON_PICKUPS != null ? DataAccess.WEAPON_PICKUPS[type] : null;
-            return "Gear: buki_get #" + type + (quantity != 1 ? " Q=" + quantity : "") + " " + obj;
+            return "Gear: buki_get #" + type + " [" + String.format("%02x", type).toUpperCase() + "h]"  + (quantity != 1 ? " Q=" + quantity : "") + " " + obj;
         } else if (kind == 0x0A) {
-            KeyItemDataObject obj = DataAccess.KEY_ITEMS != null ? DataAccess.KEY_ITEMS[typeLow] : null;
-            return "Key Item: #" + typeLow + ' ' + (obj != null ? obj.getName() : "invalid");
+            KeyItemDataObject obj = DataAccess.getKeyItem(type);
+            return "Key Item: #" + typeLow + " [" + String.format("%02x", typeLow).toUpperCase() + "h]" + ' ' + (obj != null ? obj.getName() : "invalid");
         } else {
             return "Unknown K=" + kind + "; Q=" + quantity + ';' + unexpectedTypeSuffix();
         }

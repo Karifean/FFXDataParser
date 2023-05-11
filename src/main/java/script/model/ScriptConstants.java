@@ -399,7 +399,7 @@ public abstract class ScriptConstants {
         putActorProperty(0x0083, "StealItemRareType", "move", "stat_rareitem");
         putActorProperty(0x0084, "StealItemRareAmount", "int", "stat_rareitem_num");
         putActorProperty(0x0085, null, "unknown", "stat_magiclv");
-        putActorProperty(0x0086, null, "unknown", "stat_appear_motion_flag");
+        putActorProperty(0x0086, "?showBirthAnimation", "boolean", "stat_appear_motion_flag");
         putActorProperty(0x0087, null, "unknown", "stat_cursor_element");
         putActorProperty(0x0088, null, "unknown", "stat_limit_bar_flag_cam");
         putActorProperty(0x0089, "showOverdriveBar", "bool", "stat_limit_bar_flag");
@@ -515,7 +515,7 @@ public abstract class ScriptConstants {
         putActorProperty(0x00F7, null, "unknown", "stat_near_motion");
         putActorProperty(0x00F8, null, "unknown", "stat_talk_stat1");
         putActorProperty(0x00F9, null, "unknown", "stat_talk_stat2");
-        putActorProperty(0x00FA, null, "unknown", "stat_near_motion_set");
+        putActorProperty(0x00FA, "?ForceCloseRangeAttackAnim", "bool", "stat_near_motion_set");
         putActorProperty(0x00FB, null, "unknown", "stat_motion_speed_normal");
         putActorProperty(0x00FC, null, "unknown", "stat_motion_speed_normal_start");
         putActorProperty(0x00FD, null, "unknown", "stat_own_attack_near");
@@ -523,7 +523,7 @@ public abstract class ScriptConstants {
         putActorProperty(0x00FF, null, "unknown", "stat_command_set");
         putActorProperty(0x0100, "?RetainsControlWhenProvoked", "bool", "stat_prov_command_flag");
         putActorProperty(0x0101, "ProvokerActor", "actor", "stat_prov_chr");
-        putActorProperty(0x0102, null, "bool", "stat_use_mp0");
+        putActorProperty(0x0102, "?Spellspring", "bool", "stat_use_mp0");
         putActorProperty(0x0103, "?CTBIcon", "int", "stat_icon_number");
         putActorProperty(0x0104, null, "unknown", "stat_sound_hit_num");
         putActorProperty(0x0105, null, "unknown", "stat_damage_num_pos");
