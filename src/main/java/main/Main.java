@@ -30,10 +30,10 @@ public class Main {
     private static final String LOCALIZED_KERNEL_PATH_MODDED = PREFIX + "ffx/attacks/";
     private static final String ORIGINALS_KERNEL_PATH = ORIGINALS_KERNEL_PATH_REGULAR;
     private static final String LOCALIZED_KERNEL_PATH = LOCALIZED_KERNEL_PATH_REGULAR;
-    private static final String SKILL_TABLE_A_PATH = LOCALIZED_KERNEL_PATH + "command.bin"; // "FILE07723.dat"; // "command.bin"; //
-    private static final String SKILL_TABLE_B_PATH = LOCALIZED_KERNEL_PATH + "monmagic1.bin"; // "FILE07740.dat"; // "monmagic1.bin"; //
-    private static final String SKILL_TABLE_C_PATH = LOCALIZED_KERNEL_PATH + "monmagic2.bin"; // "FILE07741.dat"; // "monmagic2.bin"; //
-    private static final String SKILL_TABLE_D_PATH = LOCALIZED_KERNEL_PATH + "item.bin"; // "FILE07734.dat"; // "item.bin"; //
+    private static final String SKILL_TABLE_3_PATH = LOCALIZED_KERNEL_PATH + "command.bin"; // "FILE07723.dat"; // "command.bin"; //
+    private static final String SKILL_TABLE_4_PATH = LOCALIZED_KERNEL_PATH + "monmagic1.bin"; // "FILE07740.dat"; // "monmagic1.bin"; //
+    private static final String SKILL_TABLE_6_PATH = LOCALIZED_KERNEL_PATH + "monmagic2.bin"; // "FILE07741.dat"; // "monmagic2.bin"; //
+    private static final String SKILL_TABLE_2_PATH = LOCALIZED_KERNEL_PATH + "item.bin"; // "FILE07734.dat"; // "item.bin"; //
     private static final Map<String, Set<String>> ABILITY_USERS = new HashMap<>();
     private static final Map<String, AbilityDataObject[]> FILE_ABILITIES_CACHE = new HashMap<>();
     private static final AbilityDataObject[] ABILITY_CACHE = new AbilityDataObject[0x10000];
@@ -65,14 +65,18 @@ public class Main {
                 break;
             case MODE_READ_ALL_ABILITIES:
             case MODE_READ_MONSTER_AI_WITH_ABILITY_NAMES:
-                getAbilitiesFromFile(SKILL_TABLE_A_PATH, -1);
-                getAbilitiesFromFile(SKILL_TABLE_B_PATH, -1);
-                getAbilitiesFromFile(SKILL_TABLE_C_PATH, -1);
-                getAbilitiesFromFile(SKILL_TABLE_D_PATH, -1);
+                getAbilitiesFromFile(SKILL_TABLE_3_PATH, -1);
+                getAbilitiesFromFile(SKILL_TABLE_4_PATH, -1);
+                getAbilitiesFromFile(SKILL_TABLE_6_PATH, -1);
+                getAbilitiesFromFile(SKILL_TABLE_2_PATH, -1);
                 if (mode == MODE_READ_ALL_ABILITIES) {
                     break;
                 }
             case MODE_READ_MONSTER_AI:
+                DataAccess.GEAR_ABILITIES = readGearAbilitiesFromFile(LOCALIZED_KERNEL_PATH + "a_ability.bin", false);
+                DataAccess.WEAPON_PICKUPS = readWeaponPickups(ORIGINALS_KERNEL_PATH + "buki_get.bin", false);
+                DataAccess.KEY_ITEMS = readKeyItemsFromFile(LOCALIZED_KERNEL_PATH + "important.bin", false);
+                DataAccess.TREASURES = readTreasures(ORIGINALS_KERNEL_PATH + "takara.bin", false);
                 for (String filename : realArgs) {
                     readMonsterAi(PREFIX + filename);
                 }
@@ -124,13 +128,13 @@ public class Main {
             int group = abilityid / 0x1000;
             int idx = abilityid & 0x0FFF;
             if (group == 3) {
-                return getAbilitiesFromFile(SKILL_TABLE_A_PATH, idx);
+                return getAbilitiesFromFile(SKILL_TABLE_3_PATH, idx);
             } else if (group == 4) {
-                return getAbilitiesFromFile(SKILL_TABLE_B_PATH, idx);
+                return getAbilitiesFromFile(SKILL_TABLE_4_PATH, idx);
             } else if (group == 6) {
-                return getAbilitiesFromFile(SKILL_TABLE_C_PATH, idx);
+                return getAbilitiesFromFile(SKILL_TABLE_6_PATH, idx);
             } else if (group == 2) {
-                return getAbilitiesFromFile(SKILL_TABLE_D_PATH, idx);
+                return getAbilitiesFromFile(SKILL_TABLE_2_PATH, idx);
             } else {
                 System.out.println("invalid abilityid! " + abilityid);
                 return null;
