@@ -186,7 +186,8 @@ public class ScriptObject {
     protected int nextAiByte() {
         int scriptCodeByteCursor = byteCursor - scriptCodeStartAddress;
         if (reverseJumpDestinations.containsKey(scriptCodeByteCursor) && (hexAiString.isEmpty() || hexAiString.charAt(hexAiString.length() - 1) == '\n')) {
-            String jumpLabels = String.join(",", reverseJumpDestinations.get(scriptCodeByteCursor)) + ":\n";
+            List<String> jumps = reverseJumpDestinations.get(scriptCodeByteCursor);
+            String jumpLabels = String.join(",", jumps) + ":\n";
             textAiString.append(jumpLabels);
             hexAiString.append(jumpLabels);
         }
@@ -224,7 +225,20 @@ public class ScriptObject {
         if (opcode >= 0x01 && opcode <= 0x18) {
             ScriptField op = ScriptConstants.COMP_OPERATORS.get(opcode);
             String resultType = op.type;
-            String content = "(" + p1 + " " + op.name + " " + p2 + ")";
+            String p1s = p1.toString();
+            String p2s = p2.toString();
+            if (opcode == 0x06 || opcode == 0x07) {
+                String p1t = resolveType(p1);
+                String p2t = resolveType(p2);
+                boolean p1w = isWeakType(p1t);
+                boolean p2w = isWeakType(p2t);
+                if (p1w && !p2w) {
+                    p1s = typed(p1, p2t);
+                } else if (p2w && !p1w) {
+                    p2s = typed(p2, p1t);
+                }
+            }
+            String content = "(" + p1s + " " + op.name + " " + p2s + ")";
             stack.push(new StackObject(resultType, true, content, opcode));
         } else if (opcode == 0x19) {
             stack.push(new StackObject("bool", true, "not " + p1, 0x19));
@@ -282,7 +296,7 @@ public class ScriptObject {
         } else if (opcode == 0x9F) {
             stack.push(new StackObject("var", true, "var"+argvsh, argv));
         } else if (opcode == 0xA0 || opcode == 0xA1) {
-            addVarType(argv, "var".equals(p1.type) ? varTypes.get(p1.value) : p1.type);
+            addVarType(argv, resolveType(p1));
             if (gatheringInfo) {
                 if (!varEnums.containsKey(argv)) {
                     varEnums.put(argv, new ArrayList<>());
@@ -398,6 +412,16 @@ public class ScriptObject {
                 varTypes.put(var, type);
             }
         }
+    }
+
+    protected String resolveType(StackObject obj) {
+        if (obj == null) {
+            return "unknown";
+        }
+        if ("var".equals(obj.type)) {
+            return varTypes.get(obj.value);
+        }
+        return obj.type;
     }
 
     protected static boolean isWeakType(String type) {

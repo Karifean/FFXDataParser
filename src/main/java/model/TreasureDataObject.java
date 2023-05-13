@@ -28,7 +28,7 @@ public class TreasureDataObject {
     @Override
     public String toString() {
         if (kind == 0x02) {
-            return "Item: " + quantity + "x " + Main.getAbility(type).name + " [" + String.format("%04x", type).toUpperCase() + "h]";
+            return "Item: " + quantity + "x " + DataAccess.getMove(type).name + " [" + String.format("%04x", type).toUpperCase() + "h]";
         } else if (kind == 0x00) {
             return "Gil: " + quantity * 100 + (type != 0 ? unexpectedTypeSuffix() : "") + " [" + String.format("%02x", quantity).toUpperCase() + "h]";
         } else if (kind == 0x05) {

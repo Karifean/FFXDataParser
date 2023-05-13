@@ -1,18 +1,19 @@
 package model;
 
 import main.Main;
+import script.model.ScriptConstants;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public class AbilityDataObject {
-    static Map<Integer, String> characters;
     static Map<Integer, String> submenus;
 
     boolean isCharacterAbility;
-    int length;
-    byte[] raw;
     int[] bytes;
 
     public String name;
@@ -30,7 +31,7 @@ public class AbilityDataObject {
     int anim2LowByte;
     int icon;
     int casterAnimation;
-    int unknownByte16;
+    int menuProperties1B;
     int subsubMenuCategorization;
     // /|\ Always equal to subMenuCategorization except on nested menus in menus like Use/Quick Pockets
     //  |  and also on Requiem for some reason.
@@ -38,17 +39,13 @@ public class AbilityDataObject {
     int characterUser;
     int targetingFlags;
     int unknownProperties1B;
-    // Bit 0x01 seems to be set on a lot of things but no clear distinction visible.
-    // Bit 0x02 seems to be set on Skills as well as many enemy attacks
-    // Bit 0x04 seems to be set on just about everything usable
-    // Bit 0x40 seems to be set on Skills that have a "cast" animation as well as many enemy attacks
     int miscProperties1C;
     int miscProperties1D;
     int miscProperties1E;
-    int unknownProperties1F;
+    int animationProperties1F;
     int damageProperties20;
     int stealGilByte;
-    int miscProperties22;
+    int partyPreviewByte;
     int damageClass;
     int moveRank;
     int costMP;
@@ -101,11 +98,11 @@ public class AbilityDataObject {
     int extraStatusFlags1;
     int extraStatusFlags2;
     int statBuffFlags;
-    int alwaysNull1;
+    int alwaysZero57;
     int overdriveCategorizationByte;
     int statBuffValue;
     int specialBuffFlags;
-    int alwaysNull2;
+    int alwaysZero5B;
     int unknownByte2;
     int unknownByte3;
     public int dashOffset;
@@ -113,18 +110,18 @@ public class AbilityDataObject {
     int unknownByte6;
     int unknownByte7;
     int unknownByte0A;
-    int unknownByte5C;
-    int unknownByte5D;
-    int unknownByte5E;
-    int unknownByte5F;
+    int orderingIndexInMenu;
+    int sphereGridUsageRole;
+    int alwaysZero5E;
+    int alwaysZero5F;
 
     String overdriveCharacter;
     int overdriveCategory;
 
     boolean usableOutsideCombat;
     boolean usableInCombat;
-    boolean byte28bit4; // Maybe "Get Piercing trait from Weapon or sth?)
-    boolean byte28bit6; // ONLY set on all 6 of Yuna's controllable aeon normal attacks
+    boolean byte1Cbit08SetOnCharAttacksAndSkillsAndValeforShivaAttack;
+    boolean byte1Cbit20SetOnControllableAeonNormalAttacks; // Maybe: Force using char Accuracy formula?
     boolean affectedByDarkness;
     public boolean displayMoveName;
     boolean canMiss;
@@ -138,6 +135,19 @@ public class AbilityDataObject {
     boolean targetEitherTeam;
     boolean targetDead;
     boolean targetFlag8;
+    boolean onTopLevelInMenu;
+    boolean opensSubMenu;
+    boolean byte1Fbit02WhichIsOnlySetOnEntrust;
+    boolean useCastAnimationMaybe;
+    boolean userRunsOffScreen;
+    boolean showSpellAuraMaybe;
+    boolean byte1Fbit20;
+    boolean someFlagSetOnALLAeonOverdrives;
+    boolean byte1Fbit80WhichIsOnlySetOnBribe;
+    boolean partyPreviewActive;
+    boolean partyPreviewHealHp;
+    boolean partyPreviewHealMp;
+    boolean partyPreviewHealStatuses;
     boolean randomTargets;
     boolean isPiercing;
     boolean disableWhenSilenced;
@@ -151,8 +161,8 @@ public class AbilityDataObject {
     boolean damageTypePhysical;
     boolean damageTypeMagical;
     boolean canCrit;
-    boolean byte32bit4;
-    boolean byte32bit7;
+    boolean byte20bit08usedOnMostStrAttacks;
+    boolean suppressBDLMaybe;
     boolean damageClassHP;
     boolean damageClassMP;
     boolean damageClassCTB;
@@ -244,7 +254,7 @@ public class AbilityDataObject {
         anim2LowByte = bytes[0x13];
         icon = bytes[0x14];
         casterAnimation = bytes[0x15];
-        unknownByte16 = bytes[0x16];
+        menuProperties1B = bytes[0x16];
         subsubMenuCategorization = bytes[0x17];
         subMenuCategorization = bytes[0x18];
         characterUser = bytes[0x19];
@@ -253,11 +263,10 @@ public class AbilityDataObject {
         miscProperties1C = bytes[0x1C];
         miscProperties1D = bytes[0x1D];
         miscProperties1E = bytes[0x1E];
-        unknownProperties1F = bytes[0x1F];
+        animationProperties1F = bytes[0x1F];
         damageProperties20 = bytes[0x20];
         stealGilByte = bytes[0x21];
-        // Bit 0x01 could be "affected by Alchemy" flag?
-        miscProperties22 = bytes[0x22];
+        partyPreviewByte = bytes[0x22];
         damageClass = bytes[0x23];
         moveRank = bytes[0x24];
         costMP = bytes[0x25];
@@ -310,26 +319,36 @@ public class AbilityDataObject {
         extraStatusFlags1 = bytes[0x54];
         extraStatusFlags2 = bytes[0x55];
         statBuffFlags = bytes[0x56];
-        alwaysNull1 = bytes[0x57];
+        alwaysZero57 = bytes[0x57];
         overdriveCategorizationByte = bytes[0x58];
         statBuffValue = bytes[0x59];
         specialBuffFlags = bytes[0x5A];
-        alwaysNull2 = bytes[0x5B];
-        if (length > 92) {
-            unknownByte5C = bytes[0x5C];
-            unknownByte5D = bytes[0x5D];
-            unknownByte5E = bytes[0x5E];
-            unknownByte5F = bytes[0x5F];
+        alwaysZero5B = bytes[0x5B];
+        if (isCharacterAbility) {
+            orderingIndexInMenu = bytes[0x5C];
+            sphereGridUsageRole = bytes[0x5D];
+            alwaysZero5E = bytes[0x5E];
+            alwaysZero5F = bytes[0x5F];
         }
     }
 
     private void mapFlags() {
+        targetEnabled = (targetingFlags & 0x01) > 0;
+        targetEnemies = (targetingFlags & 0x02) > 0;
+        targetMulti = (targetingFlags & 0x04) > 0;
+        targetSelfOnly = (targetingFlags & 0x08) > 0;
+        targetFlag5 = (targetingFlags & 0x10) > 0;
+        targetEitherTeam = (targetingFlags & 0x20) > 0;
+        targetDead = (targetingFlags & 0x40) > 0;
+        targetFlag8 = (targetingFlags & 0x80) > 0;
+        onTopLevelInMenu = (menuProperties1B & 0x01) > 0;
+        opensSubMenu = (menuProperties1B & 0x10) > 0;
         usableOutsideCombat = (miscProperties1C & 0x01) > 0;
         usableInCombat = (miscProperties1C & 0x02) > 0;
         displayMoveName = (miscProperties1C & 0x04) > 0;
-        byte28bit4 = (miscProperties1C & 0x08) > 0;
+        byte1Cbit08SetOnCharAttacksAndSkillsAndValeforShivaAttack = (miscProperties1C & 0x08) > 0;
         canMiss = (miscProperties1C & 0x10) > 0;
-        byte28bit6 = (miscProperties1C & 0x20) > 0;
+        byte1Cbit20SetOnControllableAeonNormalAttacks = (miscProperties1C & 0x20) > 0;
         affectedByDarkness = (miscProperties1C & 0x40) > 0;
         canBeReflected = (miscProperties1C & 0x80) > 0;
         absorbDamage = (miscProperties1D & 0x01) > 0;
@@ -348,27 +367,30 @@ public class AbilityDataObject {
         useTier3CastAnimation = (miscProperties1E & 0x20) > 0;
         destroyCaster = (miscProperties1E & 0x40) > 0;
         missIfAlive = (miscProperties1E & 0x80) > 0;
-        stealGil = (stealGilByte & 0x01) > 0;
+        byte1Fbit02WhichIsOnlySetOnEntrust = (animationProperties1F & 0x02) > 0;
+        useCastAnimationMaybe = (animationProperties1F & 0x04) > 0;
+        userRunsOffScreen = (animationProperties1F & 0x08) > 0;
+        showSpellAuraMaybe = (animationProperties1F & 0x10) > 0;
+        byte1Fbit20 = (animationProperties1F & 0x20) > 0;
+        someFlagSetOnALLAeonOverdrives = (animationProperties1F & 0x40) > 0;
+        byte1Fbit80WhichIsOnlySetOnBribe = (animationProperties1F & 0x80) > 0;
         damageTypePhysical = (damageProperties20 & 0x01) > 0;
         damageTypeMagical = (damageProperties20 & 0x02) > 0;
         canCrit = (damageProperties20 & 0x04) > 0;
-        byte32bit4 = (damageProperties20 & 0x08) > 0; // Seems to be needed for proper evasion?
+        byte20bit08usedOnMostStrAttacks = (damageProperties20 & 0x08) > 0; // Seems to be needed for proper evasion?
         isHealing = (damageProperties20 & 0x10) > 0;
         isCleansingStatuses = (damageProperties20 & 0x20) > 0;
-        byte32bit7 = (damageProperties20 & 0x40) > 0;
+        suppressBDLMaybe = (damageProperties20 & 0x40) > 0;
         breaksDamageLimit = (damageProperties20 & 0x80) > 0;
+        stealGil = (stealGilByte & 0x01) > 0;
+        partyPreviewActive = (partyPreviewByte & 0x01) > 0;
+        partyPreviewHealMp = (partyPreviewByte & 0x02) > 0;
+        partyPreviewHealStatuses = (partyPreviewByte & 0x04) > 0;
+        partyPreviewHealHp = (partyPreviewByte & 0x40) > 0;
         damageClassHP = (damageClass & 0x01) > 0;
         damageClassMP = (damageClass & 0x02) > 0;
         damageClassCTB = (damageClass & 0x04) > 0;
         damageClassUnknown = damageClass >= 0x08;
-        targetEnabled = (targetingFlags & 0x01) > 0;
-        targetEnemies = (targetingFlags & 0x02) > 0;
-        targetMulti = (targetingFlags & 0x04) > 0;
-        targetSelfOnly = (targetingFlags & 0x08) > 0;
-        targetFlag5 = (targetingFlags & 0x10) > 0;
-        targetEitherTeam = (targetingFlags & 0x20) > 0;
-        targetDead = (targetingFlags & 0x40) > 0;
-        targetFlag8 = (targetingFlags & 0x80) > 0;
         elementFire = (elementFlags & 0x01) > 0;
         elementIce = (elementFlags & 0x02) > 0;
         elementThunder = (elementFlags & 0x04) > 0;
@@ -410,7 +432,7 @@ public class AbilityDataObject {
         specialBuffOverdrive200 = (specialBuffFlags & 0x40) > 0;
         specialBuffUnused = (specialBuffFlags & 0x80) > 0;
         if (overdriveCategorizationByte > 0) {
-            overdriveCharacter = characters.get(overdriveCategorizationByte % 0x10);
+            overdriveCharacter = ScriptConstants.getEnumMap("actor").get(overdriveCategorizationByte % 0x10).name;
             overdriveCategory = overdriveCategorizationByte / 0x10;
         }
     }
@@ -424,60 +446,67 @@ public class AbilityDataObject {
 
     @Override
     public String toString() {
-        return "{ " +
-                (!usableInCombat ? "Unusable, " : "") +
-                damageKind() +
-                (usesWeaponProperties ? ", Uses Weapon Properties" : "") +
-                (breaksDamageLimit ? ", BDL" : "") +
-                ", " + targeting() +
-                ", Rank=" + moveRank +
-                // (byte28bit4 ? ", 28!4" : "") +
-                // (byte28bit6 ? ", 28!6" : "") +
-                // ifG0(icon, "Icon#", "") +
-                ifG0(costMP, "", " MP") +
-                (usableOutsideCombat ? ", Usable outside combat" : "") +
-                characterUser() +
-                (useInRightMenu ? ", Topmenu=Right" : "") +
-                (useInLeftMenu ? ", Topmenu=Left" : "") +
-                (isTriggerCommand ? ", TriggerCmd" : "") +
-                ifNN(submenus.get(subMenuCategorization), "Submenu=\"", "\"") +
-                (subsubMenuCategorization != subMenuCategorization ? ", Subsubmenu=" + submenus.get(subsubMenuCategorization) : "" ) +
-                (useInUseMenu ? ", In \"Use\" Menu" : "") +
-                ifG0(costOD, "Overdrive (", "p)") +
-                ifNN(overdriveCharacter, "OD-User=", "") +
-                ifG0(overdriveCategory, "OD-Choice=", "") +
-                (isPiercing ? ", Piercing" : "") +
-                (canMiss ? ", Can miss" : "") +
-                ifG0(attackAccuracy, "Acc=", "%") +
-                (affectedByDarkness ? ", Darkable" : "") +
-                // (canMiss || attackAccuracy > 0 ? ", " : "") +
-                // (canMiss ? "Can miss" : "") + (attackAccuracy > 0 ? " (ACC+" + attackAccuracy + "%)" : "") +
-                (canCrit ? ", Can crit" + (attackCritBonus > 0 ? " (+" + attackCritBonus + "%)" : "") : "") +
-                (byte32bit4 ? ", byte32bit4" : "") +
-                (byte32bit7 ? ", byte32bit7" : "") +
-                (canBeReflected ? ", Reflectable" : "") +
-                (disableWhenSilenced ? ", Silenceable" : "") +
-                elements() +
-                statuses() +
-                statBuffs() +
-                specialBuffs() +
-                (destroyCaster ? ", Removes Caster" : "") +
-                (stealItem ? ", Steal Item" : "") +
-                (stealGil ? ", Steal Gil" : "") +
-                (inflictDelayWeak ? ", Delay (Weak)" : "") +
-                (inflictDelayStrong ? ", Delay (Strong)" : "") +
-                ifG0(shatterChance, "Shatter=", "%") +
-                ", anim=" + casterAnimation +
-                (useTier1CastAnimation ? "L" : useTier3CastAnimation ? "H" : "") +
+        List<String> list = new ArrayList<>();
+        list.add(!usableInCombat ? "Unusable" : "");
+        list.add(damageKind());
+        list.add(ifG0(damageFormula, "Formula=", ""));
+        list.add(ifG0(hitCount, "", "-hit"));
+        list.add(ifG0(attackPower, "Power=", ""));
+        list.add(usesWeaponProperties ? "Uses Weapon Properties" : "");
+        list.add(breaksDamageLimit ? "BDL" : "");
+        list.add(suppressBDLMaybe ? "Never BDL" : "");
+        list.add(targeting());
+        list.add("Rank=" + moveRank);
+        list.add(ifG0(costMP, "", " MP"));
+        list.add(usableOutsideCombat ? "Usable outside combat" : "");
+        list.add(characterUser());
+        list.add(onTopLevelInMenu ? "Toplevel" : "");
+        list.add(useInRightMenu ? "Topmenu=Right" : "");
+        list.add(useInLeftMenu ? "Topmenu=Left" : "");
+        list.add(isTriggerCommand ? "Trigger-Command" : "");
+        list.add(opensSubMenu ? "Opens Submenu" : "");
+        list.add(ifNN(submenus.get(subMenuCategorization), "Submenu=\"", "\""));
+        list.add(subsubMenuCategorization != subMenuCategorization ? "Subsubmenu=" + submenus.get(subsubMenuCategorization) : "");
+        list.add(useInUseMenu ? "In \"Use\" Menu" : "");
+        list.add(ifG0(costOD, "Overdrive (", "p)"));
+        list.add(ifNN(overdriveCharacter, "OD-User=", ""));
+        list.add(ifG0(overdriveCategory, "OD-Choice=", ""));
+        list.add(isPiercing ? "Piercing" : "");
+        list.add(canMiss ? "Can miss" : "");
+        list.add(ifG0(attackAccuracy, "Acc=", "%"));
+        list.add(affectedByDarkness ? "Darkable" : "");
+        list.add(disableWhenSilenced ? "Silenceable" : "");
+        list.add(canBeReflected ? "Reflectable" : "");
+        list.add(canCrit ? "Can crit" + (attackCritBonus > 0 ? " (+" + attackCritBonus + "%)" : "") : "");
+        list.add(byte20bit08usedOnMostStrAttacks ? "byte20bit08" : "");
+        list.add(byte1Cbit08SetOnCharAttacksAndSkillsAndValeforShivaAttack ? "byte1Cbit08" : "");
+        list.add(byte1Cbit20SetOnControllableAeonNormalAttacks ? "byte1Cbit20" : "");
+        list.add(elements());
+        list.add(statuses());
+        list.add(statBuffs());
+        list.add(specialBuffs());
+        list.add(destroyCaster ? "Removes Caster" : "");
+        list.add(stealItem ? "Steal Item" : "");
+        list.add(stealGil ? "Steal Gil" : "");
+        list.add(inflictDelayWeak ? "Delay (Weak)" : "");
+        list.add(inflictDelayStrong ? "Delay (Strong)" : "");
+        list.add(ifG0(shatterChance, "Shatter=", "%"));
+        list.add("anim=" + casterAnimation + (useTier1CastAnimation ? "L" : useTier3CastAnimation ? "H" : "") +
                 "/" + String.format("%04x", anim1LowByte * 256 + anim1HighByte) +
-                "/" + String.format("%04x", anim2LowByte * 256 + anim2HighByte) +
-                " }";
+                "/" + String.format("%04x", anim2LowByte * 256 + anim2HighByte));
+        list.add(ifG0(alwaysZero57, "Byte57=", ""));
+        list.add(ifG0(alwaysZero5B, "Byte5B=", ""));
+        list.add(ifG0(alwaysZero5E, "Byte5E=", ""));
+        list.add(ifG0(alwaysZero5F, "Byte5F=", ""));
+        String full = list.stream().filter(s -> s != null && !s.isBlank()).collect(Collectors.joining(", "));
+        String dashStr = (dashOffset > 0 && !"-".equals(dash) ? "DH=" + dash + " / " : "");
+        String descriptionStr = (descriptionOffset > 0 && !"-".equals(description) ? description : "");
+        String soText = (otherTextOffset > 0 && !"-".equals(otherText) ? " / OT=" + otherText : "");
+        return String.format("%-20s", getName()) + " { " + full + " } " + dashStr + descriptionStr + soText;
     }
 
     private String damageKind() {
-        String damageType = damageTypePhysical ? "Physical" : (damageTypeMagical ? "Magical" : "Special");
-        String formula = ifG0(damageFormula, "Formula=", "");
-        String hits = ifG0(hitCount, "", "-hit");
+        String damageType = damageTypePhysical ? "Physical" : (damageTypeMagical ? " Magical" : " Special");
         if (damageClassHP || damageClassMP || damageClassCTB) {
             String damageClassString = "";
             if (damageClassHP) {
@@ -493,15 +522,19 @@ public class AbilityDataObject {
                 damageClassString += "Unknown(" + String.format("%02x", damageClass) + ")/";
             }
             damageClassString = damageClassString.substring(0, damageClassString.length() - 1);
-            return damageType + ' ' + damageClassString + ' ' + (isHealing ? "Restore" : (absorbDamage ? "Absorb" : "Damage")) + hits + formula + ", Power=" + attackPower;
+            return damageType + ' ' + damageClassString + ' ' + (isHealing ? "Restore" : (absorbDamage ? "Absorb" : "Damage"));
         } else {
-            return damageType + hits + formula;
+            return damageType;
         }
     }
 
     private String characterUser() {
-        if (isCharacterAbility && characterUser > 0) {
-            return ", Usable by " + characters.get(characterUser);
+        if (isCharacterAbility) {
+            if (characterUser == 0xFF) {
+                return "Usable by anyone";
+            } else {
+                return "Usable by " + ScriptConstants.getEnumMap("actor").get(characterUser).name;
+            }
         } else {
             return "";
         }
@@ -541,11 +574,11 @@ public class AbilityDataObject {
         } else {
             statBuffTypes = statBuffTypes.substring(0, statBuffTypes.length() - 1);
         }
-        return ", " + statBuffTypes + " x" + statBuffValue;
+        return statBuffTypes + " x" + statBuffValue;
     }
 
     private String elements() {
-        StringBuilder elements = new StringBuilder(", Multi-Element {");
+        StringBuilder elements = new StringBuilder("Multi-Element {");
         if (elementFire) { elements.append(" Fire;"); }
         if (elementIce) { elements.append(" Ice;"); }
         if (elementThunder) { elements.append(" Thunder;"); }
@@ -560,7 +593,7 @@ public class AbilityDataObject {
             if (withoutLastSemicolon.indexOf(';') > 0) {
                 return withoutLastSemicolon + " }";
             } else {
-                return ", Element=" + withoutLastSemicolon.substring(18);
+                return "Element=" + withoutLastSemicolon.substring(16);
             }
         } else {
             return "";
@@ -597,7 +630,7 @@ public class AbilityDataObject {
     }
 
     private String statuses() {
-        StringBuilder statuses = new StringBuilder(", ").append(isCleansingStatuses ? "Remove" : "Inflict").append(" {");
+        StringBuilder statuses = new StringBuilder(isCleansingStatuses ? "Remove" : "Inflict").append(" {");
         appendPermanentStatus(statuses, "Death", statusChanceDeath);
         appendPermanentStatus(statuses, "Zombie", statusChanceZombie);
         appendPermanentStatus(statuses, "Petrify", statusChancePetrify);
@@ -665,7 +698,7 @@ public class AbilityDataObject {
     }
 
     private String specialBuffs() {
-        StringBuilder buffs = new StringBuilder(", Special Buffs {");
+        StringBuilder buffs = new StringBuilder("Special Buffs {");
         if (specialBuffDoubleHP) { buffs.append(" Double HP;"); }
         if (specialBuffDoubleMP) { buffs.append(" Double MP;"); }
         if (specialBuffMPCost0) { buffs.append(" Spellspring;"); }
@@ -680,7 +713,7 @@ public class AbilityDataObject {
             if (withoutLastSemicolon.indexOf(';') > 0) {
                 return withoutLastSemicolon + " }";
             } else {
-                return ", Special Buff:" + withoutLastSemicolon.substring(17);
+                return "Special Buff:" + withoutLastSemicolon.substring(15);
             }
         } else {
             return "";
@@ -709,7 +742,7 @@ public class AbilityDataObject {
 
     private static String ifG0(int value, String prefix, String postfix) {
         if (value > 0) {
-            return ", " + prefix + value + postfix;
+            return prefix + value + postfix;
         } else {
             return "";
         }
@@ -717,7 +750,7 @@ public class AbilityDataObject {
 
     private static String ifNN(String value, String prefix, String postfix) {
         if (value != null) {
-            return ", " + prefix + value + postfix;
+            return prefix + value + postfix;
         } else {
             return "";
         }
@@ -727,7 +760,7 @@ public class AbilityDataObject {
         if (chance == 255) {
             return "Always";
         } else if (chance == 254) {
-            return "Infinite";
+            return "Infinite%";
         } else if (chance > 0) {
             return chance + "%";
         } else {
@@ -754,28 +787,6 @@ public class AbilityDataObject {
     }
 
     private static void prepareMaps() {
-        if (characters == null) {
-            characters = new HashMap<>();
-            characters.put(0, "Tidus");
-            characters.put(1, "Yuna");
-            characters.put(2, "Auron");
-            characters.put(3, "Kimahri");
-            characters.put(4, "Wakka");
-            characters.put(5, "Lulu");
-            characters.put(6, "Rikku");
-            characters.put(7, "Seymour");
-            characters.put(8, "Valefor");
-            characters.put(9, "Ifrit");
-            characters.put(10, "Ixion");
-            characters.put(11, "Shiva");
-            characters.put(12, "Bahamut");
-            characters.put(13, "Anima");
-            characters.put(14, "Yojimbo");
-            characters.put(15, "Cindy");
-            characters.put(16, "Sandy");
-            characters.put(17, "Mindy");
-            characters.put(255, "Everyone");
-        }
         if (submenus == null) {
             submenus = new HashMap<>();
             submenus.put(1, "Black Magic");

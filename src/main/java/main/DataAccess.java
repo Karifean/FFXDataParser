@@ -2,12 +2,20 @@ package main;
 
 import model.*;
 
-public class DataAccess {
+public abstract class DataAccess {
     public static AbilityDataObject[] MOVES = new AbilityDataObject[0x10000];
+    public static MonsterObject[] MONSTERS;
     public static GearAbilityDataObject[] GEAR_ABILITIES;
     public static KeyItemDataObject[] KEY_ITEMS;
     public static TreasureDataObject[] TREASURES;
     public static GearDataObject[] WEAPON_PICKUPS;
+
+    public static AbilityDataObject getMove(int idx) {
+        if (MOVES == null) {
+            throw new UnsupportedOperationException();
+        }
+        return MOVES[idx];
+    }
 
     public static GearAbilityDataObject getGearAbility(int idx) {
         if (idx == 0x00FF) {
@@ -41,5 +49,17 @@ public class DataAccess {
             throw new UnsupportedOperationException();
         }
         return TREASURES[idx];
+    }
+
+    public static MonsterObject getMonster(int idx) {
+        if (MONSTERS == null) {
+            throw new UnsupportedOperationException();
+        }
+        int actual = idx - 0x1000;
+        if (actual >= 0 && actual < MONSTERS.length) {
+            return MONSTERS[actual];
+        } else {
+            return null;
+        }
     }
 }

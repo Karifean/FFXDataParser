@@ -1,6 +1,7 @@
 package main;
 
 import model.*;
+import script.model.ScriptConstants;
 
 import java.io.*;
 import java.util.*;
@@ -36,12 +37,13 @@ public class Main {
     private static final String SKILL_TABLE_2_PATH = LOCALIZED_KERNEL_PATH + "item.bin"; // "FILE07734.dat"; // "item.bin"; //
     private static final Map<String, Set<String>> ABILITY_USERS = new HashMap<>();
     private static final Map<String, AbilityDataObject[]> FILE_ABILITIES_CACHE = new HashMap<>();
-    private static final AbilityDataObject[] ABILITY_CACHE = new AbilityDataObject[0x10000];
 
     public static void main(String[] args) {
         int mode = Integer.parseInt(args[0], 10);
         List<String> realArgs = Arrays.asList(args).subList(1, args.length);
         prepareCharMap();
+        ScriptConstants.initialize();
+        prepareAbilities();
         switch (mode) {
             case MODE_READ_TEXT_FROM_FILES:
                 for (String filename : realArgs) {
@@ -65,10 +67,10 @@ public class Main {
                 break;
             case MODE_READ_ALL_ABILITIES:
             case MODE_READ_MONSTER_AI_WITH_ABILITY_NAMES:
-                getAbilitiesFromFile(SKILL_TABLE_3_PATH, -1);
-                getAbilitiesFromFile(SKILL_TABLE_4_PATH, -1);
-                getAbilitiesFromFile(SKILL_TABLE_6_PATH, -1);
-                getAbilitiesFromFile(SKILL_TABLE_2_PATH, -1);
+                readAbilitiesFromFile(SKILL_TABLE_3_PATH, 3, true);
+                readAbilitiesFromFile(SKILL_TABLE_4_PATH, 4, true);
+                readAbilitiesFromFile(SKILL_TABLE_6_PATH, 6, true);
+                readAbilitiesFromFile(SKILL_TABLE_2_PATH, 2, true);
                 if (mode == MODE_READ_ALL_ABILITIES) {
                     break;
                 }
@@ -112,34 +114,21 @@ public class Main {
         }
     }
 
-    public static AbilityDataObject getAbility(int abilityid) {
-        if (DataAccess.MOVES[abilityid] == null) {
-            DataAccess.MOVES[abilityid] = Main.readAbility(abilityid);
-        }
-        return DataAccess.MOVES[abilityid];
+    public static void prepareAbilities() {
+        prepareAbilitiesFromFile(SKILL_TABLE_3_PATH, 3);
+        prepareAbilitiesFromFile(SKILL_TABLE_4_PATH, 4);
+        prepareAbilitiesFromFile(SKILL_TABLE_6_PATH, 6);
+        prepareAbilitiesFromFile(SKILL_TABLE_2_PATH, 2);
     }
 
-    private static AbilityDataObject readAbility(int abilityid) {
-        if (abilityid == 0) {
-            AbilityDataObject nullAbility = new AbilityDataObject();
-            nullAbility.name = "No Move";
-            return nullAbility;
-        } else {
-            int group = abilityid / 0x1000;
-            int idx = abilityid & 0x0FFF;
-            if (group == 3) {
-                return getAbilitiesFromFile(SKILL_TABLE_3_PATH, idx);
-            } else if (group == 4) {
-                return getAbilitiesFromFile(SKILL_TABLE_4_PATH, idx);
-            } else if (group == 6) {
-                return getAbilitiesFromFile(SKILL_TABLE_6_PATH, idx);
-            } else if (group == 2) {
-                return getAbilitiesFromFile(SKILL_TABLE_2_PATH, idx);
-            } else {
-                System.out.println("invalid abilityid! " + abilityid);
-                return null;
-            }
+    private static void prepareAbilitiesFromFile(String filename, int group) {
+        AbilityDataObject[] abilities = FILE_ABILITIES_CACHE.computeIfAbsent(filename, (f) -> readAbilitiesFromFile(f, group, false));
+        if (abilities == null) {
+            System.err.println("Failed to load abilities from " + filename + " (group " + group + ')');
+            return;
         }
+        System.arraycopy(abilities, 0, DataAccess.MOVES, 0x1000 * group, abilities.length);
+
     }
 
     private static void writeGrep(String str) {
@@ -286,67 +275,10 @@ public class Main {
         }
     }
 
-    private static void parseScriptUsedAbilities(String filename) {
-        System.out.println("--- " + filename + " ---");
-        File file = new File(filename);
-        if (file.isDirectory()) {
-            String[] contents = file.list();
-            if (contents != null) {
-                Arrays.stream(contents).sorted().forEach(subfile -> parseScriptUsedAbilities(filename + '/' + subfile));
-            }
-        } else {
-            int flen = filename.length();
-            String shortFn = filename.substring(flen - 8, flen - 4);
-            try {
-                DataInputStream inputStream = new DataInputStream(new BufferedInputStream(new FileInputStream(file)));
-                int length = 0x2000;
-                byte[] raw = new byte[length];
-                int[] b = new int[length];
-                if (inputStream.read(raw) < length) {
-                    throw new EOFException("Did not read all bytes");
-                }
-                for (int i = 0; i < length; i++) {
-                    b[i] = Byte.toUnsignedInt(raw[i]);
-                    if (b[i] == 0x0B && i > 4) {
-                        if (b[i-1] == 0xD8 && (b[i-2] == 0x67 || b[i-2] == 0x68)) {
-                            String hb = String.format("%02x", b[i - 2]);
-                            String lb = String.format("%02x", b[i - 3]);
-                            String skillString = hb + ' ' + lb;
-                            // String lb = String.format("%-20s", Integer.toHexString(b[i - 3]));
-                            if (!ABILITY_USERS.containsKey(skillString)) {
-                                ABILITY_USERS.put(skillString, new HashSet<>());
-                            }
-                            ABILITY_USERS.get(skillString).add(shortFn);
-                            System.out.println("Uses skill: " + skillString);
-                        }
-                    }
-                }
-            } catch (IOException e) {}
-        }
-    }
-
-    public static AbilityDataObject getAbilitiesFromFile(String filename, int specific) {
-        AbilityDataObject[] abilities = FILE_ABILITIES_CACHE.computeIfAbsent(filename, Main::readAbilitiesFromFile);
-        if (abilities == null) {
-            return null;
-        }
-        if (specific < 0) {
+    private static AbilityDataObject[] readAbilitiesFromFile(String filename, int group, boolean print) {
+        if (print) {
             System.out.println("--- " + filename + " ---");
-            for (int i = 0; i < abilities.length; i++) {
-                AbilityDataObject ab = abilities[i];
-                String prefix = String.format("%-20s", Integer.toHexString(i) + ": " + ab.getName());
-                String dash = (ab.dashOffset > 0 && !"-".equals(ab.dash) ? "DH=" + ab.dash + " / " : "");
-                String description = (ab.descriptionOffset > 0 && !"-".equals(ab.description) ? ab.description : "");
-                String soText = (ab.otherTextOffset > 0 && !"-".equals(ab.otherText) ? " / OT=" + ab.otherText : "");
-                System.out.println(prefix + ab + ' ' + dash + description + soText);
-            }
-            return null;
-        } else {
-            return abilities[specific];
         }
-    }
-
-    private static AbilityDataObject[] readAbilitiesFromFile(String filename) {
         File file = new File(filename);
         if (!file.isDirectory()) {
             try (DataInputStream inputStream = new DataInputStream(new BufferedInputStream(new FileInputStream(file)))) {
@@ -371,6 +303,10 @@ public class Main {
                 }
                 for (int i = 0; i <= count; i++) {
                     moves[i] = new AbilityDataObject(Arrays.copyOfRange(moveBytes, i * individualLength, (i+1) * individualLength), allStrings);
+                    if (print) {
+                        String offset = String.format("%04x", (i * individualLength) + 20);
+                        System.out.println(String.format("%04x", i + group * 0x1000) + " (Offset " + offset + ") - " + moves[i]);
+                    }
                 }
                 return moves;
             } catch (IOException ignored) {}
@@ -502,7 +438,9 @@ public class Main {
     }
 
     private static TreasureDataObject[] readTreasures(String filename, boolean print) {
-        System.out.println("--- " + filename + " ---");
+        if (print) {
+            System.out.println("--- " + filename + " ---");
+        }
         File file = new File(filename);
         if (file.isDirectory()) {
             String[] contents = file.list();

@@ -10,8 +10,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class GearDataObject {
-    static Map<Integer, String> abilities;
-
     private int[] bytes;
 
     boolean isBukiGet;
@@ -45,7 +43,6 @@ public class GearDataObject {
     public GearDataObject(int[] bytes) throws IOException {
         isBukiGet = (bytes.length == 16);
         this.bytes = bytes;
-        prepareMaps();
         if (isBukiGet) {
             mapBytesBukiGet();
         } else {
@@ -183,143 +180,6 @@ public class GearDataObject {
             } else {
                 return obj.getName();
             }
-        }
-    }
-
-    private static void prepareMaps() {
-        ScriptConstants.initialize();
-        if (abilities == null) {
-            abilities = new HashMap<>();
-            abilities.put(0x00FF, "Empty");
-            abilities.put(0x8000, "Sensor");
-            abilities.put(0x8001, "First Strike");
-            abilities.put(0x8002, "Initiative");
-            abilities.put(0x8003, "Counterattack");
-            abilities.put(0x8004, "Evade & Counter");
-            abilities.put(0x8005, "Magic Counter");
-            abilities.put(0x8006, "Magic Booster");
-            abilities.put(0x8007, "Alchemy");
-            abilities.put(0x8008, "Auto-Potion");
-            abilities.put(0x8009, "Auto-Med");
-            abilities.put(0x800A, "Auto-Phoenix");
-            abilities.put(0x800B, "Piercing");
-            abilities.put(0x800C, "Half MP Cost");
-            abilities.put(0x800D, "One MP Cost");
-            abilities.put(0x800E, "Double Overdrive");
-            abilities.put(0x800F, "Triple Overdrive");
-            abilities.put(0x8010, "SOS-Overdrive");
-            abilities.put(0x8011, "Overdrive -> AP");
-            abilities.put(0x8012, "Double AP");
-            abilities.put(0x8013, "Triple AP");
-            abilities.put(0x8014, "No AP");
-            abilities.put(0x8015, "Pickpocket");
-            abilities.put(0x8016, "Master Thief");
-            abilities.put(0x8017, "Break HP Limit");
-            abilities.put(0x8018, "Break MP Limit");
-            abilities.put(0x8019, "Break Damage Limit");
-            abilities.put(0x801A, "Gillionaire");
-            abilities.put(0x801B, "HP Stroll");
-            abilities.put(0x801C, "MP Stroll");
-            abilities.put(0x801D, "No Encounters");
-            abilities.put(0x801E, "Firestrike");
-            abilities.put(0x801F, "Fire Ward");
-            abilities.put(0x8020, "Fireproof");
-            abilities.put(0x8021, "Fire Eater");
-            abilities.put(0x8022, "Icestrike");
-            abilities.put(0x8023, "Ice Ward");
-            abilities.put(0x8024, "Iceproof");
-            abilities.put(0x8025, "Ice Eater");
-            abilities.put(0x8026, "Thunderstrike");
-            abilities.put(0x8027, "Thunder Ward");
-            abilities.put(0x8028, "Thunderproof");
-            abilities.put(0x8029, "Thunder Eater");
-            abilities.put(0x802A, "Waterstrike");
-            abilities.put(0x802B, "Water Ward");
-            abilities.put(0x802C, "Waterproof");
-            abilities.put(0x802D, "Water Eater");
-            abilities.put(0x802E, "Deathstrike");
-            abilities.put(0x802F, "Deathtouch");
-            abilities.put(0x8030, "Deathproof");
-            abilities.put(0x8031, "Death Ward");
-            abilities.put(0x8032, "Zombiestrike");
-            abilities.put(0x8033, "Zombietouch");
-            abilities.put(0x8034, "Zombieproof");
-            abilities.put(0x8035, "Zombie Ward");
-            abilities.put(0x8036, "Stonestrike");
-            abilities.put(0x8037, "Stonetouch");
-            abilities.put(0x8038, "Stoneproof");
-            abilities.put(0x8039, "Stone Ward");
-            abilities.put(0x803A, "Poisonstrike");
-            abilities.put(0x803B, "Poisontouch");
-            abilities.put(0x803C, "Poisonproof");
-            abilities.put(0x803D, "Poison Ward");
-            abilities.put(0x803E, "Sleepstrike");
-            abilities.put(0x803F, "Sleeptouch");
-            abilities.put(0x8040, "Sleepproof");
-            abilities.put(0x8041, "Sleep Ward");
-            abilities.put(0x8042, "Silencestrike");
-            abilities.put(0x8043, "Silencetouch");
-            abilities.put(0x8044, "Silenceproof");
-            abilities.put(0x8045, "Silence Ward");
-            abilities.put(0x8046, "Darkstrike");
-            abilities.put(0x8047, "Darktouch");
-            abilities.put(0x8048, "Darkproof");
-            abilities.put(0x8049, "Dark Ward");
-            abilities.put(0x804A, "Slowstrike");
-            abilities.put(0x804B, "Slowtouch");
-            abilities.put(0x804C, "Slowproof");
-            abilities.put(0x804D, "Slow Ward");
-            abilities.put(0x804E, "Confuseproof");
-            abilities.put(0x804F, "Confuse Ward");
-            abilities.put(0x8050, "Berserkproof");
-            abilities.put(0x8051, "Berserk Ward");
-            abilities.put(0x8052, "Curseproof");
-            abilities.put(0x8053, "Curse Ward");
-            abilities.put(0x8054, "Auto-Shell");
-            abilities.put(0x8055, "Auto-Protect");
-            abilities.put(0x8056, "Auto-Haste");
-            abilities.put(0x8057, "Auto-Regen");
-            abilities.put(0x8058, "Auto-Reflect");
-            abilities.put(0x8059, "SOS-Shell");
-            abilities.put(0x805A, "SOS-Protect");
-            abilities.put(0x805B, "SOS-Haste");
-            abilities.put(0x805C, "SOS-Regen");
-            abilities.put(0x805D, "SOS-Reflect");
-            abilities.put(0x805E, "SOS-NulTide");
-            abilities.put(0x805F, "SOS-NulFrost");
-            abilities.put(0x8060, "SOS-NulShock");
-            abilities.put(0x8061, "SOS-NulBlaze");
-            abilities.put(0x8062, "Strength +3%");
-            abilities.put(0x8063, "Strength +5%");
-            abilities.put(0x8064, "Strength +10%");
-            abilities.put(0x8065, "Strength +20%");
-            abilities.put(0x8066, "Magic +3%");
-            abilities.put(0x8067, "Magic +5%");
-            abilities.put(0x8068, "Magic +10%");
-            abilities.put(0x8069, "Magic +20%");
-            abilities.put(0x806A, "Defense +3%");
-            abilities.put(0x806B, "Defense +5%");
-            abilities.put(0x806C, "Defense +10%");
-            abilities.put(0x806D, "Defense +20%");
-            abilities.put(0x806E, "Magic Defense +3%");
-            abilities.put(0x806F, "Magic Defense +5%");
-            abilities.put(0x8070, "Magic Defense +10%");
-            abilities.put(0x8071, "Magic Defense +20%");
-            abilities.put(0x8072, "HP +5%");
-            abilities.put(0x8073, "HP +10%");
-            abilities.put(0x8074, "HP +20%");
-            abilities.put(0x8075, "HP +30%");
-            abilities.put(0x8076, "MP +5%");
-            abilities.put(0x8077, "MP +10%");
-            abilities.put(0x8078, "MP +20%");
-            abilities.put(0x8079, "MP +30%");
-            abilities.put(0x807A, "Capture");
-            abilities.put(0x807B, "Aeon Super Ribbon");
-            abilities.put(0x807C, "Distill Power");
-            abilities.put(0x807D, "Distill Mana");
-            abilities.put(0x807E, "Distill Speed");
-            abilities.put(0x807F, "Distill Ability");
-            abilities.put(0x8080, "Ribbon");
         }
     }
 

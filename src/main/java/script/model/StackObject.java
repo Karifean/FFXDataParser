@@ -57,11 +57,11 @@ public class StackObject {
                 } else if (value <= 0x11) {
                     return "Switch/Summon:" + ScriptConstants.getEnumMap("actor").get(value) + hexSuffix;
                 } else {
-                    AbilityDataObject ability = Main.getAbility(value);
+                    AbilityDataObject ability = DataAccess.getMove(value);
                     return (ability != null ? '"'+ability.getName()+'"' : "????") + hexSuffix;
                 }
             } else if ("charMove".equals(type)) {
-                AbilityDataObject ability = Main.getAbility(value + 0x3000);
+                AbilityDataObject ability = DataAccess.getMove(value + 0x3000);
                 return (ability != null ? '"'+ability.getName()+'"' : "????") + hexSuffix;
             }
             if (ScriptConstants.ENUMERATIONS.containsKey(type)) {
