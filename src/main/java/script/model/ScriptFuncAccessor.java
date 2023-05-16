@@ -59,7 +59,7 @@ public class ScriptFuncAccessor extends ScriptFunc {
             str.append("Self");
         } else {
             StackObject subjectParam = params.get(subjectParamIndex);
-            StackObject typed = subjectParam.expression ? subjectParam : new StackObject(subjectType, subjectParam);
+            StackObject typed = subjectParam.expression || "unknown".equals(subjectType) ? subjectParam : new StackObject(subjectType, subjectParam);
             str.append(typed);
         }
         str.append('.');
@@ -68,7 +68,7 @@ public class ScriptFuncAccessor extends ScriptFunc {
             str.append(predicate);
         } else {
             StackObject predParam = params.get(predicateParamIndex);
-            StackObject typed = predParam.expression ? predParam : new StackObject(predicateType, predParam);
+            StackObject typed = predParam.expression || "unknown".equals(predicateType) ? predParam : new StackObject(predicateType, predParam);
             str.append(typed);
         }
         if (extraParams > 0) {
@@ -76,7 +76,8 @@ public class ScriptFuncAccessor extends ScriptFunc {
             for (int i = 0; i < len; i++) {
                 if (i != subjectParamIndex && i != predicateParamIndex && i != valueParamIndex) {
                     StackObject obj = params.get(i);
-                    StackObject typed = obj.expression ? obj : new StackObject(inputs.get(i).type, obj);
+                    String paramType = inputs.get(i).type;
+                    StackObject typed = obj.expression || "unknown".equals(paramType) ? obj : new StackObject(paramType, obj);
                     str.append(inputs.get(i)).append('=').append(typed).append(", ");
                 }
             }
@@ -88,7 +89,8 @@ public class ScriptFuncAccessor extends ScriptFunc {
 
     public String callD8(List<StackObject> params) {
         StackObject valParam = params.get(valueParamIndex);
-        StackObject typed = valParam.expression ? valParam : new StackObject(getType(params), valParam);
+        String paramType = getType(params);
+        StackObject typed = valParam.expression || "unknown".equals(paramType) ? valParam : new StackObject(paramType, valParam);
         return "Set " + callB5(params) + ' ' + write + ' ' + typed;
     }
 

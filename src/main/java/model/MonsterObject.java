@@ -100,7 +100,9 @@ public class MonsterObject {
     }
 
     public void parseScript() {
-        monsterAi.parseScript();
+        if (monsterAi != null) {
+            monsterAi.parseScript();
+        }
     }
 
     @Override

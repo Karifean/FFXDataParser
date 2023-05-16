@@ -22,7 +22,7 @@ public class StackObject {
     }
 
     public StackObject(String type, StackObject obj) {
-        this.type = type;
+        this.type = "unknown".equals(type) ? obj.type : type;
         this.expression = obj.expression;
         this.content = obj.content;
         this.value = obj.value;

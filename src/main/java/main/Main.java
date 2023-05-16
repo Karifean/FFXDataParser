@@ -439,10 +439,12 @@ public class Main {
             if (isMonsterFile) {
                 System.out.println("Monster: " + monsterObject.monsterName);
             }
-            System.out.println("- Script Code -");
-            System.out.println(monsterObject.monsterAi.allLinesString());
-            System.out.println("- Jump Table -");
-            System.out.println(monsterObject.monsterAi.jumpTableString.toString());
+            if (monsterObject.monsterAi != null) {
+                System.out.println("- Script Code -");
+                System.out.println(monsterObject.monsterAi.allLinesString());
+                System.out.println("- Jump Table -");
+                System.out.println(monsterObject.monsterAi.jumpTableString.toString());
+            }
             if (isMonsterFile) {
                 System.out.println("- Monster Stats -");
                 System.out.println(monsterObject.monsterStatData);

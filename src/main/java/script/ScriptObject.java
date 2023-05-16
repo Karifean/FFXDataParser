@@ -315,6 +315,8 @@ public class ScriptObject {
             stack.push(new StackObject(type, true, type + content, opcode));
         } else if (opcode == 0x3C) {
             textScriptLine += "return";
+        } else if (opcode == 0x3F) {
+            textScriptLine += "return (RETTN): " + p1;
         } else if (opcode == 0x54) {
             textScriptLine += "direct return?";
         } else if (opcode >= 0x59 && opcode <= 0x5C) {
