@@ -420,15 +420,17 @@ public class Main {
                 Arrays.stream(contents).filter(sf -> !sf.startsWith(".")).sorted().forEach(sf -> readMonsterObject(filename + '/' + sf, print));
             }
             return null;
-        } else {
+        } else if (file.getName().endsWith(".ebp") || file.getName().endsWith(".bin")) {
             boolean isMonsterFile = file.getPath().contains("/mon/");
             MonsterObject monsterObject = new MonsterObject(file, isMonsterFile);
-            try {
-                int idx = Integer.parseInt(file.getName().substring(1, 4), 10);
-                DataAccess.MONSTERS[idx] = monsterObject;
-            } catch (RuntimeException e) {
-                System.err.println("Got exception while storing monster object (fileName=" + file.getName() + ")");
-                e.printStackTrace();
+            if (isMonsterFile) {
+                try {
+                    int idx = Integer.parseInt(file.getName().substring(1, 4), 10);
+                    DataAccess.MONSTERS[idx] = monsterObject;
+                } catch (RuntimeException e) {
+                    System.err.println("Got exception while storing monster object (fileName=" + file.getName() + ")");
+                    e.printStackTrace();
+                }
             }
             if (!print) {
                 return monsterObject;
@@ -454,6 +456,9 @@ public class Main {
                 System.out.println(monsterObject.monsterScanDash); */
             }
             return monsterObject;
+        } else {
+            System.out.println("File ignored");
+            return null;
         }
     }
 
