@@ -210,6 +210,10 @@ public abstract class ScriptConstants {
         putEnum("damageFormula", 0x16, "Fixed xKills");
         putEnum("damageFormula", 0x17, "Fixed x9999");
 
+        putEnum("damageType", 0x00, "Special");
+        putEnum("damageType", 0x01, "Physical");
+        putEnum("damageType", 0x02, "Magical");
+
         putEnum("actor", 0x0000, "Tidus", "PC_TIDUS");
         putEnum("actor", 0x0001, "Yuna", "PC_YUNA");
         putEnum("actor", 0x0002, "Auron", "PC_AURON");

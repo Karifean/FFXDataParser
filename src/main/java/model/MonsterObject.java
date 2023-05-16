@@ -28,7 +28,7 @@ public class MonsterObject {
         this.isMonsterFile = isMonsterFile;
         try {
             createObjects();
-        } catch (IOException e) {
+        } catch (Exception e) {
             System.err.println("Failed to parse MonsterObject file");
             e.printStackTrace();
         }

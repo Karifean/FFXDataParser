@@ -175,6 +175,7 @@ public abstract class ScriptFuncLib {
         putUnknownFunc(0x00C0, 1); // -- Technically these aren't certain (zkrn0300)
         putUnknownFunc(0x00C1, 1); // /
         putUnknownFunc(0x00C2, 1);
+        putUnknownFunc(0x00C4, 0);
         putUnknownFunc(0x00C5, 4);
         putUnknownFunc(0x00C6, 0);
         putUnknownFunc(0x00C7, 1);
@@ -252,6 +253,7 @@ public abstract class ScriptFuncLib {
         putUnknownFunc(0x012A, 2);
         putUnknownFunc(0x012B, 1);
         putUnknownFunc(0x012D, 1);
+        putUnknownFunc(0x012E, 2);
         putUnknownFunc(0x0130, 2);
         putUnknownFunc(0x0132, 2);
         putUnknownFunc(0x0133, 2);
@@ -274,6 +276,8 @@ public abstract class ScriptFuncLib {
         putUnknownFunc(0x0148, 2);
         putUnknownFunc(0x0149, 1);
         putUnknownFunc(0x014A, 3);
+        putUnknownFunc(0x014E, 3);
+        putUnknownFunc(0x014F, 3);
         putUnknownFunc(0x0151, 1);
         putUnknownFunc(0x0155, 1);
         putUnknownFunc(0x0157, 1);
@@ -285,6 +289,7 @@ public abstract class ScriptFuncLib {
         putUnknownFunc(0x015F, 1);
         putUnknownFunc(0x0160, 1);
         putUnknownFunc(0x0161, 1);
+        putUnknownFunc(0x0167, 0);
         putUnknownFunc(0x016A, 2); // maca0200.ebp
         putUnknownFunc(0x016B, 3);
         putUnknownFunc(0x016C, 0);
@@ -294,14 +299,18 @@ public abstract class ScriptFuncLib {
         putFuncWithIdx(0x0171, new ScriptFunc("restorePartyMemberHP?", "unknown", null, new ScriptField("actor")));
         putFuncWithIdx(0x0172, new ScriptFunc("restorePartyMemberMP?", "unknown", null, new ScriptField("actor")));
         putUnknownFunc(0x0177, 1);
+        putUnknownFunc(0x0179, 1);
         putUnknownFunc(0x017A, 1);
         putUnknownFunc(0x017E, 2);
         putUnknownFunc(0x017F, 1);
         putUnknownFunc(0x0180, 2);
         putUnknownFunc(0x0181, 0);
         putUnknownFunc(0x0184, 1);
+        putUnknownFunc(0x0185, 2);
         putUnknownFunc(0x0188, 1);
         putUnknownFunc(0x0189, 1);
+        putUnknownFunc(0x018A, 1);
+        putUnknownFunc(0x018B, 1);
         putUnknownFunc(0x0192, 1);
         putUnknownFunc(0x0193, 1);
         putUnknownFunc(0x0194, 1);
@@ -313,6 +322,7 @@ public abstract class ScriptFuncLib {
         putUnknownFunc(0x019C, 0);
         putUnknownFunc(0x019D, 1);
         putUnknownFunc(0x019E, 0);
+        putUnknownFunc(0x019F, 1);
         putUnknownFunc(0x01A0, 3);
         putUnknownFunc(0x01A4, 2);
         putUnknownFunc(0x01A5, 2);
@@ -346,6 +356,7 @@ public abstract class ScriptFuncLib {
         putUnknownFunc(0x01D9, 0);
         putUnknownFunc(0x01DA, 4);
         putUnknownFunc(0x01DC, 0);
+        putUnknownFunc(0x01E0, 1);
         putUnknownFunc(0x01E2, 0);
         putUnknownFunc(0x01E3, 0);
         putUnknownFunc(0x01E4, 4);
@@ -365,13 +376,16 @@ public abstract class ScriptFuncLib {
         putUnknownFunc(0x0201, 0);
         putUnknownFunc(0x0202, 1);
         putUnknownFunc(0x0203, 1);
+        putUnknownFunc(0x0204, 1);
         putUnknownFunc(0x0205, 0);
         putUnknownFunc(0x0206, 0);
         putUnknownFunc(0x0207, 0);
         putUnknownFunc(0x0209, 0);
+        putUnknownFunc(0x020A, 0);
         putUnknownFunc(0x020B, 0);
         putUnknownFunc(0x020D, 1);
         putUnknownFunc(0x0210, 1);
+        putUnknownFunc(0x0212, 2);
         putUnknownFunc(0x0213, 1);
         putUnknownFunc(0x0215, 2);
         putUnknownFunc(0x0216, 3);
@@ -384,7 +398,9 @@ public abstract class ScriptFuncLib {
         putUnknownFunc(0x0221, 1);
         putUnknownFunc(0x0225, 1);
         putUnknownFunc(0x0226, 1);
+        putUnknownFunc(0x0229, 0);
         putUnknownFunc(0x022D, 1);
+        putUnknownFunc(0x022E, 4);
         putUnknownFunc(0x0234, 0);
         putUnknownFunc(0x0235, 0);
         putUnknownFunc(0x0236, 2);
@@ -395,9 +411,12 @@ public abstract class ScriptFuncLib {
         putUnknownFunc(0x023C, 2); // But this seems most reasonable. Check nagi0700
         putUnknownFunc(0x023D, 0);
         putUnknownFunc(0x023F, 1);
+        putUnknownFunc(0x0240, 0);
         putUnknownFunc(0x0241, 1);
         putUnknownFunc(0x0242, 0);
         putUnknownFunc(0x0243, 0);
+        putUnknownFunc(0x0244, 0);
+        putUnknownFunc(0x0245, 0);
         putUnknownFunc(0x024A, 1);
         putUnknownFunc(0x024B, 2);
         putUnknownFunc(0x024D, 1);
@@ -456,12 +475,15 @@ public abstract class ScriptFuncLib {
         putUnknownFunc(0x4020, 0);
         putUnknownFunc(0x4022, 1);
         putUnknownFunc(0x4023, 1);
+        putUnknownFunc(0x4024, 0);
         putUnknownFunc(0x4025, 9);
+        putUnknownFunc(0x402A, 2);
         putUnknownFunc(0x4034, 1);
         putUnknownFunc(0x4036, 3);
         putUnknownFunc(0x4039, 4);
         putUnknownFunc(0x403A, 1);
         putUnknownFunc(0x403B, 2);
+        putUnknownFunc(0x403C, 1);
         putUnknownFunc(0x403E, 2);
         putUnknownFunc(0x4040, 1);
         putUnknownFunc(0x4043, 2);
@@ -486,6 +508,7 @@ public abstract class ScriptFuncLib {
         putUnknownFunc(0x5016, 3);
         putUnknownFunc(0x5017, 1);
         putUnknownFunc(0x5018, 1);
+        putUnknownFunc(0x5019, 5);
         putUnknownFunc(0x501A, 5);
         putUnknownFunc(0x501B, 1);
         putUnknownFunc(0x501E, 0);
@@ -511,12 +534,14 @@ public abstract class ScriptFuncLib {
         putUnknownFunc(0x503C, 1);
         putUnknownFunc(0x503D, 1);
         putUnknownFunc(0x503E, 2);
+        putUnknownFunc(0x503F, 1);
         putUnknownFunc(0x5040, 1);
         putUnknownFunc(0x5042, 5);
         putUnknownFunc(0x5044, 6);
         putUnknownFunc(0x5047, 2);
         putUnknownFunc(0x5049, 1);
         putUnknownFunc(0x504C, 2);
+        putUnknownFunc(0x504D, 1);
         putUnknownFunc(0x504E, 1);
         putUnknownFunc(0x504F, 1);
         putUnknownFunc(0x5050, 2);
@@ -529,6 +554,7 @@ public abstract class ScriptFuncLib {
         putUnknownFunc(0x505C, 1);
         putUnknownFunc(0x505D, 0);
         putUnknownFunc(0x505F, 1);
+        putUnknownFunc(0x5060, 1);
         putUnknownFunc(0x5061, 2);
         putUnknownFunc(0x5063, 2);
         putUnknownFunc(0x5065, 1);
@@ -536,6 +562,7 @@ public abstract class ScriptFuncLib {
         putUnknownFunc(0x5067, 1);
         putUnknownFunc(0x5068, 0);
         putUnknownFunc(0x5069, 1);
+        putUnknownFunc(0x506A, 1);
         putUnknownFunc(0x506D, 2);
         putUnknownFunc(0x506E, 1);
         putUnknownFunc(0x506F, 1);
@@ -549,6 +576,7 @@ public abstract class ScriptFuncLib {
         putUnknownFunc(0x507E, 2);
         putUnknownFunc(0x5081, 1);
         putUnknownFunc(0x5082, 1);
+        putUnknownFunc(0x5083, 1);
         putUnknownFunc(0x5084, 1);
         putUnknownFunc(0x5085, 1);
         putUnknownFunc(0x5086, 0);
@@ -556,7 +584,9 @@ public abstract class ScriptFuncLib {
         putUnknownFunc(0x5088, 2);
         putUnknownFunc(0x5089, 5);
         putUnknownFunc(0x508B, 5);
+        putUnknownFunc(0x508E, 1);
         putUnknownFunc(0x508F, 1);
+        putUnknownFunc(0x5090, 1);
         putUnknownFunc(0x6000, "camSleep", 1);
         putUnknownFunc(0x6001, "camWakeUp", 1);
         putUnknownFunc(0x6002, "camSetPos", 3);
@@ -1051,6 +1081,7 @@ public abstract class ScriptFuncLib {
         putUnknownFunc(0xC022, 1);
         putUnknownFunc(0xC02C, 1);
         putUnknownFunc(0xC02F, 2);
+        putUnknownFunc(0xC036, 1);
         putUnknownFunc(0xC051, 1);
         putUnknownFunc(0xC052, 0);
         putUnknownFunc(0xC05B, 1);

@@ -202,7 +202,7 @@ public class ScriptObject {
             process(opcode, arg1, arg2);
             if (getLineEnd(opcode)) {
                 if (!stack.empty()) {
-                    warnLine += " STACK NOT EMPTY: " + stack;
+                    warnLine += " Stack not empty (" + stack.size() + "): " + stack;
                     stack.clear();
                 }
                 lineCount++;
@@ -502,7 +502,7 @@ public class ScriptObject {
     protected int getFunctionParamCount(int idx) {
         ScriptFunc func = ScriptFuncLib.get(idx, null);
         if (func == null) {
-            warnLine += "Undefined stackpops for func " + String.format("%04x", idx);
+            warnLine += " Undefined stackpops for func " + String.format("%04x", idx);
             return 0;
         }
         return func.inputs != null ? func.inputs.size() : 0;
