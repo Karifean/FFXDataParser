@@ -4,7 +4,7 @@ import model.*;
 
 public abstract class DataAccess {
     public static AbilityDataObject[] MOVES = new AbilityDataObject[0x10000];
-    public static MonsterObject[] MONSTERS;
+    public static MonsterObject[] MONSTERS = new MonsterObject[0x1000];
     public static GearAbilityDataObject[] GEAR_ABILITIES;
     public static KeyItemDataObject[] KEY_ITEMS;
     public static TreasureDataObject[] TREASURES;

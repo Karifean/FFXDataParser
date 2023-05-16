@@ -7,6 +7,9 @@ import java.util.stream.Collectors;
 
 public class ScriptObject {
     private static final boolean WRITE_SCRIPT_PREFIX_BEFORE_JUMPS = false;
+    private static final int JUMP_LINE_MINLENGTH = 16;
+    private static final int HEX_LINE_MINLENGTH = 48;
+    private static final int JUMP_PLUS_HEX_LINE_MINLENGTH = JUMP_LINE_MINLENGTH + HEX_LINE_MINLENGTH + 1;
 
     protected int[] bytes;
     protected int[] actualScriptCodeBytes;
@@ -16,8 +19,7 @@ public class ScriptObject {
     protected int scriptCodeLength;
     protected int scriptCodeStartAddress;
     protected int scriptCodeEndAddress;
-    public StringBuilder hexAiString = new StringBuilder();
-    public StringBuilder textAiString = new StringBuilder();
+    public StringBuilder jumpTableString = new StringBuilder();
     Stack<StackObject> stack = new Stack<>();
     Map<Integer, String> lastTempTypes = new HashMap<>();
     Map<Integer, String> varTypes = new HashMap<>();
@@ -28,12 +30,23 @@ public class ScriptObject {
     List<Integer> jumpDestinations = new ArrayList<>();
     Map<Integer, List<String>> reverseJumpDestinations = new HashMap<>();
 
+    int lineCount = 0;
+    String textScriptLine;
+    String hexScriptLine;
+    String jumpLine;
+    String warnLine;
+    List<String> offsetLines;
+    List<String> textScriptLines;
+    List<String> hexScriptLines;
+    List<String> jumpLines;
+    List<String> warnLines;
+
     public ScriptObject(int[] bytes) {
         this.bytes = bytes;
         prepare();
     }
 
-    public void run() {
+    public void parseScript() {
         byteCursor = 0;
         scriptCodeLength = read4Bytes();
         // System.out.println("Script Length: " + scriptCodeLength);
@@ -125,6 +138,7 @@ public class ScriptObject {
 
     private void parseScriptJumps(ScriptHeader header, int scriptIndex) {
         String sPrefix = "s" + format2Or4Byte(scriptIndex);
+        jumpTableString.append(sPrefix).append('\n');
         byteCursor = header.scriptEntryPointsOffset;
         int entryPointCount = header.entryPointCount;
         int[] entryPoints = new int[entryPointCount];
@@ -136,8 +150,11 @@ public class ScriptObject {
             if (!reverseJumpDestinations.containsKey(entryPoint)) {
                 reverseJumpDestinations.put(entryPoint, new ArrayList<>());
             }
-            reverseJumpDestinations.get(entryPoint).add(sPrefix + epSuffix);
+            String entryPointLabel = sPrefix + epSuffix;
+            reverseJumpDestinations.get(entryPoint).add(entryPointLabel);
+            jumpTableString.append(epSuffix).append('=').append(String.format("%04x", entryPoint).toUpperCase()).append(' ');
         }
+        jumpTableString.append('\n');
         byteCursor = header.jumpsOffset;
         int jumpCount = header.maybeJumpCount;
         int[] jumps = new int[jumpCount];
@@ -149,15 +166,27 @@ public class ScriptObject {
             if (!reverseJumpDestinations.containsKey(jump)) {
                 reverseJumpDestinations.put(jump, new ArrayList<>());
             }
-            reverseJumpDestinations.get(jump).add(WRITE_SCRIPT_PREFIX_BEFORE_JUMPS ? sPrefix + jSuffix : jSuffix);
+            String fullJumpLabel = sPrefix + jSuffix;
+            reverseJumpDestinations.get(jump).add(WRITE_SCRIPT_PREFIX_BEFORE_JUMPS ? fullJumpLabel : jSuffix);
+            jumpTableString.append(jSuffix).append('=').append(String.format("%04x", jump).toUpperCase()).append(' ');
         }
+        jumpTableString.append('\n');
     }
 
     protected void parseScriptCode() {
         byteCursor = scriptCodeStartAddress;
-        hexAiString = new StringBuilder();
-        textAiString = new StringBuilder();
+        lineCount = 0;
+        offsetLines = new ArrayList<>();
+        hexScriptLines = new ArrayList<>();
+        textScriptLines = new ArrayList<>();
+        jumpLines = new ArrayList<>();
+        warnLines = new ArrayList<>();
+        textScriptLine = "";
+        hexScriptLine = "";
+        jumpLine = "";
+        warnLine = "";
         int opcode;
+        int nextLineOffset = 0;
         while (byteCursor < scriptCodeEndAddress) {
             opcode = nextAiByte();
             int arg1 = 0;
@@ -173,26 +202,36 @@ public class ScriptObject {
             process(opcode, arg1, arg2);
             if (getLineEnd(opcode)) {
                 if (!stack.empty()) {
-                    hexAiString.append(" STACK NOT EMPTY: ").append(stack);
+                    warnLine += " STACK NOT EMPTY: " + stack;
                     stack.clear();
                 }
-                hexAiString.append('\n');
+                lineCount++;
+                offsetLines.add(String.format("%04x", nextLineOffset).toUpperCase());
+                nextLineOffset = byteCursor - scriptCodeStartAddress;
+                textScriptLines.add(textScriptLine);
+                hexScriptLines.add(hexScriptLine);
+                jumpLines.add(jumpLine);
+                warnLines.add(warnLine);
+                textScriptLine = "";
+                hexScriptLine = "";
+                jumpLine = "";
+                warnLine = "";
             } else {
-                hexAiString.append(' ');
+                hexScriptLine += ' ';
             }
         }
     }
 
     protected int nextAiByte() {
         int scriptCodeByteCursor = byteCursor - scriptCodeStartAddress;
-        if (reverseJumpDestinations.containsKey(scriptCodeByteCursor) && (hexAiString.isEmpty() || hexAiString.charAt(hexAiString.length() - 1) == '\n')) {
+        if (reverseJumpDestinations.containsKey(scriptCodeByteCursor)) {
             List<String> jumps = reverseJumpDestinations.get(scriptCodeByteCursor);
-            String jumpLabels = String.join(",", jumps) + ":\n";
-            textAiString.append(jumpLabels);
-            hexAiString.append(jumpLabels);
+            String jumpLabels = String.join(",", jumps) + ':';
+            jumpLine += jumpLabels;
         }
         int rd = readByte();
-        hexAiString.append(String.format("%02x", rd));
+        String byteAsString = String.format("%02x", rd).toUpperCase();
+        hexScriptLine += byteAsString;
         return rd;
     }
 
@@ -219,7 +258,7 @@ public class ScriptObject {
                     break;
             }
         } catch (EmptyStackException e) {
-            hexAiString.append("\nEmpty stack at byteCursor ").append(byteCursor).append(" for opcode ").append(String.format("%02x", opcode)).append('\n');
+            warnLine += " Empty stack for opcode " + String.format("%02x", opcode).toUpperCase();
             return;
         }
         if (opcode >= 0x01 && opcode <= 0x18) {
@@ -248,7 +287,7 @@ public class ScriptObject {
             stack.push(new StackObject(p1.type, true, "bitNot " + p1, 0x1C));
         } else if (opcode == 0x25) {
             lastCallType = p1.type;
-            textAiString.append("(call) ").append(p1).append(";\n");
+            textScriptLine += "(call) " + p1 + ';';
         } else if (opcode == 0x26) {
             stack.push(new StackObject(lastCallType, true, "LastCallResult", 0x26));
         } else if (opcode == 0x28) {
@@ -256,14 +295,14 @@ public class ScriptObject {
         } else if (opcode == 0x29) {
             stack.push(new StackObject("unknown", true, "case", 0x29));
         } else if (opcode == 0x2A) {
-            textAiString.append("Set rX = ").append(p1).append('\n');
+            textScriptLine += "Set rX = " + p1;
         } else if (opcode == 0x2B) {
             stack.push(new StackObject(p1.type, p1));
             stack.push(new StackObject(p1.type, p1));
         } else if (opcode == 0x2C) {
-            textAiString.append("switch ").append(p1).append('\n');
+            textScriptLine += "switch " + p1;
         } else if (opcode == 0x34) {
-            textAiString.append("return from subroutine\n");
+            textScriptLine += "return from subroutine";
         } else if (opcode >= 0x36 && opcode <= 0x38) {
             String type = "queueScript";
             if (opcode == 0x37) {
@@ -275,24 +314,23 @@ public class ScriptObject {
             String content = "(" + p1 + ", " + sep + ")";
             stack.push(new StackObject(type, true, type + content, opcode));
         } else if (opcode == 0x3C) {
-            textAiString.append("return\n");
+            textScriptLine += "return";
         } else if (opcode == 0x54) {
-            textAiString.append("direct return?\n");
+            textScriptLine += "direct return?";
         } else if (opcode >= 0x59 && opcode <= 0x5C) {
-            textAiString.append("tempI").append(opcode-0x59).append(" = ").append(p1).append('\n');
             lastTempTypes.put(opcode-0x59, p1.type);
+            textScriptLine += "tempI" + (opcode-0x59) + " = " + p1;
         } else if (opcode >= 0x5D && opcode <= 0x66) {
-            textAiString.append("tempF").append(opcode-0x5D).append(" = ").append(p1).append('\n');
+            textScriptLine += "tempF" + (opcode-0x5D) + " = " + p1;
         } else if (opcode >= 0x67 && opcode <= 0x6A) {
             stack.push(new StackObject(lastTempTypes.getOrDefault(opcode-0x67, "unknown"), true, "tempI"+(opcode-0x67), opcode));
         } else if (opcode >= 0x6B && opcode <= 0x74) {
             stack.push(new StackObject("float", true, "tempF"+(opcode-0x6B), opcode));
         } else if (opcode == 0x77) {
-            //textAiString.append("await script(").append(p1).append(", ").append(p2).append(")\n");
             String sep = "s" + format2Or4Byte(p1.value) + "e" + format2Or4Byte(p2.value);
-            textAiString.append("await ").append(sep).append(";\n");
+            textScriptLine += "await " + sep + ';';
         } else if (opcode == 0x79) {
-            textAiString.append("REQCHG(").append(p1).append(", ").append(p2).append(", ").append(p3).append(")\n");
+            textScriptLine += "REQCHG (" + p1 + ", " + p2 + ", " + p3 + ')';
         } else if (opcode == 0x9F) {
             stack.push(new StackObject("var", true, "var"+argvsh, argv));
         } else if (opcode == 0xA0 || opcode == 0xA1) {
@@ -303,22 +341,22 @@ public class ScriptObject {
                 }
                 varEnums.get(argv).add(p1);
             }
-            textAiString.append("Set ");
+            textScriptLine += "Set ";
             if (opcode == 0xA1) {
-                textAiString.append("(limit) ");
+                textScriptLine += "(limit) ";
             }
-            textAiString.append("var").append(argvsh).append(" = ").append(typed(p1, varTypes.get(argv))).append('\n');
+            String val = typed(p1, varTypes.get(argv));
+            textScriptLine += "var" + argvsh + " = " + val;
         } else if (opcode == 0xA2) {
             String arrayIndex = '[' + String.format("%04x", p1.value) + ']';
             stack.push(new StackObject("int", true, "var"+argvsh+arrayIndex, argv));
         } else if (opcode == 0xA3 || opcode == 0xA4) {
             String arrayIndex = '[' + String.format("%04x", p1.value) + ']';
-            textAiString.append("Set ");
+            textScriptLine += "Set ";
             if (opcode == 0xA4) {
-                textAiString.append("(limit) ");
+                textScriptLine += "(limit) ";
             }
-            textAiString.append("var").append(argvsh);
-            textAiString.append(arrayIndex).append(" = ").append(p2).append('\n');
+            textScriptLine += "var" + argvsh + arrayIndex + " = " + p2;
         } else if (opcode == 0xA7) {
             String arrayIndex = '[' + String.format("%04x", p1.value) + ']';
             stack.push(new StackObject("int", true, "ArrayPointer:var"+argvsh+arrayIndex, argv));
@@ -335,17 +373,15 @@ public class ScriptObject {
         } else if (opcode == 0xB5) {
             processB5(arg1, arg2);
         } else if (opcode == 0xD6) {
-            textAiString.append(p1).append(" -> j").append(argvsh).append('\n');
+            textScriptLine += p1 + " -> j" + argvsh;
         } else if (opcode == 0xD7) {
-            textAiString.append("Check ").append(p1).append(" else jump to j").append(argvsh).append('\n');
+            textScriptLine += "Check " + p1 + " else jump to j" + argvsh;
         } else if (opcode == 0xD8) {
             processD8(arg1, arg2);
         } else if (opcode == 0xB0) {
-            textAiString.append("Jump to j").append(argvsh).append('\n');
+            textScriptLine += "Jump to j" + argvsh;
         } else if (opcode == 0xB3) {
-            textAiString.append("Jump to subroutine s").append(argvsh).append('\n');
-        } else if (opcode != 0x00 && opcode != 0xFF) {
-            textAiString.append("Opcode:").append(String.format("%02x", opcode)).append('.').append(argvsh).append('\n');
+            textScriptLine += "Jump to subroutine s" + argvsh;
         }
     }
 
@@ -368,7 +404,7 @@ public class ScriptObject {
                     break;
             }
         } catch (EmptyStackException e) {
-            hexAiString.append("\nEmpty stack at byteCursor ").append(byteCursor).append(" for func ").append(String.format("%04x", idx)).append('\n');
+            warnLine += " Empty stack for func " + String.format("%04x", idx);
         }
         return params;
     }
@@ -397,7 +433,8 @@ public class ScriptObject {
         List<StackObject> params = popParamsForFunc(idx);
         ScriptFunc func = getAndTypeFuncCall(idx, params);
         lastCallType = func.getType(params);
-        textAiString.append(func.callD8(params)).append(";\n");
+        String call = func.callD8(params);
+        textScriptLine += call + ';';
     }
 
     protected void addVarType(int var, String type) {
@@ -456,7 +493,7 @@ public class ScriptObject {
     protected int getStackPops(int opcode) {
         int stackpops = ScriptConstants.OPCODE_STACKPOPS[opcode];
         if (stackpops < 0) {
-            hexAiString.append("\nundefined stackpops for opcode ").append(String.format("%02x", opcode)).append('\n');
+            warnLine += " Undefined stackpops for opcode " + String.format("%02x", opcode);
             return 0;
         }
         return stackpops;
@@ -465,7 +502,7 @@ public class ScriptObject {
     protected int getFunctionParamCount(int idx) {
         ScriptFunc func = ScriptFuncLib.get(idx, null);
         if (func == null) {
-            hexAiString.append("\nundefined stackpops for func ").append(String.format("%04x", idx)).append('\n');
+            warnLine += "Undefined stackpops for func " + String.format("%04x", idx);
             return 0;
         }
         return func.inputs != null ? func.inputs.size() : 0;
@@ -527,6 +564,23 @@ public class ScriptObject {
 
     private void skipBytes(int amount) {
         byteCursor += amount;
+    }
+
+    public String allLinesString() {
+        StringBuilder al = new StringBuilder("Script code starts at offset ").append(String.format("%04x", scriptCodeStartAddress)).append('\n');
+        for (int i = 0; i < lineCount; i++) {
+            al.append(fullLineString(i));
+        }
+        return al.toString();
+    }
+
+    public String fullLineString(int line) {
+        String ol = String.format("%-5s", offsetLines.get(line) + ' ');
+        String jl = String.format("%-" + JUMP_LINE_MINLENGTH + "s", jumpLines.get(line)) + ' ';
+        String jhl = String.format("%-" + JUMP_PLUS_HEX_LINE_MINLENGTH + "s", jl + hexScriptLines.get(line)) + ' ';
+        String tl = textScriptLines.get(line);
+        String wl = warnLines.get(line);
+        return ol + jhl + tl + wl + '\n';
     }
 
     private static class ScriptHeader {

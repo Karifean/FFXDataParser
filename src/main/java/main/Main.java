@@ -15,7 +15,7 @@ public class Main {
     private static final int MODE_READ_ALL_ABILITIES = 4;
     private static final int MODE_READ_KEY_ITEMS = 5;
     private static final int MODE_READ_MONSTER_AI = 6;
-    private static final int MODE_READ_MONSTER_AI_WITH_ABILITY_NAMES = 7;
+    private static final int MODE_RUN_SPECIFIC_MONSTER_AI = 7;
     private static final int MODE_READ_TREASURES = 8;
     private static final int MODE_READ_WEAPON_PICKUPS = 9;
     private static final int MODE_FIND_EQUAL_FILES = 10;
@@ -31,6 +31,7 @@ public class Main {
     private static final String LOCALIZED_KERNEL_PATH_MODDED = PREFIX + "ffx/attacks/";
     private static final String ORIGINALS_KERNEL_PATH = ORIGINALS_KERNEL_PATH_REGULAR;
     private static final String LOCALIZED_KERNEL_PATH = LOCALIZED_KERNEL_PATH_REGULAR;
+    private static final String MONSTER_FOLDER_PATH = PATH_FFX_ROOT + "jppc/battle/mon/";
     private static final String SKILL_TABLE_3_PATH = LOCALIZED_KERNEL_PATH + "command.bin"; // "FILE07723.dat"; // "command.bin"; //
     private static final String SKILL_TABLE_4_PATH = LOCALIZED_KERNEL_PATH + "monmagic1.bin"; // "FILE07740.dat"; // "monmagic1.bin"; //
     private static final String SKILL_TABLE_6_PATH = LOCALIZED_KERNEL_PATH + "monmagic2.bin"; // "FILE07741.dat"; // "monmagic2.bin"; //
@@ -41,9 +42,7 @@ public class Main {
     public static void main(String[] args) {
         int mode = Integer.parseInt(args[0], 10);
         List<String> realArgs = Arrays.asList(args).subList(1, args.length);
-        prepareCharMap();
-        ScriptConstants.initialize();
-        prepareAbilities();
+        readAndPrepareDataModel();
         switch (mode) {
             case MODE_READ_TEXT_FROM_FILES:
                 for (String filename : realArgs) {
@@ -61,36 +60,36 @@ public class Main {
             case MODE_TRANSLATE:
                 String concat = String.join("", realArgs);
                 translate(concat);
-                /* for (String hexstring : realArgs) {
-                    translate(hexstring);
-                } */
                 break;
             case MODE_READ_ALL_ABILITIES:
-            case MODE_READ_MONSTER_AI_WITH_ABILITY_NAMES:
                 readAbilitiesFromFile(SKILL_TABLE_3_PATH, 3, true);
                 readAbilitiesFromFile(SKILL_TABLE_4_PATH, 4, true);
                 readAbilitiesFromFile(SKILL_TABLE_6_PATH, 6, true);
                 readAbilitiesFromFile(SKILL_TABLE_2_PATH, 2, true);
-                if (mode == MODE_READ_ALL_ABILITIES) {
-                    break;
+                break;
+            case MODE_RUN_SPECIFIC_MONSTER_AI:
+                for (String arg : realArgs) {
+                    int idx = Integer.parseInt(arg, 10);
+                    int monsterIdx = idx + 0x1000;
+                    MonsterObject monster = DataAccess.getMonster(monsterIdx);
+                    if (monster != null) {
+                        monster.parseScript();
+                        System.out.println("Printing monster #" + arg + " [" + String.format("%04x", monsterIdx).toUpperCase() + "h]");
+                        System.out.println(monster);
+                    } else {
+                        System.err.println("Monster with idx " + arg + " not found");
+                    }
                 }
+                break;
             case MODE_READ_MONSTER_AI:
-                DataAccess.GEAR_ABILITIES = readGearAbilitiesFromFile(LOCALIZED_KERNEL_PATH + "a_ability.bin", false);
-                DataAccess.WEAPON_PICKUPS = readWeaponPickups(ORIGINALS_KERNEL_PATH + "buki_get.bin", false);
-                DataAccess.KEY_ITEMS = readKeyItemsFromFile(LOCALIZED_KERNEL_PATH + "important.bin", false);
-                DataAccess.TREASURES = readTreasures(ORIGINALS_KERNEL_PATH + "takara.bin", false);
                 for (String filename : realArgs) {
-                    readMonsterAi(PREFIX + filename);
+                    readMonsterObject(PREFIX + filename, true);
                 }
                 break;
             case MODE_READ_TREASURES:
-                DataAccess.GEAR_ABILITIES = readGearAbilitiesFromFile(LOCALIZED_KERNEL_PATH + "a_ability.bin", false);
-                DataAccess.WEAPON_PICKUPS = readWeaponPickups(ORIGINALS_KERNEL_PATH + "buki_get.bin", false);
-                DataAccess.KEY_ITEMS = readKeyItemsFromFile(LOCALIZED_KERNEL_PATH + "important.bin", false);
-                DataAccess.TREASURES = readTreasures(ORIGINALS_KERNEL_PATH + "takara.bin", true);
+                readTreasures(ORIGINALS_KERNEL_PATH + "takara.bin", true);
                 break;
             case MODE_READ_WEAPON_PICKUPS:
-                DataAccess.GEAR_ABILITIES = readGearAbilitiesFromFile(LOCALIZED_KERNEL_PATH + "a_ability.bin", false);
                 for (String filename : realArgs) {
                     readWeaponPickups(PREFIX + filename, true);
                 }
@@ -112,6 +111,17 @@ public class Main {
             default:
                 break;
         }
+    }
+
+    private static void readAndPrepareDataModel() {
+        prepareCharMap();
+        ScriptConstants.initialize();
+        prepareAbilities();
+        DataAccess.GEAR_ABILITIES = readGearAbilitiesFromFile(LOCALIZED_KERNEL_PATH + "a_ability.bin", false);
+        DataAccess.WEAPON_PICKUPS = readWeaponPickups(ORIGINALS_KERNEL_PATH + "buki_get.bin", false);
+        DataAccess.KEY_ITEMS = readKeyItemsFromFile(LOCALIZED_KERNEL_PATH + "important.bin", false);
+        DataAccess.TREASURES = readTreasures(ORIGINALS_KERNEL_PATH + "takara.bin", false);
+        readMonsterObject(MONSTER_FOLDER_PATH, false);
     }
 
     public static void prepareAbilities() {
@@ -399,41 +409,51 @@ public class Main {
         return null;
     }
 
-    private static void readMonsterAi(String filename) {
-        System.out.println("--- " + filename + " ---");
+    private static MonsterObject readMonsterObject(String filename, boolean print) {
+        if (print) {
+            System.out.println("--- " + filename + " ---");
+        }
         File file = new File(filename);
         if (file.isDirectory()) {
             String[] contents = file.list();
             if (contents != null) {
-                Arrays.stream(contents).filter(sf -> !sf.startsWith(".")).sorted().forEach(sf -> readMonsterAi(filename + '/' + sf));
+                Arrays.stream(contents).filter(sf -> !sf.startsWith(".")).sorted().forEach(sf -> readMonsterObject(filename + '/' + sf, print));
             }
+            return null;
         } else {
             boolean isMonsterFile = file.getPath().contains("/mon/");
-            MonsterObject aiObj = new MonsterObject(file, isMonsterFile);
+            MonsterObject monsterObject = new MonsterObject(file, isMonsterFile);
             try {
-                aiObj.run();
-            } catch (Exception e) {
+                int idx = Integer.parseInt(file.getName().substring(1, 4), 10);
+                DataAccess.MONSTERS[idx] = monsterObject;
+            } catch (RuntimeException e) {
+                System.err.println("Got exception while storing monster object (fileName=" + file.getName() + ")");
                 e.printStackTrace();
             }
-            if (isMonsterFile) {
-                System.out.println(aiObj.monsterName);
+            if (!print) {
+                return monsterObject;
             }
-            System.out.println("- Text Script Code -");
-            System.out.println(aiObj.monsterAi.textAiString);
-            System.out.println("- Hex Script Code -");
-            System.out.println(aiObj.monsterAi.hexAiString.toString().toUpperCase());
+            monsterObject.parseScript();
+            if (isMonsterFile) {
+                System.out.println("Monster: " + monsterObject.monsterName);
+            }
+            System.out.println("- Script Code -");
+            System.out.println(monsterObject.monsterAi.allLinesString());
+            System.out.println("- Jump Table -");
+            System.out.println(monsterObject.monsterAi.jumpTableString.toString());
             if (isMonsterFile) {
                 System.out.println("- Monster Stats -");
-                System.out.println(aiObj.monsterStatData);
-                System.out.println("- Monster Spoils -");
-                System.out.println(aiObj.monsterSpoilsData);
+                System.out.println(monsterObject.monsterStatData);
+                /* System.out.println("- Monster Spoils -");
+                System.out.println(monsterObject.monsterSpoilsData);
                 System.out.println("- Sensor Text -");
-                System.out.println(aiObj.monsterSensorText);
-                System.out.println(aiObj.monsterSensorDash);
+                System.out.println(monsterObject.monsterSensorText);
+                System.out.println(monsterObject.monsterSensorDash);
                 System.out.println("- Scan Text -");
-                System.out.println(aiObj.monsterScanText);
-                System.out.println(aiObj.monsterScanDash);
+                System.out.println(monsterObject.monsterScanText);
+                System.out.println(monsterObject.monsterScanDash); */
             }
+            return monsterObject;
         }
     }
 

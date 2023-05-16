@@ -3,6 +3,7 @@ package script.model;
 import main.DataAccess;
 import model.AbilityDataObject;
 import main.Main;
+import model.MonsterObject;
 import model.TreasureDataObject;
 
 import java.util.Map;
@@ -63,6 +64,14 @@ public class StackObject {
             } else if ("charMove".equals(type)) {
                 AbilityDataObject ability = DataAccess.getMove(value + 0x3000);
                 return (ability != null ? '"'+ability.getName()+'"' : "????") + hexSuffix;
+            }
+            if ("actor".equals(type) && value >= 0x1000 && value < 0x2000) {
+                try {
+                    MonsterObject monster = DataAccess.getMonster(value);
+                    if (monster != null) {
+                        return "Actors:MonsterType=" + monster.getName() + hexSuffix;
+                    }
+                } catch (UnsupportedOperationException ignored) {}
             }
             if (ScriptConstants.ENUMERATIONS.containsKey(type)) {
                 Map<Integer, ScriptField> map = ScriptConstants.ENUMERATIONS.get(type);

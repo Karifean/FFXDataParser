@@ -261,7 +261,7 @@ public abstract class ScriptFuncLib {
         putUnknownFunc(0x0137, 1);
         putUnknownFunc(0x0138, 1);
         putUnknownFunc(0x0139, 8);
-        putUnknownFunc(0x013B, 7);
+        putFuncWithIdx(0x013B, new ScriptFunc("displayFieldChoice", "int", null, new ScriptField("boxIndex?", "int"), new ScriptField("string", "int"), new ScriptField("p3", "unknown"), new ScriptField("p4", "unknown"), new ScriptField("x?", "int"), new ScriptField("y?", "int"), new ScriptField("p7", "unknown")));
         putUnknownFunc(0x013E, 1);
         putUnknownFunc(0x013F, 2);
         putUnknownFunc(0x0140, 6);
@@ -309,10 +309,12 @@ public abstract class ScriptFuncLib {
         putUnknownFunc(0x0196, 1);
         putUnknownFunc(0x0197, 1);
         putUnknownFunc(0x0198, 3);
+        putUnknownFunc(0x0199, 2);
         putUnknownFunc(0x019C, 0);
         putUnknownFunc(0x019D, 1);
         putUnknownFunc(0x019E, 0);
         putUnknownFunc(0x01A0, 3);
+        putUnknownFunc(0x01A4, 2);
         putUnknownFunc(0x01A5, 2);
         putUnknownFunc(0x01A6, 0);
         putFuncWithIdx(0x01A7, new ScriptFunc("obtainTreasureSilently", "unknown", null, new ScriptField("treasure")));
@@ -553,6 +555,7 @@ public abstract class ScriptFuncLib {
         putUnknownFunc(0x5087, 0);
         putUnknownFunc(0x5088, 2);
         putUnknownFunc(0x5089, 5);
+        putUnknownFunc(0x508B, 5);
         putUnknownFunc(0x508F, 1);
         putUnknownFunc(0x6000, "camSleep", 1);
         putUnknownFunc(0x6001, "camWakeUp", 1);

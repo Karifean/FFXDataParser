@@ -26,13 +26,19 @@ public class MonsterObject {
     public MonsterObject(File file, boolean isMonsterFile) {
         this.file = file;
         this.isMonsterFile = isMonsterFile;
+        try {
+            createObjects();
+        } catch (IOException e) {
+            System.err.println("Failed to parse MonsterObject file");
+            e.printStackTrace();
+        }
     }
 
     private void newDataStream() throws FileNotFoundException {
         data = new DataInputStream(new BufferedInputStream(new FileInputStream(file)));
     }
 
-    public void run() throws IOException {
+    public void createObjects() throws IOException {
         newDataStream();
         data.mark(40);
         int absoluteBeginAddress = read4Bytes();
@@ -53,7 +59,6 @@ public class MonsterObject {
             aiBytes[i] = data.read();
         }
         monsterAi = new ScriptObject(aiBytes);
-        monsterAi.run();
         if (isMonsterFile) {
             newDataStream();
             data.mark(valuesBeginAddress + 0x8C);
@@ -94,13 +99,33 @@ public class MonsterObject {
         }
     }
 
-    private void readRemainingText() throws IOException {
-        while (data.available() > 0) {
-            int character = data.read();
-            if (Main.BIN_LOOKUP.containsKey(character)) {
-                monsterText.append(Main.BIN_LOOKUP.get(character));
-            }
+    public void parseScript() {
+        monsterAi.parseScript();
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder full = new StringBuilder();
+        full.append(monsterName).append('\n');
+        if (monsterAi != null) {
+            full.append("- Script Code -").append('\n');
+            full.append(monsterAi.allLinesString());
+            full.append("- Jump Table -").append('\n');
+            full.append(monsterAi.jumpTableString.toString()).append('\n');
+        } else {
+            full.append("Monster AI missing");
         }
+        full.append("- Monster Stats -").append('\n');
+        full.append(monsterStatData).append('\n');
+        /* full.append("- Monster Spoils -").append('\n');
+        full.append(monsterSpoilsData).append('\n');
+        full.append("- Sensor Text -").append('\n');
+        full.append(monsterSensorText).append('\n');
+        full.append(monsterSensorDash).append('\n');
+        full.append("- Scan Text -").append('\n');
+        full.append(monsterScanText).append('\n');
+        full.append(monsterScanDash).append('\n'); */
+        return full.toString();
     }
 
     private int read2Bytes() throws IOException {
@@ -115,5 +140,9 @@ public class MonsterObject {
         val += data.read() * 0x10000;
         val += data.read() * 0x1000000;
         return val;
+    }
+
+    public String getName() {
+        return monsterName;
     }
 }
