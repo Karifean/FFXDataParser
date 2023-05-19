@@ -16,6 +16,7 @@ public abstract class ScriptConstants {
             return;
         }
         initialized = true;
+
         FUNCSPACES = new String[0x10];
         FUNCSPACES[0x0] = "Common";
         FUNCSPACES[0x1] = "Math";
@@ -33,6 +34,7 @@ public abstract class ScriptConstants {
         FUNCSPACES[0xD] = "AbilityMap";
         FUNCSPACES[0xE] = "UnknownE";
         FUNCSPACES[0xF] = "UnknownF";
+
         OPCODE_ENDLINE = new ArrayList<>();
         OPCODE_ENDLINE.add(0x25);
         OPCODE_ENDLINE.add(0x2A);
@@ -62,49 +64,51 @@ public abstract class ScriptConstants {
         OPCODE_ENDLINE.add(0xD6);
         OPCODE_ENDLINE.add(0xD7);
         OPCODE_ENDLINE.add(0xD8);
+
         OPCODE_STACKPOPS = new int[0x100];
         Arrays.fill(OPCODE_STACKPOPS, -1);
-        OPCODE_STACKPOPS[0x00] = 0;
-        for (int i = 0x01; i <= 0x18; i++) {
-            OPCODE_STACKPOPS[i] = 2;
-        }
-        OPCODE_STACKPOPS[0x19] = 1;
-        OPCODE_STACKPOPS[0x1C] = 1;
-        OPCODE_STACKPOPS[0x25] = 1;
-        OPCODE_STACKPOPS[0x26] = 0;
-        OPCODE_STACKPOPS[0x27] = 0;
-        OPCODE_STACKPOPS[0x28] = 0;
-        OPCODE_STACKPOPS[0x29] = 0;
-        OPCODE_STACKPOPS[0x2A] = 1;
-        OPCODE_STACKPOPS[0x2B] = 1;
-        OPCODE_STACKPOPS[0x2C] = 1;
-        OPCODE_STACKPOPS[0x34] = 0;
-        OPCODE_STACKPOPS[0x36] = 3;
-        OPCODE_STACKPOPS[0x37] = 3;
-        OPCODE_STACKPOPS[0x38] = 3;
+        OPCODE_STACKPOPS[OpCodes.NOP] = 0;
+        SetRange(OPCODE_STACKPOPS, OpCodes.OR_LOGIC, OpCodes.MOD, 2);
+        OPCODE_STACKPOPS[OpCodes.NOT_LOGIC] = 1;
+        OPCODE_STACKPOPS[OpCodes.NEG] = 1;
+        OPCODE_STACKPOPS[OpCodes.NOT] = 1;
+        OPCODE_STACKPOPS[OpCodes.NOP_1D] = 0;
+        OPCODE_STACKPOPS[OpCodes.NOP_1E] = 0;
+        OPCODE_STACKPOPS[OpCodes.SET_RETURN_VALUE] = 1;
+        OPCODE_STACKPOPS[OpCodes.GET_RETURN_VALUE] = 0;
+        OPCODE_STACKPOPS[OpCodes.GET_DATUM_DESC] = 0; // TODO: is this one right? not handled anywhere else
+        OPCODE_STACKPOPS[OpCodes.GET_TEST] = 0;
+        OPCODE_STACKPOPS[OpCodes.GET_CASE] = 0;
+        OPCODE_STACKPOPS[OpCodes.SET_TEST] = 1;
+        OPCODE_STACKPOPS[OpCodes.COPY] = 1;
+        OPCODE_STACKPOPS[OpCodes.SET_CASE] = 1;
+        OPCODE_STACKPOPS[OpCodes.CONST_INT] = 0;
+        OPCODE_STACKPOPS[OpCodes.IMM] = 0;
+        OPCODE_STACKPOPS[OpCodes.CONST_FLOAT] = 0;
+        OPCODE_STACKPOPS[OpCodes.JUMP] = 0;
+        OPCODE_STACKPOPS[OpCodes.BNEZ] = 0;
+        OPCODE_STACKPOPS[OpCodes.BEZ] = 0;
+        OPCODE_STACKPOPS[OpCodes.CALL] = 0;
+        OPCODE_STACKPOPS[OpCodes.RETURN] = 0;
+        // OPCODE_STACKPOPS[OpCodes.FUNC_RET] = 0; // TODO: Varies widely between 0 and 7 pops, depending on chosen function
+        SetRange(OPCODE_STACKPOPS, OpCodes.SIG_NOACK, OpCodes.SIG_ONEND, 3);
         // OPCODE_STACKPOPS[0x39] = 3; I'm sure of this but need to properly interpret what the opcode does
-        OPCODE_STACKPOPS[0x3C] = 0;
-        OPCODE_STACKPOPS[0x3D] = 1;
-        OPCODE_STACKPOPS[0x3F] = 1; // ???
+        OPCODE_STACKPOPS[OpCodes.END] = 0;
+        OPCODE_STACKPOPS[OpCodes.CLEANUP_END] = 1;
+        OPCODE_STACKPOPS[OpCodes.TO_MAIN] = 0;
+        OPCODE_STACKPOPS[OpCodes.CLEANUP_TO_MAIN] = 1; // ???
+        SetRange(OPCODE_STACKPOPS, OpCodes.SIGS_LOW, OpCodes.SIGS_HIGH, 3);
         OPCODE_STACKPOPS[0x46] = 1;
-        OPCODE_STACKPOPS[0x54] = 0;
-        OPCODE_STACKPOPS[0x59] = 1;
-        OPCODE_STACKPOPS[0x5A] = 1;
-        OPCODE_STACKPOPS[0x5B] = 1;
-        OPCODE_STACKPOPS[0x5C] = 1;
-        OPCODE_STACKPOPS[0x5D] = 1;
-        OPCODE_STACKPOPS[0x5E] = 1;
-        OPCODE_STACKPOPS[0x5F] = 1;
-        OPCODE_STACKPOPS[0x60] = 1;
-        OPCODE_STACKPOPS[0x67] = 0;
-        OPCODE_STACKPOPS[0x68] = 0;
-        OPCODE_STACKPOPS[0x69] = 0;
-        OPCODE_STACKPOPS[0x6A] = 0;
-        OPCODE_STACKPOPS[0x6B] = 0;
-        OPCODE_STACKPOPS[0x6C] = 0;
-        OPCODE_STACKPOPS[0x6D] = 0;
-        OPCODE_STACKPOPS[0x6E] = 0;
-        OPCODE_STACKPOPS[0x77] = 2;
+        OPCODE_STACKPOPS[OpCodes.CLEANUP_ALL_END] = 0;
+        SetRange(OPCODE_STACKPOPS, OpCodes.SET_JUMP, OpCodes.SET_BEZ, 1);
+        // OPCODE_STACKPOPS[OpCodes.FUNC] = 0; // TODO: Varies widely between 0 and 7 pops, depending on chosen function
+        SetRangeExclusive(OPCODE_STACKPOPS, OpCodes.SET_INT, OpCodes.SET_FLOAT, 1);
+        SetRangeExclusive(OPCODE_STACKPOPS, OpCodes.SET_FLOAT, OpCodes.GET_INT, 1);
+        SetRangeExclusive(OPCODE_STACKPOPS, OpCodes.GET_INT, OpCodes.GET_FLOAT, 0);
+        SetRangeExclusive(OPCODE_STACKPOPS, OpCodes.GET_FLOAT, OpCodes.TEX_UNPACK_IMM, 0);
+        OPCODE_STACKPOPS[OpCodes.TEX_UNPACK_IMM] = 0;
+        OPCODE_STACKPOPS[OpCodes.NOP_76] = 0;
+        OPCODE_STACKPOPS[OpCodes.WAIT_DELETE] = 2;
         OPCODE_STACKPOPS[0x79] = 3;
         OPCODE_STACKPOPS[0x9F] = 0;
         OPCODE_STACKPOPS[0xA0] = 1;
@@ -124,30 +128,30 @@ public abstract class ScriptConstants {
         OPCODE_STACKPOPS[0xF6] = 0;
 
         COMP_OPERATORS = new HashMap<>();
-        putCompOperator(0x01, "or", "bool", "OPLOR");
-        putCompOperator(0x02, "and", "bool", "OPLAND");
-        putCompOperator(0x03, "bitOr", "int", "OPOR");
-        putCompOperator(0x04, "bitXor", "int", "OPEOR");
-        putCompOperator(0x05, "bitAnd", "int", "OPAND");
-        putCompOperator(0x06, "==", "bool", "OPEQ");
-        putCompOperator(0x07, "!=", "bool", "OPNE");
-        putCompOperator(0x08, "> (unsigned)", "bool", "OPGTU");
-        putCompOperator(0x09, "< (unsigned)", "bool", "OPLSU");
-        putCompOperator(0x0A, ">", "bool", "OPGT");
-        putCompOperator(0x0B, "<", "bool", "OPLS");
-        putCompOperator(0x0C, ">= (unsigned)", "bool", "OPGTEU");
-        putCompOperator(0x0D, "<= (unsigned)", "bool", "OPLSEU");
-        putCompOperator(0x0E, ">=", "bool", "OPGTE");
-        putCompOperator(0x0F, "<=", "bool", "OPLSE");
-        putCompOperator(0x10, "OP-B-ON", "unknown", "OPBON");
-        putCompOperator(0x11, "OP-B-OFF", "unknown", "OPBOFF");
-        putCompOperator(0x12, "<<", "int", "OPSLL");
-        putCompOperator(0x13, ">>", "int", "OPSRL");
-        putCompOperator(0x14, "+", "int", "OPADD");
-        putCompOperator(0x15, "-", "int", "OPSUB");
-        putCompOperator(0x16, "*", "int", "OPMUL");
-        putCompOperator(0x17, "/", "int", "OPDIV");
-        putCompOperator(0x18, "mod", "int", "OPMOD");
+        putCompOperator(OpCodes.OR_LOGIC, "or", "bool", "OPLOR");
+        putCompOperator(OpCodes.AND_LOGIC, "and", "bool", "OPLAND");
+        putCompOperator(OpCodes.OR, "bitOr", "int", "OPOR");
+        putCompOperator(OpCodes.XOR, "bitXor", "int", "OPEOR");
+        putCompOperator(OpCodes.AND, "bitAnd", "int", "OPAND");
+        putCompOperator(OpCodes.EQ, "==", "bool", "OPEQ");
+        putCompOperator(OpCodes.NEQ, "!=", "bool", "OPNE");
+        putCompOperator(OpCodes.LT, "> (unsigned)", "bool", "OPGTU");
+        putCompOperator(OpCodes.GT, "< (unsigned)", "bool", "OPLSU");
+        putCompOperator(OpCodes.LT_2, ">", "bool", "OPGT");
+        putCompOperator(OpCodes.LTE_2, "<", "bool", "OPLS");
+        putCompOperator(OpCodes.LTE, ">= (unsigned)", "bool", "OPGTEU");
+        putCompOperator(OpCodes.GTE, "<= (unsigned)", "bool", "OPLSEU");
+        putCompOperator(OpCodes.GT_2, ">=", "bool", "OPGTE");
+        putCompOperator(OpCodes.GTE_2, "<=", "bool", "OPLSE");
+        putCompOperator(OpCodes.BIT, "OP-B-ON", "unknown", "OPBON");
+        putCompOperator(OpCodes.NOT_BIT, "OP-B-OFF", "unknown", "OPBOFF");
+        putCompOperator(OpCodes.SLL, "<<", "int", "OPSLL");
+        putCompOperator(OpCodes.SRA, ">>", "int", "OPSRL");
+        putCompOperator(OpCodes.ADD, "+", "int", "OPADD");
+        putCompOperator(OpCodes.SUB, "-", "int", "OPSUB");
+        putCompOperator(OpCodes.MUL, "*", "int", "OPMUL");
+        putCompOperator(OpCodes.DIV, "/", "int", "OPDIV");
+        putCompOperator(OpCodes.MOD, "mod", "int", "OPMOD");
 
         putEnum("deathAnimation", 0x00, "Character (Body remains and targetable)", "death_normal");
         putEnum("deathAnimation", 0x01, "Boss (Body remains but untargetable)", "death_nop");
@@ -622,6 +626,16 @@ public abstract class ScriptConstants {
         putMoveProperty(0x0008, "elementIce", "bool");
         putMoveProperty(0x0009, "elementFire", "bool");
         putMoveProperty(0x000A, "targetType", "targetType");
+    }
+
+    private static void SetRange(int[] array, int lowerBound, int upperBound, int value) {
+        for (int i = lowerBound; i <= upperBound; i++) {
+            array[i] = value;
+        }
+    }
+
+    private static void SetRangeExclusive(int[] array, int lowerBound, int upperBound, int value) {
+        SetRange(array, lowerBound, upperBound - 1, value);
     }
 
     public static Map<Integer, ScriptField> getEnumMap(String type) {
