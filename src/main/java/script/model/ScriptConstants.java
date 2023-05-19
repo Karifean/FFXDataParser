@@ -68,12 +68,13 @@ public abstract class ScriptConstants {
         OPCODE_STACKPOPS = new int[0x100];
         Arrays.fill(OPCODE_STACKPOPS, -1);
         OPCODE_STACKPOPS[OpCodes.NOP] = 0;
+        OPCODE_STACKPOPS[OpCodes.NOP_1D] = 0;
+        OPCODE_STACKPOPS[OpCodes.NOP_1E] = 0;
+        OPCODE_STACKPOPS[OpCodes.NOP_76] = 0;
         SetRange(OPCODE_STACKPOPS, OpCodes.OR_LOGIC, OpCodes.MOD, 2);
         OPCODE_STACKPOPS[OpCodes.NOT_LOGIC] = 1;
         OPCODE_STACKPOPS[OpCodes.NEG] = 1;
         OPCODE_STACKPOPS[OpCodes.NOT] = 1;
-        OPCODE_STACKPOPS[OpCodes.NOP_1D] = 0;
-        OPCODE_STACKPOPS[OpCodes.NOP_1E] = 0;
         OPCODE_STACKPOPS[OpCodes.SET_RETURN_VALUE] = 1;
         OPCODE_STACKPOPS[OpCodes.GET_RETURN_VALUE] = 0;
         OPCODE_STACKPOPS[OpCodes.GET_DATUM_DESC] = 0; // TODO: is this one right? not handled anywhere else
@@ -107,7 +108,6 @@ public abstract class ScriptConstants {
         SetRangeExclusive(OPCODE_STACKPOPS, OpCodes.GET_INT, OpCodes.GET_FLOAT, 0);
         SetRangeExclusive(OPCODE_STACKPOPS, OpCodes.GET_FLOAT, OpCodes.TEX_UNPACK_IMM, 0);
         OPCODE_STACKPOPS[OpCodes.TEX_UNPACK_IMM] = 0;
-        OPCODE_STACKPOPS[OpCodes.NOP_76] = 0;
         OPCODE_STACKPOPS[OpCodes.WAIT_DELETE] = 2;
         OPCODE_STACKPOPS[0x79] = 3;
         OPCODE_STACKPOPS[0x9F] = 0;
@@ -135,14 +135,14 @@ public abstract class ScriptConstants {
         putCompOperator(OpCodes.AND, "bitAnd", "int", "OPAND");
         putCompOperator(OpCodes.EQ, "==", "bool", "OPEQ");
         putCompOperator(OpCodes.NEQ, "!=", "bool", "OPNE");
-        putCompOperator(OpCodes.LT, "> (unsigned)", "bool", "OPGTU");
-        putCompOperator(OpCodes.GT, "< (unsigned)", "bool", "OPLSU");
-        putCompOperator(OpCodes.LT_2, ">", "bool", "OPGT");
-        putCompOperator(OpCodes.LTE_2, "<", "bool", "OPLS");
-        putCompOperator(OpCodes.LTE, ">= (unsigned)", "bool", "OPGTEU");
-        putCompOperator(OpCodes.GTE, "<= (unsigned)", "bool", "OPLSEU");
-        putCompOperator(OpCodes.GT_2, ">=", "bool", "OPGTE");
-        putCompOperator(OpCodes.GTE_2, "<=", "bool", "OPLSE");
+        putCompOperator(OpCodes.LT, "> (unsigned)", "bool", "OPGTU"); // TODO: OpCodes from NoClip are the opposite
+        putCompOperator(OpCodes.GT, "< (unsigned)", "bool", "OPLSU"); // TODO: OpCodes from NoClip are the opposite
+        putCompOperator(OpCodes.LT_2, ">", "bool", "OPGT"); // TODO: OpCodes from NoClip are the opposite
+        putCompOperator(OpCodes.LTE_2, "<", "bool", "OPLS"); // TODO: OpCodes from NoClip are the opposite
+        putCompOperator(OpCodes.LTE, ">= (unsigned)", "bool", "OPGTEU"); // TODO: OpCodes from NoClip are the opposite
+        putCompOperator(OpCodes.GTE, "<= (unsigned)", "bool", "OPLSEU"); // TODO: OpCodes from NoClip are the opposite
+        putCompOperator(OpCodes.GT_2, ">=", "bool", "OPGTE"); // TODO: OpCodes from NoClip are the opposite
+        putCompOperator(OpCodes.GTE_2, "<=", "bool", "OPLSE"); // TODO: OpCodes from NoClip are the opposite
         putCompOperator(OpCodes.BIT, "OP-B-ON", "unknown", "OPBON");
         putCompOperator(OpCodes.NOT_BIT, "OP-B-OFF", "unknown", "OPBOFF");
         putCompOperator(OpCodes.SLL, "<<", "int", "OPSLL");
