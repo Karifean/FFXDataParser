@@ -1,6 +1,6 @@
 package model;
 
-import main.Main;
+import main.StringHelper;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -427,10 +427,10 @@ public class GearAbilityDataObject {
     }
 
     private void mapStrings(int[] stringBytes) {
-        name = Main.getStringAtLookupOffset(stringBytes, nameOffset);
-        dash = Main.getStringAtLookupOffset(stringBytes, dashOffset);
-        description = Main.getStringAtLookupOffset(stringBytes, descriptionOffset);
-        otherText = Main.getStringAtLookupOffset(stringBytes, otherTextOffset);
+        name = StringHelper.getStringAtLookupOffset(stringBytes, nameOffset);
+        dash = StringHelper.getStringAtLookupOffset(stringBytes, dashOffset);
+        description = StringHelper.getStringAtLookupOffset(stringBytes, descriptionOffset);
+        otherText = StringHelper.getStringAtLookupOffset(stringBytes, otherTextOffset);
     }
 
     @Override
@@ -451,7 +451,7 @@ public class GearAbilityDataObject {
         String dashStr = (dashOffset > 0 && !"-".equals(dash) ? "DH=" + dash + " / " : "");
         String descriptionStr = (descriptionOffset > 0 && !"-".equals(description) ? description : "");
         String soText = (otherTextOffset > 0 && !"-".equals(otherText) ? " / OT=" + otherText : "");
-        return name + " { " + full + " } " + dashStr + descriptionStr + soText;
+        return String.format("%-18s", getName()) + " { " + full + " } " + dashStr + descriptionStr + soText;
     }
 
     private static String ifG0(int value, String prefix, String postfix) {
@@ -711,7 +711,7 @@ public class GearAbilityDataObject {
             if (withoutLastSemicolon.indexOf(';') > 0) {
                 return withoutLastSemicolon + " }";
             } else {
-                return withoutLastSemicolon.substring(9);
+                return withoutLastSemicolon.substring(8);
             }
         } else {
             return null;

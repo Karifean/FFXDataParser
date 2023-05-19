@@ -21,7 +21,7 @@ public class MonsterObject {
     public StringBuilder monsterText = new StringBuilder();
     int[] aiBytes;
     int[] statBytes = new int[0x8C];
-    int[] spoilsBytes;
+    int[] spoilsBytes = new int[0x124];
 
     public MonsterObject(File file, boolean isMonsterFile) {
         this.file = file;
@@ -67,11 +67,9 @@ public class MonsterObject {
                 statBytes[i] = data.read();
             }
             data.reset();
-            data.mark(spoilsEndAddress);
+            data.mark(spoilsBeginAddress + 0x124);
             data.skipNBytes(spoilsBeginAddress);
-            int spoilsLength = spoilsEndAddress - spoilsBeginAddress;
-            spoilsBytes = new int[spoilsLength];
-            for (int i = 0; i < spoilsLength; i++) {
+            for (int i = 0; i < 0x124; i++) {
                 spoilsBytes[i] = data.read();
             }
             monsterStatData = new MonsterStatDataObject(statBytes);

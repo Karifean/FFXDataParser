@@ -1,6 +1,6 @@
 package model;
 
-import main.Main;
+import main.StringHelper;
 import script.model.ScriptConstants;
 
 import java.io.IOException;
@@ -134,7 +134,7 @@ public class AbilityDataObject {
     boolean targetFlag5;
     boolean targetEitherTeam;
     boolean targetDead;
-    boolean targetFlag8;
+    boolean targetFlag8LongRangeMaybe;
     boolean onTopLevelInMenu;
     boolean opensSubMenu;
     boolean byte1Fbit02WhichIsOnlySetOnEntrust;
@@ -340,7 +340,7 @@ public class AbilityDataObject {
         targetFlag5 = (targetingFlags & 0x10) > 0;
         targetEitherTeam = (targetingFlags & 0x20) > 0;
         targetDead = (targetingFlags & 0x40) > 0;
-        targetFlag8 = (targetingFlags & 0x80) > 0;
+        targetFlag8LongRangeMaybe = (targetingFlags & 0x80) > 0;
         onTopLevelInMenu = (menuProperties1B & 0x01) > 0;
         opensSubMenu = (menuProperties1B & 0x10) > 0;
         usableOutsideCombat = (miscProperties1C & 0x01) > 0;
@@ -438,10 +438,10 @@ public class AbilityDataObject {
     }
 
     private void mapStrings(int[] stringBytes) {
-        name = Main.getStringAtLookupOffset(stringBytes, nameOffset);
-        dash = Main.getStringAtLookupOffset(stringBytes, dashOffset);
-        description = Main.getStringAtLookupOffset(stringBytes, descriptionOffset);
-        otherText = Main.getStringAtLookupOffset(stringBytes, otherTextOffset);
+        name = StringHelper.getStringAtLookupOffset(stringBytes, nameOffset);
+        dash = StringHelper.getStringAtLookupOffset(stringBytes, dashOffset);
+        description = StringHelper.getStringAtLookupOffset(stringBytes, descriptionOffset);
+        otherText = StringHelper.getStringAtLookupOffset(stringBytes, otherTextOffset);
     }
 
     @Override
@@ -620,7 +620,7 @@ public class AbilityDataObject {
         if (targetFlag5) {
             target += "/5";
         }
-        if (targetFlag8) {
+        if (targetFlag8LongRangeMaybe) {
             target += "/8";
         }
         if (targetDead) {

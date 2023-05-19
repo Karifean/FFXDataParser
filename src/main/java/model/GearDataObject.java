@@ -3,11 +3,7 @@ package model;
 import main.DataAccess;
 import script.model.ScriptConstants;
 
-import java.io.EOFException;
 import java.io.IOException;
-import java.io.InputStream;
-import java.util.HashMap;
-import java.util.Map;
 
 public class GearDataObject {
     private int[] bytes;
@@ -34,8 +30,8 @@ public class GearDataObject {
 
     boolean armor;
     boolean flag1;
-    boolean flag2;
-    boolean celestial;
+    boolean hiddenInMenu;
+    boolean unalterable;
     boolean brotherhood;
 
     public GearDataObject() {}
@@ -91,8 +87,8 @@ public class GearDataObject {
     private void mapFlags() {
         armor = armorByte != 0;
         flag1 = (variousFlags & 0x01) > 0;
-        flag2 = (variousFlags & 0x02) > 0;
-        celestial = (variousFlags & 0x04) > 0;
+        hiddenInMenu = (variousFlags & 0x02) > 0;
+        unalterable = (variousFlags & 0x04) > 0;
         brotherhood = (variousFlags & 0x08) > 0;
     }
 
@@ -107,9 +103,10 @@ public class GearDataObject {
                 ", Crit=" + crit + '%' +
                 ", Slots=" + slots + ' ' +
                 abilityString +
-                specialType +
-                (flag2 ? ", Hidden in Menu" : "") +
-                (brotherhood ? ", Brotherhood" : "") +
+                (flag1 ? ", Flag1" : "") +
+                (unalterable ? ", Uncustomizable/Unsellable?" : "") +
+                (hiddenInMenu ? ", Hidden in Menu" : "") +
+                (brotherhood ? ", Brotherhood?" : "") +
                 (alwaysZero1 != 0 ? ", 1 not Zero!=" + formatUnknownByte(alwaysZero1) : "") +
                 (alwaysZero2 != 0 ? ", 2 not Zero!=" + formatUnknownByte(alwaysZero2) : "") +
                 (alwaysZero3 != 0 ? ", 3 not Zero!=" + formatUnknownByte(alwaysZero3) : "") +
@@ -147,20 +144,20 @@ public class GearDataObject {
         if (flag1) {
             specialType = ", Special: ";
             if (brotherhood) {
-                if (flag2) {
+                if (hiddenInMenu) {
                     specialType += "Original Brotherhood";
                 } else {
                     specialType += "Other Brotherhood?";
                 }
-                if (celestial) {
+                if (unalterable) {
                     specialType += ", CL";
                 }
-            } else if (flag2) {
-                specialType += "Aeon " + (celestial ? "Weapon" : "Armor");
+            } else if (hiddenInMenu) {
+                specialType += "Aeon " + (unalterable ? "Weapon" : "Armor");
             } else {
                 specialType += "(No BH, No F2)";
             }
-        } else if (celestial) {
+        } else if (unalterable) {
             specialType = ", Celestial";
         }
         return specialType;
