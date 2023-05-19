@@ -6,8 +6,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * a_ability.bin
+ */
 public class GearAbilityDataObject {
-    int[] bytes;
+    private final int[] bytes;
 
     public String name;
     public String dash;
@@ -215,8 +218,6 @@ public class GearAbilityDataObject {
     private boolean noEncounters;
     private boolean capture;
 
-    public GearAbilityDataObject() {}
-
     public GearAbilityDataObject(int[] bytes, int[] stringBytes) {
         this.bytes = bytes;
         mapBytes();
@@ -324,7 +325,6 @@ public class GearAbilityDataObject {
         groupIndex = bytes[0x69];
         groupLevel = bytes[0x6A];
         internationalBonusIndex = bytes[0x6B];
-        // length = 0x6C
     }
 
     private void mapFlags() {
@@ -459,14 +459,6 @@ public class GearAbilityDataObject {
             return prefix + value + postfix;
         } else {
             return null;
-        }
-    }
-
-    private static String ifNN(String value, String prefix, String postfix) {
-        if (value != null) {
-            return prefix + value + postfix;
-        } else {
-            return "";
         }
     }
 
@@ -903,9 +895,7 @@ public class GearAbilityDataObject {
     }
 
     private static String statusDurationString(int duration, boolean blocks) {
-        /* if (duration == 255) {
-            return "Auto";
-        } else */ if (duration >= 254) {
+        if (duration >= 254) {
             return "Endless";
         } else if (duration == 1) {
             return blocks ? "1 block" : "1 turn";
@@ -916,13 +906,7 @@ public class GearAbilityDataObject {
         }
     }
 
-    private static String formatUnknownByte(int bt) {
-        return String.format("%02x", bt) + '=' + String.format("%03d", bt) + '(' + String.format("%8s", Integer.toBinaryString(bt)).replace(' ', '0') + ')';
-    }
-
     private int read2Bytes(int offset) {
-        int val = bytes[offset];
-        val += bytes[offset+1] * 0x100;
-        return val;
+        return bytes[offset] + bytes[offset+1] * 0x100;
     }
 }

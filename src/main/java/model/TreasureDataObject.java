@@ -1,17 +1,17 @@
 package model;
 
 import main.DataAccess;
-import main.Main;
 
+/**
+ * takara.bin
+ */
 public class TreasureDataObject {
-    private int[] bytes;
+    private final int[] bytes;
 
     private int kind;
     private int quantity;
     private int typeLow;
     private int type;
-
-    public TreasureDataObject() {}
 
     public TreasureDataObject(int[] bytes) {
         this.bytes = bytes;

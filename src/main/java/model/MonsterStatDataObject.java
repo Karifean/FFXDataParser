@@ -4,7 +4,7 @@ import script.model.StackObject;
 
 public class MonsterStatDataObject {
 
-    private int[] bytes;
+    private final int[] bytes;
 
     int hp;
     int mp;
@@ -90,8 +90,6 @@ public class MonsterStatDataObject {
     boolean immunitySentinel;
     boolean immunityDoom;
     boolean immunityUnused2;
-
-    public MonsterStatDataObject() {}
 
     public MonsterStatDataObject(int[] bytes) {
         this.bytes = bytes;
@@ -195,29 +193,15 @@ public class MonsterStatDataObject {
     }
 
     private static int read2Bytes(int[] bytes, int offset) {
-        int val = bytes[offset];
-        val += bytes[offset+1] * 0x100;
-        return val;
+        return bytes[offset] + bytes[offset+1] * 0x100;
     }
 
     private static int read4Bytes(int[] bytes, int offset) {
-        int val = bytes[offset];
-        val += bytes[offset+1] * 0x100;
-        val += bytes[offset+2] * 0x10000;
-        val += bytes[offset+3] * 0x1000000;
-        return val;
-    }
-
-    private static String readMove(int[] bytes, int offset) {
-        return asMove(read2Bytes(bytes, offset));
+        return bytes[offset] + bytes[offset+1] * 0x100 + bytes[offset+2] * 0x10000 + bytes[offset+3] * 0x1000000;
     }
 
     private static String asMove(int move) {
         return new StackObject("move", false, null, move).toString();
-    }
-
-    private static String formatUnknownByte(int bt) {
-        return String.format("%02x", bt) + '=' + String.format("%03d", bt) + '(' + String.format("%8s", Integer.toBinaryString(bt)).replace(' ', '0') + ')';
     }
 
 }

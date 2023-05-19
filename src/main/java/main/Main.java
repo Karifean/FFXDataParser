@@ -1,6 +1,7 @@
 package main;
 
 import model.*;
+import script.MonsterFile;
 import script.model.ScriptConstants;
 
 import java.io.*;
@@ -9,16 +10,14 @@ import java.util.stream.Collectors;
 
 public class Main {
 
-    private static final int MODE_READ_TEXT_FROM_FILES = 1;
     private static final int MODE_GREP = 2;
     private static final int MODE_TRANSLATE = 3;
     private static final int MODE_READ_ALL_ABILITIES = 4;
     private static final int MODE_READ_KEY_ITEMS = 5;
-    private static final int MODE_READ_MONSTER_AI = 6;
+    private static final int MODE_PARSE_SCRIPT_FILE = 6;
     private static final int MODE_RUN_SPECIFIC_MONSTER_AI = 7;
     private static final int MODE_READ_TREASURES = 8;
     private static final int MODE_READ_WEAPON_PICKUPS = 9;
-    private static final int MODE_FIND_EQUAL_FILES = 10;
     private static final int MODE_READ_STRING_FILE = 11;
     private static final int MODE_READ_GEAR_ABILITIES = 12;
     private static final String RESOURCES_ROOT = "src/main/resources/";
@@ -42,12 +41,6 @@ public class Main {
         List<String> realArgs = Arrays.asList(args).subList(1, args.length);
         readAndPrepareDataModel();
         switch (mode) {
-            case MODE_READ_TEXT_FROM_FILES:
-                for (String filename : realArgs) {
-                    parseFileText(RESOURCES_ROOT + filename);
-                }
-                ABILITY_USERS.keySet().stream().sorted().forEach((skill) -> System.out.println(skill + " -> " + String.join(",", ABILITY_USERS.get(skill).stream().sorted().toList())));
-                break;
             case MODE_GREP:
                 String joined = String.join(" ", realArgs);
                 writeGrep(joined);
@@ -69,7 +62,7 @@ public class Main {
                 for (String arg : realArgs) {
                     int idx = Integer.parseInt(arg, 10);
                     int monsterIdx = idx + 0x1000;
-                    MonsterObject monster = DataAccess.getMonster(monsterIdx);
+                    MonsterFile monster = DataAccess.getMonster(monsterIdx);
                     if (monster != null) {
                         monster.parseScript();
                         System.out.println("Printing monster #" + arg + " [" + String.format("%04x", monsterIdx).toUpperCase() + "h]");
@@ -79,7 +72,7 @@ public class Main {
                     }
                 }
                 break;
-            case MODE_READ_MONSTER_AI:
+            case MODE_PARSE_SCRIPT_FILE:
                 for (String filename : realArgs) {
                     readMonsterObject(RESOURCES_ROOT + filename, true);
                 }
@@ -97,9 +90,6 @@ public class Main {
                 break;
             case MODE_READ_GEAR_ABILITIES:
                 readGearAbilitiesFromFile(LOCALIZED_KERNEL_PATH + "a_ability.bin", true);
-                break;
-            case MODE_FIND_EQUAL_FILES:
-                findEqualFiles(RESOURCES_ROOT + realArgs.get(0), RESOURCES_ROOT + realArgs.get(1));
                 break;
             case MODE_READ_STRING_FILE:
                 for (String filename : realArgs) {
@@ -136,7 +126,6 @@ public class Main {
             return;
         }
         System.arraycopy(abilities, 0, DataAccess.MOVES, 0x1000 * group, abilities.length);
-
     }
 
     private static void writeGrep(String str) {
@@ -269,130 +258,79 @@ public class Main {
     }
 
     private static AbilityDataObject[] readAbilitiesFromFile(String filename, int group, boolean print) {
-        if (print) {
-            System.out.println("--- " + filename + " ---");
+        DataFileReader<AbilityDataObject> reader = new DataFileReader<>() {
+            @Override
+            public AbilityDataObject objectCreator(int[] bytes, int[] stringBytes) {
+                return new AbilityDataObject(bytes, stringBytes);
+            }
+
+            @Override
+            public String indexWriter(int idx) {
+                return String.format("%04x", idx + group * 0x1000).toUpperCase();
+            }
+        };
+        List<AbilityDataObject> list = reader.readGenericDataFile(filename, print);
+        if (list == null) {
+            return null;
         }
-        File file = new File(filename);
-        if (!file.isDirectory()) {
-            try (DataInputStream inputStream = new DataInputStream(new BufferedInputStream(new FileInputStream(file)))) {
-                inputStream.skipBytes(0xA);
-                int count = inputStream.read();
-                count += inputStream.read() * 0x100;
-                AbilityDataObject[] moves = new AbilityDataObject[count+1];
-                int individualLength = inputStream.read();
-                individualLength += inputStream.read() * 0x100;
-                int totalLength = inputStream.read();
-                totalLength += inputStream.read() * 0x100;
-                inputStream.skipBytes(4);
-                int[] moveBytes = new int[totalLength];
-                for (int i = 0; i < totalLength; i++) {
-                    moveBytes[i] = inputStream.read();
-                }
-                byte[] stringBytes = inputStream.readAllBytes();
-                int stringsLength = stringBytes.length;
-                int[] allStrings = new int[stringsLength];
-                for (int i = 0; i < stringsLength; i++) {
-                    allStrings[i] = Byte.toUnsignedInt(stringBytes[i]);
-                }
-                for (int i = 0; i <= count; i++) {
-                    moves[i] = new AbilityDataObject(Arrays.copyOfRange(moveBytes, i * individualLength, (i+1) * individualLength), allStrings);
-                    if (print) {
-                        String offset = String.format("%04x", (i * individualLength) + 20);
-                        System.out.println(String.format("%04x", i + group * 0x1000).toUpperCase() + " (Offset " + offset + ") - " + moves[i]);
-                    }
-                }
-                return moves;
-            } catch (IOException ignored) {}
-        }
-        return null;
+        AbilityDataObject[] array = new AbilityDataObject[list.size()];
+        return list.toArray(array);
     }
 
     private static KeyItemDataObject[] readKeyItemsFromFile(String filename, boolean print) {
-        File file = new File(filename);
-        if (!file.isDirectory()) {
-            try (DataInputStream inputStream = new DataInputStream(new BufferedInputStream(new FileInputStream(file)))) {
-                inputStream.skipBytes(0xA);
-                int count = inputStream.read();
-                count += inputStream.read() * 0x100;
-                KeyItemDataObject[] keyItems = new KeyItemDataObject[count+1];
-                int individualLength = inputStream.read();
-                individualLength += inputStream.read() * 0x100;
-                int totalLength = inputStream.read();
-                totalLength += inputStream.read() * 0x100;
-                inputStream.skipBytes(4);
-                int[] keyItemBytes = new int[totalLength];
-                for (int i = 0; i < totalLength; i++) {
-                    keyItemBytes[i] = inputStream.read();
-                }
-                byte[] stringBytes = inputStream.readAllBytes();
-                int stringsLength = stringBytes.length;
-                int[] allStrings = new int[stringsLength];
-                for (int i = 0; i < stringsLength; i++) {
-                    allStrings[i] = Byte.toUnsignedInt(stringBytes[i]);
-                }
-                for (int i = 0; i <= count; i++) {
-                    keyItems[i] = new KeyItemDataObject(Arrays.copyOfRange(keyItemBytes, i * individualLength, (i+1) * individualLength), allStrings);
-                    if (print) {
-                        String offset = String.format("%04x", (i * individualLength) + 20);
-                        System.out.println("A0" + String.format("%02x", i).toUpperCase() + " (Offset " + offset + ") - " + keyItems[i]);
-                    }
-                }
-                return keyItems;
-            } catch (IOException ignored) {}
+        DataFileReader<KeyItemDataObject> reader = new DataFileReader<>() {
+            @Override
+            public KeyItemDataObject objectCreator(int[] bytes, int[] stringBytes) {
+                return new KeyItemDataObject(bytes, stringBytes);
+            }
+
+            @Override
+            public String indexWriter(int idx) {
+                return "A0" + String.format("%02x", idx).toUpperCase();
+            }
+        };
+        List<KeyItemDataObject> list = reader.readGenericDataFile(filename, print);
+        if (list == null) {
+            return null;
         }
-        return null;
+        KeyItemDataObject[] array = new KeyItemDataObject[list.size()];
+        return list.toArray(array);
     }
 
     private static GearAbilityDataObject[] readGearAbilitiesFromFile(String filename, boolean print) {
-        File file = new File(filename);
-        if (!file.isDirectory()) {
-            try (DataInputStream inputStream = new DataInputStream(new BufferedInputStream(new FileInputStream(file)))) {
-                inputStream.skipBytes(0xA);
-                int count = inputStream.read();
-                count += inputStream.read() * 0x100;
-                GearAbilityDataObject[] gearAbilities = new GearAbilityDataObject[count+1];
-                int individualLength = inputStream.read();
-                individualLength += inputStream.read() * 0x100;
-                int totalLength = inputStream.read();
-                totalLength += inputStream.read() * 0x100;
-                inputStream.skipBytes(4);
-                int[] gearAbilityBytes = new int[totalLength];
-                for (int i = 0; i < totalLength; i++) {
-                    gearAbilityBytes[i] = inputStream.read();
-                }
-                byte[] stringBytes = inputStream.readAllBytes();
-                int stringsLength = stringBytes.length;
-                int[] allStrings = new int[stringsLength];
-                for (int i = 0; i < stringsLength; i++) {
-                    allStrings[i] = Byte.toUnsignedInt(stringBytes[i]);
-                }
-                for (int i = 0; i <= count; i++) {
-                    gearAbilities[i] = new GearAbilityDataObject(Arrays.copyOfRange(gearAbilityBytes, i * individualLength, (i+1) * individualLength), allStrings);
-                    if (print) {
-                        String offset = String.format("%04x", (i * individualLength) + 20);
-                        System.out.println("80" + String.format("%02x", i).toUpperCase() + " (Offset " + offset + ") - " + gearAbilities[i]);
-                    }
-                }
-                if (print) {
-                    Set<Integer> groups = new HashSet<>();
-                    List<Integer> untakenGroups = new ArrayList<>();
-                    for (GearAbilityDataObject gearAbility : gearAbilities) {
-                        groups.add(gearAbility.groupIndex);
-                    }
-                    for (int i = 0; i <= 0x82; i++) {
-                        if (!groups.contains(i)) {
-                            untakenGroups.add(i);
-                        }
-                    }
-                    System.out.println("Untaken Groups: " + untakenGroups.stream().map(i -> ""+i).collect(Collectors.joining(",")));
-                }
-                return gearAbilities;
-            } catch (IOException ignored) {}
+        DataFileReader<GearAbilityDataObject> reader = new DataFileReader<>() {
+            @Override
+            public GearAbilityDataObject objectCreator(int[] bytes, int[] stringBytes) {
+                return new GearAbilityDataObject(bytes, stringBytes);
+            }
+
+            @Override
+            public String indexWriter(int idx) {
+                return "80" + String.format("%02x", idx).toUpperCase();
+            }
+        };
+        List<GearAbilityDataObject> list = reader.readGenericDataFile(filename, print);
+        if (list == null) {
+            return null;
         }
-        return null;
+        GearAbilityDataObject[] array = new GearAbilityDataObject[list.size()];
+        if (print) {
+            Set<Integer> groups = new HashSet<>();
+            List<Integer> untakenGroups = new ArrayList<>();
+            for (GearAbilityDataObject gearAbility : list) {
+                groups.add(gearAbility.groupIndex);
+            }
+            for (int i = 0; i <= 0x82; i++) {
+                if (!groups.contains(i)) {
+                    untakenGroups.add(i);
+                }
+            }
+            System.out.println("Untaken Groups: " + untakenGroups.stream().map(i -> ""+i).collect(Collectors.joining(",")));
+        }
+        return list.toArray(array);
     }
 
-    private static MonsterObject readMonsterObject(String filename, boolean print) {
+    private static MonsterFile readMonsterObject(String filename, boolean print) {
         if (print) {
             System.out.println("--- " + filename + " ---");
         }
@@ -405,32 +343,32 @@ public class Main {
             return null;
         } else if (file.getName().endsWith(".ebp") || file.getName().endsWith(".bin")) {
             boolean isMonsterFile = file.getPath().contains("/mon/");
-            MonsterObject monsterObject = new MonsterObject(file, isMonsterFile);
+            MonsterFile monsterFile = new MonsterFile(file, isMonsterFile);
             if (isMonsterFile) {
                 try {
                     int idx = Integer.parseInt(file.getName().substring(1, 4), 10);
-                    DataAccess.MONSTERS[idx] = monsterObject;
+                    DataAccess.MONSTERS[idx] = monsterFile;
                 } catch (RuntimeException e) {
                     System.err.println("Got exception while storing monster object (fileName=" + file.getName() + ")");
                     e.printStackTrace();
                 }
             }
             if (!print) {
-                return monsterObject;
+                return monsterFile;
             }
-            monsterObject.parseScript();
+            monsterFile.parseScript();
             if (isMonsterFile) {
-                System.out.println("Monster: " + monsterObject.monsterName);
+                System.out.println("Monster: " + monsterFile.monsterName);
             }
-            if (monsterObject.monsterAi != null) {
+            if (monsterFile.monsterAi != null) {
                 System.out.println("- Script Code -");
-                System.out.println(monsterObject.monsterAi.allLinesString());
+                System.out.println(monsterFile.monsterAi.allLinesString());
                 System.out.println("- Jump Table -");
-                System.out.println(monsterObject.monsterAi.jumpTableString.toString());
+                System.out.println(monsterFile.monsterAi.jumpTableString.toString());
             }
             if (isMonsterFile) {
                 System.out.println("- Monster Stats -");
-                System.out.println(monsterObject.monsterStatData);
+                System.out.println(monsterFile.monsterStatData);
                 /* System.out.println("- Monster Spoils -");
                 System.out.println(monsterObject.monsterSpoilsData);
                 System.out.println("- Sensor Text -");
@@ -440,7 +378,7 @@ public class Main {
                 System.out.println(monsterObject.monsterScanText);
                 System.out.println(monsterObject.monsterScanDash); */
             }
-            return monsterObject;
+            return monsterFile;
         } else {
             System.out.println("File ignored");
             return null;
@@ -448,80 +386,43 @@ public class Main {
     }
 
     private static TreasureDataObject[] readTreasures(String filename, boolean print) {
-        if (print) {
-            System.out.println("--- " + filename + " ---");
-        }
-        File file = new File(filename);
-        if (file.isDirectory()) {
-            String[] contents = file.list();
-            if (contents != null) {
-                Arrays.stream(contents).filter(sf -> !sf.startsWith(".")).sorted().forEach(sf -> readTreasures(filename + '/' + sf, print));
+        DataFileReader<TreasureDataObject> abilityReader = new DataFileReader<>() {
+            @Override
+            public TreasureDataObject objectCreator(int[] bytes, int[] stringBytes) {
+                return new TreasureDataObject(bytes);
             }
-        } else {
-            try (DataInputStream inputStream = new DataInputStream(new BufferedInputStream(new FileInputStream(file)))) {
-                inputStream.skipBytes(0xA);
-                int count = inputStream.read();
-                count += inputStream.read() * 0x100;
-                TreasureDataObject[] treasures = new TreasureDataObject[count+1];
-                int individualLength = inputStream.read();
-                individualLength += inputStream.read() * 0x100;
-                int totalLength = inputStream.read();
-                totalLength += inputStream.read() * 0x100;
-                inputStream.skipBytes(4);
-                int[] treasureBytes = new int[totalLength];
-                for (int i = 0; i < totalLength; i++) {
-                    treasureBytes[i] = inputStream.read();
-                }
-                for (int i = 0; i <= count; i++) {
-                    String offset = String.format("%04x", (i * individualLength) + 20);
-                    treasures[i] = new TreasureDataObject(Arrays.copyOfRange(treasureBytes, i * individualLength, (i + 1) * individualLength));
-                    if (print) {
-                        System.out.print("Index " + i + " [" + String.format("%02x", i) + "h] (Offset " + offset + ") - ");
-                        System.out.println(treasures[i]);
-                    }
-                }
-                return treasures;
-            } catch (IOException ignored) {}
+
+            @Override
+            public String indexWriter(int idx) {
+                return "Index " + idx + " [" + String.format("%02x", idx) + "h]";
+            }
+        };
+        List<TreasureDataObject> list = abilityReader.readGenericDataFile(filename, print);
+        if (list == null) {
+            return null;
         }
-        return null;
+        TreasureDataObject[] array = new TreasureDataObject[list.size()];
+        return list.toArray(array);
     }
 
     private static GearDataObject[] readWeaponPickups(String filename, boolean print) {
-        if (print) {
-            System.out.println("--- " + filename + " ---");
-        }
-        File file = new File(filename);
-        if (file.isDirectory()) {
-            String[] contents = file.list();
-            if (contents != null) {
-                Arrays.stream(contents).filter(sf -> !sf.startsWith(".")).sorted().forEach(sf -> readWeaponPickups(filename + '/' + sf, print));
+        DataFileReader<GearDataObject> abilityReader = new DataFileReader<>() {
+            @Override
+            public GearDataObject objectCreator(int[] bytes, int[] stringBytes) {
+                return new GearDataObject(bytes);
             }
-        } else {
-            try (DataInputStream inputStream = new DataInputStream(new BufferedInputStream(new FileInputStream(file)))) {
-                inputStream.skipBytes(0xA);
-                int count = inputStream.read();
-                count += inputStream.read() * 0x100;
-                GearDataObject[] gear = new GearDataObject[count+1];
-                int individualLength = inputStream.read();
-                individualLength += inputStream.read() * 0x100;
-                int totalLength = inputStream.read();
-                totalLength += inputStream.read() * 0x100;
-                inputStream.skipBytes(4);
-                int[] gearBytes = new int[totalLength];
-                for (int i = 0; i < totalLength; i++) {
-                    gearBytes[i] = inputStream.read();
-                }
-                for (int i = 0; i <= count; i++) {
-                    gear[i] = new GearDataObject(Arrays.copyOfRange(gearBytes, i * individualLength, (i+1) * individualLength));
-                    if (print) {
-                        String offset = String.format("%04x", (i * individualLength) + 20);
-                        System.out.println("Index " + i + " [" + String.format("%02x", i) + "h] (Offset " + offset + ") - " + gear[i]);
-                    }
-                }
-                return gear;
-            } catch (IOException ignored) {}
+
+            @Override
+            public String indexWriter(int idx) {
+                return "Index " + idx + " [" + String.format("%02x", idx) + "h]";
+            }
+        };
+        List<GearDataObject> list = abilityReader.readGenericDataFile(filename, print);
+        if (list == null) {
+            return null;
         }
-        return null;
+        GearDataObject[] array = new GearDataObject[list.size()];
+        return list.toArray(array);
     }
 
     private static void readStringFile(String filename) {

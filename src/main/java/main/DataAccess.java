@@ -1,10 +1,11 @@
 package main;
 
 import model.*;
+import script.MonsterFile;
 
 public abstract class DataAccess {
     public static AbilityDataObject[] MOVES = new AbilityDataObject[0x10000];
-    public static MonsterObject[] MONSTERS = new MonsterObject[0x1000];
+    public static MonsterFile[] MONSTERS = new MonsterFile[0x1000];
     public static GearAbilityDataObject[] GEAR_ABILITIES;
     public static KeyItemDataObject[] KEY_ITEMS;
     public static TreasureDataObject[] TREASURES;
@@ -51,7 +52,7 @@ public abstract class DataAccess {
         return TREASURES[idx];
     }
 
-    public static MonsterObject getMonster(int idx) {
+    public static MonsterFile getMonster(int idx) {
         if (MONSTERS == null) {
             throw new UnsupportedOperationException();
         }

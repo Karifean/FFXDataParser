@@ -1,12 +1,13 @@
-package model;
+package script;
 
 import main.Main;
-import script.ScriptObject;
+import model.MonsterSpoilsDataObject;
+import model.MonsterStatDataObject;
 
 import java.io.*;
-import java.util.*;
+import java.util.List;
 
-public class MonsterObject {
+public class MonsterFile {
     File file;
     DataInputStream data;
     public ScriptObject monsterAi;
@@ -23,7 +24,7 @@ public class MonsterObject {
     int[] statBytes = new int[0x8C];
     int[] spoilsBytes = new int[0x124];
 
-    public MonsterObject(File file, boolean isMonsterFile) {
+    public MonsterFile(File file, boolean isMonsterFile) {
         this.file = file;
         this.isMonsterFile = isMonsterFile;
         try {

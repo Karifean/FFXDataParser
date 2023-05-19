@@ -3,18 +3,23 @@ package model;
 import main.StringHelper;
 import script.model.ScriptConstants;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+/**
+ * command.bin
+ * monmagic1.bin
+ * monmagic2.bin
+ * item.bin
+ */
 public class AbilityDataObject {
     static Map<Integer, String> submenus;
 
-    boolean isCharacterAbility;
-    int[] bytes;
+    private final boolean isCharacterAbility;
+    private final int[] bytes;
 
     public String name;
     public String dash;
@@ -217,11 +222,9 @@ public class AbilityDataObject {
     boolean specialBuffOverdrive200;
     boolean specialBuffUnused;
 
-    public AbilityDataObject() {}
-
-    public AbilityDataObject(int[] bytes, int[] stringBytes) throws IOException {
-        isCharacterAbility = (bytes.length == 96);
+    public AbilityDataObject(int[] bytes, int[] stringBytes) {
         this.bytes = bytes;
+        isCharacterAbility = (bytes.length == 96);
         prepareMaps();
         mapBytes();
         mapFlags();
@@ -808,8 +811,6 @@ public class AbilityDataObject {
     }
 
     private int read2Bytes(int offset) {
-        int val = bytes[offset];
-        val += bytes[offset+1] * 0x100;
-        return val;
+        return bytes[offset] + bytes[offset+1] * 0x100;
     }
 }

@@ -2,8 +2,7 @@ package script.model;
 
 import main.DataAccess;
 import model.AbilityDataObject;
-import main.Main;
-import model.MonsterObject;
+import script.MonsterFile;
 import model.TreasureDataObject;
 
 import java.util.Map;
@@ -67,7 +66,7 @@ public class StackObject {
             }
             if ("actor".equals(type) && value >= 0x1000 && value < 0x2000) {
                 try {
-                    MonsterObject monster = DataAccess.getMonster(value);
+                    MonsterFile monster = DataAccess.getMonster(value);
                     if (monster != null) {
                         return "Actors:MonsterType=" + monster.getName() + hexSuffix;
                     }

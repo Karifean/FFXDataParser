@@ -3,10 +3,13 @@ package model;
 import main.DataAccess;
 import script.model.ScriptConstants;
 
-import java.io.IOException;
-
+/**
+ * weapon.bin
+ * buki_get.bin
+ * shop_arms.bin
+ */
 public class GearDataObject {
-    private int[] bytes;
+    private final int[] bytes;
 
     boolean isBukiGet;
     int alwaysZero3;
@@ -34,11 +37,9 @@ public class GearDataObject {
     boolean unalterable;
     boolean brotherhood;
 
-    public GearDataObject() {}
-
-    public GearDataObject(int[] bytes) throws IOException {
-        isBukiGet = (bytes.length == 16);
+    public GearDataObject(int[] bytes) {
         this.bytes = bytes;
+        isBukiGet = (bytes.length == 16);
         if (isBukiGet) {
             mapBytesBukiGet();
         } else {
@@ -94,7 +95,6 @@ public class GearDataObject {
 
     @Override
     public String toString() {
-        String specialType = getSpecialType();
         String abilityString = getAbilityString();
         return "{ " + ScriptConstants.getEnumMap("actor").get(character).name +
                 ", " + (armor ? "Armor" : "Weapon") + (armorByte > 1 ? "[" + armorByte + "]" : "") +
@@ -139,30 +139,6 @@ public class GearDataObject {
         return abilityString;
     }
 
-    private String getSpecialType() {
-        String specialType = "";
-        if (flag1) {
-            specialType = ", Special: ";
-            if (brotherhood) {
-                if (hiddenInMenu) {
-                    specialType += "Original Brotherhood";
-                } else {
-                    specialType += "Other Brotherhood?";
-                }
-                if (unalterable) {
-                    specialType += ", CL";
-                }
-            } else if (hiddenInMenu) {
-                specialType += "Aeon " + (unalterable ? "Weapon" : "Armor");
-            } else {
-                specialType += "(No BH, No F2)";
-            }
-        } else if (unalterable) {
-            specialType = ", Celestial";
-        }
-        return specialType;
-    }
-
     private static String formatUnknownByte(int bt) {
         return String.format("%02x", bt) + '=' + String.format("%03d", bt) + '(' + String.format("%8s", Integer.toBinaryString(bt)).replace(' ', '0') + ')';
     }
@@ -181,8 +157,6 @@ public class GearDataObject {
     }
 
     private int read2Bytes(int offset) {
-        int val = bytes[offset];
-        val += bytes[offset+1] * 0x100;
-        return val;
+        return bytes[offset] + bytes[offset+1] * 0x100;
     }
 }

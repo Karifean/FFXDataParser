@@ -6,8 +6,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * important.bin
+ */
 public class KeyItemDataObject {
-    private int[] bytes;
+    private final int[] bytes;
 
     public String name;
     public String dash;
@@ -31,8 +34,6 @@ public class KeyItemDataObject {
     int alwaysZero;
     int unknownByte12;
     int ordering;
-
-    public KeyItemDataObject() {}
 
     public KeyItemDataObject(int[] bytes, int[] stringBytes) {
         this.bytes = bytes;
@@ -99,14 +100,6 @@ public class KeyItemDataObject {
             return prefix + value + postfix;
         } else {
             return null;
-        }
-    }
-
-    private static String ifNN(String value, String prefix, String postfix) {
-        if (value != null) {
-            return prefix + value + postfix;
-        } else {
-            return "";
         }
     }
 
