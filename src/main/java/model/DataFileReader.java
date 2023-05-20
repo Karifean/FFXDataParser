@@ -13,10 +13,7 @@ public abstract class DataFileReader<T> {
     public abstract String indexWriter(int idx);
 
     public List<T> readGenericDataFile(String filename, boolean print) {
-        File file = FileAccessorWithMods.resolveFile(filename);
-        if (print) {
-            System.out.println("--- " + file.getPath() + " ---");
-        }
+        File file = FileAccessorWithMods.resolveFile(filename, print);
         if (!file.isDirectory()) {
             try (DataInputStream inputStream = FileAccessorWithMods.readFile(file)) {
                 inputStream.skipBytes(0xA);

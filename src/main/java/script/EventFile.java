@@ -1,5 +1,7 @@
 package script;
 
+import main.Chunk;
+
 import java.util.List;
 
 /**
@@ -7,19 +9,19 @@ import java.util.List;
  */
 public class EventFile {
     public ScriptObject encounterScript;
-    int[] scriptBytes;
+    Chunk scriptChunk;
 
-    public EventFile(List<int[]> chunks) {
+    public EventFile(List<Chunk> chunks) {
         mapChunks(chunks);
         mapObjects();
     }
 
-    private void mapChunks(List<int[]> chunks) {
-        scriptBytes = chunks.get(0);
+    private void mapChunks(List<Chunk> chunks) {
+        scriptChunk = chunks.get(0);
     }
 
     private void mapObjects() {
-        encounterScript = new ScriptObject(scriptBytes);
+        encounterScript = new ScriptObject(scriptChunk);
     }
 
     public void parseScript() {

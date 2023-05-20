@@ -1,5 +1,6 @@
 package script;
 
+import main.Chunk;
 import main.StringHelper;
 import model.MonsterSpoilsDataObject;
 import model.MonsterStatDataObject;
@@ -19,26 +20,26 @@ public class MonsterFile {
     public String monsterSensorDash;
     public String monsterScanText;
     public String monsterScanDash;
-    int[] aiBytes;
-    int[] statBytes = new int[0x8C];
-    int[] spoilsBytes = new int[0x124];
+    Chunk scriptChunk;
+    int[] statBytes;
+    int[] spoilsBytes;
     int[] textBytes;
 
-    public MonsterFile(List<int[]> chunks) {
+    public MonsterFile(List<Chunk> chunks) {
         mapChunks(chunks);
         mapObjects();
         mapStrings();
     }
 
-    private void mapChunks(List<int[]> chunks) {
-        aiBytes = chunks.get(0);
-        statBytes = chunks.get(2);
-        spoilsBytes = chunks.get(4);
-        textBytes = chunks.get(6);
+    private void mapChunks(List<Chunk> chunks) {
+        scriptChunk = chunks.get(0);
+        statBytes = chunks.get(2).bytes;
+        spoilsBytes = chunks.get(4).bytes;
+        textBytes = chunks.get(6).bytes;
     }
 
     private void mapObjects() {
-        monsterAi = new ScriptObject(aiBytes);
+        monsterAi = new ScriptObject(scriptChunk);
         monsterStatData = new MonsterStatDataObject(statBytes);
         monsterSpoilsData = new MonsterSpoilsDataObject(spoilsBytes);
     }

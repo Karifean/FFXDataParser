@@ -1,5 +1,6 @@
 package script;
 
+import main.Chunk;
 import script.model.*;
 
 import java.util.*;
@@ -13,6 +14,7 @@ public class ScriptObject {
 
     protected int[] bytes;
     protected int[] actualScriptCodeBytes;
+    protected int absoluteOffset;
     protected int byteCursor = 0;
     protected int[] refFloats;
     protected int[] refInts;
@@ -41,9 +43,14 @@ public class ScriptObject {
     List<String> jumpLines;
     List<String> warnLines;
 
-    public ScriptObject(int[] bytes) {
+    public ScriptObject(Chunk chunk) {
+        this.bytes = chunk.bytes;
+        this.absoluteOffset = chunk.offset;
+    }
+
+    public ScriptObject(int[] bytes, int absoluteOffset) {
         this.bytes = bytes;
-        prepare();
+        this.absoluteOffset = absoluteOffset;
     }
 
     public void parseScript() {
@@ -75,8 +82,6 @@ public class ScriptObject {
             headers.add(scriptHeader);
         }
         parseReferenceFloatsAndInts(headers);
-        byteCursor = jumpsStartAddress;
-        // parseJumps((jumpsEndAddress - jumpsStartAddress) / 4);
         scriptCodeEndAddress = scriptCodeStartAddress + scriptCodeLength;
         actualScriptCodeBytes = Arrays.copyOfRange(bytes, scriptCodeStartAddress, scriptCodeEndAddress);
         parseScriptCode();
@@ -531,11 +536,6 @@ public class ScriptObject {
         }
     }
 
-    protected static void prepare() {
-        ScriptConstants.initialize();
-        ScriptFuncLib.initialize();
-    }
-
     private int readByte() {
         int rd = bytes[byteCursor];
         byteCursor++;
@@ -569,7 +569,7 @@ public class ScriptObject {
     }
 
     public String allLinesString() {
-        StringBuilder al = new StringBuilder("Script code starts at offset ").append(String.format("%04x", scriptCodeStartAddress)).append('\n');
+        StringBuilder al = new StringBuilder("Script code starts at offset ").append(String.format("%04x", scriptCodeStartAddress + absoluteOffset)).append('\n');
         for (int i = 0; i < lineCount; i++) {
             al.append(fullLineString(i));
         }

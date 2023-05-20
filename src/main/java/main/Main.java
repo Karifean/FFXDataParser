@@ -5,6 +5,7 @@ import script.EncounterFile;
 import script.EventFile;
 import script.MonsterFile;
 import script.model.ScriptConstants;
+import script.model.ScriptFuncLib;
 
 import java.io.*;
 import java.util.*;
@@ -128,6 +129,7 @@ public class Main {
     private static void readAndPrepareDataModel() {
         StringHelper.initialize();
         ScriptConstants.initialize();
+        ScriptFuncLib.initialize();
         prepareAbilities();
         DataAccess.GEAR_ABILITIES = readGearAbilitiesFromFile(LOCALIZED_KERNEL_PATH + "a_ability.bin", false);
         DataAccess.WEAPON_PICKUPS = readWeaponPickups(ORIGINALS_KERNEL_PATH + "buki_get.bin", false);
@@ -371,7 +373,7 @@ public class Main {
         knownLengths.add(0x8C);
         knownLengths.add(null);
         knownLengths.add(0x12C);
-        List<int[]> chunks = ChunkedFileHelper.readGenericChunkedFile(filename, print, knownLengths);
+        List<Chunk> chunks = ChunkedFileHelper.readGenericChunkedFile(filename, print, knownLengths, true);
         MonsterFile monsterFile = new MonsterFile(chunks);
         try {
             int idx = Integer.parseInt(filename.substring(filename.length() - 7, filename.length() - 4), 10);
@@ -404,7 +406,7 @@ public class Main {
         knownLengths.add(0x8C);
         knownLengths.add(null);
         knownLengths.add(0x12C); */
-        List<int[]> chunks = ChunkedFileHelper.readGenericChunkedFile(filename, print, null);
+        List<Chunk> chunks = ChunkedFileHelper.readGenericChunkedFile(filename, print, null, true);
         EncounterFile encounterFile = new EncounterFile(chunks);
         try {
             // DataAccess.ENCOUNTERS[idx] = encounterFile;
@@ -436,7 +438,7 @@ public class Main {
         knownLengths.add(0x8C);
         knownLengths.add(null);
         knownLengths.add(0x12C); */
-        List<int[]> chunks = ChunkedFileHelper.readGenericChunkedFile(filename, print, null);
+        List<Chunk> chunks = ChunkedFileHelper.readGenericChunkedFile(filename, print, null, false);
         EventFile eventFile = new EventFile(chunks);
         try {
             // DataAccess.ENCOUNTERS[idx] = eventFile;
