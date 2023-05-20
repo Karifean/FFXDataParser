@@ -405,7 +405,7 @@ public abstract class ScriptConstants {
         putActorProperty(0x0083, "StealItemRareType", "move", "stat_rareitem");
         putActorProperty(0x0084, "StealItemRareAmount", "int", "stat_rareitem_num");
         putActorProperty(0x0085, null, "unknown", "stat_magiclv");
-        putActorProperty(0x0086, "?showBirthAnimation", "boolean", "stat_appear_motion_flag");
+        putActorProperty(0x0086, "?showBirthAnimation", "bool", "stat_appear_motion_flag");
         putActorProperty(0x0087, null, "unknown", "stat_cursor_element");
         putActorProperty(0x0088, null, "unknown", "stat_limit_bar_flag_cam");
         putActorProperty(0x0089, "showOverdriveBar", "bool", "stat_limit_bar_flag");

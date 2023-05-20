@@ -1,6 +1,8 @@
 package main;
 
 import model.*;
+import script.EncounterFile;
+import script.EventFile;
 import script.MonsterFile;
 import script.model.ScriptConstants;
 
@@ -10,31 +12,27 @@ import java.util.stream.Collectors;
 
 public class Main {
 
-    private static final int MODE_GREP = 2;
-    private static final int MODE_TRANSLATE = 3;
+    private static final int MODE_GREP = 1;
+    private static final int MODE_TRANSLATE = 2;
     private static final int MODE_READ_ALL_ABILITIES = 4;
     private static final int MODE_READ_KEY_ITEMS = 5;
-    private static final int MODE_PARSE_SCRIPT_FILE = 6;
-    private static final int MODE_RUN_SPECIFIC_MONSTER_AI = 7;
+    private static final int MODE_READ_GEAR_ABILITIES = 6;
+    private static final int MODE_READ_SPECIFIC_MONSTER_WITH_AI = 7;
     private static final int MODE_READ_TREASURES = 8;
     private static final int MODE_READ_WEAPON_PICKUPS = 9;
-    private static final int MODE_READ_STRING_FILE = 11;
-    private static final int MODE_READ_GEAR_ABILITIES = 12;
-    private static final String RESOURCES_ROOT = "src/main/resources/";
-    private static final String PATH_FFX_ROOT = RESOURCES_ROOT + "ffx_ps2/ffx/master/";
-    private static final String ORIGINALS_KERNEL_PATH_REGULAR = PATH_FFX_ROOT + "jppc/battle/kernel/";
-    private static final String LOCALIZED_KERNEL_PATH_REGULAR = PATH_FFX_ROOT + "new_uspc/battle/kernel/";
-    private static final String ORIGINALS_KERNEL_PATH_MODDED = RESOURCES_ROOT + "ffx/battle/kernel/";
-    private static final String LOCALIZED_KERNEL_PATH_MODDED = RESOURCES_ROOT + "ffx/attacks/";
-    private static final String ORIGINALS_KERNEL_PATH = ORIGINALS_KERNEL_PATH_REGULAR;
-    private static final String LOCALIZED_KERNEL_PATH = LOCALIZED_KERNEL_PATH_REGULAR;
+    private static final int MODE_READ_STRING_FILE = 10;
+    private static final int MODE_PARSE_GENERIC_SCRIPT_FILE = 14;
+    private static final int MODE_PARSE_MONSTER_FILE = 15;
+    private static final int MODE_PARSE_ENCOUNTER_FILE = 16;
+    private static final int MODE_PARSE_EVENT_FILE = 17;
+    private static final String PATH_FFX_ROOT = "ffx_ps2/ffx/master/";
+    private static final String ORIGINALS_KERNEL_PATH = PATH_FFX_ROOT + "jppc/battle/kernel/";
+    private static final String LOCALIZED_KERNEL_PATH = PATH_FFX_ROOT + "new_uspc/battle/kernel/";
     private static final String MONSTER_FOLDER_PATH = PATH_FFX_ROOT + "jppc/battle/mon/";
     private static final String SKILL_TABLE_3_PATH = LOCALIZED_KERNEL_PATH + "command.bin"; // "FILE07723.dat"; // "command.bin"; //
     private static final String SKILL_TABLE_4_PATH = LOCALIZED_KERNEL_PATH + "monmagic1.bin"; // "FILE07740.dat"; // "monmagic1.bin"; //
     private static final String SKILL_TABLE_6_PATH = LOCALIZED_KERNEL_PATH + "monmagic2.bin"; // "FILE07741.dat"; // "monmagic2.bin"; //
     private static final String SKILL_TABLE_2_PATH = LOCALIZED_KERNEL_PATH + "item.bin"; // "FILE07734.dat"; // "item.bin"; //
-    private static final Map<String, Set<String>> ABILITY_USERS = new HashMap<>();
-    private static final Map<String, AbilityDataObject[]> FILE_ABILITIES_CACHE = new HashMap<>();
 
     public static void main(String[] args) {
         int mode = Integer.parseInt(args[0], 10);
@@ -58,7 +56,7 @@ public class Main {
                 readAbilitiesFromFile(SKILL_TABLE_6_PATH, 6, true);
                 readAbilitiesFromFile(SKILL_TABLE_2_PATH, 2, true);
                 break;
-            case MODE_RUN_SPECIFIC_MONSTER_AI:
+            case MODE_READ_SPECIFIC_MONSTER_WITH_AI:
                 for (String arg : realArgs) {
                     int idx = Integer.parseInt(arg, 10);
                     int monsterIdx = idx + 0x1000;
@@ -72,9 +70,35 @@ public class Main {
                     }
                 }
                 break;
-            case MODE_PARSE_SCRIPT_FILE:
+            case MODE_PARSE_MONSTER_FILE:
                 for (String filename : realArgs) {
-                    readMonsterObject(RESOURCES_ROOT + filename, true);
+                    readMonsterFile(filename, true);
+                }
+                break;
+            case MODE_PARSE_ENCOUNTER_FILE:
+                for (String filename : realArgs) {
+                    readEncounterFile(filename, true);
+                }
+                break;
+            case MODE_PARSE_EVENT_FILE:
+                for (String filename : realArgs) {
+                    readEventFile(filename, true);
+                }
+                break;
+            case MODE_PARSE_GENERIC_SCRIPT_FILE:
+                for (String filename : realArgs) {
+                    if (filename.contains("battle/mon")) {
+                        System.out.println("Monster file: " + filename);
+                        readMonsterFile(filename, true);
+                    } else if (filename.contains("battle/btl")) {
+                        System.out.println("Encounter file: " + filename);
+                        readEncounterFile(filename, true);
+                    } else if (filename.contains("event/obj")) {
+                        System.out.println("Event file: " + filename);
+                        readEventFile(filename, true);
+                    } else {
+                        System.out.println("Failed to identify file: " + filename);
+                    }
                 }
                 break;
             case MODE_READ_TREASURES:
@@ -82,7 +106,7 @@ public class Main {
                 break;
             case MODE_READ_WEAPON_PICKUPS:
                 for (String filename : realArgs) {
-                    readWeaponPickups(RESOURCES_ROOT + filename, true);
+                    readWeaponPickups(filename, true);
                 }
                 break;
             case MODE_READ_KEY_ITEMS:
@@ -93,7 +117,7 @@ public class Main {
                 break;
             case MODE_READ_STRING_FILE:
                 for (String filename : realArgs) {
-                    readStringFile(RESOURCES_ROOT + filename);
+                    readStringFile(filename);
                 }
                 break;
             default:
@@ -109,7 +133,7 @@ public class Main {
         DataAccess.WEAPON_PICKUPS = readWeaponPickups(ORIGINALS_KERNEL_PATH + "buki_get.bin", false);
         DataAccess.KEY_ITEMS = readKeyItemsFromFile(LOCALIZED_KERNEL_PATH + "important.bin", false);
         DataAccess.TREASURES = readTreasures(ORIGINALS_KERNEL_PATH + "takara.bin", false);
-        readMonsterObject(MONSTER_FOLDER_PATH, false);
+        readMonsterFile(MONSTER_FOLDER_PATH, false);
     }
 
     public static void prepareAbilities() {
@@ -120,7 +144,7 @@ public class Main {
     }
 
     private static void prepareAbilitiesFromFile(String filename, int group) {
-        AbilityDataObject[] abilities = FILE_ABILITIES_CACHE.computeIfAbsent(filename, (f) -> readAbilitiesFromFile(f, group, false));
+        AbilityDataObject[] abilities = readAbilitiesFromFile(filename, group, false);
         if (abilities == null) {
             System.err.println("Failed to load abilities from " + filename + " (group " + group + ')');
             return;
@@ -235,7 +259,7 @@ public class Main {
 
     private static void parseFileText(String filename) {
         System.out.println("--- " + filename + " ---");
-        File file = new File(filename);
+        File file = FileAccessorWithMods.getRealFile(filename);
         if (file.isDirectory()) {
             String[] contents = file.list();
             if (contents != null) {
@@ -244,7 +268,7 @@ public class Main {
         } else {
             StringBuilder out = new StringBuilder();
             try {
-                DataInputStream inputStream = new DataInputStream(new BufferedInputStream(new FileInputStream(file)));
+                DataInputStream inputStream = FileAccessorWithMods.readFile(filename);
                 while (inputStream.available() > 0) {
                     int idx = inputStream.readUnsignedByte();
                     Character chr = StringHelper.byteToChar(idx);
@@ -330,59 +354,101 @@ public class Main {
         return list.toArray(array);
     }
 
-    private static MonsterFile readMonsterObject(String filename, boolean print) {
-        if (print) {
-            System.out.println("--- " + filename + " ---");
-        }
-        File file = new File(filename);
+    private static MonsterFile readMonsterFile(String filename, boolean print) {
+        File file = FileAccessorWithMods.getRealFile(filename);
         if (file.isDirectory()) {
             String[] contents = file.list();
             if (contents != null) {
-                Arrays.stream(contents).filter(sf -> !sf.startsWith(".")).sorted().forEach(sf -> readMonsterObject(filename + '/' + sf, print));
+                Arrays.stream(contents).filter(sf -> !sf.startsWith(".")).sorted().forEach(sf -> readMonsterFile(filename + '/' + sf, print));
             }
             return null;
-        } else if (file.getName().endsWith(".ebp") || file.getName().endsWith(".bin")) {
-            boolean isMonsterFile = file.getPath().contains("/mon/");
-            MonsterFile monsterFile = new MonsterFile(file, isMonsterFile);
-            if (isMonsterFile) {
-                try {
-                    int idx = Integer.parseInt(file.getName().substring(1, 4), 10);
-                    DataAccess.MONSTERS[idx] = monsterFile;
-                } catch (RuntimeException e) {
-                    System.err.println("Got exception while storing monster object (fileName=" + file.getName() + ")");
-                    e.printStackTrace();
-                }
-            }
-            if (!print) {
-                return monsterFile;
-            }
-            monsterFile.parseScript();
-            if (isMonsterFile) {
-                System.out.println("Monster: " + monsterFile.monsterName);
-            }
-            if (monsterFile.monsterAi != null) {
-                System.out.println("- Script Code -");
-                System.out.println(monsterFile.monsterAi.allLinesString());
-                System.out.println("- Jump Table -");
-                System.out.println(monsterFile.monsterAi.jumpTableString.toString());
-            }
-            if (isMonsterFile) {
-                System.out.println("- Monster Stats -");
-                System.out.println(monsterFile.monsterStatData);
-                /* System.out.println("- Monster Spoils -");
-                System.out.println(monsterObject.monsterSpoilsData);
-                System.out.println("- Sensor Text -");
-                System.out.println(monsterObject.monsterSensorText);
-                System.out.println(monsterObject.monsterSensorDash);
-                System.out.println("- Scan Text -");
-                System.out.println(monsterObject.monsterScanText);
-                System.out.println(monsterObject.monsterScanDash); */
-            }
-            return monsterFile;
-        } else {
-            System.out.println("File ignored");
+        } else if (!filename.endsWith(".bin")) {
             return null;
         }
+        List<Integer> knownLengths = new ArrayList<>();
+        knownLengths.add(null);
+        knownLengths.add(null);
+        knownLengths.add(0x8C);
+        knownLengths.add(null);
+        knownLengths.add(0x12C);
+        List<int[]> chunks = ChunkedFileHelper.readGenericChunkedFile(filename, print, knownLengths);
+        MonsterFile monsterFile = new MonsterFile(chunks);
+        try {
+            int idx = Integer.parseInt(filename.substring(filename.length() - 7, filename.length() - 4), 10);
+            DataAccess.MONSTERS[idx] = monsterFile;
+        } catch (RuntimeException e) {
+            System.err.println("Got exception while storing monster object (" + filename + ")");
+            e.printStackTrace();
+        }
+        if (print) {
+            monsterFile.parseScript();
+            System.out.println(monsterFile);
+        }
+        return monsterFile;
+    }
+
+    private static EncounterFile readEncounterFile(String filename, boolean print) {
+        File file = FileAccessorWithMods.getRealFile(filename);
+        if (file.isDirectory()) {
+            String[] contents = file.list();
+            if (contents != null) {
+                Arrays.stream(contents).filter(sf -> !sf.startsWith(".")).sorted().forEach(sf -> readEncounterFile(filename + '/' + sf, print));
+            }
+            return null;
+        } else if (!filename.endsWith(".bin")) {
+            return null;
+        }
+        /* List<Integer> knownLengths = new ArrayList<>();
+        knownLengths.add(null);
+        knownLengths.add(null);
+        knownLengths.add(0x8C);
+        knownLengths.add(null);
+        knownLengths.add(0x12C); */
+        List<int[]> chunks = ChunkedFileHelper.readGenericChunkedFile(filename, print, null);
+        EncounterFile encounterFile = new EncounterFile(chunks);
+        try {
+            // DataAccess.ENCOUNTERS[idx] = encounterFile;
+        } catch (RuntimeException e) {
+            System.err.println("Got exception while storing encounter object (" + filename + ")");
+            e.printStackTrace();
+        }
+        if (print) {
+            encounterFile.parseScript();
+            System.out.println(encounterFile);
+        }
+        return encounterFile;
+    }
+
+    private static EventFile readEventFile(String filename, boolean print) {
+        File file = FileAccessorWithMods.getRealFile(filename);
+        if (file.isDirectory()) {
+            String[] contents = file.list();
+            if (contents != null) {
+                Arrays.stream(contents).filter(sf -> !sf.startsWith(".")).sorted().forEach(sf -> readEventFile(filename + '/' + sf, print));
+            }
+            return null;
+        } else if (!filename.endsWith(".ebp")) {
+            return null;
+        }
+        /* List<Integer> knownLengths = new ArrayList<>();
+        knownLengths.add(null);
+        knownLengths.add(null);
+        knownLengths.add(0x8C);
+        knownLengths.add(null);
+        knownLengths.add(0x12C); */
+        List<int[]> chunks = ChunkedFileHelper.readGenericChunkedFile(filename, print, null);
+        EventFile eventFile = new EventFile(chunks);
+        try {
+            // DataAccess.ENCOUNTERS[idx] = eventFile;
+        } catch (RuntimeException e) {
+            System.err.println("Got exception while storing encounter object (" + filename + ")");
+            e.printStackTrace();
+        }
+        if (print) {
+            eventFile.parseScript();
+            System.out.println(eventFile);
+        }
+        return eventFile;
     }
 
     private static TreasureDataObject[] readTreasures(String filename, boolean print) {
@@ -427,7 +493,7 @@ public class Main {
 
     private static void readStringFile(String filename) {
         System.out.println("--- " + filename + " ---");
-        File file = new File(filename);
+        File file = FileAccessorWithMods.getRealFile(filename);
         if (file.isDirectory()) {
             String[] contents = file.list();
             if (contents != null) {
@@ -435,78 +501,9 @@ public class Main {
             }
         } else {
             try {
-                DataInputStream inputStream = new DataInputStream(new BufferedInputStream(new FileInputStream(file)));
+                DataInputStream inputStream = FileAccessorWithMods.readFile(filename);
                 readStringData(inputStream, -1, true);
             } catch (IOException ignored) {}
-        }
-    }
-
-    private static void findEqualFiles(final String source, final String target) {
-        Map<String, byte[]> map = new HashMap<>();
-        makeFileMap(target, map);
-        compareFiles(source, map);
-    }
-
-    private static void compareFiles(final String source, final Map<String, byte[]> map) {
-        File file = new File(source);
-        if (file.isDirectory()) {
-            String[] contents = file.list();
-            if (contents != null) {
-                Arrays.stream(contents).filter(sf -> !sf.startsWith(".")).sorted().forEach(sf -> compareFiles(source + '/' + sf, map));
-            }
-        } else {
-            try {
-                byte[] hash = fileHash(file);
-                int highestMatches = 0;
-                String highestKey = null;
-                for (Map.Entry<String, byte[]> entry : map.entrySet()) {
-                    int matches = 0;
-                    byte[] val = entry.getValue();
-                    int len = Math.min(val.length, hash.length);
-                    for (int i = 0; i < len; i++) {
-                        if (val[i] == hash[i]) {
-                            matches++;
-                        }
-                    }
-                    if (matches > highestMatches) {
-                        highestMatches = matches;
-                        highestKey = entry.getKey();
-                    }
-                }
-                if (highestMatches == 0) {
-                    System.out.println("No target found for " + source);
-                } else {
-                    System.out.println("mv " + source + " " + highestKey + " (matches=" + highestMatches + ")");
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-    }
-
-    private static byte[] fileHash(final File file) throws IOException {
-        long fileSize = file.length();
-        FileInputStream stream = new FileInputStream(file);
-        byte[] fileData = new byte[(int) fileSize];
-        stream.read(fileData);
-        stream.close();
-        return fileData;
-        // return new BigInteger(1, messageDigest.digest(fileData)).toString(16);
-    }
-
-    private static void makeFileMap(final String target, final Map<String, byte[]> map) {
-        File file = new File(target);
-        if (file.isDirectory()) {
-            String[] contents = file.list();
-            if (contents != null) {
-                Arrays.stream(contents).filter(sf -> !sf.startsWith(".")).sorted().forEach(sf -> makeFileMap(target + '/' + sf, map));
-            }
-        } else {
-            try {
-                map.put(target, fileHash(file));
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
         }
     }
 }

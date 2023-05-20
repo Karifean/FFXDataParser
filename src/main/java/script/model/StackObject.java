@@ -2,8 +2,8 @@ package script.model;
 
 import main.DataAccess;
 import model.AbilityDataObject;
-import script.MonsterFile;
 import model.TreasureDataObject;
+import script.MonsterFile;
 
 import java.util.Map;
 

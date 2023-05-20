@@ -585,22 +585,4 @@ public class ScriptObject {
         return ol + jhl + tl + wl + '\n';
     }
 
-    private static class ScriptHeader {
-        int count1;
-        int someRefsCount;
-        int refIntCount;
-        int refFloatCount;
-        int entryPointCount;
-        int maybeJumpCount;
-        int alwaysZero1;
-        int alwaysZero2;
-        int someRefsOffset;
-        int intTableOffset;
-        int floatTableOffset;
-        int scriptEntryPointsOffset;
-        int jumpsOffset;
-        int alwaysZero3;
-        int alwaysZero4;
-        int weirdoOffset;
-    }
 }

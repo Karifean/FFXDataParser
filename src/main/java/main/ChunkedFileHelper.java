@@ -8,13 +8,13 @@ import java.util.List;
 public abstract class ChunkedFileHelper {
 
     public static List<int[]> readGenericChunkedFile(String filename, boolean print, List<Integer> knownLengths) {
+        File file = FileAccessorWithMods.resolveFile(filename);
         if (print) {
-            System.out.println("--- " + filename + " ---");
+            System.out.println("--- " + file.getPath() + " ---");
         }
-        File file = new File(filename);
         if (!file.isDirectory()) {
             byte[] allBytes = null;
-            try (DataInputStream data = new DataInputStream(new BufferedInputStream(new FileInputStream(file)))) {
+            try (DataInputStream data = FileAccessorWithMods.readFile(file)) {
                 allBytes = data.readAllBytes();
             } catch (IOException ignored) {}
             if (allBytes == null) {

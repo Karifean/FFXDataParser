@@ -1,101 +1,60 @@
 package script;
 
-import main.Main;
+import main.StringHelper;
 import model.MonsterSpoilsDataObject;
 import model.MonsterStatDataObject;
 
-import java.io.*;
+import java.util.Arrays;
 import java.util.List;
 
+/**
+ * jppc/battle/mon/.../.bin
+ */
 public class MonsterFile {
-    File file;
-    DataInputStream data;
     public ScriptObject monsterAi;
     public MonsterStatDataObject monsterStatData;
     public MonsterSpoilsDataObject monsterSpoilsData;
-    public boolean isMonsterFile;
     public String monsterName;
     public String monsterSensorText;
     public String monsterSensorDash;
     public String monsterScanText;
     public String monsterScanDash;
-    public StringBuilder monsterText = new StringBuilder();
     int[] aiBytes;
     int[] statBytes = new int[0x8C];
     int[] spoilsBytes = new int[0x124];
+    int[] textBytes;
 
-    public MonsterFile(File file, boolean isMonsterFile) {
-        this.file = file;
-        this.isMonsterFile = isMonsterFile;
-        try {
-            createObjects();
-        } catch (Exception e) {
-            System.err.println("Failed to parse MonsterObject file");
-            e.printStackTrace();
-        }
+    public MonsterFile(List<int[]> chunks) {
+        mapChunks(chunks);
+        mapObjects();
+        mapStrings();
     }
 
-    private void newDataStream() throws FileNotFoundException {
-        data = new DataInputStream(new BufferedInputStream(new FileInputStream(file)));
+    private void mapChunks(List<int[]> chunks) {
+        aiBytes = chunks.get(0);
+        statBytes = chunks.get(2);
+        spoilsBytes = chunks.get(4);
+        textBytes = chunks.get(6);
     }
 
-    public void createObjects() throws IOException {
-        newDataStream();
-        data.mark(40);
-        int absoluteBeginAddress = read4Bytes();
-        int scriptBeginAddress = read4Bytes();
-        int unknownChunkAddress = read4Bytes();
-        int valuesBeginAddress = read4Bytes();
-        int nullAddress1 = read4Bytes();
-        int spoilsBeginAddress = read4Bytes();
-        int spoilsEndAddress = read4Bytes();
-        int textPartAddress = read4Bytes();
-        int totalFileBytes = read4Bytes();
-        data.reset();
-        data.skipNBytes(scriptBeginAddress);
-        int nextChunkAfterScript = unknownChunkAddress > 0 ? unknownChunkAddress : valuesBeginAddress;
-        int totalScriptLength = nextChunkAfterScript - scriptBeginAddress;
-        aiBytes = new int[totalScriptLength];
-        for (int i = 0; i < totalScriptLength; i++) {
-            aiBytes[i] = data.read();
-        }
+    private void mapObjects() {
         monsterAi = new ScriptObject(aiBytes);
-        if (isMonsterFile) {
-            newDataStream();
-            data.mark(valuesBeginAddress + 0x8C);
-            data.skipNBytes(valuesBeginAddress);
-            for (int i = 0; i < 0x8C; i++) {
-                statBytes[i] = data.read();
-            }
-            data.reset();
-            data.mark(spoilsBeginAddress + 0x124);
-            data.skipNBytes(spoilsBeginAddress);
-            for (int i = 0; i < 0x124; i++) {
-                spoilsBytes[i] = data.read();
-            }
-            monsterStatData = new MonsterStatDataObject(statBytes);
-            monsterSpoilsData = new MonsterSpoilsDataObject(spoilsBytes);
-            data.reset();
-            data.skipNBytes(textPartAddress);
-            int nameOffset = read2Bytes();
-            data.skipNBytes(2);
-            int sensorOffset = read2Bytes();
-            data.skipNBytes(2);
-            int sensorDashOffset = read2Bytes();
-            data.skipNBytes(2);
-            int scanOffset = read2Bytes();
-            data.skipNBytes(2);
-            int scanDashOffset = read2Bytes();
-            data.skipNBytes(0x6E);
-            List<Integer> offsets = List.of(nameOffset, sensorOffset, sensorDashOffset, scanOffset, scanDashOffset);
-            List<String> strings = Main.readStringsAtOffsets(5, offsets, data, false, null);
-            monsterName = strings.get(0);
-            monsterSensorText = strings.get(1);
-            monsterSensorDash = strings.get(2);
-            monsterScanText = strings.get(3);
-            monsterScanDash = strings.get(4);
-            strings.forEach(s -> monsterText.append(s).append('\n'));
-        }
+        monsterStatData = new MonsterStatDataObject(statBytes);
+        monsterSpoilsData = new MonsterSpoilsDataObject(spoilsBytes);
+    }
+
+    private void mapStrings() {
+        int nameOffset = textBytes[0x00] + textBytes[0x01] * 0x100;
+        int sensorOffset = textBytes[0x04] + textBytes[0x05] * 0x100;
+        int sensorDashOffset = textBytes[0x08] + textBytes[0x09] * 0x100;
+        int scanOffset = textBytes[0x0C] + textBytes[0x0D] * 0x100;
+        int scanDashOffset = textBytes[0x10] + textBytes[0x11] * 0x100;
+        int[] textBytesWithOffset = Arrays.copyOfRange(textBytes, 0x80, textBytes.length);
+        monsterName = StringHelper.getStringAtLookupOffset(textBytesWithOffset, nameOffset);
+        monsterSensorText = StringHelper.getStringAtLookupOffset(textBytesWithOffset, sensorOffset);
+        monsterSensorDash = StringHelper.getStringAtLookupOffset(textBytesWithOffset, sensorDashOffset);
+        monsterScanText = StringHelper.getStringAtLookupOffset(textBytesWithOffset, scanOffset);
+        monsterScanDash = StringHelper.getStringAtLookupOffset(textBytesWithOffset, scanDashOffset);
     }
 
     public void parseScript() {
@@ -127,20 +86,6 @@ public class MonsterFile {
         full.append(monsterScanText).append('\n');
         full.append(monsterScanDash).append('\n'); */
         return full.toString();
-    }
-
-    private int read2Bytes() throws IOException {
-        int val = data.read();
-        val += data.read() * 0x100;
-        return val;
-    }
-
-    private int read4Bytes() throws IOException {
-        int val = data.read();
-        val += data.read() * 0x100;
-        val += data.read() * 0x10000;
-        val += data.read() * 0x1000000;
-        return val;
     }
 
     public String getName() {
