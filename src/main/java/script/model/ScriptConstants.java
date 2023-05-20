@@ -77,7 +77,7 @@ public abstract class ScriptConstants {
         OPCODE_STACKPOPS[OpCodes.NOT] = 1;
         OPCODE_STACKPOPS[OpCodes.SET_RETURN_VALUE] = 1;
         OPCODE_STACKPOPS[OpCodes.GET_RETURN_VALUE] = 0;
-        OPCODE_STACKPOPS[OpCodes.GET_DATUM_DESC] = 0; // TODO: is this one right? not handled anywhere else
+        OPCODE_STACKPOPS[OpCodes.GET_DATUM_DESC] = 0; // TODO: is this one right? i don't think it's handled anywhere else
         OPCODE_STACKPOPS[OpCodes.GET_TEST] = 0;
         OPCODE_STACKPOPS[OpCodes.GET_CASE] = 0;
         OPCODE_STACKPOPS[OpCodes.SET_TEST] = 1;
@@ -91,7 +91,6 @@ public abstract class ScriptConstants {
         OPCODE_STACKPOPS[OpCodes.BEZ] = 0;
         OPCODE_STACKPOPS[OpCodes.CALL] = 0;
         OPCODE_STACKPOPS[OpCodes.RETURN] = 0;
-        // OPCODE_STACKPOPS[OpCodes.FUNC_RET] = 0; // TODO: Varies widely between 0 and 8 pops, depending on chosen function
         SetRange(OPCODE_STACKPOPS, OpCodes.SIG_NOACK, OpCodes.SIG_ONEND, 3);
         // OPCODE_STACKPOPS[0x39] = 3; I'm sure of this but need to properly interpret what the opcode does
         OPCODE_STACKPOPS[OpCodes.END] = 0;
@@ -102,7 +101,6 @@ public abstract class ScriptConstants {
         OPCODE_STACKPOPS[0x46] = 1;
         OPCODE_STACKPOPS[OpCodes.CLEANUP_ALL_END] = 0;
         SetRange(OPCODE_STACKPOPS, OpCodes.SET_JUMP, OpCodes.SET_BEZ, 1);
-        // OPCODE_STACKPOPS[OpCodes.FUNC] = 0; // TODO: Varies widely between 0 and 8 pops, depending on chosen function
         SetRangeExclusive(OPCODE_STACKPOPS, OpCodes.SET_INT, OpCodes.SET_FLOAT, 1);
         SetRangeExclusive(OPCODE_STACKPOPS, OpCodes.SET_FLOAT, OpCodes.GET_INT, 1);
         SetRangeExclusive(OPCODE_STACKPOPS, OpCodes.GET_INT, OpCodes.GET_FLOAT, 0);

@@ -247,7 +247,6 @@ public class ScriptObject {
         String argvsh = format2Or4Byte(argv);
         StackObject p1 = null, p2 = null, p3 = null, p4 = null, p5 = null, p6 = null, p7 = null, p8 = null;
 
-        // TODO: get individual stackPops for OpCodes FUNC (0x58) and FUNC_RET (0x35) (between 0 and 8)
         try {
             switch (getStackPops(opcode)) {
                 case 8: p8 = stack.pop();
