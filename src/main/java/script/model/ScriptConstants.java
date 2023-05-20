@@ -67,46 +67,46 @@ public abstract class ScriptConstants {
 
         OPCODE_STACKPOPS = new int[0x100];
         Arrays.fill(OPCODE_STACKPOPS, -1);
-        OPCODE_STACKPOPS[OpCodes.NOP] = 0;
-        OPCODE_STACKPOPS[OpCodes.NOP_1D] = 0;
-        OPCODE_STACKPOPS[OpCodes.NOP_1E] = 0;
-        OPCODE_STACKPOPS[OpCodes.NOP_76] = 0;
-        SetRange(OPCODE_STACKPOPS, OpCodes.OR_LOGIC, OpCodes.MOD, 2);
-        OPCODE_STACKPOPS[OpCodes.NOT_LOGIC] = 1;
-        OPCODE_STACKPOPS[OpCodes.NEG] = 1;
-        OPCODE_STACKPOPS[OpCodes.NOT] = 1;
-        OPCODE_STACKPOPS[OpCodes.SET_RETURN_VALUE] = 1;
-        OPCODE_STACKPOPS[OpCodes.GET_RETURN_VALUE] = 0;
-        OPCODE_STACKPOPS[OpCodes.GET_DATUM_DESC] = 0; // TODO: is this one right? i don't think it's handled anywhere else
-        OPCODE_STACKPOPS[OpCodes.GET_TEST] = 0;
-        OPCODE_STACKPOPS[OpCodes.GET_CASE] = 0;
-        OPCODE_STACKPOPS[OpCodes.SET_TEST] = 1;
-        OPCODE_STACKPOPS[OpCodes.COPY] = 1;
-        OPCODE_STACKPOPS[OpCodes.SET_CASE] = 1;
-        OPCODE_STACKPOPS[OpCodes.CONST_INT] = 0;
-        OPCODE_STACKPOPS[OpCodes.IMM] = 0;
-        OPCODE_STACKPOPS[OpCodes.CONST_FLOAT] = 0;
-        OPCODE_STACKPOPS[OpCodes.JUMP] = 0;
-        OPCODE_STACKPOPS[OpCodes.BNEZ] = 0;
-        OPCODE_STACKPOPS[OpCodes.BEZ] = 0;
-        OPCODE_STACKPOPS[OpCodes.CALL] = 0;
-        OPCODE_STACKPOPS[OpCodes.RETURN] = 0;
-        SetRange(OPCODE_STACKPOPS, OpCodes.SIG_NOACK, OpCodes.SIG_ONEND, 3);
-        // OPCODE_STACKPOPS[0x39] = 3; I'm sure of this but need to properly interpret what the opcode does
-        OPCODE_STACKPOPS[OpCodes.END] = 0;
-        OPCODE_STACKPOPS[OpCodes.CLEANUP_END] = 1;
-        OPCODE_STACKPOPS[OpCodes.TO_MAIN] = 0;
-        OPCODE_STACKPOPS[OpCodes.CLEANUP_TO_MAIN] = 1; // ???
-        SetRange(OPCODE_STACKPOPS, OpCodes.SIGS_LOW, OpCodes.SIGS_HIGH, 3);
+        OPCODE_STACKPOPS[0x00] = 0; // NOP
+        setRange(OPCODE_STACKPOPS, 0x01, 0x18, 2); // comp operators
+        OPCODE_STACKPOPS[0x19] = 1; // NOT_LOGIC
+        OPCODE_STACKPOPS[0x1A] = 1; // NEG
+        OPCODE_STACKPOPS[0x1C] = 1; // NOT
+        OPCODE_STACKPOPS[0x1D] = 0; // NOP_1D
+        OPCODE_STACKPOPS[0x1E] = 0; // NOP_1E
+        OPCODE_STACKPOPS[0x25] = 1; // SET_RETURN_VALUE
+        OPCODE_STACKPOPS[0x26] = 0; // GET_RETURN_VALUE
+        OPCODE_STACKPOPS[0x27] = 0; // GET_DATUM_DESC // TODO: is this one right? i don't see it handled anywhere else
+        OPCODE_STACKPOPS[0x28] = 0; // GET_TEST
+        OPCODE_STACKPOPS[0x29] = 0; // GET_CASE
+        OPCODE_STACKPOPS[0x2A] = 1; // SET_TEST
+        OPCODE_STACKPOPS[0x2B] = 1; // COPY
+        OPCODE_STACKPOPS[0x2C] = 1; // SET_CASE
+        OPCODE_STACKPOPS[0x2D] = 0; // CONST_INT
+        OPCODE_STACKPOPS[0x2E] = 0; // IMM
+        OPCODE_STACKPOPS[0x2F] = 0; // CONST_FLOAT
+        OPCODE_STACKPOPS[0x30] = 0; // JUMP
+        OPCODE_STACKPOPS[0x31] = 0; // BNEZ
+        OPCODE_STACKPOPS[0x32] = 0; // BEZ
+        OPCODE_STACKPOPS[0x33] = 0; // CALL
+        OPCODE_STACKPOPS[0x34] = 0; // RETURN
+        setRange(OPCODE_STACKPOPS, 0x36, 0x38, 3); // SIG_NOACK .. SIG_ONEND
+        // OPCODE_STACKPOPS[0x39] = 3; // SIG_NOACK_SPEC // I'm sure of this but need to properly interpret what the opcode does
+        OPCODE_STACKPOPS[0x3C] = 0; // END
+        OPCODE_STACKPOPS[0x3D] = 1; // CLEANUP_END
+        OPCODE_STACKPOPS[0x3E] = 0; // TO_MAIN
+        OPCODE_STACKPOPS[0x3F] = 1; // CLEANUP_TO_MAIN // ???
+        setRange(OPCODE_STACKPOPS, 0x45, 0x53, 3); // SIGS_LOW  .. SIGS_HIGH
         OPCODE_STACKPOPS[0x46] = 1;
-        OPCODE_STACKPOPS[OpCodes.CLEANUP_ALL_END] = 0;
-        SetRange(OPCODE_STACKPOPS, OpCodes.SET_JUMP, OpCodes.SET_BEZ, 1);
-        SetRangeExclusive(OPCODE_STACKPOPS, OpCodes.SET_INT, OpCodes.SET_FLOAT, 1);
-        SetRangeExclusive(OPCODE_STACKPOPS, OpCodes.SET_FLOAT, OpCodes.GET_INT, 1);
-        SetRangeExclusive(OPCODE_STACKPOPS, OpCodes.GET_INT, OpCodes.GET_FLOAT, 0);
-        SetRangeExclusive(OPCODE_STACKPOPS, OpCodes.GET_FLOAT, OpCodes.TEX_UNPACK_IMM, 0);
-        OPCODE_STACKPOPS[OpCodes.TEX_UNPACK_IMM] = 0;
-        OPCODE_STACKPOPS[OpCodes.WAIT_DELETE] = 2;
+        OPCODE_STACKPOPS[0x54] = 0; // CLEANUP_ALL_END
+        setRange(OPCODE_STACKPOPS, 0x55, 0x57, 1); // SET_JUMP  .. SET_BEZ
+        setRange(OPCODE_STACKPOPS, 0x59, 0x5C, 1); // SET_INT   .. SET_FLOAT-1
+        setRange(OPCODE_STACKPOPS, 0x5D, 0x66, 1); // SET_FLOAT .. GET_INT-1
+        setRange(OPCODE_STACKPOPS, 0x67, 0x6A, 0); // GET_INT   .. GET_FLOAT-1
+        setRange(OPCODE_STACKPOPS, 0x6B, 0x74, 0); // GET_FLOAT .. TEX_UNPACK_IMM-1
+        OPCODE_STACKPOPS[0x75] = 0; // TEX_UNPACK_IMM
+        OPCODE_STACKPOPS[0x76] = 0; // NOP_76
+        OPCODE_STACKPOPS[0x77] = 2; // WAIT_DELETE
         OPCODE_STACKPOPS[0x79] = 3;
         OPCODE_STACKPOPS[0x9F] = 0;
         OPCODE_STACKPOPS[0xA0] = 1;
@@ -126,30 +126,30 @@ public abstract class ScriptConstants {
         OPCODE_STACKPOPS[0xF6] = 0;
 
         COMP_OPERATORS = new HashMap<>();
-        putCompOperator(OpCodes.OR_LOGIC, "or", "bool", "OPLOR");
-        putCompOperator(OpCodes.AND_LOGIC, "and", "bool", "OPLAND");
-        putCompOperator(OpCodes.OR, "bitOr", "int", "OPOR");
-        putCompOperator(OpCodes.XOR, "bitXor", "int", "OPEOR");
-        putCompOperator(OpCodes.AND, "bitAnd", "int", "OPAND");
-        putCompOperator(OpCodes.EQ, "==", "bool", "OPEQ");
-        putCompOperator(OpCodes.NEQ, "!=", "bool", "OPNE");
-        putCompOperator(OpCodes.LT, "> (unsigned)", "bool", "OPGTU"); // TODO: OpCodes from NoClip are the opposite
-        putCompOperator(OpCodes.GT, "< (unsigned)", "bool", "OPLSU"); // TODO: OpCodes from NoClip are the opposite
-        putCompOperator(OpCodes.LT_2, ">", "bool", "OPGT"); // TODO: OpCodes from NoClip are the opposite
-        putCompOperator(OpCodes.LTE_2, "<", "bool", "OPLS"); // TODO: OpCodes from NoClip are the opposite
-        putCompOperator(OpCodes.LTE, ">= (unsigned)", "bool", "OPGTEU"); // TODO: OpCodes from NoClip are the opposite
-        putCompOperator(OpCodes.GTE, "<= (unsigned)", "bool", "OPLSEU"); // TODO: OpCodes from NoClip are the opposite
-        putCompOperator(OpCodes.GT_2, ">=", "bool", "OPGTE"); // TODO: OpCodes from NoClip are the opposite
-        putCompOperator(OpCodes.GTE_2, "<=", "bool", "OPLSE"); // TODO: OpCodes from NoClip are the opposite
-        putCompOperator(OpCodes.BIT, "OP-B-ON", "unknown", "OPBON");
-        putCompOperator(OpCodes.NOT_BIT, "OP-B-OFF", "unknown", "OPBOFF");
-        putCompOperator(OpCodes.SLL, "<<", "int", "OPSLL");
-        putCompOperator(OpCodes.SRA, ">>", "int", "OPSRL");
-        putCompOperator(OpCodes.ADD, "+", "int", "OPADD");
-        putCompOperator(OpCodes.SUB, "-", "int", "OPSUB");
-        putCompOperator(OpCodes.MUL, "*", "int", "OPMUL");
-        putCompOperator(OpCodes.DIV, "/", "int", "OPDIV");
-        putCompOperator(OpCodes.MOD, "mod", "int", "OPMOD");
+        putCompOperator(0x01, "or", "bool", "OPLOR");
+        putCompOperator(0x02, "and", "bool", "OPLAND");
+        putCompOperator(0x03, "bitOr", "int", "OPOR");
+        putCompOperator(0x04, "bitXor", "int", "OPEOR");
+        putCompOperator(0x05, "bitAnd", "int", "OPAND");
+        putCompOperator(0x06, "==", "bool", "OPEQ");
+        putCompOperator(0x07, "!=", "bool", "OPNE");
+        putCompOperator(0x08, "> (unsigned)", "bool", "OPGTU");
+        putCompOperator(0x09, "< (unsigned)", "bool", "OPLSU");
+        putCompOperator(0x0A, ">", "bool", "OPGT");
+        putCompOperator(0x0B, "<", "bool", "OPLS");
+        putCompOperator(0x0C, ">= (unsigned)", "bool", "OPGTEU");
+        putCompOperator(0x0D, "<= (unsigned)", "bool", "OPLSEU");
+        putCompOperator(0x0E, ">=", "bool", "OPGTE");
+        putCompOperator(0x0F, "<=", "bool", "OPLSE");
+        putCompOperator(0x10, "OP-B-ON", "unknown", "OPBON");
+        putCompOperator(0x11, "OP-B-OFF", "unknown", "OPBOFF");
+        putCompOperator(0x12, "<<", "int", "OPSLL");
+        putCompOperator(0x13, ">>", "int", "OPSRL");
+        putCompOperator(0x14, "+", "int", "OPADD");
+        putCompOperator(0x15, "-", "int", "OPSUB");
+        putCompOperator(0x16, "*", "int", "OPMUL");
+        putCompOperator(0x17, "/", "int", "OPDIV");
+        putCompOperator(0x18, "mod", "int", "OPMOD");
 
         putEnum("deathAnimation", 0x00, "Character (Body remains and targetable)", "death_normal");
         putEnum("deathAnimation", 0x01, "Boss (Body remains but untargetable)", "death_nop");
@@ -626,14 +626,10 @@ public abstract class ScriptConstants {
         putMoveProperty(0x000A, "targetType", "targetType");
     }
 
-    private static void SetRange(int[] array, int lowerBound, int upperBound, int value) {
+    private static void setRange(int[] array, int lowerBound, int upperBound, int value) {
         for (int i = lowerBound; i <= upperBound; i++) {
             array[i] = value;
         }
-    }
-
-    private static void SetRangeExclusive(int[] array, int lowerBound, int upperBound, int value) {
-        SetRange(array, lowerBound, upperBound - 1, value);
     }
 
     public static Map<Integer, ScriptField> getEnumMap(String type) {

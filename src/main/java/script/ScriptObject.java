@@ -265,14 +265,17 @@ public class ScriptObject {
             warnLine += " Empty stack for opcode " + String.format("%02x", opcode).toUpperCase();
             return;
         }
-        if (opcode == OpCodes.NOP || opcode == OpCodes.NOP_1D || opcode == OpCodes.NOP_1E || opcode == OpCodes.NOP_76) {
+        if (opcode == 0x00 || opcode == 0x1D || opcode == 0x1E || opcode == 0x76) {
             // nothing
-        } else if (opcode >= OpCodes.OR_LOGIC && opcode <= OpCodes.MOD) {
+        } else if (opcode >= 0x01 && opcode <= 0x18) {
+            // comp operators
             ScriptField op = ScriptConstants.COMP_OPERATORS.get(opcode);
             String resultType = op.type;
             String p1s = p1.toString();
             String p2s = p2.toString();
-            if (opcode == OpCodes.EQ || opcode == OpCodes.NEQ) {
+
+            // EQ || NEQ
+            if (opcode == 0x06 || opcode == 0x07) {
                 String p1t = resolveType(p1);
                 String p2t = resolveType(p2);
                 boolean p1w = isWeakType(p1t);
@@ -285,89 +288,112 @@ public class ScriptObject {
             }
             String content = "(" + p1s + " " + op.name + " " + p2s + ")";
             stack.push(new StackObject(resultType, true, content, opcode));
-        } else if (opcode == OpCodes.NOT_LOGIC) {
-            stack.push(new StackObject("bool", true, "not " + p1, OpCodes.NOT_LOGIC));
-        } else if (opcode == OpCodes.NEG) {
-            stack.push(new StackObject("unknown", true, "OPUMINUS", OpCodes.NEG));
-        } else if (opcode == OpCodes.NOT) {
-            stack.push(new StackObject(p1.type, true, "bitNot " + p1, OpCodes.NOT));
-        } else if (opcode == OpCodes.GET_DATUM) { // TODO: unhandled in noclip
-        } else if (opcode == OpCodes.SET_DATUM_W) { // TODO: unhandled in noclip
-        } else if (opcode == OpCodes.SET_DATUM_T) { // TODO: unhandled in noclip
-        } else if (opcode == OpCodes.GET_DATUM_INDEX) { // TODO: unhandled in noclip
-        } else if (opcode == OpCodes.SET_DATUM_INDEX_W) { // TODO: unhandled in noclip
-        } else if (opcode == OpCodes.SET_DATUM_INDEX_T) { // TODO: unhandled in noclip
-        } else if (opcode == OpCodes.SET_RETURN_VALUE) {
+        } else if (opcode == 0x19) {
+            // NOT_LOGIC
+            stack.push(new StackObject("bool", true, "not " + p1, 0x19));
+        } else if (opcode == 0x1A) {
+            // NEG
+            stack.push(new StackObject("unknown", true, "OPUMINUS", 0x1A));
+        } else if (opcode == 0x1C) {
+            // NOT
+            stack.push(new StackObject(p1.type, true, "bitNot " + p1, 0x1C));
+        } else if (opcode == 0x1F) { // TODO: GET_DATUM
+        } else if (opcode == 0x20) { // TODO: SET_DATUM_W
+        } else if (opcode == 0x21) { // TODO: SET_DATUM_T
+        } else if (opcode == 0x22) { // TODO: GET_DATUM_INDEX
+        } else if (opcode == 0x23) { // TODO: SET_DATUM_INDEX_W
+        } else if (opcode == 0x24) { // TODO: SET_DATUM_INDEX_T
+        } else if (opcode == 0x25) {
+            // SET_RETURN_VALUE
             lastCallType = p1.type;
             textScriptLine += "(call) " + p1 + ';';
-        } else if (opcode == OpCodes.GET_RETURN_VALUE) {
-            stack.push(new StackObject(lastCallType, true, "LastCallResult", OpCodes.GET_RETURN_VALUE));
-        } else if (opcode == OpCodes.GET_DATUM_DESC) { // TODO: unhandled in noclip
-        } else if (opcode == OpCodes.GET_TEST) {
-            stack.push(new StackObject("unknown", true, "rX", OpCodes.GET_TEST));
-        } else if (opcode == OpCodes.GET_CASE) {
-            stack.push(new StackObject("unknown", true, "case", OpCodes.GET_CASE));
-        } else if (opcode == OpCodes.SET_TEST) {
+        } else if (opcode == 0x26) {
+            // GET_RETURN_VALUE
+            stack.push(new StackObject(lastCallType, true, "LastCallResult", 0x26));
+        } else if (opcode == 0x27) { // TODO: GET_DATUM_DESC
+        } else if (opcode == 0x28) {
+            // GET_TEST
+            stack.push(new StackObject("unknown", true, "rX", 0x28));
+        } else if (opcode == 0x29) {
+            // GET_CASE
+            stack.push(new StackObject("unknown", true, "case", 0x29));
+        } else if (opcode == 0x2A) {
+            // SET_TEST
             textScriptLine += "Set rX = " + p1;
-        } else if (opcode == OpCodes.COPY) {
+        } else if (opcode == 0x2B) {
+            // COPY
             stack.push(new StackObject(p1.type, p1));
             stack.push(new StackObject(p1.type, p1));
-        } else if (opcode == OpCodes.SET_CASE) {
+        } else if (opcode == 0x2C) {
+            // SET_CASE
             textScriptLine += "switch " + p1;
-        } else if (opcode == OpCodes.CONST_INT) { // TODO
-        } else if (opcode == OpCodes.IMM) { // TODO
-        } else if (opcode == OpCodes.CONST_FLOAT) { // TODO
-        } else if (opcode == OpCodes.JUMP) { // TODO
-        } else if (opcode == OpCodes.BNEZ) { // TODO
-        } else if (opcode == OpCodes.BEZ) { // TODO
-        } else if (opcode == OpCodes.CALL) { // TODO
-        } else if (opcode == OpCodes.RETURN) {
+        } else if (opcode == 0x2D) { // TODO: CONST_INT
+        } else if (opcode == 0x2E) { // TODO: IMM
+        } else if (opcode == 0x2F) { // TODO: CONST_FLOAT
+        } else if (opcode == 0x30) { // TODO: JUMP
+        } else if (opcode == 0x31) { // TODO: BNEZ
+        } else if (opcode == 0x32) { // TODO: BEZ
+        } else if (opcode == 0x33) { // TODO: CALL
+        } else if (opcode == 0x34) {
+            // RETURN
             textScriptLine += "return from subroutine";
-        } else if (opcode == OpCodes.FUNC_RET) { // TODO
-        } else if (opcode >= OpCodes.SIG_NOACK && opcode <= OpCodes.SIG_ONEND) {
+        } else if (opcode == 0x35) { // TODO: FUNC_RET
+        } else if (opcode >= 0x36 && opcode <= 0x38) {
+            // signals: SIG_NOACK, SIG_ONSTART, SIG_ONEND
             String type = "queueScript";
-            if (opcode == OpCodes.SIG_ONSTART) {
+            if (opcode == 0x37) {
+                // SIG_ONSTART
                 type += "Sync";
-            } else if (opcode == OpCodes.SIG_ONEND) {
+            } else if (opcode == 0x38) {
+                // SIG_ONEND
                 type += "Async";
             }
             String sep = "s" + format2Or4Byte(p2.value) + "e" + format2Or4Byte(p3.value);
             String content = "(" + p1 + ", " + sep + ")";
             stack.push(new StackObject(type, true, type + content, opcode));
-        } else if (opcode >= OpCodes.SIGS_LOW && opcode <= OpCodes.SIGS_HIGH) { // TODO
-        } else if (opcode == OpCodes.SIG_NOACK_SPEC) { // TODO: unhandled in noclip
-        } else if (opcode == OpCodes.SIG_1_SPEC) { // TODO: unhandled in noclip
-        } else if (opcode == OpCodes.SIG_2_SPEC) { // TODO: unhandled in noclip
-        } else if (opcode == OpCodes.END) {
+        } else if (opcode >= 0x45 && opcode <= 0x53) { // TODO: signals: SIGS_LOW .. SIGS_HIGH
+        } else if (opcode == 0x39) { // TODO: SIG_NOACK_SPEC
+        } else if (opcode == 0x3A) { // TODO: SIG_1_SPEC
+        } else if (opcode == 0x3B) { // TODO: SIG_2_SPEC
+        } else if (opcode == 0x3C) {
+            // END
             textScriptLine += "return";
-        } else if (opcode == OpCodes.CLEANUP_END) { // TODO
-        } else if (opcode == OpCodes.TO_MAIN) { // TODO
-        } else if (opcode == OpCodes.CLEANUP_TO_MAIN) {
+        } else if (opcode == 0x3D) { // TODO: CLEANUP_END
+        } else if (opcode == 0x3E) { // TODO: TO_MAIN
+        } else if (opcode == 0x3F) {
+            // CLEANUP_TO_MAIN
             textScriptLine += "return (RETTN): " + p1;
-        } else if (opcode == OpCodes.DYNAMIC) { // TODO: unhandled in noclip
-        } else if (opcode == OpCodes.CLEANUP_ALL_END) {
+        } else if (opcode == 0x40) { // TODO: DYNAMIC
+        } else if (opcode == 0x54) {
+            // CLEANUP_ALL_END
             textScriptLine += "direct return?";
-        } else if (opcode == OpCodes.SET_JUMP) { // TODO
-        } else if (opcode == OpCodes.SET_BNEZ) { // TODO
-        } else if (opcode == OpCodes.SET_BEZ) { // TODO
-        } else if (opcode == OpCodes.FUNC) { // TODO
-        } else if (opcode >= OpCodes.SET_INT && opcode <= 0x5C) {
-            lastTempTypes.put(opcode-OpCodes.SET_INT, p1.type);
-            textScriptLine += "tempI" + (opcode-OpCodes.SET_INT) + " = " + p1;
-        } else if (opcode >= OpCodes.SET_FLOAT && opcode <= 0x66) {
-            textScriptLine += "tempF" + (opcode-OpCodes.SET_FLOAT) + " = " + p1;
-        } else if (opcode >= OpCodes.GET_INT && opcode <= 0x6A) {
-            stack.push(new StackObject(lastTempTypes.getOrDefault(opcode-OpCodes.GET_INT, "unknown"), true, "tempI"+(opcode-OpCodes.GET_INT), opcode));
-        } else if (opcode >= OpCodes.GET_FLOAT && opcode <= 0x74) {
-            stack.push(new StackObject("float", true, "tempF"+(opcode-OpCodes.GET_FLOAT), opcode));
-        } else if (opcode == OpCodes.TEX_UNPACK_IMM) { // TODO
-        } else if (opcode == OpCodes.WAIT_DELETE) {
+        } else if (opcode == 0x55) { // TODO: SET_JUMP
+        } else if (opcode == 0x56) { // TODO: SET_BNEZ
+        } else if (opcode == 0x57) { // TODO: SET_BEZ
+        } else if (opcode == 0x58) { // TODO: FUNC
+        } else if (opcode >= 0x59 && opcode <= 0x5C) {
+            // SET_INT
+            lastTempTypes.put(opcode-0x59, p1.type);
+            textScriptLine += "tempI" + (opcode-0x59) + " = " + p1;
+        } else if (opcode >= 0x5D && opcode <= 0x66) {
+            // SET_FLOAT
+            textScriptLine += "tempF" + (opcode-0x5D) + " = " + p1;
+        } else if (opcode >= 0x67 && opcode <= 0x6A) {
+            // GET_INT
+            stack.push(new StackObject(lastTempTypes.getOrDefault(opcode-0x67, "unknown"), true, "tempI"+(opcode-0x67), opcode));
+        } else if (opcode >= 0x6B && opcode <= 0x74) {
+            // GET_FLOAT
+            stack.push(new StackObject("float", true, "tempF"+(opcode-0x6B), opcode));
+        } else if (opcode == 0x75) { // TODO: TEX_UNPACK_IMM
+        } else if (opcode == 0x77) {
+            // WAIT_DELETE
             String sep = "s" + format2Or4Byte(p1.value) + "e" + format2Or4Byte(p2.value);
             textScriptLine += "await " + sep + ';';
-        } else if (opcode == OpCodes.WAIT_SPEC_DELETE) { // TODO: unhandled in noclip
-        } else if (opcode == OpCodes.EDIT_ENTRY_TABLE) {
+        } else if (opcode == 0x78) { // TODO: WAIT_SPEC_DELETE
+        } else if (opcode == 0x79) {
+            // EDIT_ENTRY_TABLE
             textScriptLine += "REQCHG (" + p1 + ", " + p2 + ", " + p3 + ')';
-        } else if (opcode == OpCodes.SET_EDGE_TRIGGER) { // TODO: unhandled in noclip
+        } else if (opcode == 0x7A) { // TODO: SET_EDGE_TRIGGER
         } else if (opcode == 0x9F) {
             stack.push(new StackObject("var", true, "var"+argvsh, argv));
         } else if (opcode == 0xA0 || opcode == 0xA1) {

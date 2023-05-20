@@ -289,7 +289,7 @@ public abstract class ScriptFuncLib {
         putUnknownFunc(0x0142, 2); // Corrected from 3, must be 2 due to bltz0200.ebp
         putUnknownFunc(0x0143, 1);
         putUnknownFunc(0x0144, 1);
-        putUnknownFunc(0x0145, 2); // two
+        putUnknownFunc(0x0145, 2);
         putUnknownFunc(0x0146, 1);
         putUnknownFunc(0x0148, 2);
         putUnknownFunc(0x0149, 1);
