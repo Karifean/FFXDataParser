@@ -1,6 +1,4 @@
-package model;
-
-import main.FileAccessorWithMods;
+package reading;
 
 import java.io.*;
 import java.util.ArrayList;

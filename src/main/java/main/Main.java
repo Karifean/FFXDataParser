@@ -1,6 +1,10 @@
 package main;
 
 import model.*;
+import reading.Chunk;
+import reading.ChunkedFileHelper;
+import reading.DataFileReader;
+import reading.FileAccessorWithMods;
 import script.EncounterFile;
 import script.EventFile;
 import script.MonsterFile;

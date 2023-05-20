@@ -1,6 +1,6 @@
 package script;
 
-import main.Chunk;
+import reading.Chunk;
 import script.model.*;
 
 import java.util.*;
