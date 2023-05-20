@@ -246,6 +246,8 @@ public class ScriptObject {
         String argvsd = ""+argvSigned;
         String argvsh = format2Or4Byte(argv);
         StackObject p1 = null, p2 = null, p3 = null, p4 = null, p5 = null, p6 = null, p7 = null, p8 = null;
+
+        // TODO: get individual stackPops for OpCodes FUNC (0x58) and FUNC_RET (0x35) (between 0 and 8)
         try {
             switch (getStackPops(opcode)) {
                 case 8: p8 = stack.pop();
@@ -254,10 +256,8 @@ public class ScriptObject {
                 case 5: p5 = stack.pop();
                 case 4: p4 = stack.pop();
                 case 3: p3 = stack.pop();
-                case 2:
-                    p2 = stack.pop();
-                case 1:
-                    p1 = stack.pop();
+                case 2: p2 = stack.pop();
+                case 1: p1 = stack.pop();
                 case 0:
                 default:
                     break;
@@ -273,7 +273,7 @@ public class ScriptObject {
             String resultType = op.type;
             String p1s = p1.toString();
             String p2s = p2.toString();
-            if (opcode == 0x06 || opcode == 0x07) {
+            if (opcode == OpCodes.EQ || opcode == OpCodes.NEQ) {
                 String p1t = resolveType(p1);
                 String p2t = resolveType(p2);
                 boolean p1w = isWeakType(p1t);
@@ -335,9 +335,10 @@ public class ScriptObject {
             String sep = "s" + format2Or4Byte(p2.value) + "e" + format2Or4Byte(p3.value);
             String content = "(" + p1 + ", " + sep + ")";
             stack.push(new StackObject(type, true, type + content, opcode));
-        } else if (opcode == OpCodes.SIG_NOACK_SPEC) { // TODO
-        } else if (opcode == OpCodes.SIG_1_SPEC) { // TODO
-        } else if (opcode == OpCodes.SIG_2_SPEC) { // TODO
+        } else if (opcode >= OpCodes.SIGS_LOW && opcode <= OpCodes.SIGS_HIGH) { // TODO
+        } else if (opcode == OpCodes.SIG_NOACK_SPEC) { // TODO: unhandled in noclip
+        } else if (opcode == OpCodes.SIG_1_SPEC) { // TODO: unhandled in noclip
+        } else if (opcode == OpCodes.SIG_2_SPEC) { // TODO: unhandled in noclip
         } else if (opcode == OpCodes.END) {
             textScriptLine += "return";
         } else if (opcode == OpCodes.CLEANUP_END) { // TODO
@@ -345,8 +346,6 @@ public class ScriptObject {
         } else if (opcode == OpCodes.CLEANUP_TO_MAIN) {
             textScriptLine += "return (RETTN): " + p1;
         } else if (opcode == OpCodes.DYNAMIC) { // TODO: unhandled in noclip
-        } else if (opcode == OpCodes.SIGS_LOW) { // TODO
-        } else if (opcode == OpCodes.SIGS_HIGH) { // TODO
         } else if (opcode == OpCodes.CLEANUP_ALL_END) {
             textScriptLine += "direct return?";
         } else if (opcode == OpCodes.SET_JUMP) { // TODO
@@ -366,10 +365,10 @@ public class ScriptObject {
         } else if (opcode == OpCodes.WAIT_DELETE) {
             String sep = "s" + format2Or4Byte(p1.value) + "e" + format2Or4Byte(p2.value);
             textScriptLine += "await " + sep + ';';
-        } else if (opcode == OpCodes.WAIT_SPEC_DELETE) { // TODO
+        } else if (opcode == OpCodes.WAIT_SPEC_DELETE) { // TODO: unhandled in noclip
         } else if (opcode == OpCodes.EDIT_ENTRY_TABLE) {
             textScriptLine += "REQCHG (" + p1 + ", " + p2 + ", " + p3 + ')';
-        } else if (opcode == OpCodes.SET_EDGE_TRIGGER) { // TODO
+        } else if (opcode == OpCodes.SET_EDGE_TRIGGER) { // TODO: unhandled in noclip
         } else if (opcode == 0x9F) {
             stack.push(new StackObject("var", true, "var"+argvsh, argv));
         } else if (opcode == 0xA0 || opcode == 0xA1) {

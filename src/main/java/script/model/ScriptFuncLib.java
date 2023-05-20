@@ -99,21 +99,21 @@ public abstract class ScriptFuncLib {
         putFuncWithIdx(0x004D, new ScriptFunc("controllerButtonPressed?", "bool", null, new ScriptField("controllerButton")));
         putUnknownFunc(0x0050, 1);
         putUnknownFunc(0x0051, 1);
-        putUnknownFunc(0x0054, 6);
-        putUnknownFunc(0x0055, 1);
-        putUnknownFunc(0x0056, 1);
-        putUnknownFunc(0x0057, 3);
-        putUnknownFunc(0x0058, 2);
-        putUnknownFunc(0x0059, 3);
-        putUnknownFunc(0x005A, 1);
-        putUnknownFunc(0x005C, 1);
+        putUnknownFunc(0x0054, 6); // noclip: collision detection
+        putUnknownFunc(0x0055, 1); // noclip: collision detection
+        putUnknownFunc(0x0056, 1); // noclip: collision detection
+        putUnknownFunc(0x0057, 3); // noclip: collision detection
+        putUnknownFunc(0x0058, 2); // noclip: collision detection
+        putUnknownFunc(0x0059, 3); // noclip: collision detection
+        putUnknownFunc(0x005A, 1); // noclip: collision detection
+        putUnknownFunc(0x005C, 1); // noclip: collision detection
         putUnknownFunc(0x005D, 0);
         putUnknownFunc(0x005E, 0);
         putUnknownFunc(0x005F, 0);
         putUnknownFunc(0x0060, 1);
-        putUnknownFunc(0x0061, 1);
-        putUnknownFunc(0x0062, 1);
-        putUnknownFunc(0x0063, 1);
+        putUnknownFunc(0x0061, 1); // noclip: collision detection
+        putUnknownFunc(0x0062, 1); // noclip: collision detection
+        putUnknownFunc(0x0063, 1); // noclip: collision detection
         putFuncWithIdx(0x0064, new ScriptFunc("displayFieldSubtitle", "unknown", null, new ScriptField("boxIndex", "int"), new ScriptField("string", "int")));
         putUnknownFunc(0x0065, 4);
         putUnknownFunc(0x0066, 2);
@@ -123,37 +123,38 @@ public abstract class ScriptFuncLib {
         putUnknownFunc(0x006C, 1);
         putUnknownFunc(0x006D, 1);
         putUnknownFunc(0x006E, 1);
-        putUnknownFunc(0x006F, 1);
-        putUnknownFunc(0x0070, 1);
-        putUnknownFunc(0x0071, 1);
-        putUnknownFunc(0x0074, 1);
-        putUnknownFunc(0x0076, 0);
+        putUnknownFunc(0x006F, 1); // noclip: get/set velocity1?
+        putUnknownFunc(0x0070, 1); // noclip: get/set velocity2?
+        putUnknownFunc(0x0071, 1); // noclip: get/set velocity3?
+        putUnknownFunc(0x0074, 1); // noclip: get/set frames?
+        putUnknownFunc(0x0076, 0); // noclip: get controller type
         putUnknownFunc(0x0077, 1);
         putUnknownFunc(0x0078, 1);
-        putUnknownFunc(0x007A, 2);
+        putUnknownFunc(0x007A, 2); // noclip: collision detection
         putUnknownFunc(0x007C, 1);
         putUnknownFunc(0x007D, 1);
         putUnknownFunc(0x007F, 1);
-        putUnknownFunc(0x0080, 0);
-        putUnknownFunc(0x0081, 0);
-        putUnknownFunc(0x0082, 0);
-        putUnknownFunc(0x0083, 0);
+        putUnknownFunc(0x0080, 0); // noclip: getMapPointPosition1()
+        putUnknownFunc(0x0081, 0); // noclip: getMapPointPosition2()
+        putUnknownFunc(0x0082, 0); // noclip: getMapPointPosition3()
+        putUnknownFunc(0x0083, 0); // noclip: getMapPointHeading()
         putUnknownFunc(0x0084, 2);
-        putUnknownFunc(0x0085, 1);
+        putUnknownFunc(0x0085, 1); // noclip: setCollisionRadius()
         putUnknownFunc(0x0086, 0);
         putUnknownFunc(0x0087, 0);
         putUnknownFunc(0x0088, 0);
         putUnknownFunc(0x0089, 0);
-        putUnknownFunc(0x008B, 0);
+        putUnknownFunc(0x008B, 0); // noclip: checking line crossing
         putUnknownFunc(0x008D, 1);
+        putUnknownFunc(0x008E, 1); // noclip: setCollisionHeight()
         putUnknownFunc(0x008F, 1);
-        putUnknownFunc(0x0090, 0);
+        putUnknownFunc(0x0090, 0); // noclip: getYaw1()
         putUnknownFunc(0x0091, 0);
-        putUnknownFunc(0x0092, 1);
+        putUnknownFunc(0x0092, 1); // noclip: getYaw2()
         putUnknownFunc(0x0093, 1);
         putUnknownFunc(0x0094, 1);
-        putUnknownFunc(0x0095, 1);
-        putUnknownFunc(0x0096, 1);
+        putUnknownFunc(0x0095, 1); // noclip: setRotationYaw()
+        putUnknownFunc(0x0096, 1); // noclip: setRotationPitch()
         putUnknownFunc(0x0097, 1);
         putUnknownFunc(0x0098, 2);
         putUnknownFunc(0x009A, 1);
@@ -165,8 +166,8 @@ public abstract class ScriptFuncLib {
         putUnknownFunc(0x00A4, 2);
         putUnknownFunc(0x00A5, 2);
         putUnknownFunc(0x00A6, 1);
-        putUnknownFunc(0x00A7, 1);
-        putUnknownFunc(0x00A8, 1);
+        putUnknownFunc(0x00A7, 1); // noclip: setIsNotActive()
+        putUnknownFunc(0x00A8, 1); // noclip: setIsActive()
         putFuncWithIdx(0x00A9, new ScriptFunc("RandomValue(RNG2)", "int", null, false));
         putUnknownFunc(0x00AA, 1);
         putUnknownFunc(0x00AB, 2);
@@ -182,13 +183,13 @@ public abstract class ScriptFuncLib {
         putUnknownFunc(0x00BF, 1); // \
         putUnknownFunc(0x00C0, 1); // -- Technically these aren't certain (zkrn0300)
         putUnknownFunc(0x00C1, 1); // /
-        putUnknownFunc(0x00C2, 1);
+        putUnknownFunc(0x00C2, 1); // noclip: getHeading()
         putUnknownFunc(0x00C4, 0);
         putUnknownFunc(0x00C5, 4);
         putUnknownFunc(0x00C6, 0);
         putUnknownFunc(0x00C7, 1);
         putUnknownFunc(0x00C8, 3);
-        putUnknownFunc(0x00C9, 1);
+        putUnknownFunc(0x00C9, 1); // noclip: getEntrypoint()
         putFuncWithIdx(0x00CA, new ScriptFunc("addPartyMember?", "unknown", null, new ScriptField("actor")));
         putFuncWithIdx(0x00CB, new ScriptFunc("removePartyMember?", "unknown", null, new ScriptField("actor")));
         putUnknownFunc(0x00CC, 1);
@@ -288,7 +289,7 @@ public abstract class ScriptFuncLib {
         putUnknownFunc(0x0142, 2); // Corrected from 3, must be 2 due to bltz0200.ebp
         putUnknownFunc(0x0143, 1);
         putUnknownFunc(0x0144, 1);
-        putUnknownFunc(0x0145, 2);
+        putUnknownFunc(0x0145, 2); // two
         putUnknownFunc(0x0146, 1);
         putUnknownFunc(0x0148, 2);
         putUnknownFunc(0x0149, 1);
@@ -536,7 +537,7 @@ public abstract class ScriptFuncLib {
         putUnknownFunc(0x4045, 1);
         putUnknownFunc(0x4046, 1);
         putUnknownFunc(0x5000, 1); // Why was this 0?
-        putUnknownFunc(0x5001, 1);
+        putUnknownFunc(0x5001, 1); // noclip: load motion group
         putUnknownFunc(0x5003, 0);
         putUnknownFunc(0x5005, 0);
         putUnknownFunc(0x5006, 1);
@@ -548,6 +549,8 @@ public abstract class ScriptFuncLib {
         putUnknownFunc(0x500D, 1);
         putUnknownFunc(0x500E, 1);
         putUnknownFunc(0x500F, 1);
+
+        // noclip: --------- character-related functions ----------
         putUnknownFunc(0x5010, 2);
         putUnknownFunc(0x5013, 1);
         putUnknownFunc(0x5014, 2);
@@ -1077,6 +1080,8 @@ public abstract class ScriptFuncLib {
         putUnknownFunc(0x7125, 0);
         putUnknownFunc(0x7126, 1);
         putUnknownFunc(0x7127, 2);
+
+        // noclip: --------- rendering functions ---------
         putUnknownFunc(0x8000, 2);
         putUnknownFunc(0x8001, 1);
         putFuncWithIdx(0x8002, new ScriptFunc("setGfxActive?", "unknown", null, new ScriptField("gfxIndex?", "int"), new ScriptField("active", "bool")));
