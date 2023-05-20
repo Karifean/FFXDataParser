@@ -1,5 +1,6 @@
 package script;
 
+import model.FormationDataObject;
 import reading.Chunk;
 
 import java.util.List;
@@ -9,19 +10,23 @@ import java.util.List;
  */
 public class EncounterFile {
     public ScriptObject encounterScript;
+    public FormationDataObject formation;
     Chunk scriptChunk;
+    int[] formationBytes;
 
     public EncounterFile(List<Chunk> chunks) {
         mapChunks(chunks);
-        mapObjects();
+        mapObjects(chunks.size());
     }
 
     private void mapChunks(List<Chunk> chunks) {
         scriptChunk = chunks.get(0);
+        formationBytes = chunks.get(2).bytes;
     }
 
-    private void mapObjects() {
+    private void mapObjects(int chunkCount) {
         encounterScript = new ScriptObject(scriptChunk);
+        formation = new FormationDataObject(formationBytes);
     }
 
     public void parseScript() {
@@ -33,6 +38,9 @@ public class EncounterFile {
     @Override
     public String toString() {
         StringBuilder full = new StringBuilder();
+        if (formation != null) {
+            full.append("- Encounter Formation -\n").append(formation).append('\n');
+        }
         if (encounterScript != null) {
             full.append("- Script Code -").append('\n');
             full.append(encounterScript.allLinesString());
