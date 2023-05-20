@@ -289,13 +289,13 @@ public class ScriptObject {
             String content = "(" + p1s + " " + op.name + " " + p2s + ")";
             stack.push(new StackObject(resultType, true, content, opcode));
         } else if (opcode == 0x19) {
-            // NOT_LOGIC
+            // OPNOT
             stack.push(new StackObject("bool", true, "not " + p1, 0x19));
         } else if (opcode == 0x1A) {
             // NEG
             stack.push(new StackObject("unknown", true, "OPUMINUS", 0x1A));
         } else if (opcode == 0x1C) {
-            // NOT
+            // OPBNOT
             stack.push(new StackObject(p1.type, true, "bitNot " + p1, 0x1C));
         } else if (opcode == 0x1F) { // TODO: GET_DATUM
         } else if (opcode == 0x20) { // TODO: SET_DATUM_W

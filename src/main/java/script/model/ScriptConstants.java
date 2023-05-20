@@ -69,9 +69,9 @@ public abstract class ScriptConstants {
         Arrays.fill(OPCODE_STACKPOPS, -1);
         OPCODE_STACKPOPS[0x00] = 0; // NOP
         setRange(OPCODE_STACKPOPS, 0x01, 0x18, 2); // comp operators
-        OPCODE_STACKPOPS[0x19] = 1; // NOT_LOGIC
+        OPCODE_STACKPOPS[0x19] = 1; // OPNOT
         OPCODE_STACKPOPS[0x1A] = 1; // NEG
-        OPCODE_STACKPOPS[0x1C] = 1; // NOT
+        OPCODE_STACKPOPS[0x1C] = 1; // OPBNOT
         OPCODE_STACKPOPS[0x1D] = 0; // NOP_1D
         OPCODE_STACKPOPS[0x1E] = 0; // NOP_1E
         OPCODE_STACKPOPS[0x25] = 1; // SET_RETURN_VALUE
