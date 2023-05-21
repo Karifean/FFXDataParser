@@ -16,6 +16,7 @@ public abstract class ScriptConstants {
             return;
         }
         initialized = true;
+
         FUNCSPACES = new String[0x10];
         FUNCSPACES[0x0] = "Common";
         FUNCSPACES[0x1] = "Math";
@@ -33,6 +34,7 @@ public abstract class ScriptConstants {
         FUNCSPACES[0xD] = "AbilityMap";
         FUNCSPACES[0xE] = "UnknownE";
         FUNCSPACES[0xF] = "UnknownF";
+
         OPCODE_ENDLINE = new ArrayList<>();
         OPCODE_ENDLINE.add(0x25);
         OPCODE_ENDLINE.add(0x2A);
@@ -62,49 +64,49 @@ public abstract class ScriptConstants {
         OPCODE_ENDLINE.add(0xD6);
         OPCODE_ENDLINE.add(0xD7);
         OPCODE_ENDLINE.add(0xD8);
+
         OPCODE_STACKPOPS = new int[0x100];
         Arrays.fill(OPCODE_STACKPOPS, -1);
-        OPCODE_STACKPOPS[0x00] = 0;
-        for (int i = 0x01; i <= 0x18; i++) {
-            OPCODE_STACKPOPS[i] = 2;
-        }
-        OPCODE_STACKPOPS[0x19] = 1;
-        OPCODE_STACKPOPS[0x1C] = 1;
-        OPCODE_STACKPOPS[0x25] = 1;
-        OPCODE_STACKPOPS[0x26] = 0;
-        OPCODE_STACKPOPS[0x27] = 0;
-        OPCODE_STACKPOPS[0x28] = 0;
-        OPCODE_STACKPOPS[0x29] = 0;
-        OPCODE_STACKPOPS[0x2A] = 1;
-        OPCODE_STACKPOPS[0x2B] = 1;
-        OPCODE_STACKPOPS[0x2C] = 1;
-        OPCODE_STACKPOPS[0x34] = 0;
-        OPCODE_STACKPOPS[0x36] = 3;
-        OPCODE_STACKPOPS[0x37] = 3;
-        OPCODE_STACKPOPS[0x38] = 3;
-        // OPCODE_STACKPOPS[0x39] = 3; I'm sure of this but need to properly interpret what the opcode does
-        OPCODE_STACKPOPS[0x3C] = 0;
-        OPCODE_STACKPOPS[0x3D] = 1;
-        OPCODE_STACKPOPS[0x3F] = 1; // ???
+        OPCODE_STACKPOPS[0x00] = 0; // NOP
+        setRange(OPCODE_STACKPOPS, 0x01, 0x18, 2); // comp operators
+        OPCODE_STACKPOPS[0x19] = 1; // OPNOT
+        OPCODE_STACKPOPS[0x1A] = 1; // NEG
+        OPCODE_STACKPOPS[0x1C] = 1; // OPBNOT
+        OPCODE_STACKPOPS[0x1D] = 0; // NOP_1D
+        OPCODE_STACKPOPS[0x1E] = 0; // NOP_1E
+        OPCODE_STACKPOPS[0x25] = 1; // SET_RETURN_VALUE
+        OPCODE_STACKPOPS[0x26] = 0; // GET_RETURN_VALUE
+        OPCODE_STACKPOPS[0x27] = 0; // GET_DATUM_DESC // TODO: is this one right? i don't see it handled anywhere else
+        OPCODE_STACKPOPS[0x28] = 0; // GET_TEST
+        OPCODE_STACKPOPS[0x29] = 0; // GET_CASE
+        OPCODE_STACKPOPS[0x2A] = 1; // SET_TEST
+        OPCODE_STACKPOPS[0x2B] = 1; // COPY
+        OPCODE_STACKPOPS[0x2C] = 1; // SET_CASE
+        OPCODE_STACKPOPS[0x2D] = 0; // CONST_INT
+        OPCODE_STACKPOPS[0x2E] = 0; // IMM
+        OPCODE_STACKPOPS[0x2F] = 0; // CONST_FLOAT
+        OPCODE_STACKPOPS[0x30] = 0; // JUMP
+        OPCODE_STACKPOPS[0x31] = 0; // BNEZ
+        OPCODE_STACKPOPS[0x32] = 0; // BEZ
+        OPCODE_STACKPOPS[0x33] = 0; // CALL
+        OPCODE_STACKPOPS[0x34] = 0; // RETURN
+        setRange(OPCODE_STACKPOPS, 0x36, 0x38, 3); // SIG_NOACK .. SIG_ONEND
+        // OPCODE_STACKPOPS[0x39] = 3; // SIG_NOACK_SPEC // I'm sure of this but need to properly interpret what the opcode does
+        OPCODE_STACKPOPS[0x3C] = 0; // END
+        OPCODE_STACKPOPS[0x3D] = 1; // CLEANUP_END
+        OPCODE_STACKPOPS[0x3E] = 0; // TO_MAIN
+        OPCODE_STACKPOPS[0x3F] = 1; // CLEANUP_TO_MAIN // ???
+        setRange(OPCODE_STACKPOPS, 0x45, 0x53, 3); // SIGS_LOW  .. SIGS_HIGH
         OPCODE_STACKPOPS[0x46] = 1;
-        OPCODE_STACKPOPS[0x54] = 0;
-        OPCODE_STACKPOPS[0x59] = 1;
-        OPCODE_STACKPOPS[0x5A] = 1;
-        OPCODE_STACKPOPS[0x5B] = 1;
-        OPCODE_STACKPOPS[0x5C] = 1;
-        OPCODE_STACKPOPS[0x5D] = 1;
-        OPCODE_STACKPOPS[0x5E] = 1;
-        OPCODE_STACKPOPS[0x5F] = 1;
-        OPCODE_STACKPOPS[0x60] = 1;
-        OPCODE_STACKPOPS[0x67] = 0;
-        OPCODE_STACKPOPS[0x68] = 0;
-        OPCODE_STACKPOPS[0x69] = 0;
-        OPCODE_STACKPOPS[0x6A] = 0;
-        OPCODE_STACKPOPS[0x6B] = 0;
-        OPCODE_STACKPOPS[0x6C] = 0;
-        OPCODE_STACKPOPS[0x6D] = 0;
-        OPCODE_STACKPOPS[0x6E] = 0;
-        OPCODE_STACKPOPS[0x77] = 2;
+        OPCODE_STACKPOPS[0x54] = 0; // CLEANUP_ALL_END
+        setRange(OPCODE_STACKPOPS, 0x55, 0x57, 1); // SET_JUMP  .. SET_BEZ
+        setRange(OPCODE_STACKPOPS, 0x59, 0x5C, 1); // SET_INT   .. SET_FLOAT-1
+        setRange(OPCODE_STACKPOPS, 0x5D, 0x66, 1); // SET_FLOAT .. GET_INT-1
+        setRange(OPCODE_STACKPOPS, 0x67, 0x6A, 0); // GET_INT   .. GET_FLOAT-1
+        setRange(OPCODE_STACKPOPS, 0x6B, 0x74, 0); // GET_FLOAT .. TEX_UNPACK_IMM-1
+        OPCODE_STACKPOPS[0x75] = 0; // TEX_UNPACK_IMM
+        OPCODE_STACKPOPS[0x76] = 0; // NOP_76
+        OPCODE_STACKPOPS[0x77] = 2; // WAIT_DELETE
         OPCODE_STACKPOPS[0x79] = 3;
         OPCODE_STACKPOPS[0x9F] = 0;
         OPCODE_STACKPOPS[0xA0] = 1;
@@ -622,6 +624,12 @@ public abstract class ScriptConstants {
         putMoveProperty(0x0008, "elementIce", "bool");
         putMoveProperty(0x0009, "elementFire", "bool");
         putMoveProperty(0x000A, "targetType", "targetType");
+    }
+
+    private static void setRange(int[] array, int lowerBound, int upperBound, int value) {
+        for (int i = lowerBound; i <= upperBound; i++) {
+            array[i] = value;
+        }
     }
 
     public static Map<Integer, ScriptField> getEnumMap(String type) {
