@@ -29,9 +29,9 @@ public class EncounterFile {
         formation = new FormationDataObject(formationBytes);
     }
 
-    public void parseScript() {
+    public void parseScript(List<String> strings) {
         if (encounterScript != null) {
-            encounterScript.parseScript();
+            encounterScript.parseScript(strings);
         }
     }
 

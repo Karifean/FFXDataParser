@@ -114,7 +114,7 @@ public abstract class ScriptFuncLib {
         putUnknownFunc(0x0061, 1); // noclip: collision detection
         putUnknownFunc(0x0062, 1); // noclip: collision detection
         putUnknownFunc(0x0063, 1); // noclip: collision detection
-        putFuncWithIdx(0x0064, new ScriptFunc("displayFieldSubtitle", "unknown", null, new ScriptField("boxIndex", "int"), new ScriptField("string", "int")));
+        putFuncWithIdx(0x0064, new ScriptFunc("displayFieldSubtitle", "unknown", null, new ScriptField("boxIndex", "int"), new ScriptField("string")));
         putUnknownFunc(0x0065, 4);
         putUnknownFunc(0x0066, 2);
         putUnknownFunc(0x0069, 3);
@@ -280,7 +280,7 @@ public abstract class ScriptFuncLib {
         putUnknownFunc(0x0137, 1);
         putUnknownFunc(0x0138, 1);
         putUnknownFunc(0x0139, 8);
-        putFuncWithIdx(0x013B, new ScriptFunc("displayFieldChoice", "int", null, new ScriptField("boxIndex?", "int"), new ScriptField("string", "int"), new ScriptField("p3", "unknown"), new ScriptField("p4", "unknown"), new ScriptField("x?", "int"), new ScriptField("y?", "int"), new ScriptField("p7", "unknown")));
+        putFuncWithIdx(0x013B, new ScriptFunc("displayFieldChoice", "int", null, new ScriptField("boxIndex?", "int"), new ScriptField("string"), new ScriptField("p3", "unknown"), new ScriptField("p4", "unknown"), new ScriptField("x?", "int"), new ScriptField("y?", "int"), new ScriptField("p7", "unknown")));
         putUnknownFunc(0x013D, 1);
         putUnknownFunc(0x013E, 1);
         putUnknownFunc(0x013F, 2);
@@ -853,7 +853,7 @@ public abstract class ScriptFuncLib {
         putUnknownFunc(0x703F, "camReq", 2);
         putUnknownFunc(0x7040, "btlMagicStart", 1);
         putUnknownFunc(0x7041, "btlMagicEnd", 0);
-        putFuncWithIdx(0x7042, new ScriptFunc("displayTextBox", "unknown", "btlmes", new ScriptField("boxIndex", "int"), new ScriptField("string", "int"), new ScriptField("x?", "int"), new ScriptField("y?", "int"), new ScriptField("p5", "unknown")));
+        putFuncWithIdx(0x7042, new ScriptFunc("displayTextBox", "unknown", "btlmes", new ScriptField("boxIndex", "int"), new ScriptField("string"), new ScriptField("x?", "int"), new ScriptField("y?", "int"), new ScriptField("p5", "unknown")));
         putFuncWithIdx(0x7043, new ScriptFunc("closeTextOnConfirm", "unknown", "btlmeswait", new ScriptField("boxIndex", "int")));
         putFuncWithIdx(0x7044, new ScriptFunc("closeTextImmediately", "unknown", "btlmesclose", new ScriptField("boxIndex", "int")));
         putUnknownFunc(0x7045, "btlDistTargetFrame", 1);
@@ -901,7 +901,7 @@ public abstract class ScriptFuncLib {
         putUnknownFunc(0x706F, "btlSetMotion2", 1);
         putUnknownFunc(0x7070, "btlStatusOn", 0);
         putUnknownFunc(0x7071, "btlStatusOff", 0);
-        putFuncWithIdx(0x7072, new ScriptFunc("displayDialogueLine", "unknown", "btlmes2", new ScriptField("boxIndex", "int"), new ScriptField("string", "int")));
+        putFuncWithIdx(0x7072, new ScriptFunc("displayDialogueLine", "unknown", "btlmes2", new ScriptField("boxIndex", "int"), new ScriptField("string")));
         putUnknownFunc(0x7073, "btlAttachWeapon", 1);
         putUnknownFunc(0x7074, "btlDetachWeapon", 1);
         putUnknownFunc(0x7075, "btlReqWeaponMotion", 3);
@@ -1007,7 +1007,7 @@ public abstract class ScriptFuncLib {
         putUnknownFunc(0x70D9, "btlExeAnimaChainOff", 0);
         putUnknownFunc(0x70DA, "btlGetFirstAttack", "ambushState", 0);
         putUnknownFunc(0x70DB, "btlGetAnimaChainOff", 0);
-        putFuncWithIdx(0x70DC, new ScriptFunc("changeActorName", "unknown", "btlChangeChrNameID", new ScriptField("actor"), new ScriptField("string", "int")));
+        putFuncWithIdx(0x70DC, new ScriptFunc("changeActorName", "unknown", "btlChangeChrNameID", new ScriptField("actor"), new ScriptField("string")));
         putUnknownFunc(0x70DD, "btlSetDebugCount", 1);
         putFuncWithIdx(0x70DE, new ScriptFunc("SubtitlesEnabled?", "bool", "btlGetSubTitle", false));
         putUnknownFunc(0x70DF, "btlCheckBtlScene", 1);
@@ -1074,7 +1074,7 @@ public abstract class ScriptFuncLib {
         putUnknownFunc(0x711B, "btlSetCameraStandard", 0);
         putUnknownFunc(0x711C, "btlSetGameOverEffNum", 1);
         putUnknownFunc(0x711D, "btlSetShadowHeight", 1);
-        putFuncWithIdx(0x7120, new ScriptFunc("displayBattleSubtitle?", "unknown", null, new ScriptField("boxIndex", "int"), new ScriptField("string", "int")));
+        putFuncWithIdx(0x7120, new ScriptFunc("displayBattleSubtitle?", "unknown", null, new ScriptField("boxIndex", "int"), new ScriptField("string")));
         putUnknownFunc(0x7123, 1);
         putUnknownFunc(0x7124, 1);
         putUnknownFunc(0x7125, 0);

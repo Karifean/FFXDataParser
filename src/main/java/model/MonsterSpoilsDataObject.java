@@ -1,5 +1,6 @@
 package model;
 
+import main.DataAccess;
 import script.model.StackObject;
 
 public class MonsterSpoilsDataObject {
@@ -96,7 +97,7 @@ public class MonsterSpoilsDataObject {
     }
 
     private static String asMove(int move) {
-        return new StackObject("move", false, null, move).toString();
+        return DataAccess.getMove(move).getName() + " [" + String.format("%04x", move) + "h]";
     }
 
     private static String formatUnknownByte(int bt) {

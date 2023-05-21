@@ -21,6 +21,7 @@ public class ScriptObject {
     protected int scriptCodeLength;
     protected int scriptCodeStartAddress;
     protected int scriptCodeEndAddress;
+    public List<String> strings;
     public StringBuilder jumpTableString = new StringBuilder();
     Stack<StackObject> stack = new Stack<>();
     Map<Integer, String> lastTempTypes = new HashMap<>();
@@ -53,7 +54,8 @@ public class ScriptObject {
         this.absoluteOffset = absoluteOffset;
     }
 
-    public void parseScript() {
+    public void parseScript(List<String> strings) {
+        this.strings = strings;
         byteCursor = 0;
         scriptCodeLength = read4Bytes();
         // System.out.println("Script Length: " + scriptCodeLength);
@@ -280,22 +282,22 @@ public class ScriptObject {
                 }
             }
             String content = "(" + p1s + " " + op.name + " " + p2s + ")";
-            stack.push(new StackObject(resultType, true, content, opcode));
+            stack.push(new StackObject(this, resultType, true, content, opcode));
         } else if (opcode == 0x19) { // OPNOT / NOT_LOGIC
-            stack.push(new StackObject("bool", true, "not " + p1, 0x19));
+            stack.push(new StackObject(this, "bool", true, "not " + p1, 0x19));
         } else if (opcode == 0x1A) { // OPUMINUS / NEG
-            stack.push(new StackObject("unknown", true, "OPUMINUS", 0x1A));
+            stack.push(new StackObject(this, "unknown", true, "OPUMINUS", 0x1A));
         } else if (opcode == 0x1C) { // OPBNOT / NOT
-            stack.push(new StackObject(p1.type, true, "bitNot " + p1, 0x1C));
+            stack.push(new StackObject(this, p1.type, true, "bitNot " + p1, 0x1C));
         } else if (opcode == 0x25) { // POPA / SET_RETURN_VALUE
             lastCallType = p1.type;
             textScriptLine += "Set LastCallResult = " + p1;
         } else if (opcode == 0x26) { // PUSHA / GET_RETURN_VALUE
-            stack.push(new StackObject(lastCallType, true, "LastCallResult", 0x26));
+            stack.push(new StackObject(this, lastCallType, true, "LastCallResult", 0x26));
         } else if (opcode == 0x28) { // PUSHX / GET_TEST
-            stack.push(new StackObject("unknown", true, "rX", 0x28));
+            stack.push(new StackObject(this, "unknown", true, "rX", 0x28));
         } else if (opcode == 0x29) { // PUSHY / GET_CASE
-            stack.push(new StackObject("unknown", true, "case", 0x29));
+            stack.push(new StackObject(this, "unknown", true, "case", 0x29));
         } else if (opcode == 0x2A) { // POPX / SET_TEST
             textScriptLine += "Set rX = " + p1;
         } else if (opcode == 0x2B) { // REPUSH / COPY
@@ -314,7 +316,7 @@ public class ScriptObject {
             }
             String sep = "s" + format2Or4Byte(p2.value) + "e" + format2Or4Byte(p3.value);
             String content = "(" + p1 + ", " + sep + ")";
-            stack.push(new StackObject(type, true, type + content, opcode));
+            stack.push(new StackObject(this, type, true, type + content, opcode));
         } else if (opcode == 0x3C) { // RET / END
             textScriptLine += "return";
         } else if (opcode == 0x3D) { // Never used: RETN / CLEANUP_END
@@ -330,9 +332,9 @@ public class ScriptObject {
         } else if (opcode >= 0x5D && opcode <= 0x66) { // POPF0..9 / SET_FLOAT
             textScriptLine += "tempF" + (opcode-0x5D) + " = " + p1;
         } else if (opcode >= 0x67 && opcode <= 0x6A) { // PUSHI0..3 / GET_INT
-            stack.push(new StackObject(lastTempTypes.getOrDefault(opcode-0x67, "unknown"), true, "tempI"+(opcode-0x67), opcode));
+            stack.push(new StackObject(this, lastTempTypes.getOrDefault(opcode-0x67, "unknown"), true, "tempI"+(opcode-0x67), opcode));
         } else if (opcode >= 0x6B && opcode <= 0x74) { // PUSHF0..9 / GET_FLOAT
-            stack.push(new StackObject("float", true, "tempF"+(opcode-0x6B), opcode));
+            stack.push(new StackObject(this, "float", true, "tempF"+(opcode-0x6B), opcode));
         } else if (opcode == 0x77) { // REQWAIT / WAIT_DELETE
             String sep = "s" + format2Or4Byte(p1.value) + "e" + format2Or4Byte(p2.value);
             textScriptLine += "await " + sep + ';';
@@ -341,7 +343,7 @@ public class ScriptObject {
             textScriptLine += "REQCHG (" + p1 + ", " + p2 + ", " + p3 + ')';
         } else if (opcode == 0x7A) { // Never used: ACTREQ / SET_EDGE_TRIGGER
         } else if (opcode == 0x9F) { // PUSHV / GET_DATUM
-            stack.push(new StackObject("var", true, "var"+argvsh, argv));
+            stack.push(new StackObject(this, "var", true, "var"+argvsh, argv));
         } else if (opcode == 0xA0 || opcode == 0xA1) { // POPV(L) / SET_DATUM_(W/T)
             addVarType(argv, resolveType(p1));
             if (gatheringInfo) {
@@ -358,7 +360,7 @@ public class ScriptObject {
             textScriptLine += "var" + argvsh + " = " + val;
         } else if (opcode == 0xA2) { // PUSHAR / GET_DATUM_INDEX
             String arrayIndex = '[' + String.format("%04x", p1.value) + ']';
-            stack.push(new StackObject("int", true, "var"+argvsh+arrayIndex, argv));
+            stack.push(new StackObject(this, "int", true, "var"+argvsh+arrayIndex, argv));
         } else if (opcode == 0xA3 || opcode == 0xA4) { // POPAR(L) / SET_DATUM_INDEX_(W/T)
             String arrayIndex = '[' + String.format("%04x", p1.value) + ']';
             textScriptLine += "Set ";
@@ -368,17 +370,17 @@ public class ScriptObject {
             textScriptLine += "var" + argvsh + arrayIndex + " = " + p2;
         } else if (opcode == 0xA7) { // PUSHARP / GET_DATUM_DESC
             String arrayIndex = '[' + String.format("%04x", p1.value) + ']';
-            stack.push(new StackObject("int", true, "ArrayPointer:var"+argvsh+arrayIndex, argv));
+            stack.push(new StackObject(this, "int", true, "ArrayPointer:var"+argvsh+arrayIndex, argv));
         } else if (opcode == 0xAD) { // PUSHI / CONST_INT
             int refInt = refInts[argv];
             String content = "rI[" + argvsh + "]:" + refInt + " [" + String.format("%08x", refInt).toUpperCase() + "h]";
-            stack.push(new StackObject("int", false, content, refInt));
+            stack.push(new StackObject(this, "int", false, content, refInt));
         } else if (opcode == 0xAE) { // PUSHII / IMM
-            stack.push(new StackObject("int", false, argvsd + " [" + argvsh + "h]", argv));
+            stack.push(new StackObject(this, "int", false, argvsd + " [" + argvsh + "h]", argv));
         } else if (opcode == 0xAF) { // PUSHF / CONST_FLOAT
             int refFloat = refFloats[argv];
             String content = "rF[" + argvsh + "]:" + Float.intBitsToFloat(refFloat) + " [" + String.format("%08x", refFloat).toUpperCase() + "h]";
-            stack.push(new StackObject("float", false, content, refFloat));
+            stack.push(new StackObject(this, "float", false, content, refFloat));
         } else if (opcode == 0xB0) { // JMP / JUMP
             textScriptLine += "Jump to j" + argvsh;
         } else if (opcode == 0xB1) { // Never used: CJMP / BNEZ
@@ -436,7 +438,7 @@ public class ScriptObject {
         int idx = opcode + group * 0x100;
         List<StackObject> params = popParamsForFunc(idx);
         ScriptFunc func = getAndTypeFuncCall(idx, params);
-        stack.push(new StackObject(func.getType(params), true, func.callB5(params), idx));
+        stack.push(new StackObject(this, func.getType(params), true, func.callB5(params), idx));
     }
 
     protected void processD8(int opcode, int group) {

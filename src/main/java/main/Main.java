@@ -28,12 +28,16 @@ public class Main {
     private static final int MODE_READ_STRING_FILE = 10;
     private static final int MODE_PARSE_GENERIC_SCRIPT_FILE = 14;
     private static final int MODE_PARSE_MONSTER_FILE = 15;
-    private static final int MODE_PARSE_ENCOUNTER_FILE = 16;
-    private static final int MODE_PARSE_EVENT_FILE = 17;
+    private static final int MODE_PARSE_ENCOUNTER_WITH_STR = 16;
+    private static final int MODE_PARSE_EVENT_WITH_STR = 17;
     private static final String PATH_FFX_ROOT = "ffx_ps2/ffx/master/";
     private static final String ORIGINALS_KERNEL_PATH = PATH_FFX_ROOT + "jppc/battle/kernel/";
     private static final String LOCALIZED_KERNEL_PATH = PATH_FFX_ROOT + "new_uspc/battle/kernel/";
     private static final String MONSTER_FOLDER_PATH = PATH_FFX_ROOT + "jppc/battle/mon/";
+    private static final String ORIGINALS_ENCOUNTER_PATH = PATH_FFX_ROOT + "jppc/battle/btl/";
+    private static final String LOCALIZED_ENCOUNTER_PATH = PATH_FFX_ROOT + "new_uspc/battle/btl/";
+    private static final String ORIGINALS_EVENT_PATH = PATH_FFX_ROOT + "jppc/event/obj/";
+    private static final String LOCALIZED_EVENT_PATH = PATH_FFX_ROOT + "new_uspc/event/obj_ps3/";
     private static final String SKILL_TABLE_3_PATH = LOCALIZED_KERNEL_PATH + "command.bin"; // "FILE07723.dat"; // "command.bin"; //
     private static final String SKILL_TABLE_4_PATH = LOCALIZED_KERNEL_PATH + "monmagic1.bin"; // "FILE07740.dat"; // "monmagic1.bin"; //
     private static final String SKILL_TABLE_6_PATH = LOCALIZED_KERNEL_PATH + "monmagic2.bin"; // "FILE07741.dat"; // "monmagic2.bin"; //
@@ -80,14 +84,14 @@ public class Main {
                     readMonsterFile(filename, true);
                 }
                 break;
-            case MODE_PARSE_ENCOUNTER_FILE:
+            case MODE_PARSE_ENCOUNTER_WITH_STR:
                 for (String filename : realArgs) {
-                    readEncounterFile(filename, true);
+                    readEncounterFull(filename, true);
                 }
                 break;
-            case MODE_PARSE_EVENT_FILE:
+            case MODE_PARSE_EVENT_WITH_STR:
                 for (String filename : realArgs) {
-                    readEventFile(filename, true);
+                    readEventFull(filename, true);
                 }
                 break;
             case MODE_PARSE_GENERIC_SCRIPT_FILE:
@@ -97,10 +101,10 @@ public class Main {
                         readMonsterFile(filename, true);
                     } else if (filename.contains("battle/btl")) {
                         System.out.println("Encounter file: " + filename);
-                        readEncounterFile(filename, true);
+                        readEncounterFile(filename, true, null);
                     } else if (filename.contains("event/obj")) {
                         System.out.println("Event file: " + filename);
-                        readEventFile(filename, true);
+                        readEventFile(filename, true, null);
                     } else {
                         System.out.println("Failed to identify file: " + filename);
                     }
@@ -122,7 +126,7 @@ public class Main {
                 break;
             case MODE_READ_STRING_FILE:
                 for (String filename : realArgs) {
-                    readStringFile(filename);
+                    readStringFile(filename, true);
                 }
                 break;
             default:
@@ -393,12 +397,12 @@ public class Main {
         return monsterFile;
     }
 
-    private static EncounterFile readEncounterFile(String filename, boolean print) {
+    private static EncounterFile readEncounterFile(String filename, boolean print, List<String> strings) {
         File file = FileAccessorWithMods.getRealFile(filename);
         if (file.isDirectory()) {
             String[] contents = file.list();
             if (contents != null) {
-                Arrays.stream(contents).filter(sf -> !sf.startsWith(".")).sorted().forEach(sf -> readEncounterFile(filename + '/' + sf, print));
+                Arrays.stream(contents).filter(sf -> !sf.startsWith(".")).sorted().forEach(sf -> readEncounterFile(filename + '/' + sf, print, strings));
             }
             return null;
         } else if (!filename.endsWith(".bin")) {
@@ -417,18 +421,18 @@ public class Main {
             e.printStackTrace();
         }
         if (print) {
-            encounterFile.parseScript();
+            encounterFile.parseScript(strings);
             System.out.println(encounterFile);
         }
         return encounterFile;
     }
 
-    private static EventFile readEventFile(String filename, boolean print) {
+    private static EventFile readEventFile(String filename, boolean print, List<String> strings) {
         File file = FileAccessorWithMods.getRealFile(filename);
         if (file.isDirectory()) {
             String[] contents = file.list();
             if (contents != null) {
-                Arrays.stream(contents).filter(sf -> !sf.startsWith(".")).sorted().forEach(sf -> readEventFile(filename + '/' + sf, print));
+                Arrays.stream(contents).filter(sf -> !sf.startsWith(".")).sorted().forEach(sf -> readEventFile(filename + '/' + sf, print, strings));
             }
             return null;
         } else if (!filename.endsWith(".ebp")) {
@@ -449,10 +453,27 @@ public class Main {
             e.printStackTrace();
         }
         if (print) {
-            eventFile.parseScript();
+            eventFile.parseScript(strings);
             System.out.println(eventFile);
         }
         return eventFile;
+    }
+
+    private static EncounterFile readEncounterFull(String btl, boolean print) {
+        String endPath = "battle/btl/" + btl + '/' + btl + ".bin";
+        String originalsPath = PATH_FFX_ROOT + "jppc/" + endPath;
+        String localizedPath = PATH_FFX_ROOT + "new_uspc/" + endPath;
+        List<String> strings = readStringFile(localizedPath, false);
+        return readEncounterFile(originalsPath, print, strings);
+    }
+
+    private static EventFile readEventFull(String event, boolean print) {
+        String shortened = event.substring(0, 2);
+        String midPath = shortened + '/' + event + '/' + event;
+        String originalsPath = ORIGINALS_EVENT_PATH + midPath + ".ebp";
+        String localizedPath = LOCALIZED_EVENT_PATH + midPath + ".bin";
+        List<String> strings = readStringFile(localizedPath, false);
+        return readEventFile(originalsPath, print, strings);
     }
 
     private static TreasureDataObject[] readTreasures(String filename, boolean print) {
@@ -495,19 +516,19 @@ public class Main {
         return list.toArray(array);
     }
 
-    private static void readStringFile(String filename) {
-        System.out.println("--- " + filename + " ---");
+    private static List<String> readStringFile(String filename, boolean print) {
         File file = FileAccessorWithMods.getRealFile(filename);
         if (file.isDirectory()) {
             String[] contents = file.list();
             if (contents != null) {
-                Arrays.stream(contents).filter(sf -> !sf.startsWith(".")).sorted().forEach(sf -> readStringFile(filename + '/' + sf));
+                Arrays.stream(contents).filter(sf -> !sf.startsWith(".")).sorted().forEach(sf -> readStringFile(filename + '/' + sf, print));
             }
         } else {
             try {
-                DataInputStream inputStream = FileAccessorWithMods.readFile(filename);
-                readStringData(inputStream, -1, true);
+                DataInputStream inputStream = FileAccessorWithMods.readFile(FileAccessorWithMods.resolveFile(filename, print));
+                return readStringData(inputStream, -1, print);
             } catch (IOException ignored) {}
         }
+        return null;
     }
 }

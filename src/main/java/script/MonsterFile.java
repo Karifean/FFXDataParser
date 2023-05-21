@@ -60,7 +60,7 @@ public class MonsterFile {
 
     public void parseScript() {
         if (monsterAi != null) {
-            monsterAi.parseScript();
+            monsterAi.parseScript(null);
         }
     }
 

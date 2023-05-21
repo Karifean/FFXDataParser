@@ -24,9 +24,9 @@ public class EventFile {
         encounterScript = new ScriptObject(scriptChunk);
     }
 
-    public void parseScript() {
+    public void parseScript(List<String> strings) {
         if (encounterScript != null) {
-            encounterScript.parseScript();
+            encounterScript.parseScript(strings);
         }
     }
 

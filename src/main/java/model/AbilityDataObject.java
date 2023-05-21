@@ -435,7 +435,7 @@ public class AbilityDataObject {
         specialBuffOverdrive200 = (specialBuffFlags & 0x40) > 0;
         specialBuffUnused = (specialBuffFlags & 0x80) > 0;
         if (overdriveCategorizationByte > 0) {
-            overdriveCharacter = ScriptConstants.getEnumMap("actor").get(overdriveCategorizationByte % 0x10).name;
+            overdriveCharacter = ScriptConstants.getEnumMap("actor").get(overdriveCategorizationByte & 0x0F).name;
             overdriveCategory = overdriveCategorizationByte / 0x10;
         }
     }

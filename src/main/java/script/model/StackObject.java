@@ -4,16 +4,19 @@ import main.DataAccess;
 import model.AbilityDataObject;
 import model.TreasureDataObject;
 import script.MonsterFile;
+import script.ScriptObject;
 
 import java.util.Map;
 
 public class StackObject {
+    public ScriptObject parentScript;
     public String type;
     public boolean expression;
     public String content;
     public int value;
 
-    public StackObject(String type, boolean expression, String content, int value) {
+    public StackObject(ScriptObject script, String type, boolean expression, String content, int value) {
+        this.parentScript = script;
         this.type = type;
         this.expression = expression;
         this.content = content;
@@ -21,6 +24,7 @@ public class StackObject {
     }
 
     public StackObject(String type, StackObject obj) {
+        this.parentScript = obj.parentScript;
         this.type = "unknown".equals(type) ? obj.type : type;
         this.expression = obj.expression;
         this.content = obj.content;
@@ -71,6 +75,12 @@ public class StackObject {
                         return "Actors:MonsterType=" + monster.getName() + hexSuffix;
                     }
                 } catch (UnsupportedOperationException ignored) {}
+            }
+            if ("string".equals(type) && parentScript != null && parentScript.strings != null) {
+                String targetString = parentScript.strings.get(value);
+                String nullSafeString = targetString != null ? targetString : "null";
+                String noLineBreakString = nullSafeString.replace('\n', ' ');
+                return '"' + noLineBreakString + '"' + hexSuffix;
             }
             if (ScriptConstants.ENUMERATIONS.containsKey(type)) {
                 Map<Integer, ScriptField> map = ScriptConstants.ENUMERATIONS.get(type);

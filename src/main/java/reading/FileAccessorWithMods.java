@@ -5,7 +5,7 @@ import java.io.*;
 public class FileAccessorWithMods {
     public static final String RESOURCES_ROOT = "src/main/resources/";
     public static final String MODS_ROOT = RESOURCES_ROOT + "mods/";
-    private static final boolean DISABLE_MODS = true;
+    private static final boolean DISABLE_MODS = false;
 
     public static File getRealFile(String path) {
         return new File(RESOURCES_ROOT + path);
