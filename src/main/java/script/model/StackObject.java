@@ -76,7 +76,7 @@ public class StackObject {
                     }
                 } catch (UnsupportedOperationException ignored) {}
             }
-            if ("string".equals(type) && parentScript != null && parentScript.strings != null) {
+            if ("string".equals(type) && parentScript != null && parentScript.strings != null && parentScript.strings.size() > value) {
                 String targetString = parentScript.strings.get(value);
                 String nullSafeString = targetString != null ? targetString : "null";
                 String noLineBreakString = nullSafeString.replace('\n', ' ');

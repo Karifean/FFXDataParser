@@ -175,15 +175,19 @@ public class Main {
     }
 
     private static List<String> readStringData(DataInputStream data, int count, boolean print) throws IOException {
-        final boolean untilStrings = count < 0;
-        if (untilStrings) {
+        boolean clones = true;
+        boolean fourbytes = true;
+        if (count < 0) {
             data.mark(4);
             int first = data.read();
             first += data.read() * 0x100;
-            first += data.read() * 0x10000;
-            first += data.read() * 0x1000000;
+            data.skipNBytes(2);
+            int second = data.read();
+            second += data.read() * 0x100;
             data.reset();
-            count = first / 8;
+            // System.out.println("Parsed first and second: " + String.format("%08x", first) + " " + String.format("%08x", second));
+            clones = first == second;
+            count = first / (clones ? 8 : 4);
         }
         List<Integer> offsets = new ArrayList<>(count);
         Map<Integer, Integer> optionCount = new HashMap<>();
@@ -191,19 +195,22 @@ public class Main {
         for (int i = 0; i < count; i++) {
             int offset = data.read();
             offset += data.read() * 0x100;
-            offset += data.read() * 0x10000;
+            int somethingElse = data.read();
             int choosableOptions = data.read();
             offsets.add(offset);
             optionCount.put(i, choosableOptions);
-            int clonedOffset = data.read();
-            clonedOffset += data.read() * 0x100;
-            clonedOffset += data.read() * 0x10000;
-            int clonedChoosableOptions = data.read();
-            if (offset != clonedOffset) {
-                System.err.println("offset not cloned: offset " + offset + "; other " + clonedOffset);
-            }
-            if (choosableOptions != clonedChoosableOptions) {
-                System.err.println("choosableOptions not cloned: original " + choosableOptions + "; other " + clonedChoosableOptions);
+            if (clones) {
+                int clonedOffset = data.read();
+                clonedOffset += data.read() * 0x100;
+                int clonedSomethingElse = data.read();
+                int clonedChoosableOptions = data.read();
+                if (offset != clonedOffset) {
+                    System.err.println("offset " + i + " not cloned: offset " + String.format("%04x", offset) + "; other " + String.format("%04x", clonedOffset));
+                } else if (choosableOptions != clonedChoosableOptions) {
+                    System.err.println("choosableOptions " + i + " not cloned: original " + choosableOptions + "; other " + clonedChoosableOptions);
+                } else if (somethingElse != clonedSomethingElse) {
+                    System.err.println("somethingElse " + i + " not cloned: original " + somethingElse + "; other " + clonedSomethingElse);
+                }
             }
         }
         data.reset();
@@ -397,7 +404,7 @@ public class Main {
         return monsterFile;
     }
 
-    private static EncounterFile readEncounterFile(String filename, boolean print, List<String> strings) {
+    private static EncounterFile readEncounterFile(String filename, final boolean print, final List<String> strings) {
         File file = FileAccessorWithMods.getRealFile(filename);
         if (file.isDirectory()) {
             String[] contents = file.list();
@@ -407,6 +414,11 @@ public class Main {
             return null;
         } else if (!filename.endsWith(".bin")) {
             return null;
+        }
+        List<String> actualStrings = strings;
+        if (strings == null) {
+            String stringFilePath = filename.replace("jppc/", "new_uspc/");
+            actualStrings = readStringFile(stringFilePath, false);
         }
         List<Integer> knownLengths = new ArrayList<>();
         knownLengths.add(null);
@@ -421,13 +433,13 @@ public class Main {
             e.printStackTrace();
         }
         if (print) {
-            encounterFile.parseScript(strings);
+            encounterFile.parseScript(actualStrings);
             System.out.println(encounterFile);
         }
         return encounterFile;
     }
 
-    private static EventFile readEventFile(String filename, boolean print, List<String> strings) {
+    private static EventFile readEventFile(String filename, final boolean print, final List<String> strings) {
         File file = FileAccessorWithMods.getRealFile(filename);
         if (file.isDirectory()) {
             String[] contents = file.list();
@@ -437,6 +449,15 @@ public class Main {
             return null;
         } else if (!filename.endsWith(".ebp")) {
             return null;
+        }
+        List<String> actualStrings = strings;
+        if (strings == null) {
+            String stringFilePath = filename.replace("jppc/", "new_uspc/").replace("obj/", "obj_ps3/").replace(".ebp", ".bin");
+            try {
+                actualStrings = readStringFile(stringFilePath, false);
+            } catch (Exception e) {
+                System.out.println("Got exception while trying to parse strings: " + e.getLocalizedMessage());
+            }
         }
         /* List<Integer> knownLengths = new ArrayList<>();
         knownLengths.add(null);
@@ -453,7 +474,7 @@ public class Main {
             e.printStackTrace();
         }
         if (print) {
-            eventFile.parseScript(strings);
+            eventFile.parseScript(actualStrings);
             System.out.println(eventFile);
         }
         return eventFile;
@@ -525,8 +546,9 @@ public class Main {
             }
         } else {
             try {
-                DataInputStream inputStream = FileAccessorWithMods.readFile(FileAccessorWithMods.resolveFile(filename, print));
-                return readStringData(inputStream, -1, print);
+                // int[] bytes = ChunkedFileHelper.fileToBytes(FileAccessorWithMods.resolveFile(filename, print));
+                DataInputStream data = FileAccessorWithMods.readFile(FileAccessorWithMods.resolveFile(filename, print));
+                return readStringData(data, -1, print);
             } catch (IOException ignored) {}
         }
         return null;

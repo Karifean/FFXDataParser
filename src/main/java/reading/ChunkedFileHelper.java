@@ -24,7 +24,7 @@ public abstract class ChunkedFileHelper {
         return bytes[offset] + bytes[offset+1] * 0x100 + bytes[offset+2] * 0x10000 + bytes[offset+3] * 0x1000000;
     }
 
-    private static int[] fileToBytes(File file) {
+    public static int[] fileToBytes(File file) {
         byte[] allBytes = null;
         try (DataInputStream data = FileAccessorWithMods.readFile(file)) {
             allBytes = data.readAllBytes();

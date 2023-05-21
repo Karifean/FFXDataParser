@@ -317,13 +317,20 @@ public class ScriptObject {
             String sep = "s" + format2Or4Byte(p2.value) + "e" + format2Or4Byte(p3.value);
             String content = "(" + p1 + ", " + sep + ")";
             stack.push(new StackObject(this, type, true, type + content, opcode));
+        } else if (opcode == 0x39) { // PREQ
+            String content = "PREQ(" + p1 + ", " + p2 + ", " + p3 + ")";
+            stack.push(new StackObject(this, "unknown", true, content, 0x39));
         } else if (opcode == 0x3C) { // RET / END
             textScriptLine += "return";
         } else if (opcode == 0x3D) { // Never used: RETN / CLEANUP_END
-        } else if (opcode == 0x3E) { // Never used: RETT TO_MAIN
+        } else if (opcode == 0x3E) { // Never used: RETT / TO_MAIN
         } else if (opcode == 0x3F) { // RETTN / CLEANUP_TO_MAIN
             textScriptLine += "return (RETTN): " + p1;
-        } else if (opcode == 0x40) { // Never used: HALT / DYNAMIC
+        } else if (opcode == 0x40) { // HALT / DYNAMIC
+            textScriptLine += "halt";
+        } else if (opcode == 0x46) { // TREQ
+            String content = "TREQ(" + p1 + ", " + p2 + ", " + p3 + ")";
+            stack.push(new StackObject(this, "unknown", true, content, 0x46));
         } else if (opcode == 0x54) { // DRET / CLEANUP_ALL_END
             textScriptLine += "direct return";
         } else if (opcode >= 0x59 && opcode <= 0x5C) { // POPI0..3 / SET_INT
@@ -339,8 +346,8 @@ public class ScriptObject {
             String sep = "s" + format2Or4Byte(p1.value) + "e" + format2Or4Byte(p2.value);
             textScriptLine += "await " + sep + ';';
         } else if (opcode == 0x78) { // Never used: PREQWAIT / WAIT_SPEC_DELETE
-        } else if (opcode == 0x79) { // REQCHG / EDIT_ENTRY_TABLE TODO understand what this does
-            textScriptLine += "REQCHG (" + p1 + ", " + p2 + ", " + p3 + ')';
+        } else if (opcode == 0x79) { // REQCHG / EDIT_ENTRY_TABLE
+            textScriptLine += "REQCHG(" + p1 + ", " + p2 + ", " + p3 + ");";
         } else if (opcode == 0x7A) { // Never used: ACTREQ / SET_EDGE_TRIGGER
         } else if (opcode == 0x9F) { // PUSHV / GET_DATUM
             stack.push(new StackObject(this, "var", true, "var"+argvsh, argv));

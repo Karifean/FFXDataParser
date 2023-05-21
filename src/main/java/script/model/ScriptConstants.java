@@ -42,6 +42,9 @@ public abstract class ScriptConstants {
         OPCODE_ENDLINE.add(0x34);
         OPCODE_ENDLINE.add(0x3C);
         OPCODE_ENDLINE.add(0x3D);
+        OPCODE_ENDLINE.add(0x3E);
+        OPCODE_ENDLINE.add(0x3F);
+        OPCODE_ENDLINE.add(0x40);
         OPCODE_ENDLINE.add(0x54);
         OPCODE_ENDLINE.add(0x59);
         OPCODE_ENDLINE.add(0x5A);
@@ -64,6 +67,7 @@ public abstract class ScriptConstants {
         OPCODE_ENDLINE.add(0xD6);
         OPCODE_ENDLINE.add(0xD7);
         OPCODE_ENDLINE.add(0xD8);
+        OPCODE_ENDLINE.add(0xF6);
 
         OPCODE_STACKPOPS = new int[0x100];
         Arrays.fill(OPCODE_STACKPOPS, -1);
@@ -82,16 +86,17 @@ public abstract class ScriptConstants {
         OPCODE_STACKPOPS[0x36] = 3; // REQ / SIG_NOACK
         OPCODE_STACKPOPS[0x37] = 3; // REQSW / SIG_ONSTART
         OPCODE_STACKPOPS[0x38] = 3; // REQEW / SIG_ONEND
-        // OPCODE_STACKPOPS[0x39] = 3; I'm sure of this but need to properly interpret what the opcode (PREQ) does
+        OPCODE_STACKPOPS[0x39] = 3; // PREQ (need to check what this even does)
         OPCODE_STACKPOPS[0x3C] = 0; // RET / END
         OPCODE_STACKPOPS[0x3D] = 1; // RETN / CLEANUP_END
         OPCODE_STACKPOPS[0x3F] = 1; // RETTN / CLEANUP_TO_MAIN
-        OPCODE_STACKPOPS[0x46] = 1; // TREQ (is this used?)
+        OPCODE_STACKPOPS[0x40] = 0; // HALT / DYNAMIC
+        OPCODE_STACKPOPS[0x46] = 3; // TREQ (need to check what this even does)
         OPCODE_STACKPOPS[0x54] = 0; // DRET / CLEANUP_ALL_END
         Arrays.fill(OPCODE_STACKPOPS, 0x59, 0x67, 1); // all POPI/F / SET_INT/FLOAT
         Arrays.fill(OPCODE_STACKPOPS, 0x67, 0x75, 0); // all PUSHI/F / GET_INT/FLOAT
         OPCODE_STACKPOPS[0x77] = 2; // REQWAIT / WAIT_DELETE
-        OPCODE_STACKPOPS[0x79] = 3; // REQCHG / EDIT_ENTRY_TABLE
+        OPCODE_STACKPOPS[0x79] = 3; // REQCHG / EDIT_ENTRY_TABLE (need to check what this even does)
         OPCODE_STACKPOPS[0x9F] = 0; // PUSHV / GET_DATUM
         OPCODE_STACKPOPS[0xA0] = 1; // POPV / SET_DATUM_W
         OPCODE_STACKPOPS[0xA1] = 1; // POPVL / SET_DATUM_T
