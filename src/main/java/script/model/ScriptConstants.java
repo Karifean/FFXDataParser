@@ -68,62 +68,49 @@ public abstract class ScriptConstants {
         OPCODE_STACKPOPS = new int[0x100];
         Arrays.fill(OPCODE_STACKPOPS, -1);
         OPCODE_STACKPOPS[0x00] = 0; // NOP
-        setRange(OPCODE_STACKPOPS, 0x01, 0x18, 2); // comp operators
-        OPCODE_STACKPOPS[0x19] = 1; // OPNOT
-        OPCODE_STACKPOPS[0x1A] = 1; // NEG
-        OPCODE_STACKPOPS[0x1C] = 1; // OPBNOT
-        OPCODE_STACKPOPS[0x1D] = 0; // NOP_1D
-        OPCODE_STACKPOPS[0x1E] = 0; // NOP_1E
-        OPCODE_STACKPOPS[0x25] = 1; // SET_RETURN_VALUE
-        OPCODE_STACKPOPS[0x26] = 0; // GET_RETURN_VALUE
-        OPCODE_STACKPOPS[0x27] = 0; // GET_DATUM_DESC // TODO: is this one right? i don't see it handled anywhere else
-        OPCODE_STACKPOPS[0x28] = 0; // GET_TEST
-        OPCODE_STACKPOPS[0x29] = 0; // GET_CASE
-        OPCODE_STACKPOPS[0x2A] = 1; // SET_TEST
-        OPCODE_STACKPOPS[0x2B] = 1; // COPY
-        OPCODE_STACKPOPS[0x2C] = 1; // SET_CASE
-        OPCODE_STACKPOPS[0x2D] = 0; // CONST_INT
-        OPCODE_STACKPOPS[0x2E] = 0; // IMM
-        OPCODE_STACKPOPS[0x2F] = 0; // CONST_FLOAT
-        OPCODE_STACKPOPS[0x30] = 0; // JUMP
-        OPCODE_STACKPOPS[0x31] = 0; // BNEZ
-        OPCODE_STACKPOPS[0x32] = 0; // BEZ
-        OPCODE_STACKPOPS[0x33] = 0; // CALL
-        OPCODE_STACKPOPS[0x34] = 0; // RETURN
-        setRange(OPCODE_STACKPOPS, 0x36, 0x38, 3); // SIG_NOACK .. SIG_ONEND
-        // OPCODE_STACKPOPS[0x39] = 3; // SIG_NOACK_SPEC // I'm sure of this but need to properly interpret what the opcode does
-        OPCODE_STACKPOPS[0x3C] = 0; // END
-        OPCODE_STACKPOPS[0x3D] = 1; // CLEANUP_END
-        OPCODE_STACKPOPS[0x3E] = 0; // TO_MAIN
-        OPCODE_STACKPOPS[0x3F] = 1; // CLEANUP_TO_MAIN // ???
-        setRange(OPCODE_STACKPOPS, 0x45, 0x53, 3); // SIGS_LOW  .. SIGS_HIGH
-        OPCODE_STACKPOPS[0x46] = 1;
-        OPCODE_STACKPOPS[0x54] = 0; // CLEANUP_ALL_END
-        setRange(OPCODE_STACKPOPS, 0x55, 0x57, 1); // SET_JUMP  .. SET_BEZ
-        setRange(OPCODE_STACKPOPS, 0x59, 0x5C, 1); // SET_INT   .. SET_FLOAT-1
-        setRange(OPCODE_STACKPOPS, 0x5D, 0x66, 1); // SET_FLOAT .. GET_INT-1
-        setRange(OPCODE_STACKPOPS, 0x67, 0x6A, 0); // GET_INT   .. GET_FLOAT-1
-        setRange(OPCODE_STACKPOPS, 0x6B, 0x74, 0); // GET_FLOAT .. TEX_UNPACK_IMM-1
-        OPCODE_STACKPOPS[0x75] = 0; // TEX_UNPACK_IMM
-        OPCODE_STACKPOPS[0x76] = 0; // NOP_76
-        OPCODE_STACKPOPS[0x77] = 2; // WAIT_DELETE
-        OPCODE_STACKPOPS[0x79] = 3;
-        OPCODE_STACKPOPS[0x9F] = 0;
-        OPCODE_STACKPOPS[0xA0] = 1;
-        OPCODE_STACKPOPS[0xA1] = 1;
-        OPCODE_STACKPOPS[0xA2] = 1;
-        OPCODE_STACKPOPS[0xA3] = 2;
-        OPCODE_STACKPOPS[0xA7] = 1;
-        OPCODE_STACKPOPS[0xAD] = 0;
-        OPCODE_STACKPOPS[0xAE] = 0;
-        OPCODE_STACKPOPS[0xAF] = 0;
-        OPCODE_STACKPOPS[0xB0] = 0;
-        OPCODE_STACKPOPS[0xB3] = 0;
-        OPCODE_STACKPOPS[0xB5] = 0;
-        OPCODE_STACKPOPS[0xD6] = 1;
-        OPCODE_STACKPOPS[0xD7] = 1;
-        OPCODE_STACKPOPS[0xD8] = 0;
-        OPCODE_STACKPOPS[0xF6] = 0;
+        Arrays.fill(OPCODE_STACKPOPS, 0x01, 0x19, 2); // Comparison operators
+        OPCODE_STACKPOPS[0x19] = 1; // OPNOT / NOT_LOGIC
+        OPCODE_STACKPOPS[0x1C] = 1; // OPBNOT / NOT
+        OPCODE_STACKPOPS[0x25] = 1; // POPA / SET_RETURN_VALUE
+        OPCODE_STACKPOPS[0x26] = 0; // PUSHA / GET_RETURN_VALUE
+        OPCODE_STACKPOPS[0x28] = 0; // PUSHX / GET_TEST
+        OPCODE_STACKPOPS[0x29] = 0; // PUSHY / GET_CASE
+        OPCODE_STACKPOPS[0x2A] = 1; // POPX / SET_TEST
+        OPCODE_STACKPOPS[0x2B] = 1; // REPUSH / COPY
+        OPCODE_STACKPOPS[0x2C] = 1; // POPY / SET_CASE
+        OPCODE_STACKPOPS[0x34] = 0; // RTS / RETURN
+        OPCODE_STACKPOPS[0x36] = 3; // REQ / SIG_NOACK
+        OPCODE_STACKPOPS[0x37] = 3; // REQSW / SIG_ONSTART
+        OPCODE_STACKPOPS[0x38] = 3; // REQEW / SIG_ONEND
+        // OPCODE_STACKPOPS[0x39] = 3; I'm sure of this but need to properly interpret what the opcode (PREQ) does
+        OPCODE_STACKPOPS[0x3C] = 0; // RET / END
+        OPCODE_STACKPOPS[0x3D] = 1; // RETN / CLEANUP_END
+        OPCODE_STACKPOPS[0x3F] = 1; // RETTN / CLEANUP_TO_MAIN
+        OPCODE_STACKPOPS[0x46] = 1; // TREQ (is this used?)
+        OPCODE_STACKPOPS[0x54] = 0; // DRET / CLEANUP_ALL_END
+        Arrays.fill(OPCODE_STACKPOPS, 0x59, 0x67, 1); // all POPI/F / SET_INT/FLOAT
+        Arrays.fill(OPCODE_STACKPOPS, 0x67, 0x75, 0); // all PUSHI/F / GET_INT/FLOAT
+        OPCODE_STACKPOPS[0x77] = 2; // REQWAIT / WAIT_DELETE
+        OPCODE_STACKPOPS[0x79] = 3; // REQCHG / EDIT_ENTRY_TABLE
+        OPCODE_STACKPOPS[0x9F] = 0; // PUSHV / GET_DATUM
+        OPCODE_STACKPOPS[0xA0] = 1; // POPV / SET_DATUM_W
+        OPCODE_STACKPOPS[0xA1] = 1; // POPVL / SET_DATUM_T
+        OPCODE_STACKPOPS[0xA2] = 1; // PUSHAR / GET_DATUM_INDEX
+        OPCODE_STACKPOPS[0xA3] = 2; // POPAR / SET_DATUM_INDEX_W
+        OPCODE_STACKPOPS[0xA4] = 2; // POPARL / SET_DATUM_INDEX_T
+        OPCODE_STACKPOPS[0xA7] = 1; // PUSHARP / GET_DATUM_DESC
+        OPCODE_STACKPOPS[0xAD] = 0; // PUSHI / CONST_INT
+        OPCODE_STACKPOPS[0xAE] = 0; // PUSHII / IMM
+        OPCODE_STACKPOPS[0xAF] = 0; // PUSHF / CONST_FLOAT
+        OPCODE_STACKPOPS[0xB0] = 0; // JMP / JUMP
+        OPCODE_STACKPOPS[0xB1] = 1; // CJMP / BNEZ
+        OPCODE_STACKPOPS[0xB2] = 1; // NCJMP / BEZ
+        OPCODE_STACKPOPS[0xB3] = 0; // JSR
+        OPCODE_STACKPOPS[0xB5] = 0; // CALL / FUNC_RET
+        OPCODE_STACKPOPS[0xD6] = 1; // POPXCJMP / SET_BNEZ
+        OPCODE_STACKPOPS[0xD7] = 1; // POPXNCJMP / SET_BEZ
+        OPCODE_STACKPOPS[0xD8] = 0; // CALLPOPA / FUNC
+        OPCODE_STACKPOPS[0xF6] = 0; // SYSTEM
 
         COMP_OPERATORS = new HashMap<>();
         putCompOperator(0x01, "or", "bool", "OPLOR");
@@ -624,12 +611,6 @@ public abstract class ScriptConstants {
         putMoveProperty(0x0008, "elementIce", "bool");
         putMoveProperty(0x0009, "elementFire", "bool");
         putMoveProperty(0x000A, "targetType", "targetType");
-    }
-
-    private static void setRange(int[] array, int lowerBound, int upperBound, int value) {
-        for (int i = lowerBound; i <= upperBound; i++) {
-            array[i] = value;
-        }
     }
 
     public static Map<Integer, ScriptField> getEnumMap(String type) {

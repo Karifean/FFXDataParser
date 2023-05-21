@@ -245,15 +245,10 @@ public class ScriptObject {
         int argvSigned = argv < 0x8000 ? argv : (argv - 0x10000);
         String argvsd = ""+argvSigned;
         String argvsh = format2Or4Byte(argv);
-        StackObject p1 = null, p2 = null, p3 = null, p4 = null, p5 = null, p6 = null, p7 = null, p8 = null;
+        StackObject p1 = null, p2 = null, p3 = null;
 
         try {
             switch (getStackPops(opcode)) {
-                case 8: p8 = stack.pop();
-                case 7: p7 = stack.pop();
-                case 6: p6 = stack.pop();
-                case 5: p5 = stack.pop();
-                case 4: p4 = stack.pop();
                 case 3: p3 = stack.pop();
                 case 2: p2 = stack.pop();
                 case 1: p1 = stack.pop();
@@ -265,16 +260,14 @@ public class ScriptObject {
             warnLine += " Empty stack for opcode " + String.format("%02x", opcode).toUpperCase();
             return;
         }
-        if (opcode == 0x00 || opcode == 0x1D || opcode == 0x1E || opcode == 0x76) {
-            // nothing
+        if (opcode == 0x00 || opcode == 0x1D || opcode == 0x1E) { // NOP, LABEL, TAG
+            // No handling yet, they should probably be written a certain way parsed out but are never actually used
         } else if (opcode >= 0x01 && opcode <= 0x18) {
-            // comp operators
             ScriptField op = ScriptConstants.COMP_OPERATORS.get(opcode);
             String resultType = op.type;
             String p1s = p1.toString();
             String p2s = p2.toString();
 
-            // EQ || NEQ
             if (opcode == 0x06 || opcode == 0x07) {
                 String p1t = resolveType(p1);
                 String p2t = resolveType(p2);
@@ -288,115 +281,68 @@ public class ScriptObject {
             }
             String content = "(" + p1s + " " + op.name + " " + p2s + ")";
             stack.push(new StackObject(resultType, true, content, opcode));
-        } else if (opcode == 0x19) {
-            // OPNOT
+        } else if (opcode == 0x19) { // OPNOT / NOT_LOGIC
             stack.push(new StackObject("bool", true, "not " + p1, 0x19));
-        } else if (opcode == 0x1A) {
-            // NEG
+        } else if (opcode == 0x1A) { // OPUMINUS / NEG
             stack.push(new StackObject("unknown", true, "OPUMINUS", 0x1A));
-        } else if (opcode == 0x1C) {
-            // OPBNOT
+        } else if (opcode == 0x1C) { // OPBNOT / NOT
             stack.push(new StackObject(p1.type, true, "bitNot " + p1, 0x1C));
-        } else if (opcode == 0x1F) { // TODO: GET_DATUM
-        } else if (opcode == 0x20) { // TODO: SET_DATUM_W
-        } else if (opcode == 0x21) { // TODO: SET_DATUM_T
-        } else if (opcode == 0x22) { // TODO: GET_DATUM_INDEX
-        } else if (opcode == 0x23) { // TODO: SET_DATUM_INDEX_W
-        } else if (opcode == 0x24) { // TODO: SET_DATUM_INDEX_T
-        } else if (opcode == 0x25) {
-            // SET_RETURN_VALUE
+        } else if (opcode == 0x25) { // POPA / SET_RETURN_VALUE
             lastCallType = p1.type;
-            textScriptLine += "(call) " + p1 + ';';
-        } else if (opcode == 0x26) {
-            // GET_RETURN_VALUE
+            textScriptLine += "Set LastCallResult = " + p1;
+        } else if (opcode == 0x26) { // PUSHA / GET_RETURN_VALUE
             stack.push(new StackObject(lastCallType, true, "LastCallResult", 0x26));
-        } else if (opcode == 0x27) { // TODO: GET_DATUM_DESC
-        } else if (opcode == 0x28) {
-            // GET_TEST
+        } else if (opcode == 0x28) { // PUSHX / GET_TEST
             stack.push(new StackObject("unknown", true, "rX", 0x28));
-        } else if (opcode == 0x29) {
-            // GET_CASE
+        } else if (opcode == 0x29) { // PUSHY / GET_CASE
             stack.push(new StackObject("unknown", true, "case", 0x29));
-        } else if (opcode == 0x2A) {
-            // SET_TEST
+        } else if (opcode == 0x2A) { // POPX / SET_TEST
             textScriptLine += "Set rX = " + p1;
-        } else if (opcode == 0x2B) {
-            // COPY
+        } else if (opcode == 0x2B) { // REPUSH / COPY
             stack.push(new StackObject(p1.type, p1));
             stack.push(new StackObject(p1.type, p1));
-        } else if (opcode == 0x2C) {
-            // SET_CASE
+        } else if (opcode == 0x2C) { // POPY / SET_CASE
             textScriptLine += "switch " + p1;
-        } else if (opcode == 0x2D) { // TODO: CONST_INT
-        } else if (opcode == 0x2E) { // TODO: IMM
-        } else if (opcode == 0x2F) { // TODO: CONST_FLOAT
-        } else if (opcode == 0x30) { // TODO: JUMP
-        } else if (opcode == 0x31) { // TODO: BNEZ
-        } else if (opcode == 0x32) { // TODO: BEZ
-        } else if (opcode == 0x33) { // TODO: CALL
-        } else if (opcode == 0x34) {
-            // RETURN
+        } else if (opcode == 0x34) { // RTS / RETURN
             textScriptLine += "return from subroutine";
-        } else if (opcode == 0x35) { // TODO: FUNC_RET
-        } else if (opcode >= 0x36 && opcode <= 0x38) {
-            // signals: SIG_NOACK, SIG_ONSTART, SIG_ONEND
+        } else if (opcode >= 0x36 && opcode <= 0x38) { // REQ / SIG_NOACK
             String type = "queueScript";
-            if (opcode == 0x37) {
-                // SIG_ONSTART
+            if (opcode == 0x37) { // REQSW / SIG_ONSTART
                 type += "Sync";
-            } else if (opcode == 0x38) {
-                // SIG_ONEND
+            } else if (opcode == 0x38) { // REQEW / SIG_ONEND
                 type += "Async";
             }
             String sep = "s" + format2Or4Byte(p2.value) + "e" + format2Or4Byte(p3.value);
             String content = "(" + p1 + ", " + sep + ")";
             stack.push(new StackObject(type, true, type + content, opcode));
-        } else if (opcode >= 0x45 && opcode <= 0x53) { // TODO: signals: SIGS_LOW .. SIGS_HIGH
-        } else if (opcode == 0x39) { // TODO: SIG_NOACK_SPEC
-        } else if (opcode == 0x3A) { // TODO: SIG_1_SPEC
-        } else if (opcode == 0x3B) { // TODO: SIG_2_SPEC
-        } else if (opcode == 0x3C) {
-            // END
+        } else if (opcode == 0x3C) { // RET / END
             textScriptLine += "return";
-        } else if (opcode == 0x3D) { // TODO: CLEANUP_END
-        } else if (opcode == 0x3E) { // TODO: TO_MAIN
-        } else if (opcode == 0x3F) {
-            // CLEANUP_TO_MAIN
+        } else if (opcode == 0x3D) { // Never used: RETN / CLEANUP_END
+        } else if (opcode == 0x3E) { // Never used: RETT TO_MAIN
+        } else if (opcode == 0x3F) { // RETTN / CLEANUP_TO_MAIN
             textScriptLine += "return (RETTN): " + p1;
-        } else if (opcode == 0x40) { // TODO: DYNAMIC
-        } else if (opcode == 0x54) {
-            // CLEANUP_ALL_END
-            textScriptLine += "direct return?";
-        } else if (opcode == 0x55) { // TODO: SET_JUMP
-        } else if (opcode == 0x56) { // TODO: SET_BNEZ
-        } else if (opcode == 0x57) { // TODO: SET_BEZ
-        } else if (opcode == 0x58) { // TODO: FUNC
-        } else if (opcode >= 0x59 && opcode <= 0x5C) {
-            // SET_INT
+        } else if (opcode == 0x40) { // Never used: HALT / DYNAMIC
+        } else if (opcode == 0x54) { // DRET / CLEANUP_ALL_END
+            textScriptLine += "direct return";
+        } else if (opcode >= 0x59 && opcode <= 0x5C) { // POPI0..3 / SET_INT
             lastTempTypes.put(opcode-0x59, p1.type);
             textScriptLine += "tempI" + (opcode-0x59) + " = " + p1;
-        } else if (opcode >= 0x5D && opcode <= 0x66) {
-            // SET_FLOAT
+        } else if (opcode >= 0x5D && opcode <= 0x66) { // POPF0..9 / SET_FLOAT
             textScriptLine += "tempF" + (opcode-0x5D) + " = " + p1;
-        } else if (opcode >= 0x67 && opcode <= 0x6A) {
-            // GET_INT
+        } else if (opcode >= 0x67 && opcode <= 0x6A) { // PUSHI0..3 / GET_INT
             stack.push(new StackObject(lastTempTypes.getOrDefault(opcode-0x67, "unknown"), true, "tempI"+(opcode-0x67), opcode));
-        } else if (opcode >= 0x6B && opcode <= 0x74) {
-            // GET_FLOAT
+        } else if (opcode >= 0x6B && opcode <= 0x74) { // PUSHF0..9 / GET_FLOAT
             stack.push(new StackObject("float", true, "tempF"+(opcode-0x6B), opcode));
-        } else if (opcode == 0x75) { // TODO: TEX_UNPACK_IMM
-        } else if (opcode == 0x77) {
-            // WAIT_DELETE
+        } else if (opcode == 0x77) { // REQWAIT / WAIT_DELETE
             String sep = "s" + format2Or4Byte(p1.value) + "e" + format2Or4Byte(p2.value);
             textScriptLine += "await " + sep + ';';
-        } else if (opcode == 0x78) { // TODO: WAIT_SPEC_DELETE
-        } else if (opcode == 0x79) {
-            // EDIT_ENTRY_TABLE
+        } else if (opcode == 0x78) { // Never used: PREQWAIT / WAIT_SPEC_DELETE
+        } else if (opcode == 0x79) { // REQCHG / EDIT_ENTRY_TABLE TODO understand what this does
             textScriptLine += "REQCHG (" + p1 + ", " + p2 + ", " + p3 + ')';
-        } else if (opcode == 0x7A) { // TODO: SET_EDGE_TRIGGER
-        } else if (opcode == 0x9F) {
+        } else if (opcode == 0x7A) { // Never used: ACTREQ / SET_EDGE_TRIGGER
+        } else if (opcode == 0x9F) { // PUSHV / GET_DATUM
             stack.push(new StackObject("var", true, "var"+argvsh, argv));
-        } else if (opcode == 0xA0 || opcode == 0xA1) {
+        } else if (opcode == 0xA0 || opcode == 0xA1) { // POPV(L) / SET_DATUM_(W/T)
             addVarType(argv, resolveType(p1));
             if (gatheringInfo) {
                 if (!varEnums.containsKey(argv)) {
@@ -410,41 +356,43 @@ public class ScriptObject {
             }
             String val = typed(p1, varTypes.get(argv));
             textScriptLine += "var" + argvsh + " = " + val;
-        } else if (opcode == 0xA2) {
+        } else if (opcode == 0xA2) { // PUSHAR / GET_DATUM_INDEX
             String arrayIndex = '[' + String.format("%04x", p1.value) + ']';
             stack.push(new StackObject("int", true, "var"+argvsh+arrayIndex, argv));
-        } else if (opcode == 0xA3 || opcode == 0xA4) {
+        } else if (opcode == 0xA3 || opcode == 0xA4) { // POPAR(L) / SET_DATUM_INDEX_(W/T)
             String arrayIndex = '[' + String.format("%04x", p1.value) + ']';
             textScriptLine += "Set ";
             if (opcode == 0xA4) {
                 textScriptLine += "(limit) ";
             }
             textScriptLine += "var" + argvsh + arrayIndex + " = " + p2;
-        } else if (opcode == 0xA7) {
+        } else if (opcode == 0xA7) { // PUSHARP / GET_DATUM_DESC
             String arrayIndex = '[' + String.format("%04x", p1.value) + ']';
             stack.push(new StackObject("int", true, "ArrayPointer:var"+argvsh+arrayIndex, argv));
-        } else if (opcode == 0xAD) {
+        } else if (opcode == 0xAD) { // PUSHI / CONST_INT
             int refInt = refInts[argv];
             String content = "rI[" + argvsh + "]:" + refInt + " [" + String.format("%08x", refInt).toUpperCase() + "h]";
             stack.push(new StackObject("int", false, content, refInt));
-        } else if (opcode == 0xAE) {
+        } else if (opcode == 0xAE) { // PUSHII / IMM
             stack.push(new StackObject("int", false, argvsd + " [" + argvsh + "h]", argv));
-        } else if (opcode == 0xAF) {
+        } else if (opcode == 0xAF) { // PUSHF / CONST_FLOAT
             int refFloat = refFloats[argv];
             String content = "rF[" + argvsh + "]:" + Float.intBitsToFloat(refFloat) + " [" + String.format("%08x", refFloat).toUpperCase() + "h]";
             stack.push(new StackObject("float", false, content, refFloat));
-        } else if (opcode == 0xB5) {
-            processB5(arg1, arg2);
-        } else if (opcode == 0xD6) {
-            textScriptLine += p1 + " -> j" + argvsh;
-        } else if (opcode == 0xD7) {
-            textScriptLine += "Check " + p1 + " else jump to j" + argvsh;
-        } else if (opcode == 0xD8) {
-            processD8(arg1, arg2);
-        } else if (opcode == 0xB0) {
+        } else if (opcode == 0xB0) { // JMP / JUMP
             textScriptLine += "Jump to j" + argvsh;
-        } else if (opcode == 0xB3) {
+        } else if (opcode == 0xB1) { // Never used: CJMP / BNEZ
+        } else if (opcode == 0xB2) { // Never used: NCJMP / BEZ
+        } else if (opcode == 0xB3) { // JSR
             textScriptLine += "Jump to subroutine s" + argvsh;
+        } else if (opcode == 0xB5) { // CALL / FUNC_RET
+            processB5(arg1, arg2);
+        } else if (opcode == 0xD6) { // POPXCJMP / SET_BNEZ
+            textScriptLine += p1 + " -> j" + argvsh;
+        } else if (opcode == 0xD7) { // POPXNCJMP / SET_BEZ
+            textScriptLine += "Check " + p1 + " else jump to j" + argvsh;
+        } else if (opcode == 0xD8) { // CALLPOPA / FUNC
+            processD8(arg1, arg2);
         }
     }
 
@@ -544,7 +492,7 @@ public class ScriptObject {
     }
 
     protected static int getArgc(int opcode) {
-        if (opcode == 0xff) {
+        if (opcode == 0xFF) {
             return 0;
         } else if (opcode >= 0x80) {
             return 2;
