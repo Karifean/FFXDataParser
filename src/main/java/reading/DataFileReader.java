@@ -37,7 +37,7 @@ public abstract class DataFileReader<T> {
                     T obj = objectCreator(Arrays.copyOfRange(moveBytes, i * individualLength, (i + 1) * individualLength), allStrings);
                     objects.add(obj);
                     if (print) {
-                        String offset = String.format("%04x", (i * individualLength) + 20).toUpperCase();
+                        String offset = String.format("%04X", (i * individualLength) + 20);
                         System.out.println(indexWriter(i) + " (Offset " + offset + ") - " + obj);
                     }
                 }

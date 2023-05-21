@@ -72,7 +72,7 @@ public class Main {
                     MonsterFile monster = DataAccess.getMonster(monsterIdx);
                     if (monster != null) {
                         monster.parseScript();
-                        System.out.println("Printing monster #" + arg + " [" + String.format("%04x", monsterIdx).toUpperCase() + "h]");
+                        System.out.println("Printing monster #" + arg + " [" + String.format("%04X", monsterIdx) + "h]");
                         System.out.println(monster);
                     } else {
                         System.err.println("Monster with idx " + arg + " not found");
@@ -185,7 +185,7 @@ public class Main {
             int second = data.read();
             second += data.read() * 0x100;
             data.reset();
-            // System.out.println("Parsed first and second: " + String.format("%08x", first) + " " + String.format("%08x", second));
+            // System.out.println("Parsed first and second: " + String.format("%04X", first) + " " + String.format("%04X", second));
             clones = first == second;
             count = first / (clones ? 8 : 4);
         }
@@ -205,7 +205,7 @@ public class Main {
                 int clonedSomethingElse = data.read();
                 int clonedChoosableOptions = data.read();
                 if (offset != clonedOffset) {
-                    System.err.println("offset " + i + " not cloned: offset " + String.format("%04x", offset) + "; other " + String.format("%04x", clonedOffset));
+                    System.err.println("offset " + i + " not cloned: offset " + String.format("%04X", offset) + "; other " + String.format("%04X", clonedOffset));
                 } else if (choosableOptions != clonedChoosableOptions) {
                     System.err.println("choosableOptions " + i + " not cloned: original " + choosableOptions + "; other " + clonedChoosableOptions);
                 } else if (somethingElse != clonedSomethingElse) {
@@ -226,7 +226,7 @@ public class Main {
             if (print) {
                 int options = optionCount != null ? optionCount.get(i) : 0;
                 String choosable = options > 0 ? " (" + options + " selectable)" : "";
-                System.out.print("String " + i + " [" + String.format("%04x", offset) + "]" + choosable + ":");
+                System.out.print("String " + i + " [" + String.format("%04X", offset) + "h]" + choosable + ":");
             }
             try {
                 data.skipNBytes(offset);
@@ -307,7 +307,7 @@ public class Main {
 
             @Override
             public String indexWriter(int idx) {
-                return String.format("%04x", idx + group * 0x1000).toUpperCase();
+                return String.format("%04X", idx + group * 0x1000);
             }
         };
         List<AbilityDataObject> list = reader.readGenericDataFile(filename, print);
@@ -327,7 +327,7 @@ public class Main {
 
             @Override
             public String indexWriter(int idx) {
-                return "A0" + String.format("%02x", idx).toUpperCase();
+                return "A0" + String.format("%02X", idx);
             }
         };
         List<KeyItemDataObject> list = reader.readGenericDataFile(filename, print);
@@ -347,7 +347,7 @@ public class Main {
 
             @Override
             public String indexWriter(int idx) {
-                return "80" + String.format("%02x", idx).toUpperCase();
+                return "80" + String.format("%02X", idx);
             }
         };
         List<GearAbilityDataObject> list = reader.readGenericDataFile(filename, print);
@@ -506,7 +506,7 @@ public class Main {
 
             @Override
             public String indexWriter(int idx) {
-                return "Index " + idx + " [" + String.format("%02x", idx) + "h]";
+                return "Index " + idx + " [" + String.format("%02X", idx) + "h]";
             }
         };
         List<TreasureDataObject> list = abilityReader.readGenericDataFile(filename, print);
@@ -526,7 +526,7 @@ public class Main {
 
             @Override
             public String indexWriter(int idx) {
-                return "Index " + idx + " [" + String.format("%02x", idx) + "h]";
+                return "Index " + idx + " [" + String.format("%02X", idx) + "h]";
             }
         };
         List<GearDataObject> list = abilityReader.readGenericDataFile(filename, print);

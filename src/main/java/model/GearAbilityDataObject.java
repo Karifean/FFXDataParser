@@ -463,7 +463,7 @@ public class GearAbilityDataObject {
     }
 
     private String grouping() {
-        return "Group=" + groupIndex + " [" + String.format("%02x", groupIndex).toUpperCase() + "h] Level=" + groupLevel;
+        return "Group=" + groupIndex + " [" + String.format("%02X", groupIndex) + "h] Level=" + groupLevel;
     }
 
     private String autoBuffs() {

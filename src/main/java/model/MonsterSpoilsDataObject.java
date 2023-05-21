@@ -97,11 +97,11 @@ public class MonsterSpoilsDataObject {
     }
 
     private static String asMove(int move) {
-        return DataAccess.getMove(move).getName() + " [" + String.format("%04x", move) + "h]";
+        return DataAccess.getMove(move).getName() + " [" + String.format("%04X", move) + "h]";
     }
 
     private static String formatUnknownByte(int bt) {
-        return String.format("%02x", bt) + '=' + String.format("%03d", bt) + '(' + String.format("%8s", Integer.toBinaryString(bt)).replace(' ', '0') + ')';
+        return String.format("%02X", bt) + '=' + String.format("%03d", bt) + '(' + String.format("%8s", Integer.toBinaryString(bt)).replace(' ', '0') + ')';
     }
 
 }

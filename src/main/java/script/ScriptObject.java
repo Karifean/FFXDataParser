@@ -159,7 +159,7 @@ public class ScriptObject {
             }
             String entryPointLabel = sPrefix + epSuffix;
             reverseJumpDestinations.get(entryPoint).add(entryPointLabel);
-            jumpTableString.append(epSuffix).append('=').append(String.format("%04x", entryPoint).toUpperCase()).append(' ');
+            jumpTableString.append(epSuffix).append('=').append(String.format("%04X", entryPoint)).append(' ');
         }
         jumpTableString.append('\n');
         byteCursor = header.jumpsOffset;
@@ -175,7 +175,8 @@ public class ScriptObject {
             }
             String fullJumpLabel = sPrefix + jSuffix;
             reverseJumpDestinations.get(jump).add(WRITE_SCRIPT_PREFIX_BEFORE_JUMPS ? fullJumpLabel : jSuffix);
-            jumpTableString.append(jSuffix).append('=').append(String.format("%04x", jump).toUpperCase()).append(' ');
+            jumpTableString.append(jSuffix).append('=').append(String.format("%04X", jump)
+            ).append(' ');
         }
         jumpTableString.append('\n');
     }
@@ -213,7 +214,7 @@ public class ScriptObject {
                     stack.clear();
                 }
                 lineCount++;
-                offsetLines.add(String.format("%04x", nextLineOffset).toUpperCase());
+                offsetLines.add(String.format("%04X", nextLineOffset));
                 nextLineOffset = byteCursor - scriptCodeStartAddress;
                 textScriptLines.add(textScriptLine);
                 hexScriptLines.add(hexScriptLine);
@@ -237,7 +238,7 @@ public class ScriptObject {
             jumpLine += jumpLabels;
         }
         int rd = readByte();
-        String byteAsString = String.format("%02x", rd).toUpperCase();
+        String byteAsString = String.format("%02X", rd);
         hexScriptLine += byteAsString;
         return rd;
     }
@@ -259,7 +260,7 @@ public class ScriptObject {
                     break;
             }
         } catch (EmptyStackException e) {
-            warnLine += " Empty stack for opcode " + String.format("%02x", opcode).toUpperCase();
+            warnLine += " Empty stack for opcode " + String.format("%02X", opcode);
             return;
         }
         if (opcode == 0x00 || opcode == 0x1D || opcode == 0x1E) { // NOP, LABEL, TAG
@@ -366,27 +367,27 @@ public class ScriptObject {
             String val = typed(p1, varTypes.get(argv));
             textScriptLine += "var" + argvsh + " = " + val;
         } else if (opcode == 0xA2) { // PUSHAR / GET_DATUM_INDEX
-            String arrayIndex = '[' + String.format("%04x", p1.value) + ']';
+            String arrayIndex = '[' + String.format("%04X", p1.value) + ']';
             stack.push(new StackObject(this, "int", true, "var"+argvsh+arrayIndex, argv));
         } else if (opcode == 0xA3 || opcode == 0xA4) { // POPAR(L) / SET_DATUM_INDEX_(W/T)
-            String arrayIndex = '[' + String.format("%04x", p1.value) + ']';
+            String arrayIndex = '[' + String.format("%04X", p1.value) + ']';
             textScriptLine += "Set ";
             if (opcode == 0xA4) {
                 textScriptLine += "(limit) ";
             }
             textScriptLine += "var" + argvsh + arrayIndex + " = " + p2;
         } else if (opcode == 0xA7) { // PUSHARP / GET_DATUM_DESC
-            String arrayIndex = '[' + String.format("%04x", p1.value) + ']';
+            String arrayIndex = '[' + String.format("%04X", p1.value) + ']';
             stack.push(new StackObject(this, "int", true, "ArrayPointer:var"+argvsh+arrayIndex, argv));
         } else if (opcode == 0xAD) { // PUSHI / CONST_INT
             int refInt = refInts[argv];
-            String content = "rI[" + argvsh + "]:" + refInt + " [" + String.format("%08x", refInt).toUpperCase() + "h]";
+            String content = "rI[" + argvsh + "]:" + refInt + " [" + String.format("%08X", refInt) + "h]";
             stack.push(new StackObject(this, "int", false, content, refInt));
         } else if (opcode == 0xAE) { // PUSHII / IMM
             stack.push(new StackObject(this, "int", false, argvsd + " [" + argvsh + "h]", argv));
         } else if (opcode == 0xAF) { // PUSHF / CONST_FLOAT
             int refFloat = refFloats[argv];
-            String content = "rF[" + argvsh + "]:" + Float.intBitsToFloat(refFloat) + " [" + String.format("%08x", refFloat).toUpperCase() + "h]";
+            String content = "rF[" + argvsh + "]:" + Float.intBitsToFloat(refFloat) + " [" + String.format("%08X", refFloat) + "h]";
             stack.push(new StackObject(this, "float", false, content, refFloat));
         } else if (opcode == 0xB0) { // JMP / JUMP
             textScriptLine += "Jump to j" + argvsh;
@@ -424,7 +425,7 @@ public class ScriptObject {
                     break;
             }
         } catch (EmptyStackException e) {
-            warnLine += " Empty stack for func " + String.format("%04x", idx);
+            warnLine += " Empty stack for func " + String.format("%04X", idx);
         }
         return params;
     }
@@ -432,7 +433,7 @@ public class ScriptObject {
     protected ScriptFunc getAndTypeFuncCall(int idx, List<StackObject> params) {
         ScriptFunc func = ScriptFuncLib.get(idx, params);
         if (func == null) {
-            func = new ScriptFunc("Unknown:" + String.format("%04x", idx), "unknown", null, false);
+            func = new ScriptFunc("Unknown:" + String.format("%04X", idx), "unknown", null, false);
         } else if (func.inputs != null) {
             for (int i = 0; i < func.inputs.size(); i++) {
                 typed(params.get(i), func.inputs.get(i).type);
@@ -513,7 +514,7 @@ public class ScriptObject {
     protected int getStackPops(int opcode) {
         int stackpops = ScriptConstants.OPCODE_STACKPOPS[opcode];
         if (stackpops < 0) {
-            warnLine += " Undefined stackpops for opcode " + String.format("%02x", opcode);
+            warnLine += " Undefined stackpops for opcode " + String.format("%02X", opcode);
             return 0;
         }
         return stackpops;
@@ -522,7 +523,7 @@ public class ScriptObject {
     protected int getFunctionParamCount(int idx) {
         ScriptFunc func = ScriptFuncLib.get(idx, null);
         if (func == null) {
-            warnLine += " Undefined stackpops for func " + String.format("%04x", idx);
+            warnLine += " Undefined stackpops for func " + String.format("%04X", idx);
             return 0;
         }
         return func.inputs != null ? func.inputs.size() : 0;
@@ -568,7 +569,7 @@ public class ScriptObject {
     }
 
     private static String format2Or4Byte(int b) {
-        return String.format(b > 0x100 ? "%04x" : "%02x", b).toUpperCase();
+        return String.format(b > 0x100 ? "%04X" : "%02X", b);
     }
 
     private long read8Bytes() {
@@ -582,7 +583,7 @@ public class ScriptObject {
     }
 
     public String allLinesString() {
-        StringBuilder al = new StringBuilder("Script code starts at offset ").append(String.format("%04x", scriptCodeStartAddress + absoluteOffset)).append('\n');
+        StringBuilder al = new StringBuilder("Script code starts at offset ").append(String.format("%04X", scriptCodeStartAddress + absoluteOffset)).append('\n');
         for (int i = 0; i < lineCount; i++) {
             al.append(fullLineString(i));
         }

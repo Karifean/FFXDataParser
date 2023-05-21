@@ -34,7 +34,7 @@ public class StackObject {
     @Override
     public String toString() {
         if (!expression && !"unknown".equals(type)) {
-            String hex = String.format(value >= 0x10000 ? "%08x" : value >= 0x100 ? "%04x" : "%02x", value).toUpperCase();
+            String hex = String.format(value >= 0x10000 ? "%08X" : value >= 0x100 ? "%04X" : "%02X", value);
             String hexSuffix = " [" + hex + "h]";
             if ("bool".equals(type)) {
                 return (value > 0 ? "true" : "false") + hexSuffix;

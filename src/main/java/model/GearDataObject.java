@@ -140,7 +140,7 @@ public class GearDataObject {
     }
 
     private static String formatUnknownByte(int bt) {
-        return String.format("%02x", bt) + '=' + String.format("%03d", bt) + '(' + String.format("%8s", Integer.toBinaryString(bt)).replace(' ', '0') + ')';
+        return String.format("%02X", bt) + '=' + String.format("%03d", bt) + '(' + String.format("%8s", Integer.toBinaryString(bt)).replace(' ', '0') + ')';
     }
 
     private static String getGearAbilityName(int ability) {

@@ -34,7 +34,7 @@ public abstract class ScriptFuncLib {
 
     public static ScriptFunc get(int idx, List<StackObject> params) {
         if (FUNCS[idx] == null) {
-            System.err.println("Unknown Function call: " + String.format("%04x", idx));
+            System.err.println("Unknown Function call: " + String.format("%04X", idx));
             return null;
         }
         return FUNCS[idx];

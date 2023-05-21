@@ -236,7 +236,7 @@ public abstract class ScriptConstants {
         putEnum("actor", 0x00FF, "Actor:None");
 
         for (int i = 0x1000; i <= 0x1200; i++) {
-            putEnum("actor", i, "Actors:MonsterType=" + String.format("%04x", i - 0x1000).toUpperCase());
+            putEnum("actor", i, "Actors:MonsterType=" + String.format("%04X", i - 0x1000));
         }
         putEnum("actor", 0xFFE6, null, "CHR_OWN_TARGET0");
         putEnum("actor", 0xFFE7, null, "CHR_ALL_PLY3");

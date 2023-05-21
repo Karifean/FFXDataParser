@@ -30,10 +30,8 @@ public class AbilityDataObject {
     public int otherTextOffset;
     int unknownByte0E;
     int unknownByte0F;
-    int anim1HighByte;
-    int anim1LowByte;
-    int anim2HighByte;
-    int anim2LowByte;
+    int anim1;
+    int anim2;
     int icon;
     int casterAnimation;
     int menuProperties1B;
@@ -251,10 +249,8 @@ public class AbilityDataObject {
         otherTextOffset = read2Bytes(0x0C);
         unknownByte0E = bytes[0x0E];
         unknownByte0F = bytes[0x0F];
-        anim1HighByte = bytes[0x10];
-        anim1LowByte = bytes[0x11];
-        anim2HighByte = bytes[0x12];
-        anim2LowByte = bytes[0x13];
+        anim1 = read2Bytes(0x10);
+        anim2 = read2Bytes(0x12);
         icon = bytes[0x14];
         casterAnimation = bytes[0x15];
         menuProperties1B = bytes[0x16];
@@ -494,9 +490,9 @@ public class AbilityDataObject {
         list.add(inflictDelayWeak ? "Delay (Weak)" : "");
         list.add(inflictDelayStrong ? "Delay (Strong)" : "");
         list.add(ifG0(shatterChance, "Shatter=", "%"));
-        list.add("anim=" + casterAnimation + (useTier1CastAnimation ? "L" : useTier3CastAnimation ? "H" : "") +
-                "/" + String.format("%04x", anim1LowByte * 256 + anim1HighByte) +
-                "/" + String.format("%04x", anim2LowByte * 256 + anim2HighByte));
+        list.add("anim=" + casterAnimation + (useTier1CastAnimation ? "L" : "") + (useTier3CastAnimation ? "H" : "") +
+                "/" + String.format("%04X", anim1) +
+                "/" + String.format("%04X", anim2));
         list.add(ifG0(alwaysZero57, "Byte57=", ""));
         list.add(ifG0(alwaysZero5B, "Byte5B=", ""));
         list.add(ifG0(alwaysZero5E, "Byte5E=", ""));
@@ -522,7 +518,7 @@ public class AbilityDataObject {
                 damageClassString += "CTB/";
             }
             if (damageClassUnknown) {
-                damageClassString += "Unknown(" + String.format("%02x", damageClass) + ")/";
+                damageClassString += "Unknown(" + String.format("%02X", damageClass) + ")/";
             }
             damageClassString = damageClassString.substring(0, damageClassString.length() - 1);
             return damageType + ' ' + damageClassString + ' ' + (isHealing ? "Restore" : (absorbDamage ? "Absorb" : "Damage"));
@@ -786,7 +782,7 @@ public class AbilityDataObject {
     }
 
     private static String formatUnknownByte(int bt) {
-        return String.format("%02x", bt) + '=' + String.format("%03d", bt) + '(' + String.format("%8s", Integer.toBinaryString(bt)).replace(' ', '0') + ')';
+        return String.format("%02X", bt) + '=' + String.format("%03d", bt) + '(' + String.format("%8s", Integer.toBinaryString(bt)).replace(' ', '0') + ')';
     }
 
     private static void prepareMaps() {

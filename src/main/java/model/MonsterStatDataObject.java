@@ -202,7 +202,7 @@ public class MonsterStatDataObject {
     }
 
     private static String asMove(int move) {
-        return DataAccess.getMove(move).getName() + " [" + String.format("%04x", move) + "h]";
+        return DataAccess.getMove(move).getName() + " [" + String.format("%04X", move) + "h]";
     }
 
 }

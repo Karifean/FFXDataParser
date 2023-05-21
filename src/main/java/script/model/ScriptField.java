@@ -40,7 +40,7 @@ public class ScriptField {
         if (idx == null) {
             return null;
         }
-        return String.format("%04x", idx).toUpperCase();
+        return String.format("%04X", idx);
     }
 
     public String getHexSuffix() {

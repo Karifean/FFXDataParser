@@ -123,13 +123,13 @@ public class FormationDataObject {
     }
 
     private static String formatUnknownByte(int bt) {
-        return String.format("%02x", bt) + '=' + String.format("%03d", bt) + '(' + String.format("%8s", Integer.toBinaryString(bt)).replace(' ', '0') + ')';
+        return String.format("%02X", bt) + '=' + String.format("%03d", bt) + '(' + String.format("%8s", Integer.toBinaryString(bt)).replace(' ', '0') + ')';
     }
 
     private static String writeMonster(int monsterIndex) {
         MonsterFile monster = DataAccess.getMonster(monsterIndex);
         String monsterName = monster == null ? "null" : monster.getName();
-        String hexSuffix = " [" + String.format("%04x", monsterIndex).toUpperCase() + "h]";
+        String hexSuffix = " [" + String.format("%04X", monsterIndex) + "h]";
         return monsterName + hexSuffix;
     }
 
