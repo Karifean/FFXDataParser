@@ -78,14 +78,18 @@ public class MonsterFile {
         }
         full.append("- Monster Stats -").append('\n');
         full.append(monsterStatData).append('\n');
-        /* full.append("- Monster Spoils -").append('\n');
+        full.append("- Monster Spoils -").append('\n');
         full.append(monsterSpoilsData).append('\n');
         full.append("- Sensor Text -").append('\n');
         full.append(monsterSensorText).append('\n');
-        full.append(monsterSensorDash).append('\n');
+        if (!"-".equals(monsterSensorDash)) {
+            full.append("DH=").append(monsterSensorDash).append('\n');
+        }
         full.append("- Scan Text -").append('\n');
         full.append(monsterScanText).append('\n');
-        full.append(monsterScanDash).append('\n'); */
+        if (!"-".equals(monsterScanDash)) {
+            full.append("DH=").append(monsterScanDash).append('\n');
+        }
         return full.toString();
     }
 

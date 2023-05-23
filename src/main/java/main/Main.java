@@ -385,9 +385,9 @@ public class Main {
         List<Integer> knownLengths = new ArrayList<>();
         knownLengths.add(null);
         knownLengths.add(null);
-        knownLengths.add(0x8C);
+        knownLengths.add(MonsterStatDataObject.LENGTH);
         knownLengths.add(null);
-        knownLengths.add(0x12C);
+        knownLengths.add(MonsterSpoilsDataObject.LENGTH);
         List<Chunk> chunks = ChunkedFileHelper.readGenericChunkedFile(filename, print, knownLengths, true);
         MonsterFile monsterFile = new MonsterFile(chunks);
         try {
@@ -423,7 +423,7 @@ public class Main {
         List<Integer> knownLengths = new ArrayList<>();
         knownLengths.add(null);
         knownLengths.add(null);
-        knownLengths.add(0x1C);
+        knownLengths.add(FormationDataObject.LENGTH);
         List<Chunk> chunks = ChunkedFileHelper.readGenericChunkedFile(filename, print, knownLengths, true);
         EncounterFile encounterFile = new EncounterFile(chunks);
         try {

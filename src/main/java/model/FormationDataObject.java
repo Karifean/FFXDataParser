@@ -8,6 +8,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class FormationDataObject {
+    public static final int LENGTH = 0x1C;
+
     private final int[] bytes;
 
     int unknownByte00;

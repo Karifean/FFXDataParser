@@ -3,7 +3,9 @@ package model;
 import main.StringHelper;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -784,82 +786,92 @@ public class GearAbilityDataObject {
     }
 
     private String statusResists() {
-        StringBuilder statuses = new StringBuilder("Resist {");
-        appendResistedStatus(statuses, "Death", statusResistChanceDeath);
-        appendResistedStatus(statuses, "Zombie", statusResistChanceZombie);
-        appendResistedStatus(statuses, "Petrify", statusResistChancePetrify);
-        appendResistedStatus(statuses, "Poison", statusResistChancePoison);
-        appendResistedStatus(statuses, "Confuse", statusResistChanceConfuse);
-        appendResistedStatus(statuses, "Berserk", statusResistChanceBerserk);
-        appendResistedStatus(statuses, "Provoke", statusResistChanceProvoke);
-        appendResistedStatus(statuses, "Threaten", statusResistChanceThreaten);
+        Map<Integer, List<String>> statusMap = new HashMap<>();
+        appendResistedStatus(statusMap, "Death", statusResistChanceDeath);
+        appendResistedStatus(statusMap, "Zombie", statusResistChanceZombie);
+        appendResistedStatus(statusMap, "Petrify", statusResistChancePetrify);
+        appendResistedStatus(statusMap, "Poison", statusResistChancePoison);
+        appendResistedStatus(statusMap, "Confuse", statusResistChanceConfuse);
+        appendResistedStatus(statusMap, "Berserk", statusResistChanceBerserk);
+        appendResistedStatus(statusMap, "Provoke", statusResistChanceProvoke);
+        appendResistedStatus(statusMap, "Threaten", statusResistChanceThreaten);
         if (statusResistChancePowerBreak > 0 &&
                 statusResistChancePowerBreak == statusResistChanceMagicBreak &&
                 statusResistChancePowerBreak == statusResistChanceArmorBreak &&
                 statusResistChancePowerBreak == statusResistChanceMentalBreak) {
-            appendResistedStatus(statuses, "All Breaks", statusResistChancePowerBreak);
+            appendResistedStatus(statusMap, "All Breaks", statusResistChancePowerBreak);
         } else {
-            appendResistedStatus(statuses, "Power Break", statusResistChancePowerBreak);
-            appendResistedStatus(statuses, "Magic Break", statusResistChanceMagicBreak);
-            appendResistedStatus(statuses, "Armor Break", statusResistChanceArmorBreak);
-            appendResistedStatus(statuses, "Mental Break", statusResistChanceMentalBreak);
+            appendResistedStatus(statusMap, "Power Break", statusResistChancePowerBreak);
+            appendResistedStatus(statusMap, "Magic Break", statusResistChanceMagicBreak);
+            appendResistedStatus(statusMap, "Armor Break", statusResistChanceArmorBreak);
+            appendResistedStatus(statusMap, "Mental Break", statusResistChanceMentalBreak);
         }
-        appendResistedStatus(statuses, "Sleep", statusResistChanceSleep);
-        appendResistedStatus(statuses, "Silence", statusResistChanceSilence);
-        appendResistedStatus(statuses, "Darkness", statusResistChanceDarkness);
-        appendResistedStatus(statuses, "Shell", statusResistChanceShell);
-        appendResistedStatus(statuses, "Protect", statusResistChanceProtect);
-        appendResistedStatus(statuses, "Reflect", statusResistChanceReflect);
-        appendResistedStatus(statuses, "Regen", statusResistChanceRegen);
-        appendResistedStatus(statuses, "Slow", statusResistChanceSlow);
-        appendResistedStatus(statuses, "Haste", statusResistChanceHaste);
-        if (statusInflictChanceNBlaze > 0 && statusDurationNBlaze > 0 &&
-                statusInflictChanceNBlaze == statusInflictChanceNFrost &&
-                statusInflictChanceNBlaze == statusInflictChanceNShock &&
-                statusInflictChanceNBlaze == statusInflictChanceNTide &&
+        appendResistedStatus(statusMap, "Sleep", statusResistChanceSleep);
+        appendResistedStatus(statusMap, "Silence", statusResistChanceSilence);
+        appendResistedStatus(statusMap, "Darkness", statusResistChanceDarkness);
+        appendResistedStatus(statusMap, "Shell", statusResistChanceShell);
+        appendResistedStatus(statusMap, "Protect", statusResistChanceProtect);
+        appendResistedStatus(statusMap, "Reflect", statusResistChanceReflect);
+        appendResistedStatus(statusMap, "Regen", statusResistChanceRegen);
+        appendResistedStatus(statusMap, "Slow", statusResistChanceSlow);
+        appendResistedStatus(statusMap, "Haste", statusResistChanceHaste);
+        if (statusResistChanceNBlaze > 0 && statusDurationNBlaze > 0 &&
+                statusResistChanceNBlaze == statusResistChanceNFrost &&
+                statusResistChanceNBlaze == statusResistChanceNShock &&
+                statusResistChanceNBlaze == statusResistChanceNTide &&
                 statusDurationNBlaze == statusDurationNFrost &&
                 statusDurationNBlaze == statusDurationNShock &&
                 statusDurationNBlaze == statusDurationNTide) {
-            appendResistedStatus(statuses, "NulAll", statusResistChanceNBlaze);
+            appendResistedStatus(statusMap, "NulAll", statusResistChanceNBlaze);
         } else {
-            appendResistedStatus(statuses, "NulBlaze", statusResistChanceNBlaze);
-            appendResistedStatus(statuses, "NulFrost", statusResistChanceNFrost);
-            appendResistedStatus(statuses, "NulShock", statusResistChanceNShock);
-            appendResistedStatus(statuses, "NulTide", statusResistChanceNTide);
+            appendResistedStatus(statusMap, "NulBlaze", statusResistChanceNBlaze);
+            appendResistedStatus(statusMap, "NulFrost", statusResistChanceNFrost);
+            appendResistedStatus(statusMap, "NulShock", statusResistChanceNShock);
+            appendResistedStatus(statusMap, "NulTide", statusResistChanceNTide);
         }
-        if (resistScan) { statuses.append(" Scan;"); }
-        if (resistShield) { statuses.append(" Shield;"); }
-        if (resistBoost) { statuses.append(" Boost;"); }
-        if (resistDistillPower) { statuses.append(" Distill Power;"); }
-        if (resistDistillMana) { statuses.append(" Distill Mana;"); }
-        if (resistDistillSpeed) { statuses.append(" Distill Speed;"); }
-        if (resistDistillAbility) { statuses.append(" Distill Ability;"); }
-        if (resistUnused1) { statuses.append(" Unused1;"); }
-        if (resistEject) { statuses.append(" Eject;"); }
-        if (resistAutoLife) { statuses.append(" Auto-Life;"); }
-        if (resistCurse) { statuses.append(" Curse;"); }
-        if (resistDoom) { statuses.append(" Doom;"); }
-        if (resistDefend) { statuses.append(" Defend;"); }
-        if (resistGuard) { statuses.append(" Guard;"); }
-        if (resistSentinel) { statuses.append(" Sentinel;"); }
-        if (resistUnused2) { statuses.append(" Unused2;"); }
-        String conv = statuses.toString();
-        if (conv.endsWith(";")) {
-            String withoutLastSemicolon = conv.substring(0, conv.length() - 1);
-            if (withoutLastSemicolon.contains(";")) {
-                return withoutLastSemicolon + " }";
+        if (resistScan) { appendResistedStatus(statusMap, "Scan", 0xFF); }
+        if (resistShield) { appendResistedStatus(statusMap, "Shield", 0xFF); }
+        if (resistBoost) { appendResistedStatus(statusMap, "Boost", 0xFF); }
+        if (resistDistillPower && resistDistillMana && resistDistillSpeed && resistDistillAbility) {
+            appendResistedStatus(statusMap, "All Distills", 0xFF);
+        } else {
+            if (resistDistillPower) {
+                appendResistedStatus(statusMap, "Distill Power", 0xFF);
+            }
+            if (resistDistillMana) {
+                appendResistedStatus(statusMap, "Distill Mana", 0xFF);
+            }
+            if (resistDistillSpeed) {
+                appendResistedStatus(statusMap, "Distill Speed", 0xFF);
+            }
+            if (resistDistillAbility) {
+                appendResistedStatus(statusMap, "Distill Ability", 0xFF);
+            }
+        }
+        if (resistUnused1) { appendResistedStatus(statusMap, "Unused1", 0xFF); }
+        if (resistEject) { appendResistedStatus(statusMap, "Eject", 0xFF); }
+        if (resistAutoLife) { appendResistedStatus(statusMap, "Auto-Life", 0xFF); }
+        if (resistCurse) { appendResistedStatus(statusMap, "Curse", 0xFF); }
+        if (resistDoom) { appendResistedStatus(statusMap, "Doom", 0xFF); }
+        if (resistDefend) { appendResistedStatus(statusMap, "Defend", 0xFF); }
+        if (resistGuard) { appendResistedStatus(statusMap, "Guard", 0xFF); }
+        if (resistSentinel) { appendResistedStatus(statusMap, "Sentinel", 0xFF); }
+        if (resistUnused2) { appendResistedStatus(statusMap, "Unused2", 0xFF); }
+        statusMap.remove(0);
+        if (!statusMap.isEmpty()) {
+            String resistString = statusMap.entrySet().stream().map(e -> String.join("/", e.getValue()) + " (" + (e.getKey() < 255 ? (e.getKey() + "%") : "Immune") + ")").collect(Collectors.joining(", "));
+            if (statusMap.size() == 1) {
+                return "Resist " + resistString;
             } else {
-                return "Resist " + withoutLastSemicolon.substring(9);
+                return "Resist { " + resistString + " }";
             }
         } else {
             return "";
         }
     }
 
-    private void appendResistedStatus(StringBuilder builder, String name, int chance) {
-        if (chance > 0) {
-            builder.append(' ').append(name).append(" (").append(chance).append("%);");
-        }
+    private void appendResistedStatus(Map<Integer, List<String>> statusMap, String name, int chance) {
+        statusMap.computeIfAbsent(chance, s -> new ArrayList<>()).add(name);
     }
 
     private void appendPermanentStatus(StringBuilder builder, String name, int chance) {

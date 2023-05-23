@@ -24,19 +24,23 @@ public class ScriptObject {
     public List<String> strings;
     public StringBuilder jumpTableString = new StringBuilder();
     Stack<StackObject> stack = new Stack<>();
-    Map<Integer, String> lastTempTypes = new HashMap<>();
+    Map<Integer, String> currentTempITypes = new HashMap<>();
     Map<Integer, String> varTypes = new HashMap<>();
     Map<Integer, List<StackObject>> varEnums = new HashMap<>();
     Map<Integer, StackObject> constants = new HashMap<>();
-    String lastCallType = "unknown";
+    int currentScriptIndex = 0;
+    String currentRAType = "unknown";
+    String currentRXType = "unknown";
+    String currentRYType = "unknown";
     boolean gatheringInfo = true;
-    List<Integer> jumpDestinations = new ArrayList<>();
-    Map<Integer, List<String>> reverseJumpDestinations = new HashMap<>();
+    List<ScriptJump> scriptJumps = new ArrayList<>();
+    Map<Integer, List<ScriptJump>> scriptJumpsByDestination = new HashMap<>();
 
     int lineCount = 0;
     String textScriptLine;
     String hexScriptLine;
     String jumpLine;
+    List<ScriptJump> jumpsOnLine = new ArrayList<>();
     String warnLine;
     List<String> offsetLines;
     List<String> textScriptLines;
@@ -148,35 +152,34 @@ public class ScriptObject {
         jumpTableString.append(sPrefix).append('\n');
         byteCursor = header.scriptEntryPointsOffset;
         int entryPointCount = header.entryPointCount;
-        int[] entryPoints = new int[entryPointCount];
+        ScriptJump[] entryPoints = new ScriptJump[entryPointCount];
         for (int i = 0; i < entryPointCount; i++) {
-            int entryPoint = read4Bytes();
+            int addr = read4Bytes();
+            ScriptJump entryPoint = new ScriptJump(addr, scriptIndex, i, true);
             entryPoints[i] = entryPoint;
-            jumpDestinations.add(entryPoint);
+            scriptJumps.add(entryPoint);
             String epSuffix = "e" + format2Or4Byte(i);
-            if (!reverseJumpDestinations.containsKey(entryPoint)) {
-                reverseJumpDestinations.put(entryPoint, new ArrayList<>());
+            if (!scriptJumpsByDestination.containsKey(addr)) {
+                scriptJumpsByDestination.put(addr, new ArrayList<>());
             }
-            String entryPointLabel = sPrefix + epSuffix;
-            reverseJumpDestinations.get(entryPoint).add(entryPointLabel);
-            jumpTableString.append(epSuffix).append('=').append(String.format("%04X", entryPoint)).append(' ');
+            scriptJumpsByDestination.get(addr).add(entryPoint);
+            jumpTableString.append(epSuffix).append('=').append(String.format("%04X", addr)).append(' ');
         }
         jumpTableString.append('\n');
         byteCursor = header.jumpsOffset;
         int jumpCount = header.maybeJumpCount;
-        int[] jumps = new int[jumpCount];
+        ScriptJump[] jumps = new ScriptJump[jumpCount];
         for (int i = 0; i < jumpCount; i++) {
-            int jump = read4Bytes();
+            int addr = read4Bytes();
+            ScriptJump jump = new ScriptJump(addr, scriptIndex, i, false);
             jumps[i] = jump;
-            jumpDestinations.add(jump);
+            scriptJumps.add(jump);
             String jSuffix = "j" + format2Or4Byte(i);
-            if (!reverseJumpDestinations.containsKey(jump)) {
-                reverseJumpDestinations.put(jump, new ArrayList<>());
+            if (!scriptJumpsByDestination.containsKey(addr)) {
+                scriptJumpsByDestination.put(addr, new ArrayList<>());
             }
-            String fullJumpLabel = sPrefix + jSuffix;
-            reverseJumpDestinations.get(jump).add(WRITE_SCRIPT_PREFIX_BEFORE_JUMPS ? fullJumpLabel : jSuffix);
-            jumpTableString.append(jSuffix).append('=').append(String.format("%04X", jump)
-            ).append(' ');
+            scriptJumpsByDestination.get(addr).add(jump);
+            jumpTableString.append(jSuffix).append('=').append(String.format("%04X", addr)).append(' ');
         }
         jumpTableString.append('\n');
     }
@@ -192,6 +195,7 @@ public class ScriptObject {
         textScriptLine = "";
         hexScriptLine = "";
         jumpLine = "";
+        jumpsOnLine.clear();
         warnLine = "";
         int opcode;
         int nextLineOffset = 0;
@@ -223,6 +227,7 @@ public class ScriptObject {
                 textScriptLine = "";
                 hexScriptLine = "";
                 jumpLine = "";
+                jumpsOnLine.clear();
                 warnLine = "";
             } else {
                 hexScriptLine += ' ';
@@ -232,9 +237,15 @@ public class ScriptObject {
 
     protected int nextAiByte() {
         int scriptCodeByteCursor = byteCursor - scriptCodeStartAddress;
-        if (reverseJumpDestinations.containsKey(scriptCodeByteCursor)) {
-            List<String> jumps = reverseJumpDestinations.get(scriptCodeByteCursor);
-            String jumpLabels = String.join(",", jumps) + ':';
+        if (scriptJumpsByDestination.containsKey(scriptCodeByteCursor)) {
+            List<ScriptJump> jumps = scriptJumpsByDestination.get(scriptCodeByteCursor);
+            String jumpLabels = jumps.stream().map(ScriptJump::getLabel).collect(Collectors.joining(",")) + ':';
+            jumps.stream().filter(j -> j.isEntryPoint).findFirst().ifPresent(j -> currentScriptIndex = j.scriptIndex);
+            jumps.stream().filter(j -> j.rAType != null && !"unknown".equals(j.rAType)).findFirst().ifPresent(j -> currentRAType = j.rAType);
+            jumps.stream().filter(j -> j.rXType != null && !"unknown".equals(j.rXType)).findFirst().ifPresent(j -> currentRXType = j.rXType);
+            jumps.stream().filter(j -> j.rYType != null && !"unknown".equals(j.rYType)).findFirst().ifPresent(j -> currentRYType = j.rYType);
+            jumps.stream().filter(j -> j.tempITypes != null).flatMap(j -> j.tempITypes.entrySet().stream()).filter(s -> s.getValue() != null && !"unknown".equals(s.getValue())).forEach(s -> currentTempITypes.put(s.getKey(), s.getValue()));
+            jumpsOnLine.addAll(jumps);
             jumpLine += jumpLabels;
         }
         int rd = readByte();
@@ -291,23 +302,26 @@ public class ScriptObject {
         } else if (opcode == 0x1C) { // OPBNOT / NOT
             stack.push(new StackObject(this, p1.type, true, "bitNot " + p1, 0x1C));
         } else if (opcode == 0x25) { // POPA / SET_RETURN_VALUE
-            lastCallType = p1.type;
             textScriptLine += "Set LastCallResult = " + p1;
+            currentRAType = resolveType(p1);
         } else if (opcode == 0x26) { // PUSHA / GET_RETURN_VALUE
-            stack.push(new StackObject(this, lastCallType, true, "LastCallResult", 0x26));
+            stack.push(new StackObject(this, currentRAType, true, "LastCallResult", 0x26));
         } else if (opcode == 0x28) { // PUSHX / GET_TEST
-            stack.push(new StackObject(this, "unknown", true, "rX", 0x28));
+            stack.push(new StackObject(this, currentRXType, true, "rX", 0x28));
         } else if (opcode == 0x29) { // PUSHY / GET_CASE
-            stack.push(new StackObject(this, "unknown", true, "case", 0x29));
+            stack.push(new StackObject(this, currentRYType, true, "case", 0x29));
         } else if (opcode == 0x2A) { // POPX / SET_TEST
             textScriptLine += "Set rX = " + p1;
+            currentRXType = resolveType(p1);
         } else if (opcode == 0x2B) { // REPUSH / COPY
             stack.push(new StackObject(p1.type, p1));
             stack.push(new StackObject(p1.type, p1));
         } else if (opcode == 0x2C) { // POPY / SET_CASE
             textScriptLine += "switch " + p1;
+            currentRYType = resolveType(p1);
         } else if (opcode == 0x34) { // RTS / RETURN
             textScriptLine += "return from subroutine";
+            resetRegisterTypes();
         } else if (opcode >= 0x36 && opcode <= 0x38) { // REQ / SIG_NOACK
             String type = "queueScript";
             if (opcode == 0x37) { // REQSW / SIG_ONSTART
@@ -323,10 +337,12 @@ public class ScriptObject {
             stack.push(new StackObject(this, "unknown", true, content, 0x39));
         } else if (opcode == 0x3C) { // RET / END
             textScriptLine += "return";
+            resetRegisterTypes();
         } else if (opcode == 0x3D) { // Never used: RETN / CLEANUP_END
         } else if (opcode == 0x3E) { // Never used: RETT / TO_MAIN
         } else if (opcode == 0x3F) { // RETTN / CLEANUP_TO_MAIN
             textScriptLine += "return (RETTN): " + p1;
+            resetRegisterTypes();
         } else if (opcode == 0x40) { // HALT / DYNAMIC
             textScriptLine += "halt";
         } else if (opcode == 0x46) { // TREQ
@@ -334,13 +350,14 @@ public class ScriptObject {
             stack.push(new StackObject(this, "unknown", true, content, 0x46));
         } else if (opcode == 0x54) { // DRET / CLEANUP_ALL_END
             textScriptLine += "direct return";
+            resetRegisterTypes();
         } else if (opcode >= 0x59 && opcode <= 0x5C) { // POPI0..3 / SET_INT
-            lastTempTypes.put(opcode-0x59, p1.type);
+            currentTempITypes.put(opcode-0x59, resolveType(p1));
             textScriptLine += "tempI" + (opcode-0x59) + " = " + p1;
         } else if (opcode >= 0x5D && opcode <= 0x66) { // POPF0..9 / SET_FLOAT
             textScriptLine += "tempF" + (opcode-0x5D) + " = " + p1;
         } else if (opcode >= 0x67 && opcode <= 0x6A) { // PUSHI0..3 / GET_INT
-            stack.push(new StackObject(this, lastTempTypes.getOrDefault(opcode-0x67, "unknown"), true, "tempI"+(opcode-0x67), opcode));
+            stack.push(new StackObject(this, currentTempITypes.getOrDefault(opcode-0x67, "unknown"), true, "tempI"+(opcode-0x67), opcode));
         } else if (opcode >= 0x6B && opcode <= 0x74) { // PUSHF0..9 / GET_FLOAT
             stack.push(new StackObject(this, "float", true, "tempF"+(opcode-0x6B), opcode));
         } else if (opcode == 0x77) { // REQWAIT / WAIT_DELETE
@@ -391,6 +408,8 @@ public class ScriptObject {
             stack.push(new StackObject(this, "float", false, content, refFloat));
         } else if (opcode == 0xB0) { // JMP / JUMP
             textScriptLine += "Jump to j" + argvsh;
+            scriptJumps.stream().filter(j -> j.scriptIndex == currentScriptIndex && j.jumpIndex == argv).forEach(j -> j.setTypes(currentRAType, currentRXType, currentRYType, currentTempITypes));
+            resetRegisterTypes();
         } else if (opcode == 0xB1) { // Never used: CJMP / BNEZ
         } else if (opcode == 0xB2) { // Never used: NCJMP / BEZ
         } else if (opcode == 0xB3) { // JSR
@@ -399,8 +418,10 @@ public class ScriptObject {
             processB5(arg1, arg2);
         } else if (opcode == 0xD6) { // POPXCJMP / SET_BNEZ
             textScriptLine += p1 + " -> j" + argvsh;
+            scriptJumps.stream().filter(j -> j.scriptIndex == currentScriptIndex && j.jumpIndex == argv).forEach(j -> j.setTypes(currentRAType, currentRXType, currentRYType, currentTempITypes));
         } else if (opcode == 0xD7) { // POPXNCJMP / SET_BEZ
             textScriptLine += "Check " + p1 + " else jump to j" + argvsh;
+            scriptJumps.stream().filter(j -> j.scriptIndex == currentScriptIndex && j.jumpIndex == argv).forEach(j -> j.setTypes(currentRAType, currentRXType, currentRYType, currentTempITypes));
         } else if (opcode == 0xD8) { // CALLPOPA / FUNC
             processD8(arg1, arg2);
         }
@@ -453,7 +474,7 @@ public class ScriptObject {
         int idx = opcode + group * 0x100;
         List<StackObject> params = popParamsForFunc(idx);
         ScriptFunc func = getAndTypeFuncCall(idx, params);
-        lastCallType = func.getType(params);
+        currentRAType = func.getType(params);
         String call = func.callD8(params);
         textScriptLine += call + ';';
     }
@@ -542,7 +563,7 @@ public class ScriptObject {
                     constants.put(varIdx, enums.get(0));
                 } else if (enums.stream().noneMatch(a -> a.expression)) {
                     Set<Integer> distinctContents = enums.stream().map(a -> a.value).collect(Collectors.toSet());
-                    if (distinctContents.size() == 2 && distinctContents.contains(0) && (distinctContents.contains(1) || distinctContents.contains(255))) {
+                    if (distinctContents.size() == 2 && distinctContents.contains(0) && (distinctContents.contains(0x01) || distinctContents.contains(0xFF))) {
                         varTypes.put(varIdx, "bool");
                     }
                 }
@@ -572,10 +593,11 @@ public class ScriptObject {
         return String.format(b > 0x100 ? "%04X" : "%02X", b);
     }
 
-    private long read8Bytes() {
-        long a = read4Bytes();
-        long b = read4Bytes() * 0x100000000L;
-        return a + b;
+    private void resetRegisterTypes() {
+        currentRAType = "unknown";
+        currentRXType = "unknown";
+        currentRYType = "unknown";
+        currentTempITypes.clear();
     }
 
     private void skipBytes(int amount) {

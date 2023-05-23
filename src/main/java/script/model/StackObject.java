@@ -2,6 +2,7 @@ package script.model;
 
 import main.DataAccess;
 import model.AbilityDataObject;
+import model.KeyItemDataObject;
 import model.TreasureDataObject;
 import script.MonsterFile;
 import script.ScriptObject;
@@ -51,6 +52,12 @@ public class StackObject {
             }
             if ("treasure".equals(type)) {
                 TreasureDataObject obj = DataAccess.getTreasure(value);
+                if (obj != null) {
+                    return obj + hexSuffix;
+                }
+            }
+            if ("keyItem".equals(type)) {
+                KeyItemDataObject obj = DataAccess.getKeyItem(value);
                 if (obj != null) {
                     return obj + hexSuffix;
                 }

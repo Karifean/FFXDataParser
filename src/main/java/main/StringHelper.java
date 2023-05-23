@@ -20,9 +20,31 @@ public abstract class StringHelper {
         return BIN_LOOKUP.get(hex);
     }
 
+    public static String byteToColor(int hex) {
+        if (hex == 0x41) {
+            return "WHITE";
+        } else if (hex == 0x43) {
+            return "YELLOW";
+        } else if (hex == 0x52) {
+            return "GREY";
+        } else if (hex == 0x88) {
+            return "BLUE";
+        } else if (hex == 0x94) {
+            return "RED";
+        } else if (hex == 0x97) {
+            return "PINK";
+        } else if (hex == 0xA1) {
+            return "OL_PURPLE";
+        } else if (hex == 0xB1) {
+            return "OL_CYAN";
+        } else {
+            return String.format("%02X", hex);
+        }
+    }
+
     public static String getStringAtLookupOffset(int[] table, int offset) {
         if (offset >= table.length) {
-            return "(OOB)";
+            return "{OOB}";
         }
         StringBuilder out = new StringBuilder();
         int idx = table[offset];
@@ -30,12 +52,21 @@ public abstract class StringHelper {
             Character chr = byteToChar(idx);
             if (chr != null) {
                 out.append(chr);
+            } else if (idx == 0x0A) {
+                offset++;
+                int clr = table[offset];
+                out.append("{CLR:").append(byteToColor(clr)).append('}');
+            } else if (idx >= 0x13 && idx <= 0x22) {
+                int section = table[offset+1];
+                int line = table[offset+2];
+                offset += 2;
+                out.append("{MCR:S").append(String.format("%02X", section)).append('L').append(String.format("%02X", line)).append('}');
             } else {
                 out.append('?');
             }
             offset++;
             if (offset >= table.length) {
-                return out.append("(OOB)").toString();
+                return out.append("{OOB}").toString();
             }
             idx = table[offset];
         }
@@ -45,7 +76,6 @@ public abstract class StringHelper {
     public static void initialize() {
         BIN_LOOKUP.put(0x00, '\n');
         BIN_LOOKUP.put(0x03, '\n');
-        BIN_LOOKUP.put(0x0A, '"');
         BIN_LOOKUP.put(0x30, '0');
         BIN_LOOKUP.put(0x31, '1');
         BIN_LOOKUP.put(0x32, '2');

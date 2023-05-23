@@ -37,7 +37,7 @@ public class TreasureDataObject {
             return "Gear: buki_get #" + typeString + (quantity != 1 ? " Q=" + quantity : "") + " " + obj;
         } else if (kind == 0x0A) {
             KeyItemDataObject obj = DataAccess.getKeyItem(type);
-            return "Key Item: #" + typeLow + " [" + String.format("%02X", typeLow) + "h]" + ' ' + (obj != null ? obj.getName() : "invalid");
+            return "Key Item: #" + typeLow + " [" + String.format("%04X", type) + "h]" + ' ' + (obj != null ? obj.getName() : "invalid");
         } else {
             return "Unknown K=" + kind + "; Q=" + quantity + "; T=" + typeString;
         }
