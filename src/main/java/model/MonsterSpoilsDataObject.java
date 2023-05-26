@@ -140,10 +140,10 @@ public class MonsterSpoilsDataObject {
         list.add("Gear Drop: Chance=" + dropChanceGear + "/255");
         if (dropChanceGear > 0) {
             String gearGeneral = " Formula=" + gearDamageFormula +
-                    " Power=" + gearAttackPower +
-                    " Crit=" + gearCritBonus +
-                    "% Slots=" + getRandomCountString(gearSlotCountByte, false) +
-                    " Ability Rolls=" + getRandomCountString(gearAbilityCountByte, true);
+                    ", Power=" + gearAttackPower +
+                    ", Crit=" + gearCritBonus +
+                    "%, Slots=" + getRandomCountString(gearSlotCountByte, false) +
+                    ", Ability Rolls=" + getRandomCountString(gearAbilityCountByte, true);
             list.add(gearGeneral);
             if (gearAbilityCountByte > 0) {
                 list.add(gearAbilityString());
@@ -154,18 +154,22 @@ public class MonsterSpoilsDataObject {
         return full;
     }
 
-    private static String getRandomCountString(int countByte, boolean zeroValid) {
-        double min = (countByte - 4) * 0.25;
-        double max = (countByte + 3) * 0.25;
+    private static String getRandomCountString(int countByte, boolean isAbilityRoll) {
+        double multiplier = isAbilityRoll ? 0.125 : 0.25;
+        double min = (countByte - 4) * multiplier;
+        double max = (countByte + 3) * multiplier;
         if (min >= 4) {
             return "4";
         }
         if (max < 2) {
-            if (!zeroValid) {
+            if (!isAbilityRoll) {
                 return "1";
             } else if (max < 1) {
                 return "0";
             }
+        }
+        if ((int) min == (int) max) {
+            return String.format("%s", (int) min);
         }
         return String.format("%s-%s", min, max);
     }

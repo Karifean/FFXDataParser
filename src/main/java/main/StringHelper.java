@@ -57,10 +57,10 @@ public abstract class StringHelper {
                 int clr = table[offset];
                 out.append("{CLR:").append(byteToColor(clr)).append('}');
             } else if (idx >= 0x13 && idx <= 0x22) {
-                int section = table[offset+1];
-                int line = table[offset+2];
-                offset += 2;
-                out.append("{MCR:S").append(String.format("%02X", section)).append('L').append(String.format("%02X", line)).append('}');
+                int section = idx - 0x13;
+                offset++;
+                int line = table[offset];
+                out.append("{MCR:s").append(String.format("%02X", section)).append('l').append(String.format("%02X", line)).append('}');
             } else {
                 out.append('?');
             }
