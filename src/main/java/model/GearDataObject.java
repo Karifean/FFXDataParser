@@ -119,10 +119,10 @@ public class GearDataObject {
 
     private String getAbilityString() {
         String abilityString = "[";
-        String ability1Str = getGearAbilityName(ability1);
-        String ability2Str = getGearAbilityName(ability2);
-        String ability3Str = getGearAbilityName(ability3);
-        String ability4Str = getGearAbilityName(ability4);
+        String ability1Str = getGearAbilityLabel(ability1);
+        String ability2Str = getGearAbilityLabel(ability2);
+        String ability3Str = getGearAbilityLabel(ability3);
+        String ability4Str = getGearAbilityLabel(ability4);
         if (slots >= 1) {
             abilityString += ability1Str;
             if (slots >= 2 || !ability2Str.equals("Empty")) {
@@ -143,15 +143,15 @@ public class GearDataObject {
         return String.format("%02X", bt) + '=' + String.format("%03d", bt) + '(' + String.format("%8s", Integer.toBinaryString(bt)).replace(' ', '0') + ')';
     }
 
-    private static String getGearAbilityName(int ability) {
-        if (ability == 0x00FF) {
+    private static String getGearAbilityLabel(int idx) {
+        if (idx == 0x00FF) {
             return "Empty";
         } else {
-            GearAbilityDataObject obj = DataAccess.getGearAbility(ability);
+            GearAbilityDataObject obj = DataAccess.getGearAbility(idx);
             if (obj == null) {
                 return "null";
             } else {
-                return obj.getName();
+                return obj.getName() + " [" + String.format("%04X", idx) + "h]";
             }
         }
     }

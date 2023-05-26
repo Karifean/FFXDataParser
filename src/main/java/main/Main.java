@@ -174,88 +174,39 @@ public class Main {
         System.out.println("");
     }
 
-    private static List<String> readStringData(DataInputStream data, int count, boolean print) throws IOException {
-        boolean clones = true;
-        boolean fourbytes = true;
-        if (count < 0) {
-            data.mark(4);
-            int first = data.read();
-            first += data.read() * 0x100;
-            data.skipNBytes(2);
-            int second = data.read();
-            second += data.read() * 0x100;
-            data.reset();
-            // System.out.println("Parsed first and second: " + String.format("%04X", first) + " " + String.format("%04X", second));
-            clones = first == second;
-            count = first / (clones ? 8 : 4);
+    private static List<String> readStringData(int[] bytes, boolean print) {
+        if (bytes == null) {
+            return null;
         }
-        List<Integer> offsets = new ArrayList<>(count);
-        Map<Integer, Integer> optionCount = new HashMap<>();
-        data.mark(count * 8);
-        for (int i = 0; i < count; i++) {
-            int offset = data.read();
-            offset += data.read() * 0x100;
-            int somethingElse = data.read();
-            int choosableOptions = data.read();
-            offsets.add(offset);
-            optionCount.put(i, choosableOptions);
-            if (clones) {
-                int clonedOffset = data.read();
-                clonedOffset += data.read() * 0x100;
-                int clonedSomethingElse = data.read();
-                int clonedChoosableOptions = data.read();
-                if (offset != clonedOffset) {
-                    System.err.println("offset " + i + " not cloned: offset " + String.format("%04X", offset) + "; other " + String.format("%04X", clonedOffset));
-                } else if (choosableOptions != clonedChoosableOptions) {
-                    System.err.println("choosableOptions " + i + " not cloned: original " + choosableOptions + "; other " + clonedChoosableOptions);
-                } else if (somethingElse != clonedSomethingElse) {
-                    System.err.println("somethingElse " + i + " not cloned: original " + somethingElse + "; other " + clonedSomethingElse);
-                }
-            }
-        }
-        data.reset();
-        return readStringsAtOffsets(count, offsets, data, print, optionCount);
-    }
-
-    public static List<String> readStringsAtOffsets(int count, List<Integer> offsets, DataInputStream data, boolean print, Map<Integer, Integer> optionCount) {
+        int first = bytes[0x00] + bytes[0x01] * 0x100;
+        int second = bytes[0x04] + bytes[0x05] * 0x100;
+        boolean clones = first == second;
+        int count = first / (clones ? 0x08 : 0x04);
         List<String> strings = new ArrayList<>(count);
         for (int i = 0; i < count; i++) {
-            int offset = offsets.get(i);
-            StringBuilder out = new StringBuilder();
-            data.mark(offset + 0xFFFF);
+            int addr = i * (clones ? 0x08 : 0x04);
+            int offset = bytes[addr] + bytes[addr + 0x01] * 0x100;
+            int somethingElse = bytes[addr + 0x02];
+            int options = bytes[addr + 0x03];
             if (print) {
-                int options = optionCount != null ? optionCount.get(i) : 0;
                 String choosable = options > 0 ? " (" + options + " selectable)" : "";
-                System.out.print("String " + i + " [" + String.format("%04X", offset) + "h]" + choosable + ":");
+                System.out.print("String #" + i + " [" + String.format("%04X", offset) + "h]" + choosable + ":");
             }
-            try {
-                data.skipNBytes(offset);
-                while (data.available() > 0) {
-                    int idx = data.read();
-                    if (idx == 0x00) {
-                        break;
-                    } else {
-                        Character chr = StringHelper.byteToChar(idx);
-                        if (chr != null) {
-                            out.append(chr);
-                        }
-                    }
-                }
-                if (print) {
-                    System.out.println(out);
-                }
-                strings.add(out.toString());
-            } catch (IOException e) {
-                // e.printStackTrace();
-                if (print) {
-                    System.out.println(e.getLocalizedMessage());
-                }
-                strings.add(e.toString());
-            } finally {
-                try {
-                    data.reset();
-                } catch (IOException e) {
-                    e.printStackTrace();
+            String out = StringHelper.getStringAtLookupOffset(bytes, offset);
+            if (print) {
+                System.out.println(out);
+            }
+            strings.add(out);
+            if (clones) {
+                int clonedOffset = bytes[addr + 0x04] + bytes[addr + 0x05] * 0x100;
+                int clonedSomethingElse = bytes[addr + 0x06];
+                int clonedChoosableOptions = bytes[addr + 0x07];
+                if (offset != clonedOffset) {
+                    System.err.println("offset " + i + " not cloned: offset " + String.format("%04X", offset) + "; other " + String.format("%04X", clonedOffset));
+                } else if (options != clonedChoosableOptions) {
+                    System.err.println("options " + i + " not cloned: original " + options + "; other " + clonedChoosableOptions);
+                } else if (somethingElse != clonedSomethingElse) {
+                    System.err.println("somethingElse " + i + " not cloned: original " + somethingElse + "; other " + clonedSomethingElse);
                 }
             }
         }
@@ -544,13 +495,9 @@ public class Main {
             if (contents != null) {
                 Arrays.stream(contents).filter(sf -> !sf.startsWith(".")).sorted().forEach(sf -> readStringFile(filename + '/' + sf, print));
             }
-        } else {
-            try {
-                // int[] bytes = ChunkedFileHelper.fileToBytes(FileAccessorWithMods.resolveFile(filename, print));
-                DataInputStream data = FileAccessorWithMods.readFile(FileAccessorWithMods.resolveFile(filename, print));
-                return readStringData(data, -1, print);
-            } catch (IOException ignored) {}
+            return null;
         }
-        return null;
+        int[] bytes = ChunkedFileHelper.fileToBytes(FileAccessorWithMods.resolveFile(filename, print));
+        return readStringData(bytes, print);
     }
 }

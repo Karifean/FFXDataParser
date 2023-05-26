@@ -384,10 +384,10 @@ public class ScriptObject {
             String val = typed(p1, varTypes.get(argv));
             textScriptLine += "var" + argvsh + " = " + val;
         } else if (opcode == 0xA2) { // PUSHAR / GET_DATUM_INDEX
-            String arrayIndex = '[' + String.format("%04X", p1.value) + ']';
+            String arrayIndex = '[' + ("int".equals(p1.type) && !p1.expression ? String.format("%04X", p1.value) : p1.toString()) + ']';
             stack.push(new StackObject(this, "int", true, "var"+argvsh+arrayIndex, argv));
         } else if (opcode == 0xA3 || opcode == 0xA4) { // POPAR(L) / SET_DATUM_INDEX_(W/T)
-            String arrayIndex = '[' + String.format("%04X", p1.value) + ']';
+            String arrayIndex = '[' + ("int".equals(p1.type) && !p1.expression ? String.format("%04X", p1.value) : p1.toString()) + ']';
             textScriptLine += "Set ";
             if (opcode == 0xA4) {
                 textScriptLine += "(limit) ";

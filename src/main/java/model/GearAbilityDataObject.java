@@ -100,22 +100,23 @@ public class GearAbilityDataObject {
     int extraStatusInflictFlags2;
     int extraStatusResistFlags1;
     int extraStatusResistFlags2;
-
     int statIncreaseAmount;
+    int unknownByte56;
     int statIncreaseFlags;
-
     int autoStatuses1;
     int autoStatuses2;
     int autoStatuses3;
     int autoStatuses4;
-
+    int unknownByte5C;
+    int unknownByte5D;
     private int abilityFlags62;
     private int abilityFlags63;
     private int abilityFlags64;
     private int abilityFlags65;
     private int abilityFlags66;
+    int unknownByte67;
 
-    int usually14;
+    int byte67usually14;
     public int groupIndex;
     public int groupLevel;
     int internationalBonusIndex;
@@ -220,6 +221,16 @@ public class GearAbilityDataObject {
     private boolean noEncounters;
     private boolean capture;
 
+    private boolean byte62bit80;
+    private boolean byte63bit01;
+    private boolean byte65bit10;
+    private boolean byte65bit20;
+    private boolean byte66bit08;
+    private boolean byte66bit10;
+    private boolean byte66bit20;
+    private boolean byte66bit40;
+    private boolean byte66bit80;
+
     public GearAbilityDataObject(int[] bytes, int[] stringBytes) {
         this.bytes = bytes;
         mapBytes();
@@ -306,13 +317,14 @@ public class GearAbilityDataObject {
         statusResistChanceHaste = bytes[0x53];
         statusResistChanceSlow = bytes[0x54];
         statIncreaseAmount = bytes[0x55];
-
+        unknownByte56 = bytes[0x56];
         statIncreaseFlags = bytes[0x57];
         autoStatuses1 = bytes[0x58];
         autoStatuses2 = bytes[0x59];
         autoStatuses3 = bytes[0x5A];
         autoStatuses4 = bytes[0x5B];
-
+        unknownByte5C = bytes[0x5C];
+        unknownByte5D = bytes[0x5D];
         extraStatusInflictFlags1 = bytes[0x5E];
         extraStatusInflictFlags2 = bytes[0x5F];
         extraStatusResistFlags1 = bytes[0x60];
@@ -322,8 +334,8 @@ public class GearAbilityDataObject {
         abilityFlags64 = bytes[0x64];
         abilityFlags65 = bytes[0x65];
         abilityFlags66 = bytes[0x66];
-
-        usually14 = bytes[0x68];
+        unknownByte67 = bytes[0x67];
+        byte67usually14 = bytes[0x68];
         groupIndex = bytes[0x69];
         groupLevel = bytes[0x6A];
         internationalBonusIndex = bytes[0x6B];
@@ -402,6 +414,8 @@ public class GearAbilityDataObject {
         evadencounter = (abilityFlags62 & 0x10) > 0;
         magiccounter = (abilityFlags62 & 0x20) > 0;
         magicbooster = (abilityFlags62 & 0x40) > 0;
+        byte62bit80 = (abilityFlags62 & 0x80) > 0;
+        byte63bit01 = (abilityFlags63 & 0x01) > 0;
         alchemy = (abilityFlags63 & 0x02) > 0;
         autoPotion = (abilityFlags63 & 0x04) > 0;
         autoMed = (abilityFlags63 & 0x08) > 0;
@@ -421,11 +435,18 @@ public class GearAbilityDataObject {
         breakHpLimit = (abilityFlags65 & 0x02) > 0;
         breakMpLimit = (abilityFlags65 & 0x04) > 0;
         breakDmgLimit = (abilityFlags65 & 0x08) > 0;
+        byte65bit10 = (abilityFlags65 & 0x10) > 0;
+        byte65bit20 = (abilityFlags65 & 0x20) > 0;
         gilX2 = (abilityFlags65 & 0x40) > 0;
         hpStroll = (abilityFlags65 & 0x80) > 0;
         mpStroll = (abilityFlags66 & 0x01) > 0;
         noEncounters = (abilityFlags66 & 0x02) > 0;
         capture = (abilityFlags66 & 0x04) > 0;
+        byte66bit08 = (abilityFlags66 & 0x08) > 0;
+        byte66bit10 = (abilityFlags66 & 0x10) > 0;
+        byte66bit20 = (abilityFlags66 & 0x20) > 0;
+        byte66bit40 = (abilityFlags66 & 0x40) > 0;
+        byte66bit80 = (abilityFlags66 & 0x80) > 0;
     }
 
     private void mapStrings(int[] stringBytes) {
@@ -446,8 +467,8 @@ public class GearAbilityDataObject {
         list.add(autoBuffs());
         list.add(grouping());
         list.add(ifG0(internationalBonusIndex, "Duration?=", ""));
-        if (usually14 != 0x14) {
-            list.add("Byte68=" + usually14);
+        if (byte67usually14 != 0x14) {
+            list.add("Byte68=" + byte67usually14);
         }
         String full = list.stream().filter(s -> s != null && !s.isBlank()).collect(Collectors.joining(", "));
         String dashStr = (dashOffset > 0 && !"-".equals(dash) ? "DH=" + dash + " / " : "");

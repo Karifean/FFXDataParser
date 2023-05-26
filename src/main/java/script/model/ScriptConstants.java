@@ -177,6 +177,60 @@ public abstract class ScriptConstants {
         putEnum("controllerButton", 0x14, "?Up");
         putEnum("controllerButton", 0x15, "?Right");
 
+        putEnum("textAlignment", 0x01, "?Left");
+        putEnum("textAlignment", 0x03, "?Right");
+        putEnum("textAlignment", 0x04, "?Center");
+
+        putEnum("field", 0x0000, "system");
+        putEnum("field", 0x0002, "test00");
+        putEnum("field", 0x0005, "test10");
+        putEnum("field", 0x0006, "test11");
+        putFields(0x000A, "znkd", 14);
+        putFields(0x001E, "bjyt", 12);
+        putFields(0x0032, "cdsp", 8);
+        putFields(0x0041, "bsil", 7);
+        putFields(0x005F, "slik", 11);
+        putFields(0x0083, "klyt", 12);
+        putFields(0x00A5, "lchb", 18);
+        putFields(0x00D2, "mihn", 8);
+        putFields(0x00DC, "kino", 9);
+        putFields(0x00F5, "genk", 16);
+        putFields(0x012C, "kami", 4);
+        putFields(0x0136, "mcfr", 14);
+        putFields(0x014A, "maca", 5);
+        putFields(0x0154, "mcyt", 7);
+        putFields(0x015E, "bika", 4);
+        putFields(0x0168, "azit", 7);
+        putFields(0x017C, "hiku", 21);
+        putFields(0x0195, "stbv", 1);
+        putFields(0x019A, "bvyt", 13);
+        putFields(0x01A9, "nagi", 7);
+        putFields(0x01BD, "lmyt", 2);
+        putFields(0x01E5, "mtgz", 11);
+        putFields(0x01F4, "zkrn", 6);
+        putFields(0x0203, "dome", 7);
+        putFields(0x0235, "ssbt", 4);
+        putFields(0x0244, "sins", 9);
+        putFields(0x024E, "omeg", 1);
+        putFields(0x0259, "zzzz", 3);
+        putFields(0x0262, "tori", 3);
+
+        putEnum("sfx", 0x80000005, "NewGameChime?");
+        putEnum("sfx", 0x80000009, "TreasureChestOpening");
+        putEnum("sfx", 0x8000000E, "GilPaid");
+        putEnum("sfx", 0x80000010, "PuzzlePrompt");
+        putEnum("sfx", 0x80000012, "TakeSphereP1");
+        putEnum("sfx", 0x80000013, "InsertSphere");
+        putEnum("sfx", 0x80000014, "TakeSphereP2");
+        putEnum("sfx", 0x80000016, "PuzzleSolvedChime");
+        putEnum("sfx", 0x80000017, "LevelGainedChime");
+        putEnum("sfx", 0x80000026, "TreasureObtainedChime");
+        putEnum("sfx", 0x80000030, "AlBhedPrimerObtained");
+        putEnum("sfx", 0x80000032, "SaveSphere");
+        putEnum("sfx", 0x8000003D, "ShineCelestialMirror?");
+        putEnum("sfx", 0x80000048, "BoardAirship");
+        putEnum("sfx", 0x8000004A, "InstructionsChime");
+
         putEnum("bgm", 0x000A, "Unwavering Determination");
         putEnum("bgm", 0x000B, "Secret Maneuvers");
         putEnum("bgm", 0x000C, "Boss Theme");
@@ -186,7 +240,8 @@ public abstract class ScriptConstants {
         putEnum("bgm", 0x0082, "To Zanarkand");
         putEnum("bgm", 0x0091, "Challenge?");
 
-        putEnum("battleEndType", 0x01, "?Game Over");
+        putEnum("battleEndType", 0x01, "Game Over");
+        putEnum("battleEndType", 0x02, "Victory");
         putEnum("battleEndType", 0x03, "?Escape");
 
         putEnum("damageFormula", 0x00, "None");
@@ -390,8 +445,8 @@ public abstract class ScriptConstants {
         putActorProperty(0x007A, null, "bool", "stat_wait_motion_flag");
         putActorProperty(0x007B, null, "bool", "stat_attack_return_flag");
         putActorProperty(0x007C, null, "unknown", "stat_attack_normal_frame");
-        putActorProperty(0x007D, null, "bool", "stat_disable_move_flag");
-        putActorProperty(0x007E, null, "bool", "stat_disable_jump_flag");
+        putActorProperty(0x007D, "?Tough (No Delay recoil)", "bool", "stat_disable_move_flag");
+        putActorProperty(0x007E, "?Heavy (No lift off ground)", "bool", "stat_disable_jump_flag");
         putActorProperty(0x007F, null, "bool", "stat_bodyhit_flag");
         putActorProperty(0x0080, null, "unknown", "stat_effvar");
         putActorProperty(0x0081, "StealItemCommonType", "move", "stat_item");
@@ -648,5 +703,12 @@ public abstract class ScriptConstants {
         ScriptField field = new ScriptField(name, type);
         field.idx = idx;
         getEnumMap("moveProperty").put(idx, field);
+    }
+
+    private static void putFields(int offset, String name, int endIdx) {
+        for (int i = 0; i <= endIdx; i++) {
+            String idxStr = String.format("%02d", i);
+            putEnum("field", offset + i, name + idxStr);
+        }
     }
 }

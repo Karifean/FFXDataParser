@@ -34,7 +34,7 @@ public class AbilityDataObject {
     int anim2;
     int icon;
     int casterAnimation;
-    int menuProperties1B;
+    int menuProperties16;
     int subsubMenuCategorization;
     // /|\ Always equal to subMenuCategorization except on nested menus in menus like Use/Quick Pockets
     //  |  and also on Requiem for some reason.
@@ -140,6 +140,7 @@ public class AbilityDataObject {
     boolean targetFlag8LongRangeMaybe;
     boolean onTopLevelInMenu;
     boolean opensSubMenu;
+    boolean byte1Fbit01;
     boolean byte1Fbit02WhichIsOnlySetOnEntrust;
     boolean useCastAnimationMaybe;
     boolean userRunsOffScreen;
@@ -253,7 +254,7 @@ public class AbilityDataObject {
         anim2 = read2Bytes(0x12);
         icon = bytes[0x14];
         casterAnimation = bytes[0x15];
-        menuProperties1B = bytes[0x16];
+        menuProperties16 = bytes[0x16];
         subsubMenuCategorization = bytes[0x17];
         subMenuCategorization = bytes[0x18];
         characterUser = bytes[0x19];
@@ -340,8 +341,8 @@ public class AbilityDataObject {
         targetEitherTeam = (targetingFlags & 0x20) > 0;
         targetDead = (targetingFlags & 0x40) > 0;
         targetFlag8LongRangeMaybe = (targetingFlags & 0x80) > 0;
-        onTopLevelInMenu = (menuProperties1B & 0x01) > 0;
-        opensSubMenu = (menuProperties1B & 0x10) > 0;
+        onTopLevelInMenu = (menuProperties16 & 0x01) > 0;
+        opensSubMenu = (menuProperties16 & 0x10) > 0;
         usableOutsideCombat = (miscProperties1C & 0x01) > 0;
         usableInCombat = (miscProperties1C & 0x02) > 0;
         displayMoveName = (miscProperties1C & 0x04) > 0;
@@ -366,6 +367,7 @@ public class AbilityDataObject {
         useTier3CastAnimation = (miscProperties1E & 0x20) > 0;
         destroyCaster = (miscProperties1E & 0x40) > 0;
         missIfAlive = (miscProperties1E & 0x80) > 0;
+        byte1Fbit01 = (animationProperties1F & 0x01) > 0;
         byte1Fbit02WhichIsOnlySetOnEntrust = (animationProperties1F & 0x02) > 0;
         useCastAnimationMaybe = (animationProperties1F & 0x04) > 0;
         userRunsOffScreen = (animationProperties1F & 0x08) > 0;

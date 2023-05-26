@@ -27,17 +27,18 @@ public class TreasureDataObject {
 
     @Override
     public String toString() {
-        String typeString = type + " [" + String.format("%02X", type) + "h]";
+        String typeHexSuffix = " [" + String.format("%02X", type) + "h]";
+        String typeString = type + typeHexSuffix;
         if (kind == 0x02) {
-            return "Item: " + quantity + "x " + DataAccess.getMove(type).name + " [" + String.format("%04X", type) + "h]";
+            return "Item: " + quantity + "x " + DataAccess.getMove(type).name + typeHexSuffix;
         } else if (kind == 0x00) {
             return "Gil: " + quantity * 100 + (type != 0 ? "T=" + typeString : "") + " [" + String.format("%02X", quantity) + "h]";
         } else if (kind == 0x05) {
-            GearDataObject obj = DataAccess.WEAPON_PICKUPS != null ? DataAccess.WEAPON_PICKUPS[type] : null;
-            return "Gear: buki_get #" + typeString + (quantity != 1 ? " Q=" + quantity : "") + " " + obj;
+            GearDataObject gear = DataAccess.WEAPON_PICKUPS != null ? DataAccess.WEAPON_PICKUPS[type] : null;
+            return "Gear: buki_get #" + typeString + (quantity != 1 ? " Q=" + quantity : "") + " " + gear;
         } else if (kind == 0x0A) {
-            KeyItemDataObject obj = DataAccess.getKeyItem(type);
-            return "Key Item: #" + typeLow + " [" + String.format("%04X", type) + "h]" + ' ' + (obj != null ? obj.getName() : "invalid");
+            KeyItemDataObject keyItem = DataAccess.getKeyItem(type);
+            return "Key Item: " + (keyItem != null ? keyItem.getName() : "null") + typeHexSuffix;
         } else {
             return "Unknown K=" + kind + "; Q=" + quantity + "; T=" + typeString;
         }
