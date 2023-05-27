@@ -12,54 +12,9 @@ public class ScriptFunc extends ScriptField {
         this.inputs = brackets ? new ArrayList<>() : null;
     }
 
-    public ScriptFunc(String name, String type, String internalName, List<ScriptField> inputs) {
+    public ScriptFunc(String name, String type, String internalName, ScriptField ...inputs) {
         super(name, type, internalName);
-        this.inputs = inputs;
-    }
-
-    public ScriptFunc(String name, String type, String internalName, ScriptField i1) {
-        super(name, type, internalName);
-        this.inputs = List.of(i1);
-    }
-
-    public ScriptFunc(String name, String type, String internalName, ScriptField i1, ScriptField i2) {
-        super(name, type, internalName);
-        this.inputs = List.of(i1, i2);
-    }
-
-    public ScriptFunc(String name, String type, String internalName, ScriptField i1, ScriptField i2, ScriptField i3) {
-        super(name, type, internalName);
-        this.inputs = List.of(i1, i2, i3);
-    }
-
-    public ScriptFunc(String name, String type, String internalName, ScriptField i1, ScriptField i2, ScriptField i3, ScriptField i4) {
-        super(name, type, internalName);
-        this.inputs = List.of(i1, i2, i3, i4);
-    }
-
-    public ScriptFunc(String name, String type, String internalName, ScriptField i1, ScriptField i2, ScriptField i3, ScriptField i4, ScriptField i5) {
-        super(name, type, internalName);
-        this.inputs = List.of(i1, i2, i3, i4, i5);
-    }
-
-    public ScriptFunc(String name, String type, String internalName, ScriptField i1, ScriptField i2, ScriptField i3, ScriptField i4, ScriptField i5, ScriptField i6) {
-        super(name, type, internalName);
-        this.inputs = List.of(i1, i2, i3, i4, i5, i6);
-    }
-
-    public ScriptFunc(String name, String type, String internalName, ScriptField i1, ScriptField i2, ScriptField i3, ScriptField i4, ScriptField i5, ScriptField i6, ScriptField i7) {
-        super(name, type, internalName);
-        this.inputs = List.of(i1, i2, i3, i4, i5, i6, i7);
-    }
-
-    public ScriptFunc(String name, String type, String internalName, ScriptField i1, ScriptField i2, ScriptField i3, ScriptField i4, ScriptField i5, ScriptField i6, ScriptField i7, ScriptField i8) {
-        super(name, type, internalName);
-        this.inputs = List.of(i1, i2, i3, i4, i5, i6, i7, i8);
-    }
-
-    public ScriptFunc(String name, String type, String internalName, ScriptField i1, ScriptField i2, ScriptField i3, ScriptField i4, ScriptField i5, ScriptField i6, ScriptField i7, ScriptField i8, ScriptField i9) {
-        super(name, type, internalName);
-        this.inputs = List.of(i1, i2, i3, i4, i5, i6, i7, i8, i9);
+        this.inputs = List.of(inputs);
     }
 
     public String getType(List<StackObject> params) {

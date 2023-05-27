@@ -325,9 +325,9 @@ public class ScriptObject {
         } else if (opcode >= 0x36 && opcode <= 0x38) { // REQ / SIG_NOACK
             String type = "queueScript";
             if (opcode == 0x37) { // REQSW / SIG_ONSTART
-                type += "Sync";
-            } else if (opcode == 0x38) { // REQEW / SIG_ONEND
                 type += "Async";
+            } else if (opcode == 0x38) { // REQEW / SIG_ONEND
+                type += "Sync";
             }
             String sep = "s" + format2Or4Byte(p2.value) + "e" + format2Or4Byte(p3.value);
             String content = "(" + p1 + ", " + sep + ")";
@@ -455,9 +455,11 @@ public class ScriptObject {
         ScriptFunc func = ScriptFuncLib.get(idx, params);
         if (func == null) {
             func = new ScriptFunc("Unknown:" + String.format("%04X", idx), "unknown", null, false);
-        } else if (func.inputs != null) {
-            for (int i = 0; i < func.inputs.size(); i++) {
-                typed(params.get(i), func.inputs.get(i).type);
+        }
+        List<ScriptField> inputs = func.inputs;
+        if (inputs != null) {
+            for (int i = 0; i < inputs.size(); i++) {
+                typed(params.get(i), inputs.get(i).type);
             }
         }
         return func;

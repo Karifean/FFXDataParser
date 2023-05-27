@@ -215,7 +215,7 @@ public abstract class ScriptConstants {
         putFields(0x0259, "zzzz", 3);
         putFields(0x0262, "tori", 3);
 
-        putEnum("sfx", 0x80000005, "NewGameChime?");
+        putEnum("sfx", 0x80000005, "?NewGameChime");
         putEnum("sfx", 0x80000009, "TreasureChestOpening");
         putEnum("sfx", 0x8000000E, "GilPaid");
         putEnum("sfx", 0x80000010, "PuzzlePrompt");
@@ -227,7 +227,7 @@ public abstract class ScriptConstants {
         putEnum("sfx", 0x80000026, "TreasureObtainedChime");
         putEnum("sfx", 0x80000030, "AlBhedPrimerObtained");
         putEnum("sfx", 0x80000032, "SaveSphere");
-        putEnum("sfx", 0x8000003D, "ShineCelestialMirror?");
+        putEnum("sfx", 0x8000003D, "?ShineCelestialMirror");
         putEnum("sfx", 0x80000048, "BoardAirship");
         putEnum("sfx", 0x8000004A, "InstructionsChime");
 
@@ -236,9 +236,14 @@ public abstract class ScriptConstants {
         putEnum("bgm", 0x000C, "Boss Theme");
         putEnum("bgm", 0x000D, "The Summoning");
         putEnum("bgm", 0x000E, "Macalania Woods");
+        putEnum("bgm", 0x0010, "?Battle Theme");
         putEnum("bgm", 0x001B, "Blitz Off!");
+        putEnum("bgm", 0x0029, "Truth Revealed");
         putEnum("bgm", 0x0082, "To Zanarkand");
-        putEnum("bgm", 0x0091, "Challenge?");
+        putEnum("bgm", 0x0091, "?Challenge");
+
+        putEnum("battleTransition", 0x00, "Screen Shatter");
+        putEnum("battleTransition", 0x01, "Fade");
 
         putEnum("battleEndType", 0x01, "Game Over");
         putEnum("battleEndType", 0x02, "Victory");

@@ -1,12 +1,15 @@
 package script.model;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public abstract class ScriptFuncLib {
     private static ScriptFunc[] FUNCS;
 
     private static boolean initialized = false;
+
+    private static ScriptField p(int index) {
+        return p("p" + index, "unknown");
+    }
     
     private static ScriptField p(String typeAndName) {
         return new ScriptField(typeAndName);
@@ -21,9 +24,9 @@ public abstract class ScriptFuncLib {
     }
 
     private static ScriptFunc putUnknownFunc(int idx, String internalName, String returnType, int inputs) {
-        List<ScriptField> inputList = new ArrayList<>();
-        for (int i = 1; i <= inputs; i++) {
-            inputList.add(p("p" + i, "unknown"));
+        ScriptField[] inputList = new ScriptField[inputs];
+        for (int i = 0; i < inputs; i++) {
+            inputList[i] = p(i+1);
         }
         ScriptFunc func = new ScriptFunc(null, returnType, internalName, inputList);
         return putFuncWithIdx(idx, func);
@@ -572,7 +575,7 @@ public abstract class ScriptFuncLib {
         putUnknownFunc(0x5018, 1);
         putUnknownFunc(0x5019, 5);
         putUnknownFunc(0x501A, 5);
-        putUnknownFunc(0x501B, 1);
+        putFuncWithIdx(0x501B, new ScriptFunc("playCharAnimation", "unknown", null, p("anim")));
         putUnknownFunc(0x501E, 0);
         putUnknownFunc(0x501F, 0);
         putUnknownFunc(0x5020, 0);
@@ -801,7 +804,7 @@ public abstract class ScriptFuncLib {
         putUnknownFunc(0x6088, "camReset", 0);
         putUnknownFunc(0x7000, "btlTerminateAction", 0);
         putUnknownFunc(0x7001, "btlSetRandPosFlag", 1);
-        putFuncWithIdx(0x7002, new ScriptFunc("launchBattle", "unknown", "btlExe", p("encounter"), p("transition?", "int")));
+        putFuncWithIdx(0x7002, new ScriptFunc("launchBattle", "unknown", "btlExe", p("encounter"), p("transition?", "battleTransition")));
         putUnknownFunc(0x7003, "btlDirTarget", 2);
         putUnknownFunc(0x7004, "btlSetDirRate", 1);
         putFuncWithIdx(0x7005, new ScriptFunc("isWater?", "int", "btlGetWater", false));
@@ -1178,7 +1181,7 @@ public abstract class ScriptFuncLib {
         putUnknownFunc(0xC014, 0);
         putUnknownFunc(0xC018, 1);
         putUnknownFunc(0xC022, 1);
-        putUnknownFunc(0xC024, 2);
+        putFuncWithIdx(0xC024, new ScriptFunc("launchBattleAlwaysWin?", "unknown", null, p("encounter"), p("transition?", "battleTransition")));
         putUnknownFunc(0xC025, 1);
         putUnknownFunc(0xC028, 0);
         putUnknownFunc(0xC02A, 1);
