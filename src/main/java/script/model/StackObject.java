@@ -15,6 +15,8 @@ public class StackObject {
     public boolean expression;
     public String content;
     public int value;
+    public boolean maybeBracketize = false;
+    public Integer referenceIndex;
 
     public StackObject(ScriptObject script, String type, boolean expression, String content, int value) {
         this.parentScript = script;
@@ -26,10 +28,12 @@ public class StackObject {
 
     public StackObject(String type, StackObject obj) {
         this.parentScript = obj.parentScript;
-        this.type = "unknown".equals(type) ? obj.type : type;
+        this.type = (type == null || "unknown".equals(type)) ? obj.type : type;
         this.expression = obj.expression;
         this.content = obj.content;
         this.value = obj.value;
+        this.maybeBracketize = obj.maybeBracketize;
+        this.referenceIndex = obj.referenceIndex;
     }
 
     @Override

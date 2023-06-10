@@ -498,7 +498,6 @@ public abstract class ScriptFuncLib {
         putFuncWithIdx(0x1001, new ScriptFunc("sin", "float", null, p("float")));
         putFuncWithIdx(0x1002, new ScriptFunc("cos", "float", null, p("float")));
         putUnknownFunc(0x1005, 2);
-        putUnknownFunc(0x1006, 1);
         putFuncWithIdx(0x1006, new ScriptFunc("sqrt", "float", null, p("float")));
         putUnknownFunc(0x100A, 1);
         putUnknownFunc(0x1013, 1); // This is a guess, could also be 0 if 0x1001 and 0x1002 are 2 instead of 1
@@ -714,7 +713,7 @@ public abstract class ScriptFuncLib {
         putUnknownFunc(0x602E, "refMove", 1);
         putUnknownFunc(0x602F, "refMovePolar", 1);
         putUnknownFunc(0x6030, "refMoveCos", 1);
-        putUnknownFunc(0x6030, "refMovePolarCos", 1);
+        putUnknownFunc(0x6031, "refMovePolarCos", 1);
         putUnknownFunc(0x6032, "refMoveAcc", 4);
         putUnknownFunc(0x6033, "refMovePolarAcc", 4);
         putUnknownFunc(0x6034, "refResetMove", 0);
