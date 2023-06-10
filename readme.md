@@ -9,24 +9,23 @@
 
 ## Usage
 
-`java -jar src/main/java/main/Main.jar <ParsingModeId> [<ParsingOptions>] ...`
+`java -jar src/main/java/main/Main.jar <ParsingMode> [<ParsingOptions>] ...`
 
-Example: `java -jar src/main/java/main/Main.jar 14 "ffx_ps2\ffx\master\jppc\event\obj\do\dome0600\dome0600.ebp"`
+Example: `java -jar src/main/java/main/Main.jar PARSE_SCRIPT_FILE ffx_ps2\ffx\master\jppc\event\obj\do\dome0600\dome0600.ebp`
 
-#### ParsingModes (numerical)
+#### ParsingModes
 
-| Id | ParsingMode                          | Options                               | Description                                                |
-|----|--------------------------------------|:--------------------------------------|------------------------------------------------------------|
-| 1  | `MODE_GREP`                          |                                       |                                                            |
-| 2  | `MODE_TRANSLATE`                     |                                       |                                                            |
-| 4  | `MODE_READ_ALL_ABILITIES`            |                                       |                                                            |
-| 5  | `MODE_READ_KEY_ITEMS`                |                                       |                                                            |
-| 6  | `MODE_READ_GEAR_ABILITIES`           |                                       |                                                            |
-| 7  | `MODE_READ_SPECIFIC_MONSTER_WITH_AI` |                                       |                                                            |
-| 8  | `MODE_READ_TREASURES`                |                                       |                                                            |
-| 9  | `MODE_READ_WEAPON_PICKUPS`           |                                       |                                                            |
-| 10 | `MODE_READ_STRING_FILE`              |                                       |                                                            |
-| 14 | `MODE_PARSE_GENERIC_SCRIPT_FILE`     | `<file/folder1> [<file/folder2>] ...` | Reads the script from a file and prints it to the console. |
-| 15 | `MODE_PARSE_MONSTER_FILE`            |                                       |                                                            |
-| 16 | `MODE_PARSE_ENCOUNTER_FILE`          |                                       |                                                            | 
-| 17 | `MODE_PARSE_EVENT_FILE`              |                                       |                                                            | 
+| ParsingMode                          | Options                               | Description                                                |
+|--------------------------------------|:--------------------------------------|------------------------------------------------------------|
+| `GREP`                          | `plain text string` | Convert a string into FFX byte encoding and prints command lines for GREP-ing for them |
+| `TRANSLATE`                     | `bytes` | Converts FFX encoded string bytes into a plain text string |
+| `READ_ALL_ABILITIES`            | | Prints information on all abilities (from `command.bin`, `monmagic1.bin`, `monmagic2.bin` and `item.bin`) |
+| `READ_KEY_ITEMS`                | | Prints information on key items (from `important.bin`) |
+| `READ_GEAR_ABILITIES`           | | Prints information on auto-abilities for gear (from `a_ability.bin`) |
+| `READ_TREASURES`                | | Prints information on treasure pickups in the game (from `takara.bin`) |
+| `READ_WEAPON_FILE`           | `<file/folder1> [<file/folder2>] ...` | Reads weapons from a dedicated weapon file (known valid target files are `weapon.bin`, `buki_get.bin`, `shop_arms.bin`) |
+| `READ_STRING_FILE`              | `<file/folder1> [<file/folder2>] ...` | Reads all strings (indexed) from a dedicated string file                                                           |
+| `PARSE_SCRIPT_FILE`     | `<file/folder1> [<file/folder2>] ...` | Reads the script from a file and prints it to the console. If given a folder, recurses through all script files within. |
+| `PARSE_MONSTER`            | `<mIndex1, ex: 234> [<mIndex2, ex: 235>] ...` | Reads the monster files with the given decimal index and prints their information. |
+| `PARSE_ENCOUNTER`          | `<btlIndex1, ex: sins04_07> [<btlIndex2, ex: zzzz03_33>] ...` | Reads the encounter files with the given name and prints their information. | 
+| `PARSE_EVENT`              | `<evIndex1, ex: lmyt0000> [<evIndex2, ex: kami0300>] ...` | Reads the event files with the given name and prints their information. | 

@@ -39,45 +39,30 @@ public abstract class StringHelper {
     }
 
     public static String byteToColor(int hex) {
-        if (hex == 0x41) {
-            return "WHITE";
-        } else if (hex == 0x43) {
-            return "YELLOW";
-        } else if (hex == 0x52) {
-            return "GREY";
-        } else if (hex == 0x88) {
-            return "BLUE";
-        } else if (hex == 0x94) {
-            return "RED";
-        } else if (hex == 0x97) {
-            return "PINK";
-        } else if (hex == 0xA1) {
-            return "OL_PURPLE";
-        } else if (hex == 0xB1) {
-            return "OL_CYAN";
-        } else {
-            return String.format("%02X", hex);
-        }
+        return switch (hex) {
+            case 0x41 -> "WHITE";
+            case 0x43 -> "YELLOW";
+            case 0x52 -> "GREY";
+            case 0x88 -> "BLUE";
+            case 0x94 -> "RED";
+            case 0x97 -> "PINK";
+            case 0xA1 -> "OL_PURPLE";
+            case 0xB1 -> "OL_CYAN";
+            default -> String.format("%02X", hex);
+        };
     }
 
     public static String byteToConsoleColor(int hex) {
-        if (hex == 0x41) {
-            return ANSI_RESET;
-        } else if (hex == 0x43) {
-            return ANSI_YELLOW;
-        } else if (hex == 0x52) {
-            return ANSI_BLACK;
-        } else if (hex == 0x88) {
-            return ANSI_BLUE;
-        } else if (hex == 0x94) {
-            return ANSI_RED;
-        } else if (hex == 0xA1) {
-            return ANSI_PURPLE;
-        } else if (hex == 0xB1) {
-            return ANSI_CYAN;
-        } else {
-            return "";
-        }
+        return switch (hex) {
+            case 0x41 -> ANSI_RESET;
+            case 0x43 -> ANSI_YELLOW;
+            case 0x52 -> ANSI_BLACK;
+            case 0x88 -> ANSI_BLUE;
+            case 0x94 -> ANSI_RED;
+            case 0xA1 -> ANSI_PURPLE;
+            case 0xB1 -> ANSI_CYAN;
+            default -> "";
+        };
     }
 
     public static String getStringAtLookupOffset(int[] table, int offset) {
@@ -86,6 +71,7 @@ public abstract class StringHelper {
         }
         StringBuilder out = new StringBuilder();
         int idx = table[offset];
+        boolean anyColorization = false;
         while (idx != 0x00) {
             Character chr = byteToChar(idx);
             if (chr != null) {
@@ -94,6 +80,7 @@ public abstract class StringHelper {
                 offset++;
                 int clr = table[offset];
                 out.append(getColorString(clr));
+                anyColorization = true;
             } else if (idx >= 0x13 && idx <= 0x22) {
                 int section = idx - 0x13;
                 offset++;
@@ -108,7 +95,7 @@ public abstract class StringHelper {
             }
             idx = table[offset];
         }
-        if (COLORS_USE_CONSOLE_CODES) {
+        if (COLORS_USE_CONSOLE_CODES && anyColorization) {
             out.append(ANSI_RESET);
         }
         return out.toString();

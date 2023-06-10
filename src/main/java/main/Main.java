@@ -17,34 +17,38 @@ import java.util.stream.Collectors;
 
 public class Main {
 
-    private static final int MODE_GREP = 1;
-    private static final int MODE_TRANSLATE = 2;
-    private static final int MODE_READ_ALL_ABILITIES = 4;
-    private static final int MODE_READ_KEY_ITEMS = 5;
-    private static final int MODE_READ_GEAR_ABILITIES = 6;
-    private static final int MODE_READ_SPECIFIC_MONSTER_WITH_AI = 7;
-    private static final int MODE_READ_TREASURES = 8;
-    private static final int MODE_READ_WEAPON_PICKUPS = 9;
-    private static final int MODE_READ_STRING_FILE = 10;
-    private static final int MODE_PARSE_GENERIC_SCRIPT_FILE = 14;
-    private static final int MODE_PARSE_MONSTER_FILE = 15;
-    private static final int MODE_PARSE_ENCOUNTER_WITH_STR = 16;
-    private static final int MODE_PARSE_EVENT_WITH_STR = 17;
+    private static final String MODE_GREP = "GREP";
+    private static final String MODE_TRANSLATE = "TRANSLATE";
+    private static final String MODE_READ_ALL_ABILITIES = "READ_ALL_ABILITIES";
+    private static final String MODE_READ_KEY_ITEMS = "READ_KEY_ITEMS";
+    private static final String MODE_READ_GEAR_ABILITIES = "READ_GEAR_ABILITIES";
+    private static final String MODE_READ_TREASURES = "READ_TREASURES";
+    private static final String MODE_READ_WEAPON_FILE = "READ_WEAPON_FILE";
+    private static final String MODE_READ_STRING_FILE = "READ_STRING_FILE";
+    private static final String MODE_PARSE_SCRIPT_FILE = "PARSE_SCRIPT_FILE";
+    private static final String MODE_PARSE_ENCOUNTER = "PARSE_ENCOUNTER";
+    private static final String MODE_PARSE_EVENT = "PARSE_EVENT";
+    private static final String MODE_PARSE_MONSTER = "PARSE_MONSTER";
+
     private static final String PATH_FFX_ROOT = "ffx_ps2/ffx/master/";
-    private static final String ORIGINALS_KERNEL_PATH = PATH_FFX_ROOT + "jppc/battle/kernel/";
-    private static final String LOCALIZED_KERNEL_PATH = PATH_FFX_ROOT + "new_uspc/battle/kernel/";
-    private static final String MONSTER_FOLDER_PATH = PATH_FFX_ROOT + "jppc/battle/mon/";
-    private static final String ORIGINALS_ENCOUNTER_PATH = PATH_FFX_ROOT + "jppc/battle/btl/";
-    private static final String LOCALIZED_ENCOUNTER_PATH = PATH_FFX_ROOT + "new_uspc/battle/btl/";
-    private static final String ORIGINALS_EVENT_PATH = PATH_FFX_ROOT + "jppc/event/obj/";
-    private static final String LOCALIZED_EVENT_PATH = PATH_FFX_ROOT + "new_uspc/event/obj_ps3/";
-    private static final String SKILL_TABLE_3_PATH = LOCALIZED_KERNEL_PATH + "command.bin"; // "FILE07723.dat"; // "command.bin"; //
-    private static final String SKILL_TABLE_4_PATH = LOCALIZED_KERNEL_PATH + "monmagic1.bin"; // "FILE07740.dat"; // "monmagic1.bin"; //
-    private static final String SKILL_TABLE_6_PATH = LOCALIZED_KERNEL_PATH + "monmagic2.bin"; // "FILE07741.dat"; // "monmagic2.bin"; //
-    private static final String SKILL_TABLE_2_PATH = LOCALIZED_KERNEL_PATH + "item.bin"; // "FILE07734.dat"; // "item.bin"; //
+    private static final String PATH_ORIGINALS_ROOT = PATH_FFX_ROOT + "jppc/";
+    private static final String PATH_LOCALIZED_ROOT = PATH_FFX_ROOT + "new_uspc/";
+    private static final String PATH_ORIGINALS_KERNEL = PATH_ORIGINALS_ROOT + "battle/kernel/";
+    private static final String PATH_LOCALIZED_KERNEL = PATH_LOCALIZED_ROOT + "battle/kernel/";
+    private static final String PATH_MONSTER_FOLDER = PATH_ORIGINALS_ROOT + "battle/mon/";
+    private static final String PATH_ORIGINALS_ENCOUNTER = PATH_ORIGINALS_ROOT + "battle/btl/";
+    private static final String PATH_LOCALIZED_ENCOUNTER = PATH_LOCALIZED_ROOT + "battle/btl/";
+    private static final String PATH_ORIGINALS_EVENT = PATH_ORIGINALS_ROOT + "event/obj/";
+    private static final String PATH_LOCALIZED_EVENT = PATH_LOCALIZED_ROOT + "event/obj_ps3/";
+    private static final String PATH_SKILL_TABLE_3 = PATH_LOCALIZED_KERNEL + "command.bin"; // "FILE07723.dat"; // "command.bin"; //
+    private static final String PATH_SKILL_TABLE_4 = PATH_LOCALIZED_KERNEL + "monmagic1.bin"; // "FILE07740.dat"; // "monmagic1.bin"; //
+    private static final String PATH_SKILL_TABLE_6 = PATH_LOCALIZED_KERNEL + "monmagic2.bin"; // "FILE07741.dat"; // "monmagic2.bin"; //
+    private static final String PATH_SKILL_TABLE_2 = PATH_LOCALIZED_KERNEL + "item.bin"; // "FILE07734.dat"; // "item.bin"; //
+
+    private static final boolean SKIP_BLITZBALL_EVENTS = true;
 
     public static void main(String[] args) {
-        int mode = Integer.parseInt(args[0], 10);
+        String mode = args[0];
         List<String> realArgs = Arrays.asList(args).subList(1, args.length);
         readAndPrepareDataModel();
         switch (mode) {
@@ -60,12 +64,12 @@ public class Main {
                 translate(concat);
                 break;
             case MODE_READ_ALL_ABILITIES:
-                readAbilitiesFromFile(SKILL_TABLE_3_PATH, 3, true);
-                readAbilitiesFromFile(SKILL_TABLE_4_PATH, 4, true);
-                readAbilitiesFromFile(SKILL_TABLE_6_PATH, 6, true);
-                readAbilitiesFromFile(SKILL_TABLE_2_PATH, 2, true);
+                readAbilitiesFromFile(PATH_SKILL_TABLE_3, 3, true);
+                readAbilitiesFromFile(PATH_SKILL_TABLE_4, 4, true);
+                readAbilitiesFromFile(PATH_SKILL_TABLE_6, 6, true);
+                readAbilitiesFromFile(PATH_SKILL_TABLE_2, 2, true);
                 break;
-            case MODE_READ_SPECIFIC_MONSTER_WITH_AI:
+            case MODE_PARSE_MONSTER:
                 for (String arg : realArgs) {
                     int idx = Integer.parseInt(arg, 10);
                     int monsterIdx = idx + 0x1000;
@@ -79,22 +83,17 @@ public class Main {
                     }
                 }
                 break;
-            case MODE_PARSE_MONSTER_FILE:
-                for (String filename : realArgs) {
-                    readMonsterFile(filename, true);
-                }
-                break;
-            case MODE_PARSE_ENCOUNTER_WITH_STR:
+            case MODE_PARSE_ENCOUNTER:
                 for (String filename : realArgs) {
                     readEncounterFull(filename, true);
                 }
                 break;
-            case MODE_PARSE_EVENT_WITH_STR:
+            case MODE_PARSE_EVENT:
                 for (String filename : realArgs) {
                     readEventFull(filename, true);
                 }
                 break;
-            case MODE_PARSE_GENERIC_SCRIPT_FILE:
+            case MODE_PARSE_SCRIPT_FILE:
                 for (String filename : realArgs) {
                     if (filename.contains("battle/mon")) {
                         System.out.println("Monster file: " + filename);
@@ -111,18 +110,18 @@ public class Main {
                 }
                 break;
             case MODE_READ_TREASURES:
-                readTreasures(ORIGINALS_KERNEL_PATH + "takara.bin", true);
+                readTreasures(PATH_ORIGINALS_KERNEL + "takara.bin", true);
                 break;
-            case MODE_READ_WEAPON_PICKUPS:
+            case MODE_READ_WEAPON_FILE:
                 for (String filename : realArgs) {
                     readWeaponPickups(filename, true);
                 }
                 break;
             case MODE_READ_KEY_ITEMS:
-                readKeyItemsFromFile(LOCALIZED_KERNEL_PATH + "important.bin", true);
+                readKeyItemsFromFile(PATH_LOCALIZED_KERNEL + "important.bin", true);
                 break;
             case MODE_READ_GEAR_ABILITIES:
-                readGearAbilitiesFromFile(LOCALIZED_KERNEL_PATH + "a_ability.bin", true);
+                readGearAbilitiesFromFile(PATH_LOCALIZED_KERNEL + "a_ability.bin", true);
                 break;
             case MODE_READ_STRING_FILE:
                 for (String filename : realArgs) {
@@ -139,18 +138,18 @@ public class Main {
         ScriptConstants.initialize();
         ScriptFuncLib.initialize();
         prepareAbilities();
-        DataAccess.GEAR_ABILITIES = readGearAbilitiesFromFile(LOCALIZED_KERNEL_PATH + "a_ability.bin", false);
-        DataAccess.WEAPON_PICKUPS = readWeaponPickups(ORIGINALS_KERNEL_PATH + "buki_get.bin", false);
-        DataAccess.KEY_ITEMS = readKeyItemsFromFile(LOCALIZED_KERNEL_PATH + "important.bin", false);
-        DataAccess.TREASURES = readTreasures(ORIGINALS_KERNEL_PATH + "takara.bin", false);
-        readMonsterFile(MONSTER_FOLDER_PATH, false);
+        DataAccess.GEAR_ABILITIES = readGearAbilitiesFromFile(PATH_LOCALIZED_KERNEL + "a_ability.bin", false);
+        DataAccess.WEAPON_PICKUPS = readWeaponPickups(PATH_ORIGINALS_KERNEL + "buki_get.bin", false);
+        DataAccess.KEY_ITEMS = readKeyItemsFromFile(PATH_LOCALIZED_KERNEL + "important.bin", false);
+        DataAccess.TREASURES = readTreasures(PATH_ORIGINALS_KERNEL + "takara.bin", false);
+        readMonsterFile(PATH_MONSTER_FOLDER, false);
     }
 
     public static void prepareAbilities() {
-        prepareAbilitiesFromFile(SKILL_TABLE_3_PATH, 3);
-        prepareAbilitiesFromFile(SKILL_TABLE_4_PATH, 4);
-        prepareAbilitiesFromFile(SKILL_TABLE_6_PATH, 6);
-        prepareAbilitiesFromFile(SKILL_TABLE_2_PATH, 2);
+        prepareAbilitiesFromFile(PATH_SKILL_TABLE_3, 3);
+        prepareAbilitiesFromFile(PATH_SKILL_TABLE_4, 4);
+        prepareAbilitiesFromFile(PATH_SKILL_TABLE_6, 6);
+        prepareAbilitiesFromFile(PATH_SKILL_TABLE_2, 2);
     }
 
     private static void prepareAbilitiesFromFile(String filename, int group) {
@@ -398,7 +397,7 @@ public class Main {
                 Arrays.stream(contents).filter(sf -> !sf.startsWith(".")).sorted().forEach(sf -> readEventFile(filename + '/' + sf, print, strings));
             }
             return null;
-        } else if (!filename.endsWith(".ebp")) {
+        } else if (!filename.endsWith(".ebp") || (SKIP_BLITZBALL_EVENTS && filename.contains("/bl/"))) {
             return null;
         }
         List<String> actualStrings = strings;
@@ -432,9 +431,9 @@ public class Main {
     }
 
     private static EncounterFile readEncounterFull(String btl, boolean print) {
-        String endPath = "battle/btl/" + btl + '/' + btl + ".bin";
-        String originalsPath = PATH_FFX_ROOT + "jppc/" + endPath;
-        String localizedPath = PATH_FFX_ROOT + "new_uspc/" + endPath;
+        String endPath = btl + '/' + btl + ".bin";
+        String originalsPath = PATH_ORIGINALS_ENCOUNTER + endPath;
+        String localizedPath = PATH_LOCALIZED_ENCOUNTER + endPath;
         List<String> strings = readStringFile(localizedPath, false);
         return readEncounterFile(originalsPath, print, strings);
     }
@@ -442,8 +441,8 @@ public class Main {
     private static EventFile readEventFull(String event, boolean print) {
         String shortened = event.substring(0, 2);
         String midPath = shortened + '/' + event + '/' + event;
-        String originalsPath = ORIGINALS_EVENT_PATH + midPath + ".ebp";
-        String localizedPath = LOCALIZED_EVENT_PATH + midPath + ".bin";
+        String originalsPath = PATH_ORIGINALS_EVENT + midPath + ".ebp";
+        String localizedPath = PATH_LOCALIZED_EVENT + midPath + ".bin";
         List<String> strings = readStringFile(localizedPath, false);
         return readEventFile(originalsPath, print, strings);
     }
