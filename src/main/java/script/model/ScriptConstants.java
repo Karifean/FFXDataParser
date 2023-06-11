@@ -358,6 +358,7 @@ public abstract class ScriptConstants {
         putEnum("sfx", 0x8000003D, "?ShineCelestialMirror");
         putEnum("sfx", 0x80000048, "BoardAirship");
         putEnum("sfx", 0x8000004A, "InstructionsChime");
+        putEnum("sfx", 0x00015403, "LightningBoltHit");
 
         putEnum("bgm", 0x000A, "Unwavering Determination");
         putEnum("bgm", 0x000B, "Secret Maneuvers");
@@ -365,10 +366,13 @@ public abstract class ScriptConstants {
         putEnum("bgm", 0x000D, "The Summoning");
         putEnum("bgm", 0x000E, "Macalania Woods");
         putEnum("bgm", 0x0010, "?Battle Theme");
+        putEnum("bgm", 0x001A, "Seymour's Ambition");
         putEnum("bgm", 0x001B, "Blitz Off!");
+        putEnum("bgm", 0x001D, "Thunder Plains");
+        putEnum("bgm", 0x0025, "People of the North Pole");
         putEnum("bgm", 0x0029, "Truth Revealed");
         putEnum("bgm", 0x0082, "To Zanarkand");
-        putEnum("bgm", 0x0091, "?Challenge");
+        putEnum("bgm", 0x0091, "Challenge");
 
         putEnum("battleTransition", 0x00, "Screen Shatter");
         putEnum("battleTransition", 0x01, "Fade");

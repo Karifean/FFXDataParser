@@ -1,16 +1,16 @@
 package script;
 
-import main.StringHelper;
 import reading.Chunk;
 import script.model.*;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static main.StringHelper.*;
+
 public class ScriptObject {
-    private static final boolean WRITE_SCRIPT_PREFIX_BEFORE_JUMPS = false;
     private static final int JUMP_LINE_MINLENGTH = 16;
-    private static final int HEX_LINE_MINLENGTH = 48;
+    private static final int HEX_LINE_MINLENGTH = COLORS_USE_CONSOLE_CODES ? 58 : 48;
     private static final int JUMP_PLUS_HEX_LINE_MINLENGTH = JUMP_LINE_MINLENGTH + HEX_LINE_MINLENGTH + 1;
 
     protected int[] bytes;
@@ -68,7 +68,11 @@ public class ScriptObject {
         int creatorTagAddress = read4Bytes();
         int numberPartAddress = read4Bytes();
         int jumpsEndAddress = read4Bytes();
-        skipBytes(0x14);
+        int totallyUnknown1 = read4Bytes();
+        int totallyUnknown2 = read4Bytes();
+        int totallyUnknown3 = read4Bytes();
+        int totallyUnknown4 = read4Bytes();
+        int totallyUnknown5 = read4Bytes();
         int jumpsStartAddress = read4Bytes();
         int weirdRandomFlagsAddress = read4Bytes();
         scriptCodeStartAddress = read4Bytes();
@@ -470,10 +474,10 @@ public class ScriptObject {
         } else if (opcode == 0xB5) { // CALL / FUNC_RET
             processB5(argv);
         } else if (opcode == 0xD6) { // POPXCJMP / SET_BNEZ
-            textScriptLine += p1 + " -> j" + argvsh;
+            textScriptLine += "(" + p1 + ") -> j" + argvsh;
             scriptJumps.stream().filter(j -> j.scriptIndex == currentScriptIndex && j.jumpIndex == argv).forEach(j -> j.setTypes(currentRAType, currentRXType, currentRYType, currentTempITypes));
         } else if (opcode == 0xD7) { // POPXNCJMP / SET_BEZ
-            textScriptLine += "Check " + p1 + " else jump to j" + argvsh;
+            textScriptLine += "Check (" + p1 + ") else jump to j" + argvsh;
             scriptJumps.stream().filter(j -> j.scriptIndex == currentScriptIndex && j.jumpIndex == argv).forEach(j -> j.setTypes(currentRAType, currentRXType, currentRYType, currentTempITypes));
         } else if (opcode == 0xD8) { // CALLPOPA / FUNC
             processD8(argv);
@@ -655,10 +659,6 @@ public class ScriptObject {
         currentTempITypes.clear();
     }
 
-    private void skipBytes(int amount) {
-        byteCursor += amount;
-    }
-
     public String getScriptStartAddressLine() {
         return "Script code starts at offset " + String.format("%04X", scriptCodeStartAddress + absoluteOffset);
     }
@@ -674,11 +674,11 @@ public class ScriptObject {
 
     public String fullLineString(int line) {
         String ol = String.format("%-5s", offsetLines.get(line) + ' ');
-        String jl = String.format("%-" + JUMP_LINE_MINLENGTH + "s", jumpLines.get(line)) + ' ';
-        String jhl = String.format("%-" + JUMP_PLUS_HEX_LINE_MINLENGTH + "s", jl + hexScriptLines.get(line)) + ' ';
-        String tl = textScriptLines.get(line);
-        String wl = warnLines.get(line);
-        return ol + jhl + tl + wl;
+        String jl = consoleColorIfEnabled(ANSI_PURPLE) + String.format("%-" + JUMP_LINE_MINLENGTH + "s", jumpLines.get(line)) + ' ';
+        String jhl = String.format("%-" + JUMP_PLUS_HEX_LINE_MINLENGTH + "s", jl + consoleColorIfEnabled(ANSI_BLUE) +  hexScriptLines.get(line)) + ' ';
+        String tl = consoleColorIfEnabled(ANSI_RESET) + textScriptLines.get(line);
+        String wl = consoleColorIfEnabled(ANSI_RED) + warnLines.get(line);
+        return ol + jhl + tl + wl + consoleColorIfEnabled(ANSI_RESET);
     }
 
     public String allInstructionsAsmString() {
@@ -687,10 +687,10 @@ public class ScriptObject {
         int offset = 0;
         for (ScriptInstruction ins : instructions) {
             String ol = String.format("%-6s", String.format("%04X", offset) + ' ');
-            String jl = StringHelper.ANSI_PURPLE + String.format("%-11s", getJumpLine(scriptJumpsByDestination.get(offset)) + ' ');
-            String hl = StringHelper.ANSI_BLUE + String.format("%-11s", ins.asSeparatedHexString() + ' ');
-            String asml = StringHelper.ANSI_GREEN + (ins.hasArgs ? String.format("%-10s", ins.getOpcodeLabel() + ' ') + StringHelper.ANSI_YELLOW + ins.getArgLabel() : ins.getOpcodeLabel());
-            lines.add(ol + jl + hl + asml + StringHelper.ANSI_RESET);
+            String jl = consoleColorIfEnabled(ANSI_PURPLE) + String.format("%-11s", getJumpLine(scriptJumpsByDestination.get(offset)) + ' ');
+            String hl = consoleColorIfEnabled(ANSI_BLUE) + String.format("%-11s", ins.asSeparatedHexString() + ' ');
+            String asml = consoleColorIfEnabled(ANSI_GREEN) + (ins.hasArgs ? String.format("%-10s", ins.getOpcodeLabel() + ' ') + consoleColorIfEnabled(ANSI_YELLOW) + ins.getArgLabel() : ins.getOpcodeLabel());
+            lines.add(ol + jl + hl + asml + consoleColorIfEnabled(ANSI_RESET));
             offset += ins.length;
         }
         return String.join("\n", lines) + '\n';

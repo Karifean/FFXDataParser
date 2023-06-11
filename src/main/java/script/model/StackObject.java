@@ -40,7 +40,7 @@ public class StackObject {
     public String toString() {
         if (!expression && !"unknown".equals(type)) {
             String hex = String.format(value >= 0x10000 ? "%08X" : value >= 0x100 ? "%04X" : "%02X", value);
-            String hexSuffix = " [" + hex + "h]";
+            String hexSuffix = ScriptField.PRINT_WITH_HEX_SUFFIX ? " [" + hex + "h]" : "";
             if ("bool".equals(type)) {
                 return (value > 0 ? "true" : "false") + hexSuffix;
             }

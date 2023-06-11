@@ -65,6 +65,10 @@ public abstract class StringHelper {
         };
     }
 
+    public static String consoleColorIfEnabled(String ansiColor) {
+        return COLORS_USE_CONSOLE_CODES ? ansiColor : "";
+    }
+
     public static String getStringAtLookupOffset(int[] table, int offset) {
         if (offset >= table.length) {
             return "{OOB}";
@@ -166,7 +170,7 @@ public abstract class StringHelper {
         BIN_LOOKUP.put(0x6a, '[');
         BIN_LOOKUP.put(0x6b, '\\');
         BIN_LOOKUP.put(0x6c, ']');
-        BIN_LOOKUP.put(0x6d, (char)(0x0361));      //  ͡ , could maybe be replaced with '^'? «https://en.wikipedia.org/wiki/Inverted_breve»
+        BIN_LOOKUP.put(0x6d, '\u0361');      //  ͡ , could maybe be replaced with '^'? «https://en.wikipedia.org/wiki/Inverted_breve»
         BIN_LOOKUP.put(0x6e, '＿');                 // TODO: Replace with a normal underscore if no other (shorter) such is found in the game font
         BIN_LOOKUP.put(0x6f, '`');
         BIN_LOOKUP.put(0x70, 'a');

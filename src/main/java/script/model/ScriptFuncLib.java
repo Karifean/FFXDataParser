@@ -107,9 +107,9 @@ public abstract class ScriptFuncLib {
         putUnknownFunc(0x0046, 0);
         putUnknownFunc(0x0047, 0);
         putUnknownFunc(0x004C, 1);
-        putFuncWithIdx(0x004D, new ScriptFunc("controllerButtonPressed?", "bool", null, p("controllerButton")));
+        putFuncWithIdx(0x004D, new ScriptFunc("controllerButtonHeld?", "bool", null, p("controllerButton")));
         putUnknownFunc(0x0050, 1);
-        putUnknownFunc(0x0051, 1);
+        putFuncWithIdx(0x0051, new ScriptFunc("controllerButtonPressed?", "bool", null, p("controllerButton")));
         putUnknownFunc(0x0054, 6); // noclip: collision detection
         putUnknownFunc(0x0055, 1); // noclip: collision detection
         putUnknownFunc(0x0056, 1); // noclip: collision detection
@@ -247,7 +247,7 @@ public abstract class ScriptFuncLib {
         putUnknownFunc(0x00FE, 2);
         putUnknownFunc(0x0100, 3);
         putFuncWithIdx(0x0102, new ScriptFunc("setBgmToLoad?", "unknown", null, p("bgm")));
-        putUnknownFunc(0x0103, 1);
+        putFuncWithIdx(0x0103, new ScriptFunc("unloadBgm?", "unknown", null, p("bgm")));
         putFuncWithIdx(0x0104, new ScriptFunc("playBgm?", "unknown", null, p("bgm")));
         putFuncWithIdx(0x0105, new ScriptFunc("loadBgm?", "unknown", null, true));
         putUnknownFunc(0x0106, 3);
@@ -339,7 +339,7 @@ public abstract class ScriptFuncLib {
         putUnknownFunc(0x017A, 1);
         putUnknownFunc(0x017B, 1);
         putUnknownFunc(0x017C, 1);
-        putUnknownFunc(0x017E, 2);
+        putFuncWithIdx(0x017E, new ScriptFunc("playBgmInclBattle?", "unknown", null, p("bgm"), p("unknown")));
         putUnknownFunc(0x017F, 1);
         putUnknownFunc(0x0180, 2);
         putUnknownFunc(0x0181, 0);
@@ -1014,7 +1014,7 @@ public abstract class ScriptFuncLib {
         putUnknownFunc(0x70D2, "btlGetHitEff", 1);
         putUnknownFunc(0x70D3, "btlSetNomEff", 3);
         putUnknownFunc(0x70D4, "btlSetHitEff", 3);
-        putUnknownFunc(0x70D5, "btlSetSummoner", 1);
+        putFuncWithIdx(0x70D5, new ScriptFunc("setSummoner", "unknown", "btlSetSummoner", p("actor")));
         putUnknownFunc(0x70D6, "btlGetAssumeDamage", 3);
         putUnknownFunc(0x70D7, "btlSetDamageMotion", 2);
         putUnknownFunc(0x70D8, "btlSetAnimaChainOff", 1);
