@@ -62,7 +62,7 @@ public abstract class ScriptFuncLib {
         putUnknownFunc(0x0002, 3);
         putFuncWithIdx(0x0003, new ScriptFunc("attachToLevelPart", "unknown", null, p("partIndex", "int")));
         putFuncWithIdx(0x0004, new ScriptFunc("attachToLevelLayer", "unknown", null, p("layerID", "int")));
-        putFuncWithIdx(0x0005, new ScriptFunc("applyTransform", "unknown", null);
+        putFuncWithIdx(0x0005, new ScriptFunc("applyTransform", "unknown", null));
         putUnknownFunc(0x0006, 3);
         putUnknownFunc(0x0007, 1);
         putUnknownFunc(0x0010, 0);
@@ -81,9 +81,9 @@ public abstract class ScriptFuncLib {
         putUnknownFunc(0x001F, 0);
         putUnknownFunc(0x0020, 0);
         putUnknownFunc(0x0021, 1);
-        putFuncWithIdx(0x0023, new ScriptFunc("setVelocityYaw", "unknown", null, p("angle", "int")));
-        putFuncWithIdx(0x0024, new ScriptFunc("setVelocityPitch", "unknown", null, p("angle", "int")));
-        putUnknownFunc(0x0025, 1); // noclip: 25-7 set a contextually-dependent vector, sometimes euler angles
+        putFuncWithIdx(0x0023, new ScriptFunc("setVelocityYaw", "unknown", null, p("angle", "int"))); // Never used by the game
+        putFuncWithIdx(0x0024, new ScriptFunc("setVelocityPitch", "unknown", null, p("angle", "int"))); // Never used by the game
+        putUnknownFunc(0x0025, 1); // noclip: 25-7 set a contextually-dependent vector, sometimes euler angles, 26/27 are never used by the game
         putFuncWithIdx(0x0028, new ScriptFunc("setRotationTarget1", "unknown", null, p("angle", "int")));
         putFuncWithIdx(0x0029, new ScriptFunc("setRotationTarget2", "unknown", null, p("angle", "int")));
         putFuncWithIdx(0x002A, new ScriptFunc("setRotationTarget3", "unknown", null, p("angle", "int")));
@@ -392,7 +392,7 @@ public abstract class ScriptFuncLib {
         putUnknownFunc(0x01C4, 1);
         putUnknownFunc(0x01C5, 2);
         putUnknownFunc(0x01C6, 0);
-        putFuncWithIdx(0x01C8, new ScriptFunc("disableOwnVisualEffect", "unknown", null, p("effectType", "bool")));
+        putFuncWithIdx(0x01C8, new ScriptFunc("disableOwnVisualEffect", "unknown", null, p("effectType", "bool"))); // Never used by the game
         putFuncWithIdx(0x01C9, new ScriptFunc("enableVisualEffect", "unknown", null, p("effectType", "bool"), p("levelPartIndex", "int")));
         putUnknownFunc(0x01CA, 0);
         putUnknownFunc(0x01CC, 0);
