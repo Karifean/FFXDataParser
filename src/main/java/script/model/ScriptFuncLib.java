@@ -60,9 +60,9 @@ public abstract class ScriptFuncLib {
         putFuncWithIdx(0x0000, new ScriptFunc("waitFrames", "unknown", null, p("frames", "int")));
         putUnknownFunc(0x0001, 1); // noclip: load character/summon/weapon etc
         putUnknownFunc(0x0002, 3);
-        putUnknownFunc(0x0003, new ScriptFunc("attachToLevelPart", "unknown", null, p("partIndex", "int")));
-        putUnknownFunc(0x0004, new ScriptFunc("attachToLevelLayer", "unknown", null, p("layerID", "int")));
-        putUnknownFunc(0x0005, new ScriptFunc("applyTransform", "unknown", null);
+        putFuncWithIdx(0x0003, new ScriptFunc("attachToLevelPart", "unknown", null, p("partIndex", "int")));
+        putFuncWithIdx(0x0004, new ScriptFunc("attachToLevelLayer", "unknown", null, p("layerID", "int")));
+        putFuncWithIdx(0x0005, new ScriptFunc("applyTransform", "unknown", null);
         putUnknownFunc(0x0006, 3);
         putUnknownFunc(0x0007, 1);
         putUnknownFunc(0x0010, 0);
@@ -359,7 +359,7 @@ public abstract class ScriptFuncLib {
         putUnknownFunc(0x0196, 1);
         putUnknownFunc(0x0197, 1);
         putFuncWithIdx(0x0198, new ScriptFunc("enableVisualEffect", "unknown", null, p("runOnce", "bool"), p("effectIndex", "int"), p("levelPartIndex", "int")));
-        putFuncWithIdx(0x0198, new ScriptFunc("enableOwnVisualEffect", "unknown", null, p("runOnce", "bool"), p("effectIndex", "int")));
+        putFuncWithIdx(0x0199, new ScriptFunc("enableOwnVisualEffect", "unknown", null, p("runOnce", "bool"), p("effectIndex", "int")));
         putUnknownFunc(0x019C, 0);
         putUnknownFunc(0x019D, 1);
         putUnknownFunc(0x019E, 0);
