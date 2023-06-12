@@ -58,33 +58,35 @@ public abstract class ScriptFuncLib {
         initialized = true;
         FUNCS = new ScriptFunc[0x10000];
         putFuncWithIdx(0x0000, new ScriptFunc("waitFrames", "unknown", null, p("frames", "int")));
-        putUnknownFunc(0x0001, 1);
+        putUnknownFunc(0x0001, 1); // noclip: load character/summon/weapon etc
         putUnknownFunc(0x0002, 3);
-        putUnknownFunc(0x0003, 1);
-        putUnknownFunc(0x0004, 1);
-        putUnknownFunc(0x0005, 0);
+        putUnknownFunc(0x0003, new ScriptFunc("attachToLevelPart", "unknown", null, p("partIndex", "int")));
+        putUnknownFunc(0x0004, new ScriptFunc("attachToLevelLayer", "unknown", null, p("layerID", "int")));
+        putUnknownFunc(0x0005, new ScriptFunc("applyTransform", "unknown", null);
         putUnknownFunc(0x0006, 3);
         putUnknownFunc(0x0007, 1);
         putUnknownFunc(0x0010, 0);
         putUnknownFunc(0x0011, 2);
         putUnknownFunc(0x0012, 2);
-        putUnknownFunc(0x0013, 3);
+        putFuncWithIdx(0x0013, new ScriptFunc("setPosition", "unknown", null, p("x", "int"), p("y", "int"), p("z", "int")));
         putUnknownFunc(0x0015, 3);
-        putUnknownFunc(0x0016, 1);
-        putUnknownFunc(0x0017, 1);
+        putFuncWithIdx(0x0016, new ScriptFunc("setMotionSpeed", "unknown", null, p("speed", "int")));
+        putUnknownFunc(0x0017, 1); // noclip: set motion threshold/radius, used for collision and checking if a destination is reached
         putUnknownFunc(0x0018, 3);
-        putUnknownFunc(0x0019, 3);
+        putFuncWithIdx(0x0019, new ScriptFunc("startRotation", "unknown", null, p("targetObjectIndex", "int"), p("flags", "int"), p("activeBits", "int"))); // see noclip for flags
         putUnknownFunc(0x001A, 0);
         putUnknownFunc(0x001B, 0);
         putUnknownFunc(0x001C, 2);
-        putUnknownFunc(0x001D, 2);
+        putFuncWithIdx(0x001D, new ScriptFunc("setRotationTiming", "unknown", null, p("duration", "int"), p("currTime", "int")));
         putUnknownFunc(0x001F, 0);
         putUnknownFunc(0x0020, 0);
         putUnknownFunc(0x0021, 1);
-        putUnknownFunc(0x0025, 1);
-        putUnknownFunc(0x0028, 1);
-        putUnknownFunc(0x0029, 1);
-        putUnknownFunc(0x002A, 1);
+        putFuncWithIdx(0x0023, new ScriptFunc("setVelocityYaw", "unknown", null, p("angle", "int")));
+        putFuncWithIdx(0x0024, new ScriptFunc("setVelocityPitch", "unknown", null, p("angle", "int")));
+        putUnknownFunc(0x0025, 1); // noclip: 25-7 set a contextually-dependent vector, sometimes euler angles
+        putFuncWithIdx(0x0028, new ScriptFunc("setRotationTarget1", "unknown", null, p("angle", "int")));
+        putFuncWithIdx(0x0029, new ScriptFunc("setRotationTarget2", "unknown", null, p("angle", "int")));
+        putFuncWithIdx(0x002A, new ScriptFunc("setRotationTarget3", "unknown", null, p("angle", "int")));
         putUnknownFunc(0x002B, 1);
         putUnknownFunc(0x002C, 1);
         putUnknownFunc(0x002D, 1);
@@ -134,12 +136,12 @@ public abstract class ScriptFuncLib {
         putUnknownFunc(0x006C, 1);
         putUnknownFunc(0x006D, 1);
         putUnknownFunc(0x006E, 1);
-        putUnknownFunc(0x006F, 1); // noclip: get/set velocity1?
-        putUnknownFunc(0x0070, 1); // noclip: get/set velocity2?
-        putUnknownFunc(0x0071, 1); // noclip: get/set velocity3?
+        putFuncWithIdx(0x006F, new ScriptFunc("setAllRotationRate1", "unknown", null, p("rate", "int")));
+        putFuncWithIdx(0x0070, new ScriptFunc("setAllRotationRate2", "unknown", null, p("rate", "int")));
+        putFuncWithIdx(0x0071, new ScriptFunc("setAllRotationRate3", "unknown", null, p("rate", "int")));
         putUnknownFunc(0x0074, 1); // noclip: get/set frames?
-        putUnknownFunc(0x0076, 0); // noclip: get controller type
-        putUnknownFunc(0x0077, 1);
+        putUnknownFunc(0x0076, 0); // noclip: get object type
+        putFuncWithIdx(0x0077, new ScriptFunc("stopObjectMotion", "unknown", null, p("index", "int")));
         putUnknownFunc(0x0078, 1);
         putUnknownFunc(0x007A, 2); // noclip: collision detection
         putUnknownFunc(0x007C, 1);
@@ -163,7 +165,7 @@ public abstract class ScriptFuncLib {
         putUnknownFunc(0x0091, 0);
         putUnknownFunc(0x0092, 1); // noclip: getYaw2()
         putUnknownFunc(0x0093, 1);
-        putUnknownFunc(0x0094, 1);
+        putFuncWithIdx(0x0094, new ScriptFunc("setGravity", "unknown", null, p("g", "int")));
         putUnknownFunc(0x0095, 1); // noclip: setRotationYaw()
         putUnknownFunc(0x0096, 1); // noclip: setRotationPitch()
         putUnknownFunc(0x0097, 1);
@@ -356,8 +358,8 @@ public abstract class ScriptFuncLib {
         putUnknownFunc(0x0195, 0);
         putUnknownFunc(0x0196, 1);
         putUnknownFunc(0x0197, 1);
-        putUnknownFunc(0x0198, 3);
-        putUnknownFunc(0x0199, 2);
+        putFuncWithIdx(0x0198, new ScriptFunc("enableVisualEffect", "unknown", null, p("runOnce", "bool"), p("effectIndex", "int"), p("levelPartIndex", "int")));
+        putFuncWithIdx(0x0198, new ScriptFunc("enableOwnVisualEffect", "unknown", null, p("runOnce", "bool"), p("effectIndex", "int")));
         putUnknownFunc(0x019C, 0);
         putUnknownFunc(0x019D, 1);
         putUnknownFunc(0x019E, 0);
@@ -390,7 +392,8 @@ public abstract class ScriptFuncLib {
         putUnknownFunc(0x01C4, 1);
         putUnknownFunc(0x01C5, 2);
         putUnknownFunc(0x01C6, 0);
-        putUnknownFunc(0x01C9, 2);
+        putFuncWithIdx(0x01C8, new ScriptFunc("disableOwnVisualEffect", "unknown", null, p("effectType", "bool")));
+        putFuncWithIdx(0x01C9, new ScriptFunc("enableVisualEffect", "unknown", null, p("effectType", "bool"), p("levelPartIndex", "int")));
         putUnknownFunc(0x01CA, 0);
         putUnknownFunc(0x01CC, 0);
         putUnknownFunc(0x01CE, 0);
@@ -1096,7 +1099,7 @@ public abstract class ScriptFuncLib {
         putUnknownFunc(0x7127, 2);
 
         // noclip: --------- rendering functions ---------
-        putUnknownFunc(0x8000, 2);
+        putFuncWithIdx(0x8000, new ScriptFunc("setLevelLayerVisibility", "unknown", null, p("visible", "bool"), p("layerID", "int")));
         putUnknownFunc(0x8001, 1);
         putFuncWithIdx(0x8002, new ScriptFunc("setGfxActive?", "unknown", null, p("gfxIndex?", "int"), p("active", "bool")));
         putUnknownFunc(0x8003, 1);
