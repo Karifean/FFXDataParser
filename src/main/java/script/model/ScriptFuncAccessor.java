@@ -63,13 +63,17 @@ public class ScriptFuncAccessor extends ScriptFunc {
             str.append(typed);
         }
         str.append('.');
-        ScriptField predicate = fixedPredicate != null ? fixedPredicate : accessMap.get(params.get(predicateParamIndex).value);
+        StackObject predParam = params.get(predicateParamIndex);
+        ScriptField predicate = fixedPredicate != null ? fixedPredicate : predParam.expression ? null : accessMap.get(predParam.value);
         if (predicate != null) {
             str.append(predicate);
         } else {
-            StackObject predParam = params.get(predicateParamIndex);
             StackObject typed = predParam.expression || "unknown".equals(predicateType) ? predParam : new StackObject(predicateType, predParam);
-            str.append(typed);
+            String typedString = typed.toString();
+            if (typed.maybeBracketize) {
+                typedString = '(' + typedString + ')';
+            }
+            str.append(typedString);
         }
         if (extraParams > 0) {
             str.append('(');

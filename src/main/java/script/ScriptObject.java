@@ -341,7 +341,7 @@ public class ScriptObject {
         } else if (opcode == 0x1A) { // OPUMINUS / NEG
             stack.push(new StackObject(this, p1.type, true, "-(" + p1 + ")", 0x1A));
         } else if (opcode == 0x1C) { // OPBNOT / NOT
-            stack.push(new StackObject(this, p1.type, true, "bitNot " + p1, 0x1C));
+            stack.push(new StackObject(this, p1.type, true, "~(" + p1 + ")", 0x1C));
         } else if (opcode == 0x25) { // POPA / SET_RETURN_VALUE
             textScriptLine += "Set LastCallResult = " + p1;
             currentRAType = resolveType(p1);
