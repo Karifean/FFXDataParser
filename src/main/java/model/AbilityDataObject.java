@@ -42,7 +42,7 @@ public class AbilityDataObject {
     int subMenuCategorization;
     int characterUser;
     int targetingFlags;
-    int unknownProperties1B;
+    int targetsAllowedApparently;
     int miscProperties1C;
     int miscProperties1D;
     int miscProperties1E;
@@ -138,14 +138,14 @@ public class AbilityDataObject {
     boolean targetFlag5;
     boolean targetEitherTeam;
     boolean targetDead;
-    boolean targetFlag8LongRangeMaybe;
+    boolean targetFlagLongRange;
     boolean onTopLevelInMenu;
     boolean opensSubMenu;
     boolean byte1Fbit01;
-    boolean byte1Fbit02WhichIsOnlySetOnEntrust;
+    boolean emptiesOverdriveBar;
     boolean useCastAnimationMaybe;
     boolean userRunsOffScreen;
-    boolean showSpellAuraMaybe;
+    boolean canBeCopycatted;
     boolean byte1Fbit20;
     boolean someFlagSetOnALLAeonOverdrives;
     boolean byte1Fbit80WhichIsOnlySetOnBribe;
@@ -167,7 +167,7 @@ public class AbilityDataObject {
     boolean damageTypeMagical;
     boolean canCrit;
     boolean byte20bit08usedOnMostStrAttacks;
-    boolean suppressBDLMaybe;
+    boolean suppressBDL;
     boolean damageClassHP;
     boolean damageClassMP;
     boolean damageClassCTB;
@@ -260,7 +260,7 @@ public class AbilityDataObject {
         subMenuCategorization = bytes[0x18];
         characterUser = bytes[0x19];
         targetingFlags = bytes[0x1A];
-        unknownProperties1B = bytes[0x1B];
+        targetsAllowedApparently = bytes[0x1B];
         miscProperties1C = bytes[0x1C];
         miscProperties1D = bytes[0x1D];
         miscProperties1E = bytes[0x1E];
@@ -341,7 +341,7 @@ public class AbilityDataObject {
         targetFlag5 = (targetingFlags & 0x10) > 0;
         targetEitherTeam = (targetingFlags & 0x20) > 0;
         targetDead = (targetingFlags & 0x40) > 0;
-        targetFlag8LongRangeMaybe = (targetingFlags & 0x80) > 0;
+        targetFlagLongRange = (targetingFlags & 0x80) > 0;
         onTopLevelInMenu = (menuProperties16 & 0x01) > 0;
         opensSubMenu = (menuProperties16 & 0x10) > 0;
         usableOutsideCombat = (miscProperties1C & 0x01) > 0;
@@ -369,10 +369,10 @@ public class AbilityDataObject {
         destroyCaster = (miscProperties1E & 0x40) > 0;
         missIfAlive = (miscProperties1E & 0x80) > 0;
         byte1Fbit01 = (animationProperties1F & 0x01) > 0;
-        byte1Fbit02WhichIsOnlySetOnEntrust = (animationProperties1F & 0x02) > 0;
+        emptiesOverdriveBar = (animationProperties1F & 0x02) > 0;
         useCastAnimationMaybe = (animationProperties1F & 0x04) > 0;
         userRunsOffScreen = (animationProperties1F & 0x08) > 0;
-        showSpellAuraMaybe = (animationProperties1F & 0x10) > 0;
+        canBeCopycatted = (animationProperties1F & 0x10) > 0;
         byte1Fbit20 = (animationProperties1F & 0x20) > 0;
         someFlagSetOnALLAeonOverdrives = (animationProperties1F & 0x40) > 0;
         byte1Fbit80WhichIsOnlySetOnBribe = (animationProperties1F & 0x80) > 0;
@@ -382,7 +382,7 @@ public class AbilityDataObject {
         byte20bit08usedOnMostStrAttacks = (damageProperties20 & 0x08) > 0; // Seems to be needed for proper evasion?
         isHealing = (damageProperties20 & 0x10) > 0;
         isCleansingStatuses = (damageProperties20 & 0x20) > 0;
-        suppressBDLMaybe = (damageProperties20 & 0x40) > 0;
+        suppressBDL = (damageProperties20 & 0x40) > 0;
         breaksDamageLimit = (damageProperties20 & 0x80) > 0;
         stealGil = (stealGilByte & 0x01) > 0;
         partyPreviewActive = (partyPreviewByte & 0x01) > 0;
@@ -456,7 +456,7 @@ public class AbilityDataObject {
         list.add(ifG0(attackPower, "Power=", ""));
         list.add(usesWeaponProperties ? "Uses Weapon Properties" : "");
         list.add(breaksDamageLimit ? "BDL" : "");
-        list.add(suppressBDLMaybe ? "Never BDL" : "");
+        list.add(suppressBDL ? "Never BDL" : "");
         list.add(targeting());
         list.add("Rank=" + moveRank);
         list.add(ifG0(costMP, "", " MP"));
@@ -622,8 +622,8 @@ public class AbilityDataObject {
         if (targetFlag5) {
             target += "/5";
         }
-        if (targetFlag8LongRangeMaybe) {
-            target += "/8";
+        if (targetFlagLongRange) {
+            target += "/Ranged";
         }
         if (targetDead) {
             target += "/Dead";
