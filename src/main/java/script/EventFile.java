@@ -8,7 +8,7 @@ import java.util.List;
  * jppc/event/.../.ebp
  */
 public class EventFile {
-    public ScriptObject encounterScript;
+    public ScriptObject eventScript;
     Chunk scriptChunk;
 
     public EventFile(List<Chunk> chunks) {
@@ -21,25 +21,27 @@ public class EventFile {
     }
 
     private void mapObjects() {
-        encounterScript = new ScriptObject(scriptChunk);
+        eventScript = new ScriptObject(scriptChunk);
     }
 
     public void parseScript(List<String> strings) {
-        if (encounterScript != null) {
-            encounterScript.parseScript(strings);
+        if (eventScript != null) {
+            eventScript.parseScript(strings);
         }
     }
 
     @Override
     public String toString() {
         StringBuilder full = new StringBuilder();
-        if (encounterScript != null) {
+        if (eventScript != null) {
             full.append("- Script Code -").append('\n');
-            full.append(encounterScript.allLinesString());
+            full.append(eventScript.allLinesString());
+            full.append("- Headers -").append('\n');
+            full.append(eventScript.headersString()).append('\n');
             full.append("- Jump Table -").append('\n');
-            full.append(encounterScript.jumpTableString.toString()).append('\n');
+            full.append(eventScript.jumpTableString.toString()).append('\n');
         } else {
-            full.append("Encounter Script missing");
+            full.append("Event Script missing");
         }
         return full.toString();
     }

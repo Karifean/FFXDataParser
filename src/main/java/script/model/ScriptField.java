@@ -28,7 +28,7 @@ public class ScriptField {
     public String toString() {
         if (name == null || name.isEmpty()) {
             if (internalName == null || internalName.isEmpty()) {
-                return getHexIndex();
+                return type + ':' + idx + getHexSuffix();
             } else {
                 return PRINT_WITH_HEX_SUFFIX ? internalName + getHexSuffix() : internalName;
             }

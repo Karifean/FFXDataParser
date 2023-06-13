@@ -12,7 +12,7 @@ public class ScriptFunc extends ScriptField {
         this.inputs = brackets ? new ArrayList<>() : null;
     }
 
-    public ScriptFunc(String name, String type, String internalName, ScriptField ...inputs) {
+    public ScriptFunc(String name, String type, String internalName, ScriptField... inputs) {
         super(name, type, internalName);
         this.inputs = List.of(inputs);
     }
@@ -47,7 +47,7 @@ public class ScriptFunc extends ScriptField {
         for (int i = 0; i < len; i++) {
             StackObject obj = params.get(i);
             String paramType = inputs.get(i).type;
-            StackObject typed = obj.expression || "unknown".equals(paramType) ? obj : new StackObject(paramType, obj);
+            StackObject typed = obj == null || obj.expression || "unknown".equals(paramType) ? obj : new StackObject(paramType, obj);
             str.append(inputs.get(i).name).append('=').append(typed).append(", ");
         }
         return str.substring(0, str.length() - 2) + ')';

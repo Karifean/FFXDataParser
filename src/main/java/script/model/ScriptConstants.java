@@ -1,5 +1,6 @@
 package script.model;
 
+import java.lang.reflect.Field;
 import java.util.*;
 
 public abstract class ScriptConstants {
@@ -300,14 +301,148 @@ public abstract class ScriptConstants {
         putEnum("targetType", 0x03, "Self?", "target_type_own");
 
         putEnum("controllerButton", 0x05, "X (Confirm)");
-        putEnum("controllerButton", 0x12, "?Down");
-        putEnum("controllerButton", 0x13, "?Left");
-        putEnum("controllerButton", 0x14, "?Up");
-        putEnum("controllerButton", 0x15, "?Right");
+        putEnum("controllerButton", 0x12, "?Up");
+        putEnum("controllerButton", 0x13, "?Right");
+        putEnum("controllerButton", 0x14, "?Down");
+        putEnum("controllerButton", 0x15, "?Left");
 
         putEnum("textAlignment", 0x01, "?Left");
         putEnum("textAlignment", 0x03, "?Right");
         putEnum("textAlignment", 0x04, "?Center");
+
+        for (Field field : CharMotions.class.getDeclaredFields()) {
+            try {
+                int idx = field.getInt(CharMotions.class);
+                if (!getEnumMap("motion").containsKey(idx)) {
+                    String internalName = field.getName();
+                    putEnum("motion", idx, null, internalName);
+                }
+            } catch (IllegalAccessException e) {
+                e.printStackTrace();
+            }
+        }
+
+        putEnum("model", 0x0000, "No Model");
+        putEnum("model", 0x0004, "Kimahri");
+        putEnum("model", 0x0008, "Seymour (Human Boss)");
+        putEnum("model", 0x1002, "Helmet");
+        putEnum("model", 0x1006, "Floating Devil");
+        putEnum("model", 0x100A, "Wolf");
+        putEnum("model", 0x1010, "Flan");
+        putEnum("model", 0x1016, "Lizard");
+        putEnum("model", 0x101C, "Eagle/Condor");
+        putEnum("model", 0x101F, "Wasp");
+        putEnum("model", 0x1023, "Floating Eye");
+        putEnum("model", 0x1027, "Ragora");
+        putEnum("model", 0x102B, "Sahagin (on Land)");
+        putEnum("model", 0x102C, "Garuda");
+        putEnum("model", 0x102D, "Zu");
+        putEnum("model", 0x102E, "Huge Worm");
+        putEnum("model", 0x1030, "Defender");
+        putEnum("model", 0x1032, "Ghost");
+        putEnum("model", 0x1033, "Phlegyas/Achelous");
+        putEnum("model", 0x1035, "Remora/Maelspike");
+        putEnum("model", 0x1037, "Dual Horn");
+        putEnum("model", 0x103A, "Octopus (Via Purifico)");
+        putEnum("model", 0x103B, "Drake");
+        putEnum("model", 0x1040, "Malboro");
+        putEnum("model", 0x1044, "Piranha");
+        putEnum("model", 0x104D, "Yellow Element");
+        putEnum("model", 0x104E, "White Element");
+        putEnum("model", 0x104F, "Red Element");
+        putEnum("model", 0x1050, "Gold Element");
+        putEnum("model", 0x1051, "Blue Element");
+        putEnum("model", 0x1052, "Dark/Black/Nega Element");
+        putEnum("model", 0x1055, "Behemoth");
+        putEnum("model", 0x1057, "Chimera");
+        putEnum("model", 0x1059, "Coeurl");
+        putEnum("model", 0x105F, "Demonolith");
+        putEnum("model", 0x1060, "Machina (Multi-Arm)");
+        putEnum("model", 0x1063, "Weapon (Ultima/Omega/Nemesis)");
+        putEnum("model", 0x1065, "Tros");
+        putEnum("model", 0x1066, "Sinspawn Geneaux/Genais");
+        putEnum("model", 0x1067, "Geneaux Tentacle");
+        putEnum("model", 0x1068, "Chocobo Eater");
+        putEnum("model", 0x1069, "Neslug");
+        putEnum("model", 0x106A, "Mortiphasm");
+        putEnum("model", 0x106B, "Sinscale (Winged)");
+        putEnum("model", 0x106D, "Geosgaeno");
+        putEnum("model", 0x106E, "Oblitzerator");
+        putEnum("model", 0x106F, "Extractor");
+        putEnum("model", 0x1071, "Sin's Fin (Swimming)");
+        putEnum("model", 0x1072, "Sinspawn Echuilles");
+        putEnum("model", 0x1073, "Sinscale (Underwater)");
+        putEnum("model", 0x1075, "Sinspawn Gui");
+        putEnum("model", 0x1077, "Evrae Altana");
+        putEnum("model", 0x1079, "Spherimorph");
+        putEnum("model", 0x107A, "Crawler");
+        putEnum("model", 0x107B, "Negator");
+        putEnum("model", 0x107E, "Seymour Natus");
+        putEnum("model", 0x107F, "Mortibody");
+        putEnum("model", 0x1080, "Sanctuary Keeper");
+        putEnum("model", 0x1081, "Spectral Keeper");
+        putEnum("model", 0x1082, "Yunalesca");
+        putEnum("model", 0x1083, "Seymour Omnis");
+        putEnum("model", 0x1084, "Braska's Final Aeon");
+        putEnum("model", 0x1085, "Crane");
+        putEnum("model", 0x1086, "Biran Ronso");
+        putEnum("model", 0x1087, "Yenke Ronso");
+        putEnum("model", 0x1088, "Sin's Fin (Flying)");
+        putEnum("model", 0x108A, "Sin Core (Back)");
+        putEnum("model", 0x108C, "Overdrive Sin");
+        putEnum("model", 0x108E, "Seymour Flux");
+        putEnum("model", 0x1090, "Kimahri's Spear (in Boss fight)");
+        putEnum("model", 0x1098, "Machina (Impaler)");
+        putEnum("model", 0x1099, "Ochu");
+        putEnum("model", 0x109B, "Sahagin (Swimming)");
+        putEnum("model", 0x109E, "Blades (Species)");
+        putEnum("model", 0x109F, "Sinspawn Ammes");
+        putEnum("model", 0x10A2, "Gate Lock (Evrae Altana Battle)");
+        putEnum("model", 0x10AA, "Tanker");
+        putEnum("model", 0x10AD, "Yu Pagoda 1");
+        putEnum("model", 0x10AE, "Yu Pagoda 2");
+        putEnum("model", 0x10AF, "?Tentacle (???)");
+        putEnum("model", 0x10B0, "Yu Yevon");
+        putEnum("model", 0x10B1, "?Mortiphasm Dummied Out");
+        putEnum("model", 0x10B5, "Iron Giant (All)");
+        putEnum("model", 0x10B9, "Basilisk");
+        putEnum("model", 0x10BB, "Adamantoise");
+        putEnum("model", 0x10BC, "Varuna");
+        putEnum("model", 0x10BF, "Yevon Artillery Machina (YAT)");
+        putEnum("model", 0x10C1, "Bomb");
+        putEnum("model", 0x10C3, "Yevon Kicking Machina (YKT)");
+        putEnum("model", 0x10C5, "Monk (Rifle)");
+        putEnum("model", 0x10C7, "Monk (Flamethrower)");
+        putEnum("model", 0x10CA, "Magic Urn (PuPu?)");
+        putEnum("model", 0x10CF, "Cactuar");
+        putEnum("model", 0x10D1, "Larva/Spirit");
+        putEnum("model", 0x10D2, "Barbatos");
+        putEnum("model", 0x10D3, "Treasure Chest (Battle)");
+        putEnum("model", 0x10D4, "Ogre/Wendigo");
+        putEnum("model", 0x10D5, "Guado Guardian");
+        putEnum("model", 0x10D6, "Mushroom (Species)");
+        putEnum("model", 0x10DF, "Tonberry");
+        putEnum("model", 0x1101, "Mimic Parts");
+        putEnum("model", 0x1158, "Penance");
+        putEnum("model", 0x1159, "Penance's Arm");
+        putEnum("model", 0x3001, "Valefor");
+        putEnum("model", 0x3002, "Ifrit");
+        putEnum("model", 0x3003, "Ixion");
+        putEnum("model", 0x3004, "Shiva");
+        putEnum("model", 0x3006, "Bahamut");
+        putEnum("model", 0x3007, "Anima");
+        putEnum("model", 0x3008, "Yojimbo");
+        putEnum("model", 0x3009, "Cindy");
+        putEnum("model", 0x300A, "Sandy");
+        putEnum("model", 0x300B, "Mindy");
+        putEnum("model", 0x300D, "?Anima Dummy 1");
+        putEnum("model", 0x300E, "?Anima Dummy 2");
+        putEnum("model", 0x3017, "Koma Inu / Daigoro");
+        putEnum("model", 0x3018, "Katana (Yojimbo)");
+        putEnum("model", 0x3019, "Kozuka (Yojimbo)");
+        putEnum("model", 0x301F, "Shuriken (Yojimbo?)");
+        putEnum("model", 0x6004, "Isaaru");
+        putEnum("model", 0x600E, "Belgemine/Ginnem");
 
         putEnum("field", 0x0000, "system");
         putEnum("field", 0x0002, "test00");
@@ -373,6 +508,8 @@ public abstract class ScriptConstants {
         putEnum("bgm", 0x0029, "Truth Revealed");
         putEnum("bgm", 0x0082, "To Zanarkand");
         putEnum("bgm", 0x0091, "Challenge");
+        putEnum("bgm", 0x00A5, "?Run!!");
+        putEnum("bgm", 0x00AB, "Lulu's Theme");
 
         putEnum("battleTransition", 0x00, "Screen Shatter");
         putEnum("battleTransition", 0x01, "Fade");
@@ -623,9 +760,9 @@ public abstract class ScriptConstants {
         putActorProperty(0x00A3, null, "unknown", "stat_direction_change_effect");
         putActorProperty(0x00A4, null, "unknown", "stat_direction_fix_flag");
         putActorProperty(0x00A5, null, "unknown", "stat_hit_terminate_flag");
-        putActorProperty(0x00A6, "DamageTakenHP", "int", "stat_damage_hp");
-        putActorProperty(0x00A7, "DamageTakenMP", "int", "stat_damage_mp");
-        putActorProperty(0x00A8, "DamageTakenCTB", "int", "stat_damage_ctb");
+        putActorProperty(0x00A6, "LastDamageTakenHP", "int", "stat_damage_hp");
+        putActorProperty(0x00A7, "LastDamageTakenMP", "int", "stat_damage_mp");
+        putActorProperty(0x00A8, "LastDamageTakenCTB", "int", "stat_damage_ctb");
         putActorProperty(0x00A9, null, "unknown", "stat_appear_invisible_flag");
         putActorProperty(0x00AA, null, "unknown", "stat_effect_hit_num");
         putActorProperty(0x00AB, null, "bool", "stat_avoid_flag");

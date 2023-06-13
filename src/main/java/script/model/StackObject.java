@@ -92,6 +92,10 @@ public class StackObject {
                 AbilityDataObject ability = DataAccess.getMove(value + 0x3000);
                 return (ability != null ? '"'+ability.getName()+'"' : "????") + hexSuffix;
             }
+             if ("monster".equals(type)) {
+                MonsterFile monster = DataAccess.getMonster(value);
+                return (monster != null ? monster.getName() : ("m" + (value - 0x1000))) + hexSuffix;
+            }
             if ("actor".equals(type) && value >= 0x1000 && value < 0x2000) {
                 try {
                     MonsterFile monster = DataAccess.getMonster(value);
@@ -107,13 +111,7 @@ public class StackObject {
                 return '"' + noLineBreakString + '"' + hexSuffix;
             }
             if (ScriptConstants.ENUMERATIONS.containsKey(type)) {
-                Map<Integer, ScriptField> map = ScriptConstants.ENUMERATIONS.get(type);
-                ScriptField enumTarget = map.get(value);
-                if (enumTarget != null) {
-                    return enumTarget.toString();
-                } else {
-                    return '?' + type + ':' + value + hexSuffix;
-                }
+                return enumToString(type, value);
             }
         }
         return content;
@@ -156,5 +154,22 @@ public class StackObject {
             index = "#" + b4;
         }
         return b1s + inputType + b3s + index;
+    }
+
+    public static String enumToString(String type, int value) {
+        return enumToScriptField(type, value).toString();
+    }
+
+    public static ScriptField enumToScriptField(String type, int value) {
+        if (ScriptConstants.ENUMERATIONS.containsKey(type)) {
+            Map<Integer, ScriptField> map = ScriptConstants.ENUMERATIONS.get(type);
+            ScriptField enumTarget = map.get(value);
+            if (enumTarget != null) {
+                return enumTarget;
+            }
+        }
+        ScriptField field = new ScriptField(null, type);
+        field.idx = value;
+        return field;
     }
 }

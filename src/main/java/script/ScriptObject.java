@@ -17,10 +17,13 @@ public class ScriptObject {
     protected int[] actualScriptCodeBytes;
     protected int absoluteOffset;
     protected int byteCursor = 0;
+    protected List<ScriptHeader> headers;
     protected int[] refFloats;
     protected int[] refInts;
+    protected long[] someRefs;
     protected int floatTableOffset;
     protected int intTableOffset;
+    protected int someRefsTableOffset;
     protected int scriptCodeLength;
     protected int scriptCodeStartAddress;
     protected int scriptCodeEndAddress;
@@ -84,7 +87,7 @@ public class ScriptObject {
             scriptHeaderOffsets[i] = read4Bytes();
         }
         int scriptIndex = 0;
-        List<ScriptHeader> headers = new ArrayList<>();
+        headers = new ArrayList<>();
         for (int headerStart : scriptHeaderOffsets) {
             byteCursor = headerStart;
             ScriptHeader scriptHeader = parseScriptHeader();
@@ -106,26 +109,27 @@ public class ScriptObject {
 
     private ScriptHeader parseScriptHeader() {
         ScriptHeader header = new ScriptHeader();
-        header.count1 = read2Bytes();
+        header.unknownType = read2Bytes();
         header.someRefsCount = read2Bytes();
         header.refIntCount = read2Bytes();
         header.refFloatCount = read2Bytes();
         header.entryPointCount = read2Bytes();
-        header.maybeJumpCount = read2Bytes();
+        header.jumpCount = read2Bytes();
         header.alwaysZero1 = read4Bytes();
-        header.alwaysZero2 = read4Bytes();
-        header.someRefsOffset = read4Bytes();
+        header.unknownBitmask = read4Bytes();
+        header.someRefsTableOffset = read4Bytes();
         header.intTableOffset = read4Bytes();
         header.floatTableOffset = read4Bytes();
         header.scriptEntryPointsOffset = read4Bytes();
         header.jumpsOffset = read4Bytes();
-        header.alwaysZero3 = read4Bytes();
-        header.alwaysZero4 = read4Bytes();
-        header.weirdoOffset = read4Bytes();
+        header.alwaysZero2 = read4Bytes();
+        header.unknownEventIndex = read4Bytes();
+        header.timeStampOffsetApparently = read4Bytes();
         return header;
     }
 
     private void parseReferenceFloatsAndInts(List<ScriptHeader> headers) {
+        someRefsTableOffset = -1;
         intTableOffset = -1;
         floatTableOffset = -1;
         for (ScriptHeader h : headers) {
@@ -136,8 +140,11 @@ public class ScriptObject {
                 for (int i = 0; i < h.refFloatCount; i++) {
                     refFloats[i] = read4Bytes();
                 }
-            } else if (h.floatTableOffset != floatTableOffset) {
+                h.refFloats = refFloats;
+            } else if (h.floatTableOffset != floatTableOffset || h.refFloatCount != refFloats.length) {
                 System.err.println("WARNING, float table mismatch!");
+            } else {
+                h.refFloats = refFloats;
             }
             if (intTableOffset < 0) {
                 intTableOffset = h.intTableOffset;
@@ -146,8 +153,25 @@ public class ScriptObject {
                 for (int i = 0; i < h.refIntCount; i++) {
                     refInts[i] = read4Bytes();
                 }
-            } else if (h.intTableOffset != intTableOffset) {
+                h.refInts = refInts;
+            } else if (h.intTableOffset != intTableOffset || h.refIntCount != refInts.length) {
                 System.err.println("WARNING, int table mismatch!");
+            } else {
+                h.refInts = refInts;
+            }
+            if (someRefsTableOffset < 0) {
+                someRefsTableOffset = h.someRefsTableOffset;
+                byteCursor = h.someRefsTableOffset;
+                someRefs = new long[h.someRefsCount];
+                for (int i = 0; i < h.someRefsCount; i++) {
+                    int hi = read4Bytes();
+                    someRefs[i] = hi * 0x10000000L + read4Bytes();
+                }
+                h.someRefs = someRefs;
+            } else if (h.someRefsTableOffset != someRefsTableOffset || h.someRefsCount != someRefs.length) {
+                System.err.println("WARNING, other refs table mismatch!");
+            } else {
+                h.someRefs = someRefs;
             }
         }
     }
@@ -170,9 +194,10 @@ public class ScriptObject {
             scriptJumpsByDestination.get(addr).add(entryPoint);
             jumpTableString.append(epSuffix).append('=').append(String.format("%04X", addr)).append(' ');
         }
+        header.entryPoints = entryPoints;
         jumpTableString.append('\n');
         byteCursor = header.jumpsOffset;
-        int jumpCount = header.maybeJumpCount;
+        int jumpCount = header.jumpCount;
         ScriptJump[] jumps = new ScriptJump[jumpCount];
         for (int i = 0; i < jumpCount; i++) {
             int addr = read4Bytes();
@@ -186,6 +211,7 @@ public class ScriptObject {
             scriptJumpsByDestination.get(addr).add(jump);
             jumpTableString.append(jSuffix).append('=').append(String.format("%04X", addr)).append(' ');
         }
+        header.jumps = jumps;
         jumpTableString.append('\n');
     }
 
@@ -279,14 +305,18 @@ public class ScriptObject {
         int scriptCodeByteCursor = byteCursor - scriptCodeStartAddress;
         if (scriptJumpsByDestination.containsKey(scriptCodeByteCursor)) {
             List<ScriptJump> jumps = scriptJumpsByDestination.get(scriptCodeByteCursor);
-            jumps.stream().filter(j -> j.isEntryPoint).findFirst().ifPresent(j -> currentScriptIndex = j.scriptIndex);
-            jumps.stream().filter(j -> j.rAType != null && !"unknown".equals(j.rAType)).findFirst().ifPresent(j -> currentRAType = j.rAType);
-            jumps.stream().filter(j -> j.rXType != null && !"unknown".equals(j.rXType)).findFirst().ifPresent(j -> currentRXType = j.rXType);
-            jumps.stream().filter(j -> j.rYType != null && !"unknown".equals(j.rYType)).findFirst().ifPresent(j -> currentRYType = j.rYType);
-            jumps.stream().filter(j -> j.tempITypes != null).flatMap(j -> j.tempITypes.entrySet().stream()).filter(s -> s.getValue() != null && !"unknown".equals(s.getValue())).forEach(s -> currentTempITypes.put(s.getKey(), s.getValue()));
+            contextualizeJumps(jumps);
             jumpsOnLine.addAll(jumps);
         }
         return readByte();
+    }
+
+    protected void contextualizeJumps(List<ScriptJump> jumps) {
+        jumps.stream().filter(j -> j.isEntryPoint).findFirst().ifPresent(j -> currentScriptIndex = j.scriptIndex);
+        jumps.stream().filter(j -> j.rAType != null && !"unknown".equals(j.rAType)).findFirst().ifPresent(j -> currentRAType = j.rAType);
+        jumps.stream().filter(j -> j.rXType != null && !"unknown".equals(j.rXType)).findFirst().ifPresent(j -> currentRXType = j.rXType);
+        jumps.stream().filter(j -> j.rYType != null && !"unknown".equals(j.rYType)).findFirst().ifPresent(j -> currentRYType = j.rYType);
+        jumps.stream().filter(j -> j.tempITypes != null).flatMap(j -> j.tempITypes.entrySet().stream()).filter(s -> s.getValue() != null && !"unknown".equals(s.getValue())).forEach(s -> currentTempITypes.put(s.getKey(), s.getValue()));
     }
 
     protected void processInstruction(ScriptInstruction ins) {
@@ -515,7 +545,7 @@ public class ScriptObject {
         }
         List<ScriptField> inputs = func.inputs;
         if (inputs != null) {
-            for (int i = 0; i < inputs.size(); i++) {
+            for (int i = 0; i < inputs.size() && i < params.size(); i++) {
                 typed(params.get(i), inputs.get(i).type);
             }
         }
@@ -694,5 +724,41 @@ public class ScriptObject {
             offset += ins.length;
         }
         return String.join("\n", lines) + '\n';
+    }
+
+    public String headersString() {
+        if (headers == null || headers.isEmpty()) {
+            return "No Headers";
+        }
+        List<String> lines = new ArrayList<>();
+        lines.add(headers.size() + " Headers Total");
+        for (int i = 0; i < headers.size(); i++) {
+            lines.add("H" + String.format("%02d", i) + ": " + headers.get(i).getNonCommonString());
+        }
+        lines.add("Some Refs (" + someRefs.length + " at offset " + String.format("%04X", someRefsTableOffset) + ")");
+        if (someRefs.length > 0) {
+            List<String> refsStrings = new ArrayList<>();
+            for (int i = 0; i < someRefs.length; i++) {
+                refsStrings.add("R" + String.format("%02d", i) + ": [" + String.format("%016X", someRefs[i]) + "h]");
+            }
+            lines.add(String.join(", ", refsStrings));
+        }
+        lines.add("Integers (" + refInts.length + " at offset " + String.format("%04X", intTableOffset) + ")");
+        if (refInts.length > 0) {
+            List<String> intStrings = new ArrayList<>();
+            for (int i = 0; i < refInts.length; i++) {
+                intStrings.add("I" + String.format("%02d", i) + ": " + refInts[i] + " [" + String.format("%08X", refInts[i]) + "h]");
+            }
+            lines.add(String.join(", ", intStrings));
+        }
+        lines.add("Floats (" + refFloats.length + " at offset " + String.format("%04X", floatTableOffset) + ")");
+        if (refFloats.length > 0) {
+            List<String> floatStrings = new ArrayList<>();
+            for (int i = 0; i < refFloats.length; i++) {
+                floatStrings.add("F" + String.format("%02d", i) + ": " + Float.intBitsToFloat(refFloats[i]) + " [" + String.format("%08X", refFloats[i]) + "h]");
+            }
+            lines.add(String.join(", ", floatStrings));
+        }
+        return String.join("\n", lines);
     }
 }

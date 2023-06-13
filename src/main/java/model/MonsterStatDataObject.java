@@ -1,6 +1,7 @@
 package model;
 
 import main.DataAccess;
+import script.model.StackObject;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -66,6 +67,7 @@ public class MonsterStatDataObject {
 
     int forcedAction;
     int monsterIdx;
+    int modelIdx;
     int doomCounter;
     int monsterArenaIdx;
 
@@ -181,6 +183,7 @@ public class MonsterStatDataObject {
 
         forcedAction = read2Bytes(bytes, 0x70);
         monsterIdx = read2Bytes(bytes, 0x72);
+        modelIdx = read2Bytes(bytes, 0x74);
         doomCounter = bytes[0x77];
         monsterArenaIdx = read2Bytes(bytes, 0x78);
 
@@ -263,6 +266,7 @@ public class MonsterStatDataObject {
             list.add("No Forced Action");
         }
         list.add("Doom Counter=" + doomCounter);
+        list.add("Model=" + StackObject.enumToString("model", modelIdx));
 
         String full = list.stream().filter(s -> s != null && !s.isBlank()).collect(Collectors.joining("\n"));
         return full;

@@ -42,8 +42,9 @@ public class ScriptFuncAccessor extends ScriptFunc {
 
     public String getType(List<StackObject> params) {
         int predIdx = self ? 0 : 1;
-        ScriptField predicate = fixedPredicate != null ? fixedPredicate : accessMap.get(params.get(predIdx).value);
-        return predicate != null ? predicate.type : null;
+        StackObject predParam = predIdx < params.size() ? params.get(predIdx) : null;
+        ScriptField predicate = fixedPredicate != null ? fixedPredicate : (predParam == null || predParam.expression) ? null : accessMap.get(predParam.value);
+        return predicate != null ? predicate.type : "unknown";
     }
 
     public String callB5(List<StackObject> params) {
@@ -63,8 +64,8 @@ public class ScriptFuncAccessor extends ScriptFunc {
             str.append(typed);
         }
         str.append('.');
-        StackObject predParam = params.get(predicateParamIndex);
-        ScriptField predicate = fixedPredicate != null ? fixedPredicate : predParam.expression ? null : accessMap.get(predParam.value);
+        StackObject predParam = predicateParamIndex >= 0 && predicateParamIndex < params.size() ? params.get(predicateParamIndex) : null;
+        ScriptField predicate = fixedPredicate != null ? fixedPredicate : (predParam == null || predParam.expression) ? null : accessMap.get(predParam.value);
         if (predicate != null) {
             str.append(predicate);
         } else {
@@ -92,9 +93,9 @@ public class ScriptFuncAccessor extends ScriptFunc {
     }
 
     public String callD8(List<StackObject> params) {
-        StackObject valParam = params.get(valueParamIndex);
+        StackObject valParam = valueParamIndex >= 0 && valueParamIndex < params.size() ? params.get(valueParamIndex) : null;
         String paramType = getType(params);
-        StackObject typed = valParam.expression || "unknown".equals(paramType) ? valParam : new StackObject(paramType, valParam);
+        StackObject typed = valParam == null || valParam.expression || "unknown".equals(paramType) ? valParam : new StackObject(paramType, valParam);
         return "Set " + callB5(params) + ' ' + write + ' ' + typed;
     }
 

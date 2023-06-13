@@ -44,6 +44,8 @@ public class EncounterFile {
         if (encounterScript != null) {
             full.append("- Script Code -").append('\n');
             full.append(encounterScript.allLinesString());
+            full.append("- Headers -").append('\n');
+            full.append(encounterScript.headersString()).append('\n');
             full.append("- Jump Table -").append('\n');
             full.append(encounterScript.jumpTableString.toString()).append('\n');
         } else {

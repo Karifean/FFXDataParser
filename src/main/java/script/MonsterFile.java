@@ -45,6 +45,9 @@ public class MonsterFile {
     }
 
     private void mapStrings() {
+        if (textBytes.length < 0x12) {
+            return;
+        }
         int nameOffset = textBytes[0x00] + textBytes[0x01] * 0x100;
         int sensorOffset = textBytes[0x04] + textBytes[0x05] * 0x100;
         int sensorDashOffset = textBytes[0x08] + textBytes[0x09] * 0x100;
@@ -71,6 +74,8 @@ public class MonsterFile {
         if (monsterAi != null) {
             full.append("- Script Code -").append('\n');
             full.append(monsterAi.allLinesString());
+            full.append("- Headers -").append('\n');
+            full.append(monsterAi.headersString()).append('\n');
             full.append("- Jump Table -").append('\n');
             full.append(monsterAi.jumpTableString.toString()).append('\n');
         } else {
