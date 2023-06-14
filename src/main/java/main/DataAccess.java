@@ -10,6 +10,23 @@ public abstract class DataAccess {
     public static KeyItemDataObject[] KEY_ITEMS;
     public static TreasureDataObject[] TREASURES;
     public static GearDataObject[] WEAPON_PICKUPS;
+    private final static Nameable DUMMY_OBJECT = () -> "null";
+
+    public static Nameable getNameableObject(String type, int idx) {
+        Nameable object = switch (type) {
+            case "move" -> getMove(idx);
+            case "monster" -> getMonster(idx);
+            case "keyItem" -> getKeyItem(idx);
+            default -> DUMMY_OBJECT;
+        };
+        if (object == DUMMY_OBJECT) {
+            return null;
+        }
+        if (object == null) {
+            return DUMMY_OBJECT;
+        }
+        return object;
+    }
 
     public static AbilityDataObject getMove(int idx) {
         if (MOVES == null) {

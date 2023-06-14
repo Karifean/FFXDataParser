@@ -20,10 +20,10 @@ public class ScriptObject {
     protected List<ScriptHeader> headers;
     protected int[] refFloats;
     protected int[] refInts;
-    protected long[] someRefs;
+    protected ScriptVariable[] variableDeclarations;
     protected int floatTableOffset;
     protected int intTableOffset;
-    protected int someRefsTableOffset;
+    protected int variableStructsTableOffset;
     protected int scriptCodeLength;
     protected int scriptCodeStartAddress;
     protected int scriptCodeEndAddress;
@@ -109,27 +109,27 @@ public class ScriptObject {
 
     private ScriptHeader parseScriptHeader() {
         ScriptHeader header = new ScriptHeader();
-        header.unknownType = read2Bytes();
-        header.someRefsCount = read2Bytes();
+        header.scriptType = read2Bytes();
+        header.variablesCount = read2Bytes();
         header.refIntCount = read2Bytes();
         header.refFloatCount = read2Bytes();
         header.entryPointCount = read2Bytes();
         header.jumpCount = read2Bytes();
         header.alwaysZero1 = read4Bytes();
-        header.unknownBitmask = read4Bytes();
-        header.someRefsTableOffset = read4Bytes();
+        header.privateDataLengthOrUnknownBitmask = read4Bytes();
+        header.variableStructsTableOffset = read4Bytes();
         header.intTableOffset = read4Bytes();
         header.floatTableOffset = read4Bytes();
         header.scriptEntryPointsOffset = read4Bytes();
         header.jumpsOffset = read4Bytes();
         header.alwaysZero2 = read4Bytes();
-        header.unknownEventIndex = read4Bytes();
-        header.timeStampOffsetApparently = read4Bytes();
+        header.privateDataOffset = read4Bytes();
+        header.sharedDataOffset = read4Bytes();
         return header;
     }
 
     private void parseReferenceFloatsAndInts(List<ScriptHeader> headers) {
-        someRefsTableOffset = -1;
+        variableStructsTableOffset = -1;
         intTableOffset = -1;
         floatTableOffset = -1;
         for (ScriptHeader h : headers) {
@@ -159,19 +159,20 @@ public class ScriptObject {
             } else {
                 h.refInts = refInts;
             }
-            if (someRefsTableOffset < 0) {
-                someRefsTableOffset = h.someRefsTableOffset;
-                byteCursor = h.someRefsTableOffset;
-                someRefs = new long[h.someRefsCount];
-                for (int i = 0; i < h.someRefsCount; i++) {
-                    int hi = read4Bytes();
-                    someRefs[i] = hi * 0x10000000L + read4Bytes();
+            if (variableStructsTableOffset < 0) {
+                variableStructsTableOffset = h.variableStructsTableOffset;
+                byteCursor = h.variableStructsTableOffset;
+                variableDeclarations = new ScriptVariable[h.variablesCount];
+                for (int i = 0; i < h.variablesCount; i++) {
+                    int lb = read4Bytes();
+                    int hb = read4Bytes();
+                    variableDeclarations[i] = new ScriptVariable(lb, hb);
                 }
-                h.someRefs = someRefs;
-            } else if (h.someRefsTableOffset != someRefsTableOffset || h.someRefsCount != someRefs.length) {
+                h.variableDeclarations = variableDeclarations;
+            } else if (h.variableStructsTableOffset != variableStructsTableOffset || h.variablesCount != variableDeclarations.length) {
                 System.err.println("WARNING, other refs table mismatch!");
             } else {
-                h.someRefs = someRefs;
+                h.variableDeclarations = variableDeclarations;
             }
         }
     }
@@ -373,7 +374,7 @@ public class ScriptObject {
         } else if (opcode == 0x1C) { // OPBNOT / NOT
             stack.push(new StackObject(this, p1.type, true, "~(" + p1 + ")", 0x1C));
         } else if (opcode == 0x25) { // POPA / SET_RETURN_VALUE
-            textScriptLine += "Set LastCallResult = " + p1;
+            textScriptLine += p1 + ";";
             currentRAType = resolveType(p1);
         } else if (opcode == 0x26) { // PUSHA / GET_RETURN_VALUE
             stack.push(new StackObject(this, currentRAType, true, "LastCallResult", 0x26));
@@ -391,23 +392,26 @@ public class ScriptObject {
             textScriptLine += "switch " + p1;
             currentRYType = resolveType(p1);
         } else if (opcode == 0x34) { // RTS / RETURN
-            textScriptLine += "return from subroutine";
+            textScriptLine += "return from subroutine;";
             resetRegisterTypes();
         } else if (opcode >= 0x36 && opcode <= 0x38) { // REQ / SIG_NOACK
-            String type = "queueScript";
+            String cmd = "run";
             if (opcode == 0x37) { // REQSW / SIG_ONSTART
-                type += "Async";
+                cmd += "Async";
             } else if (opcode == 0x38) { // REQEW / SIG_ONEND
-                type += "Sync";
+                cmd += "Sync";
             }
-            String sep = "s" + format2Or4Byte(p2.value) + "e" + format2Or4Byte(p3.value);
-            String content = "(" + p1 + ", " + sep + ")";
-            stack.push(new StackObject(this, type, true, type + content, opcode));
+            String i = p1.expression ? ""+p1 : ""+p1.value;
+            String s = p2.expression ? "(" + p2 + ")" : format2Or4Byte(p2.value);
+            String e = p3.expression ? "(" + p3 + ")" : format2Or4Byte(p3.value);
+            String sep = "s" + s + "e" + e;
+            String content = cmd + " " + sep + " (" + i + ")";
+            stack.push(new StackObject(this, "script", true, content, opcode));
         } else if (opcode == 0x39) { // PREQ
             String content = "PREQ(" + p1 + ", " + p2 + ", " + p3 + ")";
             stack.push(new StackObject(this, "unknown", true, content, 0x39));
         } else if (opcode == 0x3C) { // RET / END
-            textScriptLine += "return";
+            textScriptLine += "return;";
             resetRegisterTypes();
         } else if (opcode == 0x3D) { // Never used: RETN / CLEANUP_END
         } else if (opcode == 0x3E) { // Never used: RETT / TO_MAIN
@@ -424,9 +428,9 @@ public class ScriptObject {
             resetRegisterTypes();
         } else if (opcode >= 0x59 && opcode <= 0x5C) { // POPI0..3 / SET_INT
             currentTempITypes.put(opcode-0x59, resolveType(p1));
-            textScriptLine += "tempI" + (opcode-0x59) + " = " + p1;
+            textScriptLine += "tempI" + (opcode-0x59) + " = " + p1 + ";";
         } else if (opcode >= 0x5D && opcode <= 0x66) { // POPF0..9 / SET_FLOAT
-            textScriptLine += "tempF" + (opcode-0x5D) + " = " + p1;
+            textScriptLine += "tempF" + (opcode-0x5D) + " = " + p1 + ";";
         } else if (opcode >= 0x67 && opcode <= 0x6A) { // PUSHI0..3 / GET_INT
             int tempIndex = opcode - 0x67;
             StackObject stackObject = new StackObject(this, currentTempITypes.getOrDefault(tempIndex, "unknown"), true, "tempI" + tempIndex, opcode);
@@ -438,8 +442,10 @@ public class ScriptObject {
             stackObject.referenceIndex = tempIndex;
             stack.push(stackObject);
         } else if (opcode == 0x77) { // REQWAIT / WAIT_DELETE
-            String sep = "s" + format2Or4Byte(p1.value) + "e" + format2Or4Byte(p2.value);
-            textScriptLine += "await " + sep + ';';
+            String s = p1.expression ? "(" + p1 + ")" : format2Or4Byte(p1.value);
+            String e = p2.expression ? "(" + p2 + ")" : format2Or4Byte(p2.value);
+            String sep = "s" + s + "e" + e;
+            textScriptLine += "await " + sep + ";";
         } else if (opcode == 0x78) { // Never used: PREQWAIT / WAIT_SPEC_DELETE
         } else if (opcode == 0x79) { // REQCHG / EDIT_ENTRY_TABLE
             textScriptLine += "REQCHG(" + p1 + ", " + p2 + ", " + p3 + ");";
@@ -733,21 +739,21 @@ public class ScriptObject {
         List<String> lines = new ArrayList<>();
         lines.add(headers.size() + " Headers Total");
         for (int i = 0; i < headers.size(); i++) {
-            lines.add("H" + String.format("%02d", i) + ": " + headers.get(i).getNonCommonString());
+            lines.add("s" + String.format("%02X", i) + ": " + headers.get(i).getNonCommonString());
         }
-        lines.add("Some Refs (" + someRefs.length + " at offset " + String.format("%04X", someRefsTableOffset) + ")");
-        if (someRefs.length > 0) {
+        lines.add("Variables (" + variableDeclarations.length + " at offset " + String.format("%04X", variableStructsTableOffset) + ")");
+        if (variableDeclarations.length > 0) {
             List<String> refsStrings = new ArrayList<>();
-            for (int i = 0; i < someRefs.length; i++) {
-                refsStrings.add("R" + String.format("%02d", i) + ": [" + String.format("%016X", someRefs[i]) + "h]");
+            for (int i = 0; i < variableDeclarations.length; i++) {
+                refsStrings.add("var" + String.format("%02X", i) + ":" + variableDeclarations[i] + " [" + String.format("%016X", variableDeclarations[i].struct) + "h]");
             }
-            lines.add(String.join(", ", refsStrings));
+            lines.add(String.join("\n", refsStrings));
         }
         lines.add("Integers (" + refInts.length + " at offset " + String.format("%04X", intTableOffset) + ")");
         if (refInts.length > 0) {
             List<String> intStrings = new ArrayList<>();
             for (int i = 0; i < refInts.length; i++) {
-                intStrings.add("I" + String.format("%02d", i) + ": " + refInts[i] + " [" + String.format("%08X", refInts[i]) + "h]");
+                intStrings.add("refI" + String.format("%02X", i) + ": " + refInts[i] + " [" + String.format("%08X", refInts[i]) + "h]");
             }
             lines.add(String.join(", ", intStrings));
         }
@@ -755,7 +761,7 @@ public class ScriptObject {
         if (refFloats.length > 0) {
             List<String> floatStrings = new ArrayList<>();
             for (int i = 0; i < refFloats.length; i++) {
-                floatStrings.add("F" + String.format("%02d", i) + ": " + Float.intBitsToFloat(refFloats[i]) + " [" + String.format("%08X", refFloats[i]) + "h]");
+                floatStrings.add("refF" + String.format("%02X", i) + ": " + Float.intBitsToFloat(refFloats[i]) + " [" + String.format("%08X", refFloats[i]) + "h]");
             }
             lines.add(String.join(", ", floatStrings));
         }

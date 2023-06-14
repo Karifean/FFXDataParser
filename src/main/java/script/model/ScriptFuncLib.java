@@ -82,7 +82,7 @@ public abstract class ScriptFuncLib {
         putUnknownFunc(0x001B, 0);
         putUnknownFunc(0x001C, 2);
         putFuncWithIdx(0x001D, new ScriptFunc("setRotationTiming", "unknown", null, p("currTime?", "float"), p("duration?", "int")));
-        putUnknownFunc(0x001F, 0);
+        putUnknownFunc(0x001F, null, "float", 0);
         putUnknownFunc(0x0020, 0);
         putUnknownFunc(0x0021, 1);
         putFuncWithIdx(0x0023, new ScriptFunc("setVelocityYaw", "unknown", null, p("angle", "float"))); // Never used by the game
@@ -107,7 +107,7 @@ public abstract class ScriptFuncLib {
         putUnknownFunc(0x003A, 1); // This is speculative
         putUnknownFunc(0x003D, 0);
         putUnknownFunc(0x003F, 0);
-        putUnknownFunc(0x0042, 1);
+        putFuncWithIdx(0x0042, new ScriptFunc("linkFieldToBattleActor?", "unknown", null, p("actor")));
         putUnknownFunc(0x0043, 0);
         putUnknownFunc(0x0044, 0);
         putUnknownFunc(0x0046, 0);
@@ -203,7 +203,7 @@ public abstract class ScriptFuncLib {
         putUnknownFunc(0x00C1, 1); // /
         putUnknownFunc(0x00C2, 1); // noclip: getHeading()
         putUnknownFunc(0x00C4, 0);
-        putUnknownFunc(0x00C5, 4);
+        putFuncWithIdx(0x00C5, new ScriptFunc(p("p1", "motion"), p("p2", "motion"), p("p3", "motion"), p("p4", "motion")));
         putUnknownFunc(0x00C6, 0);
         putUnknownFunc(0x00C7, 1);
         putUnknownFunc(0x00C8, 3);
@@ -242,7 +242,7 @@ public abstract class ScriptFuncLib {
         putUnknownFunc(0x00EF, 1);
         putUnknownFunc(0x00F2, 1);
         putUnknownFunc(0x00F3, 1);
-        putUnknownFunc(0x00F4, 3);
+        putUnknownFunc(0x00F4, null, "float", 3);
         putUnknownFunc(0x00F5, 3); // Could also be 0-2, must add up to 3 with 0x0096
         putUnknownFunc(0x00F6, 2);
         putUnknownFunc(0x00F8, 3);
@@ -293,7 +293,7 @@ public abstract class ScriptFuncLib {
         putUnknownFunc(0x0130, 2);
         putUnknownFunc(0x0132, 2);
         putUnknownFunc(0x0133, 2);
-        putFuncWithIdx(0x0134, new ScriptFunc(null, "unknown", null, p("monster")));
+        putFuncWithIdx(0x0134, new ScriptFunc(p("model")));
         putFuncWithIdx(0x0135, new ScriptFunc("PlayerTotalGil", "int", null, false));
         putUnknownFunc(0x0136, 1);
         putFuncWithIdx(0x0137, new ScriptFunc("makeGilPayment", "bool", null, p("amount", "int")));
@@ -334,7 +334,7 @@ public abstract class ScriptFuncLib {
         putUnknownFunc(0x016A, 2); // maca0200.ebp
         putUnknownFunc(0x016B, 3);
         putUnknownFunc(0x016C, 0);
-        putFuncWithIdx(0x016D, new ScriptFunc(null, "unknown", null, p("bgm")));
+        putFuncWithIdx(0x016D, new ScriptFunc(p("bgm")));
         putUnknownFunc(0x016E, 2);
         putUnknownFunc(0x016F, 1);
         putFuncWithIdx(0x0171, new ScriptFunc("restorePartyMemberHP?", "unknown", null, p("actor")));
@@ -570,7 +570,7 @@ public abstract class ScriptFuncLib {
         putUnknownFunc(0x500D, 1);
         putUnknownFunc(0x500E, 1);
         putUnknownFunc(0x500F, 1);
-        putFuncWithIdx(0x5010, new ScriptFunc(null, "unknown", null, p("model"), p(2)));
+        putFuncWithIdx(0x5010, new ScriptFunc(p("model"), p(2)));
         putUnknownFunc(0x5013, 1);
         putUnknownFunc(0x5014, 2);
         putUnknownFunc(0x5015, 4);
@@ -578,14 +578,14 @@ public abstract class ScriptFuncLib {
         putUnknownFunc(0x5017, 1);
         putUnknownFunc(0x5018, 1);
         putUnknownFunc(0x5019, 5);
-        putFuncWithIdx(0x501A, new ScriptFunc(null, "unknown", null, p("motion"), p(2), p(3), p(4), p(5)));
+        putFuncWithIdx(0x501A, new ScriptFunc(p("motion"), p(2), p(3), p(4), p(5)));
         putFuncWithIdx(0x501B, new ScriptFunc("playCharMotion", "unknown", null, p("motion")));
         putUnknownFunc(0x501E, 0);
         putUnknownFunc(0x501F, 0);
         putUnknownFunc(0x5020, 0);
         putUnknownFunc(0x5021, 1);
         putUnknownFunc(0x5022, 1);
-        putFuncWithIdx(0x5025, new ScriptFunc(null, "unknown", null, p(1), p("motion")));
+        putFuncWithIdx(0x5025, new ScriptFunc(p(1), p("motion")));
         putUnknownFunc(0x5026, 5);
         putUnknownFunc(0x5028, 1);
         putUnknownFunc(0x5029, 1);
@@ -605,8 +605,8 @@ public abstract class ScriptFuncLib {
         putUnknownFunc(0x503D, 1);
         putUnknownFunc(0x503E, 2);
         putUnknownFunc(0x503F, 1);
-        putUnknownFunc(0x5040, 1);
-        putUnknownFunc(0x5042, 5);
+        putFuncWithIdx(0x5040, new ScriptFunc(p("motion")));
+        putFuncWithIdx(0x5042, new ScriptFunc(p("motion"), p(2), p(3), p(4), p(5)));
         putUnknownFunc(0x5044, 6);
         putUnknownFunc(0x5046, 6);
         putUnknownFunc(0x5047, 2);
@@ -616,8 +616,8 @@ public abstract class ScriptFuncLib {
         putUnknownFunc(0x504B, 1);
         putUnknownFunc(0x504C, 2);
         putUnknownFunc(0x504D, 1);
-        putFuncWithIdx(0x504E, new ScriptFunc(null, "unknown", null, p("monster")));
-        putFuncWithIdx(0x504F, new ScriptFunc(null, "unknown", null, p("monster")));
+        putFuncWithIdx(0x504E, new ScriptFunc(p("model")));
+        putFuncWithIdx(0x504F, new ScriptFunc(p("model")));
         putUnknownFunc(0x5050, 2);
         putUnknownFunc(0x5051, 0);
         putUnknownFunc(0x5052, 5);
@@ -631,8 +631,8 @@ public abstract class ScriptFuncLib {
         putUnknownFunc(0x505E, 0);
         putUnknownFunc(0x505F, 1);
         putUnknownFunc(0x5060, 1);
-        putFuncWithIdx(0x5061, new ScriptFunc(null, "unknown", null, p("monster"), p(2)));
-        putFuncWithIdx(0x5063, new ScriptFunc(null, "unknown", null, p("monster"), p(2)));
+        putFuncWithIdx(0x5061, new ScriptFunc(p("model"), p(2)));
+        putFuncWithIdx(0x5063, new ScriptFunc(p("model"), p(2)));
         putUnknownFunc(0x5065, 1);
         putUnknownFunc(0x5066, 1);
         putUnknownFunc(0x5067, 1);

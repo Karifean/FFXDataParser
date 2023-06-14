@@ -40,7 +40,7 @@ public class ScriptField {
         if (idx == null) {
             return null;
         }
-        return String.format("%04X", idx);
+        return String.format(idx >= 0x10000 ? "%08X" : "%04X", idx);
     }
 
     public String getHexSuffix() {

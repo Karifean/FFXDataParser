@@ -1,5 +1,6 @@
 package script;
 
+import model.Nameable;
 import reading.Chunk;
 import main.StringHelper;
 import model.MonsterSpoilsDataObject;
@@ -11,7 +12,7 @@ import java.util.List;
 /**
  * jppc/battle/mon/.../.bin
  */
-public class MonsterFile {
+public class MonsterFile implements Nameable {
     public ScriptObject monsterAi;
     public MonsterStatDataObject monsterStatData;
     public MonsterSpoilsDataObject monsterSpoilsData;

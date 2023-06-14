@@ -3,6 +3,7 @@ package script.model;
 import main.DataAccess;
 import model.AbilityDataObject;
 import model.KeyItemDataObject;
+import model.Nameable;
 import model.TreasureDataObject;
 import script.MonsterFile;
 import script.ScriptObject;
@@ -54,17 +55,9 @@ public class StackObject {
                 int signed = value < 0x8000 ? value : (value - 0x10000);
                 return signed + hexSuffix;
             }
-            if ("treasure".equals(type)) {
-                TreasureDataObject obj = DataAccess.getTreasure(value);
-                if (obj != null) {
-                    return obj + hexSuffix;
-                }
-            }
-            if ("keyItem".equals(type)) {
-                KeyItemDataObject obj = DataAccess.getKeyItem(value);
-                if (obj != null) {
-                    return obj.getName() + hexSuffix;
-                }
+            Nameable object = DataAccess.getNameableObject(type, value);
+            if (object != null) {
+                return object.getName() + hexSuffix;
             }
             if ("encounter".equals(type)) {
                 int field = (value & 0xFFFF0000) / 0x10000;
@@ -91,10 +84,6 @@ public class StackObject {
             } else if ("charMove".equals(type)) {
                 AbilityDataObject ability = DataAccess.getMove(value + 0x3000);
                 return (ability != null ? '"'+ability.getName()+'"' : "????") + hexSuffix;
-            }
-             if ("monster".equals(type)) {
-                MonsterFile monster = DataAccess.getMonster(value);
-                return (monster != null ? monster.getName() : ("m" + (value - 0x1000))) + hexSuffix;
             }
             if ("actor".equals(type) && value >= 0x1000 && value < 0x2000) {
                 try {

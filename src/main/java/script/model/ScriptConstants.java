@@ -3,7 +3,6 @@ package script.model;
 import reading.FileAccessorWithMods;
 
 import java.io.*;
-import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 public abstract class ScriptConstants {
@@ -329,13 +328,13 @@ public abstract class ScriptConstants {
         } */
 
         putEnum("model", 0x0000, "No Model");
-        putEnum("model", 0x0001, "?Tidus");
-        putEnum("model", 0x0002, "?Yuna");
-        putEnum("model", 0x0003, "?Auron");
+        putEnum("model", 0x0001, "Tidus");
+        putEnum("model", 0x0002, "Yuna");
+        putEnum("model", 0x0003, "Auron");
         putEnum("model", 0x0004, "Kimahri");
-        putEnum("model", 0x0005, "?Wakka");
-        putEnum("model", 0x0006, "?Lulu");
-        putEnum("model", 0x0007, "?Rikku");
+        putEnum("model", 0x0005, "Wakka");
+        putEnum("model", 0x0006, "Lulu");
+        putEnum("model", 0x0007, "Rikku");
         putEnum("model", 0x0008, "Seymour");
         putEnum("model", 0x1002, "Helmet");
         putEnum("model", 0x1006, "Floating Devil");

@@ -9,7 +9,7 @@ import java.util.stream.Collectors;
 /**
  * important.bin
  */
-public class KeyItemDataObject {
+public class KeyItemDataObject implements Nameable {
     private final int[] bytes;
 
     public String name;

@@ -17,6 +17,11 @@ public class ScriptFunc extends ScriptField {
         this.inputs = List.of(inputs);
     }
 
+    public ScriptFunc(ScriptField... inputs) {
+        super(null, "unknown");
+        this.inputs = List.of(inputs);
+    }
+
     public String getType(List<StackObject> params) {
         return type;
     }

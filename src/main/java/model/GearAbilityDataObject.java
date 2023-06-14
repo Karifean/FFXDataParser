@@ -11,7 +11,7 @@ import java.util.stream.Collectors;
 /**
  * a_ability.bin
  */
-public class GearAbilityDataObject {
+public class GearAbilityDataObject implements Nameable {
     private final int[] bytes;
 
     public String name;
