@@ -1,9 +1,13 @@
 package script.model;
 
-import java.lang.reflect.Field;
+import reading.FileAccessorWithMods;
+
+import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 public abstract class ScriptConstants {
+    private static final String ENUM_CSV_ROOT = FileAccessorWithMods.RESOURCES_ROOT + "enums";
     public static String[] FUNCSPACES;
     public static String[] OPCODE_LABELS;
     public static int[] OPCODE_STACKPOPS;
@@ -272,6 +276,8 @@ public abstract class ScriptConstants {
         putCompOperator(0x17, "/", "int", "OPDIV");
         putCompOperator(0x18, "mod", "int", "OPMOD");
 
+        addEnumsFromAllCsvsInFolder(new File(ENUM_CSV_ROOT));
+
         putEnum("deathAnimation", 0x00, "Character (Body remains and targetable)", "death_normal");
         putEnum("deathAnimation", 0x01, "Boss (Body remains but untargetable)", "death_nop");
         putEnum("deathAnimation", 0x02, "Humanoid (No Pyreflies, body fades out)", "death_fadeout");
@@ -310,7 +316,7 @@ public abstract class ScriptConstants {
         putEnum("textAlignment", 0x03, "?Right");
         putEnum("textAlignment", 0x04, "?Center");
 
-        for (Field field : CharMotions.class.getDeclaredFields()) {
+        /* for (Field field : CharMotions.class.getDeclaredFields()) {
             try {
                 int idx = field.getInt(CharMotions.class);
                 if (!getEnumMap("motion").containsKey(idx)) {
@@ -320,11 +326,17 @@ public abstract class ScriptConstants {
             } catch (IllegalAccessException e) {
                 e.printStackTrace();
             }
-        }
+        } */
 
         putEnum("model", 0x0000, "No Model");
+        putEnum("model", 0x0001, "?Tidus");
+        putEnum("model", 0x0002, "?Yuna");
+        putEnum("model", 0x0003, "?Auron");
         putEnum("model", 0x0004, "Kimahri");
-        putEnum("model", 0x0008, "Seymour (Human Boss)");
+        putEnum("model", 0x0005, "?Wakka");
+        putEnum("model", 0x0006, "?Lulu");
+        putEnum("model", 0x0007, "?Rikku");
+        putEnum("model", 0x0008, "Seymour");
         putEnum("model", 0x1002, "Helmet");
         putEnum("model", 0x1006, "Floating Devil");
         putEnum("model", 0x100A, "Wolf");
@@ -435,8 +447,10 @@ public abstract class ScriptConstants {
         putEnum("model", 0x3009, "Cindy");
         putEnum("model", 0x300A, "Sandy");
         putEnum("model", 0x300B, "Mindy");
-        putEnum("model", 0x300D, "?Anima Dummy 1");
-        putEnum("model", 0x300E, "?Anima Dummy 2");
+        putEnum("model", 0x300D, "?Anima2");
+        putEnum("model", 0x300E, "?Anima3");
+        putEnum("model", 0x300F, "?Anima4");
+        putEnum("model", 0x3010, "?Anima5");
         putEnum("model", 0x3017, "Koma Inu / Daigoro");
         putEnum("model", 0x3018, "Katana (Yojimbo)");
         putEnum("model", 0x3019, "Kozuka (Yojimbo)");
@@ -984,5 +998,89 @@ public abstract class ScriptConstants {
             String idxStr = String.format("%02d", i);
             putEnum("field", offset + i, name + idxStr);
         }
+    }
+
+    private static void addEnumsFromAllCsvsInFolder(File file) {
+        if (file.isDirectory()) {
+            File[] files = file.listFiles();
+            if (files == null) {
+                return;
+            }
+            for (File listFile : files) {
+                addEnumsFromAllCsvsInFolder(listFile);
+            }
+        } else if (file.getPath().endsWith(".csv")) {
+            try {
+                addEnumsFromCsv(file);
+            } catch (IOException e) {
+                System.err.println("IOException " + e.getLocalizedMessage());
+            }
+        }
+    }
+
+    private static void addEnumsFromCsv(File file) throws IOException {
+        try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                String[] components = line.split(",");
+                if (components.length >= 3) {
+                    String type = nullIfBlankElseTrimmed(components[0]);
+                    String indexString = nullIfBlankElseTrimmed(components[1]);
+                    if (indexString.startsWith("0x")) {
+                        indexString = indexString.substring(2);
+                    }
+                    String internalName = nullIfBlankElseTrimmed(components[2]);
+                    try {
+                        int idx = Integer.parseInt(indexString, 16);
+                        String readableName = components.length >= 4 ? nullIfBlankElseTrimmed(components[3]) : null;
+                        putEnum(type, idx, readableName, internalName);
+                    } catch (NumberFormatException ignored) {
+                        System.err.println("Cannot parse index in csv=" + file.getPath() + " index=" + indexString);
+                    }
+                } else {
+                    System.err.println("Erroneous line in csv=" + file.getPath() + " line=" + line);
+                }
+            }
+        }
+    }
+
+    /*
+    private static void convertFileToCsv(File file) throws IOException {
+        try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
+            String type = "motion";
+            String line;
+            FileOutputStream fileOutputStream = new FileOutputStream(file.getPath() + ".alter");
+            while ((line = reader.readLine()) != null) {
+                String[] components = line.split("=");
+                if (components.length == 2) {
+                    String internalName = nullIfBlankElseTrimmed(components[0]);
+                    if (internalName.startsWith("//")) {
+                        continue;
+                    }
+                    // String type = nullIfBlankElseTrimmed(components[0]);
+                    String indexString = nullIfBlankElseTrimmed(components[1]);
+                    // int idx = Integer.parseInt(indexString, 16);
+                    // String readableName = components.length >= 4 ? nullIfBlankElseTrimmed(components[3]) : null;
+                    if (!indexString.startsWith("0x")) {
+                        continue;
+                    }
+                    String alteredLine = type + "," + indexString.substring(2) + "," + internalName + ",\n";
+                    fileOutputStream.write(alteredLine.getBytes(StandardCharsets.UTF_8));
+                    // putEnum(type, idx, readableName, internalName);
+                } else {
+                    System.err.println("Erroneous line in csv=" + file.getPath() + " line=" + line);
+                }
+            }
+            fileOutputStream.flush();
+            fileOutputStream.close();
+        }
+    }
+    */
+
+    private static String nullIfBlankElseTrimmed(String s) {
+        if (s == null || s.isBlank()) {
+            return null;
+        }
+        return s.trim();
     }
 }
