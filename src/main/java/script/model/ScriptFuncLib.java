@@ -578,14 +578,14 @@ public abstract class ScriptFuncLib {
         putUnknownFunc(0x5017, 1);
         putUnknownFunc(0x5018, 1);
         putUnknownFunc(0x5019, 5);
-        putUnknownFunc(0x501A, 5);
+        putFuncWithIdx(0x501A, new ScriptFunc(null, "unknown", null, p("motion"), p(2), p(3), p(4), p(5)));
         putFuncWithIdx(0x501B, new ScriptFunc("playCharMotion", "unknown", null, p("motion")));
         putUnknownFunc(0x501E, 0);
         putUnknownFunc(0x501F, 0);
         putUnknownFunc(0x5020, 0);
         putUnknownFunc(0x5021, 1);
         putUnknownFunc(0x5022, 1);
-        putUnknownFunc(0x5025, 2);
+        putFuncWithIdx(0x5025, new ScriptFunc(null, "unknown", null, p(1), p("motion")));
         putUnknownFunc(0x5026, 5);
         putUnknownFunc(0x5028, 1);
         putUnknownFunc(0x5029, 1);
