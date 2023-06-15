@@ -7,6 +7,7 @@ public class ScriptField {
     public String internalName;
     public String type;
     public Integer idx;
+    public String hexFormat;
 
     public ScriptField(String typeAndName) {
         this.name = typeAndName;
@@ -40,7 +41,7 @@ public class ScriptField {
         if (idx == null) {
             return null;
         }
-        return String.format(idx >= 0x10000 ? "%08X" : "%04X", idx);
+        return String.format(hexFormat != null ? hexFormat : (idx >= 0x10000 ? "%08X" : (idx >= 0x100 ? "%04X" : "%02X")), idx);
     }
 
     public String getHexSuffix() {

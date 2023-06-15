@@ -67,20 +67,23 @@ public class ScriptObject {
         byteCursor = 0;
         scriptCodeLength = read4Bytes();
         // System.out.println("Script Length: " + scriptCodeLength);
-        int nullAddress2 = read4Bytes();
+        int map_start = read4Bytes();
         int creatorTagAddress = read4Bytes();
-        int numberPartAddress = read4Bytes();
+        int event_name_start = read4Bytes();
         int jumpsEndAddress = read4Bytes();
-        int totallyUnknown1 = read4Bytes();
-        int totallyUnknown2 = read4Bytes();
-        int totallyUnknown3 = read4Bytes();
-        int totallyUnknown4 = read4Bytes();
-        int totallyUnknown5 = read4Bytes();
-        int jumpsStartAddress = read4Bytes();
-        int weirdRandomFlagsAddress = read4Bytes();
+        int obj_5b8_count = read2Bytes();
+        int obj_558_count = read2Bytes();
+        int main_script_index = read2Bytes();
+        int unk01 = read2Bytes();
+        int obj_2e8_count = read2Bytes();
+        int zoneBytes = read2Bytes();
+        int event_data_offset = read4Bytes();
+        int unk02 = read4Bytes();
+        int area_offset = read4Bytes();
+        int other_offset = read4Bytes();
         scriptCodeStartAddress = read4Bytes();
         int numberOfScripts = read2Bytes();
-        int numberOfScripts2 = read2Bytes();
+        int numberOfScriptsWithoutSubroutines = read2Bytes();
         // System.out.println("Number of Scripts: " + numberOfScripts + " / " + numberOfScripts2);
         int[] scriptHeaderOffsets = new int[numberOfScripts];
         for (int i = 0; i < numberOfScripts; i++) {
@@ -424,7 +427,7 @@ public class ScriptObject {
             String content = "TREQ(" + p1 + ", " + p2 + ", " + p3 + ")";
             stack.push(new StackObject(this, "unknown", true, content, 0x46));
         } else if (opcode == 0x54) { // DRET / CLEANUP_ALL_END
-            textScriptLine += "direct return";
+            textScriptLine += "direct return;";
             resetRegisterTypes();
         } else if (opcode >= 0x59 && opcode <= 0x5C) { // POPI0..3 / SET_INT
             currentTempITypes.put(opcode-0x59, resolveType(p1));

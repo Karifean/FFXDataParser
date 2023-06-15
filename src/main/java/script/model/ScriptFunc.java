@@ -10,16 +10,19 @@ public class ScriptFunc extends ScriptField {
     public ScriptFunc(String name, String type, String internalName, boolean brackets) {
         super(name, type, internalName);
         this.inputs = brackets ? new ArrayList<>() : null;
+        this.hexFormat = "%04X";
     }
 
     public ScriptFunc(String name, String type, String internalName, ScriptField... inputs) {
         super(name, type, internalName);
         this.inputs = List.of(inputs);
+        this.hexFormat = "%04X";
     }
 
     public ScriptFunc(ScriptField... inputs) {
         super(null, "unknown");
         this.inputs = List.of(inputs);
+        this.hexFormat = "%04X";
     }
 
     public String getType(List<StackObject> params) {

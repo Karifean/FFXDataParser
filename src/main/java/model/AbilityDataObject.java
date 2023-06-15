@@ -2,6 +2,7 @@ package model;
 
 import main.StringHelper;
 import script.model.ScriptConstants;
+import script.model.StackObject;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -451,7 +452,7 @@ public class AbilityDataObject implements Nameable {
         List<String> list = new ArrayList<>();
         list.add(!usableInCombat ? "Unusable" : "");
         list.add(damageKind());
-        list.add(ifG0(damageFormula, "Formula=", ""));
+        list.add(damageFormula > 0 ? "Formula=" + StackObject.enumToString("damageFormula", damageFormula) : "");
         list.add(ifG0(hitCount, "", "-hit"));
         list.add(ifG0(attackPower, "Power=", ""));
         list.add(usesWeaponProperties ? "Uses Weapon Properties" : "");

@@ -1,0 +1,570 @@
+model,0000,No Model
+model,0001,TIDU,Tidus
+model,0002,YUNA,Yuna
+model,0003,AURO,Auron
+model,0004,KIMA,Kimahri
+model,0005,WAKK,Wakka
+model,0006,LULU,Lulu
+model,0007,RIKK,Rikku
+model,0008,SEYM,Seymour
+model,0029,RIKK_A,
+model,002B,YUNA_B,
+model,002C,SEYM_B,
+model,002D,AURO_Y,
+model,0033,RIKK_LA,
+model,0065,TIDU_H,Tidus (Hi-Res?)
+model,0066,YUNA_H,Yuna (Hi-Res?)
+model,0067,AURO_H,Auron (Hi-Res?)
+model,0068,KIMA_H,Kimahri (Hi-Res?)
+model,0069,WAKK_H,Wakka (Hi-Res?)
+model,006A,LULU_H,Lulu (Hi-Res?)
+model,006B,RIKK_H,Rikku (Hi-Res?)
+model,006C,SEYM_H,Seymour (Hi-Res?)
+model,0079,YUNA_HB,
+model,007A,SEYM_HB,
+model,03E7,,C999
+model,1001,KOURA_01
+model,1002,KOURA_02,Helmet
+model,1003,KOURA_03
+model,1004,KOURA_04
+model,1005,KOURA_05
+model,1006,GARUKI_01,Floating Devil
+model,1007,GARUKI_02
+model,1008,GARUKI_03
+model,1009,WOLF_01
+model,100A,WOLF_02,Wolf
+model,100B,WOLF_03
+model,100C,WOLF_04
+model,100D,WOLF_05
+model,100E,WOLF_06
+model,100F,WOLF_07
+model,1010,PUDDING_01,Flan
+model,1011,PUDDING_02
+model,1012,PUDDING_03
+model,1013,PUDDING_04
+model,1014,PUDDING_05
+model,1015,PUDDING_06
+model,1016,LIZARD_01,Lizard
+model,1017,LIZARD_02
+model,1018,LIZARD_03
+model,1019,LIZARD_04
+model,101A,LIZARD_05
+model,101B,LIZARD_06
+model,101C,BIRD_01,Eagle/Condor
+model,101D,BIRD_02
+model,101E,BIRD_03
+model,101F,INSECT_01,Wasp
+model,1020,INSECT_02
+model,1021,INSECT_03
+model,1022,INSECT_04
+model,1023,ARIMAN_01,Floating Eye
+model,1024,ARIMAN_02
+model,1025,ARIMAN_03
+model,1026,ARIMAN_04
+model,1027,PLANT_01,Ragora
+model,1028,PLANT_02
+model,1029,SAHAGIN_01
+model,102B,SAHAGIN_02N,Sahagin (on Land)
+model,102C,ZOO_01,Garuda
+model,102D,ZOO_02,Zu
+model,102E,SAND_01,Huge Worm
+model,1030,GOLEM_01,Defender
+model,1031,GOLEM_02
+model,1032,GHOST_01,Ghost
+model,1033,FLESIUS_01,Phlegyas
+model,1034,FLESIUS_02
+model,1035,RISING_01,Remora/Maelspike
+model,1037,_4SPIKE_01,Dual Horn
+model,103A,TAKO_01,Octopus (Via Purifico)
+model,103B,DRAGON_01,Drake
+model,1040,MORBOL_01,Malboro
+model,1042,FIGHTER_01
+model,1044,PIRANIA_11,Piranha
+model,104D,ELEMENT_01,Yellow Element
+model,104E,ELEMENT_02,White Element
+model,104F,ELEMENT_03,Red Element
+model,1050,ELEMENT_04,Gold Element
+model,1051,ELEMENT_05,Blue Element
+model,1052,ELEMENT_06,Dark/Black/Nega Element
+model,1053,ELEMENT_07
+model,1054,BLADE_01
+model,1055,BEHI_01,Behemoth
+model,1057,CHIMERA_01,Chimera
+model,1059,QUAL_01,Coeurl
+model,105B,_2LEG_01
+model,105C,_2LEG_02
+model,105D,_2LEG_02F
+model,105E,_2LEG_03
+model,105F,MONOLITH_01,Demonolith
+model,1060,_4LEG_01,Machina (Multi-Arm)
+model,1063,ULTIMA_01,Weapon (Ultima/Omega/Nemesis)
+model,1065,TAKOBOSS,Tros
+model,1066,SHIN2,Sinspawn Geneaux/Genais
+model,1067,SHIN2_ARM,Geneaux Tentacle
+model,1068,EATER,Chocobo Eater
+model,1069,DENDEN,Neslug
+model,106A,MAGICSQ_01,Mortiphasm
+model,106B,SHINZ_L1,Sinscale (Winged)
+model,106D,BAJIBOSS,Geosgaeno
+model,106E,KIKAI1,Oblitzerator
+model,106F,KIKAI2,Extractor
+model,1070,KIMARI_B
+model,1071,SHIN_SE,Sin's Fin (Swimming)
+model,1072,SHIN1,Sinspawn Echuilles
+model,1073,SHINZ_W1,Sinscale (Underwater)
+model,1075,SHIN3,Sinspawn Gui
+model,1076,SHIN3_2
+model,1077,EF_1,Evrae
+model,1078,EF2_EFL
+model,1079,MAKABOSS,Spherimorph
+model,107A,COUNTDOWN,Crawler
+model,107B,COUNTDOWNB,Negator
+model,107C,SIMOA
+model,107D,ANIMA_B
+model,107E,SIMOA01,Seymour Natus
+model,107F,SIMOA01_W,Mortibody
+model,1080,EBON1,Sanctuary Keeper
+model,1081,EBON3,Spectral Keeper
+model,1082,YUNARESKA,Yunalesca
+model,1083,SIMOA03,Seymour Omnis
+model,1084,JECHT,Braska's Final Aeon
+model,1085,CRANE,Crane
+model,1086,BIRAN,Biran Ronso
+model,1087,ENCHE,Yenke Ronso
+model,1088,SHIN_ARML,Sin's Fin (Flying)
+model,1089,SHIN_ARMR
+model,108A,SHIN_BACK,Sin Core (Back)
+model,108B,SHIN2_KAI
+model,108C,SHIN_HEAD,Overdrive Sin
+model,108D,GUAD_E
+model,108E,SIMOA02,Seymour Flux
+model,1090,,Kimahri's Spear (in Boss fight)
+model,1096,SCLISTAL
+model,1097,DRAGON_E01
+model,1098,ROBOT_E01,Machina (Impaler)
+model,1099,OTYU_E01,Ochu
+model,109A,SCLISTAL2
+model,109B,SAHAGIN_E01,Sahagin (Swimming)
+model,109C,SAHAGIN_E02
+model,109D,ZOO_E01
+model,109E,BLADE_E01,Blades (Species)
+model,109F,SHIN4,Sinspawn Ammes
+model,10A0,SHIN3_HEAD
+model,10A2,KUSABI,Gate Lock (Evrae Altana Battle)
+model,10AA,TANK,Tanker
+model,10AC,JECHTKEN
+model,10AD,OPTION_L,Yu Pagoda (Left)
+model,10AE,OPTION_R,Yu Pagoda (Right)
+model,10AF,YUNARESKA_ARM,?Tentacle (Yunalesca?)
+model,10B0,YEVONJU,Yu Yevon
+model,10B1,MAGICSQ_05,?Mortiphasm Dummied Out
+model,10B5,IRON_11,Iron Giant
+model,10B6,IRON_12
+model,10B7,IRON_21
+model,10B9,BASIL_01,Basilisk
+model,10BB,ADMAN_01,Adamantoise
+model,10BC,BELIAL_01,Varuna
+model,10BD,OTYUGH_01
+model,10BE,OTYUGH_02
+model,10BF,F_EBON_01,Yevon Artillery Machina (YAT)
+model,10C1,BOMB_01,Bomb
+model,10C3,G_EBON_01,Yevon Kicking Machina (YKT)
+model,10C5,S_EBON_11,Monk (Rifle)
+model,10C7,S_EBON_21,Monk (Flamethrower)
+model,10CA,MAGICP_01,Magic Urn (PuPu?)
+model,10CF,SABO_01,Cactuar
+model,10D0,SABO_02
+model,10D1,MIST_01,Larva/Spirit
+model,10D2,LAST2_01,Barbatos
+model,10D3,TREASURE_01,Treasure Chest (Battle)
+model,10D4,FIGHTER_03,Ogre/Wendigo
+model,10D5,GUAD_01,Guado Guardian
+model,10D6,KINOKO_01,Mushroom (Species)
+model,10D7,KINOKO_02
+model,10D8,KINOKO_03
+model,10DD,PLANT_03
+model,10DF,TONBERI_01,Tonberry
+model,10E1,ARIMAN_05
+model,10E2,BOMB_04
+model,10FE,VALFARE_01
+model,10FF,NULL
+model,1101,,Mimic Parts
+model,1158,ANGEL_B,Penance
+model,1159,ANGEL_R,Penance's Arm
+model,2001,ZANA_HAN001
+model,2002,ZANA_HAN002
+model,2003,ZANA_HAN003
+model,2004,ZANA_HAN004
+model,2005,ZANA_HAN005
+model,2006,ZANA_HAN006
+model,2007,ZANA_HAN007
+model,2008,ZANA_HAN008
+model,2009,ZANA_HAN009
+model,200A,ZANA_HAN010
+model,200B,ZANA_HAN011
+model,2010,ZANA_JDG016
+model,2012,ZANA_BLZA018
+model,2013,ZANA_BLZA019
+model,2014,ZANA_BLZA020
+model,2015,ZANA_BLZA021
+model,2016,ZANA_BLZA022
+model,2017,ZANA_BLZA023
+model,2018,ZANA_BLZA024
+model,2019,ZANA_BLZA025
+model,201A,SPRS_HAN026
+model,201B,SPRS_HAN027
+model,201C,SPRS_HAN028
+model,201D,SPRS_HAN029
+model,201E,SPRS_HAN030
+model,201F,SPRS_HAN031
+model,2020,SPRS_HAN032
+model,2021,SPRS_HAN033
+model,2022,SPRS_HAN034
+model,2023,SPRS_HAN035
+model,2024,SPRS_HAN036
+model,2025,SPRS_HAN037
+model,2026,SPRS_HAN038
+model,2027,SPRS_HAN039
+model,2028,SPRS_SHP040
+model,2029,SPRS_SHP041
+model,202A,SPRM_HAN042
+model,202B,SPRM_HAN043
+model,202C,SPRM_HAN044
+model,202D,SPRM_HAN045
+model,202E,SPRM_HAN046
+model,202F,SPRM_HAN047
+model,2030,SPRM_HAN048
+model,2031,SPRM_HAN049
+model,2032,SPRM_HAN050
+model,2033,SPRM_HAN051
+model,2034,SPRM_HAN052
+model,2035,SPRM_HAN053
+model,2036,SPRM_HAN054
+model,2037,SPRM_HAN055
+model,2038,SPRM_HAN056
+model,2039,SPRM_SHP057
+model,203A,SPRM_SHP058
+model,203B,SPRM_SHP059
+model,203C,SPRM_ANA060
+model,203D,BLZ_STF61
+model,203F,SPRN_HAN063
+model,2040,SPRN_HAN064
+model,2041,SPRN_YVN065
+model,2042,SPRN_YVN066
+model,2043,SPRN_YVN067
+model,2044,SPRN_YVN068
+model,2045,SPRN_HAN069
+model,2046,SPRN_HAN070
+model,2047,GAD_HAN071
+model,2048,GAD_HAN072
+model,2049,GAD_HAN073
+model,204A,GAD_HAN074
+model,204B,GAD_HAN075
+model,204C,GAD_HAN076
+model,204D,GAD_HAN077
+model,204E,GAD_HAN078
+model,204F,GAD_SHP079
+model,2050,ALBD_HAN080
+model,2051,ALBD_HAN081
+model,2052,ALBD_HAN082
+model,2053,ALBD_HAN083
+model,2054,ALBD_HAN084
+model,2055,ALBD_HAN085
+model,2056,ALBD_HAN086
+model,2057,ALBD_HAN087
+model,2058,ALBD_HAN088
+model,2059,ALBD_HAN089
+model,205A,ALBD_HAN090
+model,205B,ALBD_HAN091
+model,2063,RNS_HAN099
+model,2064,RNS_HAN100
+model,2065,RNS_HAN101
+model,2066,RNS_HAN102
+model,2067,RNS_HAN103
+model,2068,RNS_HAN104
+model,2069,RNS_HAN105
+model,206A,RNS_HAN106
+model,206C,MAN_YVN108
+model,206D,MAN_YVN109
+model,206E,MAN_YVN110
+model,206F,MAN_YVN111
+model,2070,MAN_YVN112
+model,2071,MAN_YVN113
+model,2072,MAN_YVN114
+model,2073,MAN_YVN115
+model,207A,MAN_YVNSLD122
+model,207B,MAN_YVNSLD123
+model,207C,MAN_YVNSLD124
+model,207D,MAN_YVNSLD125
+model,207E,MAN_HIPRST126
+model,207F,MAN_HIPRST127
+model,2080,MAN_HIPRST128
+model,2081,MAN_EXPD129
+model,2082,MAN_EXPD130
+model,2083,MAN_EXPD131
+model,2084,MAN_EXPD132
+model,2085,MAN_EXPD133
+model,2086,MAN_EXPD134
+model,2087,MAN_EXPD135
+model,2088,MAN_EXPD136
+model,2089,MAN_EXPD137
+model,208B,MAN_SAILOR139
+model,208C,MAN_SAILOR140
+model,208D,MAN_SAILOR141
+model,208E,MAN_SAILOR142
+model,208F,MAN_SAILOR143
+model,2090,MAN_BAND144
+model,2091,MAN_BAND145
+model,2092,MAN_BAND146
+model,2096,GAD_GUARD150
+model,2097,GAD_GUARD151
+model,20A8,BLZ_STF168
+model,20AA,BLZ_STF170
+model,20AB,BLZ_JDG171
+model,20AC,BLZ_BSD172
+model,20AD,BLZ_BSD173
+model,20AE,BLZ_BSD174
+model,20AF,BLZ_BSD175
+model,20B0,BLZ_BSD176
+model,20B1,BLZ_KLK177
+model,20B2,BLZ_KLK178
+model,20B3,BLZ_KLK179
+model,20B4,BLZ_KLK180
+model,20B5,BLZ_KLK181
+model,20B6,BLZ_LUCA182
+model,20B7,BLZ_LUCA183
+model,20B8,BLZ_LUCA184
+model,20B9,BLZ_LUCA185
+model,20BA,BLZ_LUCA186
+model,20C5,BLZ_GAD197
+model,20C6,BLZ_GAD198
+model,20C7,BLZ_GAD199
+model,20C8,BLZ_GAD200
+model,20C9,BLZ_ALBD201
+model,20CA,BLZ_ALBD202
+model,20CB,BLZ_ALBD203
+model,20CC,BLZ_ALBD204
+model,20CD,BLZ_ALBD205
+model,20CE,BLZ_RNS206
+model,20CF,BLZ_RNS207
+model,20D0,BLZ_RNS208
+model,20D1,BLZ_RNS209
+model,20D2,DEMIHUMAN210
+model,20D3,DEMIHUMAN211
+model,20D4,DEMIHUMAN212
+model,20D8,GA_GATTA216
+model,20D9,GA_LUZZU217
+model,20DA,GA_OOAKA218
+model,20DB,GA_DONA219
+model,20DC,GA_BALTERO220
+model,20DD,GA_WANTZ221
+model,20DE,GA_ISALU222
+model,20DF,GA_MARODA223
+model,20E0,GA_VASSE224
+model,20E1,GA_SYELINDA225
+model,20E2,GA_MACHEN226
+model,20E3,GA_RUTIRU227
+model,20E4,GA_ELMA228
+model,20E5,GA_KLASCO229
+model,20E7,GA_TWAMEL231
+model,20E8,GA_BIRAN232
+model,20E9,GA_ENCHE233
+model,20EA,GA_RIN234
+model,20EC,TID_CHILD236
+model,20EE,JECHT238
+model,20EF,TIDMAMA239
+model,20F0,CHAP240
+model,20F1,MIKA241
+model,20F2,SEMOAMAMA242
+model,20F3,WATASI243
+model,20F4,DEADSUMMONER244
+model,20F6,ZOOK246
+model,20F7,SORTON247
+model,20F8,YUNALESCA248
+model,20F9,ZAON249
+model,20FA,BRASKA250
+model,20FF,JYSCAL255
+model,2101,CID257
+model,2109,RIKBROS265
+model,2110,SEMOA_CHILD272
+model,2116,BLZ_GAD278
+model,2119,BLZ_RNS281
+model,211B,KINOC283
+model,211C,RONSO284
+model,211F,026MOB287
+model,2120,027MOB288
+model,2121,028MOB289
+model,2122,029MOB290
+model,2123,030MOB291
+model,2124,031MOB292
+model,2125,032MOB293
+model,2126,033MOB294
+model,2127,034MOB295
+model,2128,035MOB296
+model,2129,036MOB297
+model,212A,037MOB298
+model,212B,038MOB299
+model,212C,039MOB300
+model,213A,227CHOCOBO314
+model,213B,228CHOCOBO315
+model,213C,229CHOCOBO316
+model,2143,130COLOR323
+model,2144,131COLOR324
+model,2145,132COLOR325
+model,2146,133COLOR326
+model,2147,BERUGE327
+model,214A,YUNAMAMA330
+model,214B,ZANA_BLZB331
+model,214C,081GOGGLEOFF332
+model,214D,082GOGGLEOFF333
+model,214E,265GOGGLEOFF334
+model,214F,043MOB335
+model,2150,044MOB336
+model,2151,052MOB337
+model,2152,053MOB338
+model,2153,054MOB339
+model,2154,057MOB340
+model,2155,058MOB341
+model,2156,061MOB342
+model,2157,168MOB343
+model,2158,170MOB344
+model,2159,KLK_SAILOR345
+model,215A,KLK_SAILOR346
+model,215B,KLK_SAILOR347
+model,215C,KLK_SAILOR348
+model,215D,KLK_SAILOR349
+model,215E,ZANA_HAN350
+model,215F,ZANA_HAN351
+model,2160,ZANA_HAN352
+model,2161,ZANA_HAN353
+model,2162,ZANA_HAN354
+model,2163,ZANA_HAN355
+model,2164,JECHT_CLEAR356
+model,3001,VALFOR,Valefor
+model,3002,RAKUSA,Ifrit
+model,3003,MARTARM,Ixion
+model,3004,SIVA,Shiva
+model,3006,BAHAMUT,Bahamut
+model,3007,ANIMA,Anima
+model,3008,YOUJIN,Yojimbo
+model,3009,MEGAS1,Cindy
+model,300A,MEGAS2,Sandy
+model,300B,MEGAS3,Mindy
+model,300D,ANIMA2
+model,300E,ANIMA3
+model,300F,ANIMA4
+model,3010,ANIMA5
+model,3011,SIVA2
+model,3012,SIVA3
+model,3013,SIVA4
+model,3014,E_ANGEL
+model,3015,E_DEATH
+model,3016,YOUJIN2
+model,3017,YOUJIN3,Koma Inu / Daigoro
+model,3018,YOUJIN4,Katana (Yojimbo)
+model,3019,YOUJIN5,Kozuka (Yojimbo)
+model,301A,MEGAS4
+model,301B,MEGAS5
+model,301C,MEGAS6
+model,301F,,Shuriken (Yojimbo?)
+model,5001,SAVESPHERE001
+model,5002,TAKARABOX002
+model,5006,BALL006
+model,5007,FISH007
+model,5008,BUTTERFLY008
+model,5009,DOG009
+model,500A,MONKEY010
+model,500B,ALBDBOOK011
+model,500C,LUGGAGE012
+model,500F,CAN015
+model,5017,KAMOME_HI023
+model,501D,CAT029
+model,501E,CHEERFLAG_A030
+model,501F,CHEERFLAG_B031
+model,5020,CHEERFLAG_C032
+model,5021,CHEERFLAG_D033
+model,5022,CHEERFLAG_E034
+model,5023,CHEERFLAG_F035
+model,5031,GENKOUKA_HI049
+model,5032,GENKOUKA_LO050
+model,5033,CHOCOBO051
+model,5035,SEABIRD_HI053
+model,5036,IRUKA054
+model,503A,ICESCOOT058
+model,503B,SCOPE_LO059
+model,503D,ANCHOR_LO061
+model,5043,HORROREYES067
+model,5044,HORRORMOUTH068
+model,5045,BREAKSPHERE069
+model,5048,SEABIRD_HI072
+model,5049,SEABIRD_LO073
+model,504F,ALBDMASK079
+model,5054,CAGE_S084
+model,5055,WAGONCLOTH085
+model,5056,WAGON086
+model,5057,FEATHER087
+model,5058,OLDSWORD088
+model,505C,FISH_A092
+model,505D,FISH_B093
+model,505E,FISH_C094
+model,505F,FISH_D095
+model,5060,FISH_E096
+model,5063,BALLOON099
+model,5064,_10BALLOONS100
+model,5066,SHIN3PART102
+model,506A,FRUIT_A106
+model,506D,SAIDAN109
+model,506E,SPHERE_A110
+model,5078,STAIRSRIDE120
+model,507A,EMPTY_GLASS122
+model,507B,LEAF_LO123
+model,507C,GAREKI_A124
+model,507D,GAREKI_B125
+model,507E,HOVER126
+model,507F,SEALBREAKER127
+model,5080,AIRSHIP128
+model,5093,OPENSTONE147
+model,509C,SIPAHU_KURA156
+model,509E,TRUMPET158
+model,509F,SAIDAN_2PUT159
+model,50A8,BREAK_PILLAR168
+model,50AC,MINI_AIRSHIP172
+model,6001,,Child
+model,6002,,Young Man (Slender)
+model,6003,,Young Man (Other)
+model,6004,,Adult Man (Isaaru?)
+model,6005,,Middle-Aged Man (Slender)
+model,6006,,Middle-Aged Man (Other)
+model,6007,,Old Man
+model,600C,,Young Woman (Slender)
+model,600D,,Young Woman (Other)
+model,600E,,Adult Woman (Belgemine/Ginnem?)
+model,600F,,Middle-Aged Woman (Slender)
+model,6010,,Middle-Aged Woman (Other)
+model,6011,,Old Woman
+model,6065,,Ronso Child
+model,6066,,Ronso Adult Male
+model,6067,,Ronso Adult Male Blitzer
+model,6068,,Ronso Old Male
+model,6070,,Ronso Adult Female
+model,6071,,Ronso Adult Female Blitzer
+model,6072,,Ronso Old Female
+model,60C9,,Guado Child
+model,60CA,,Guado Adult Male
+model,60CB,,Guado Adult Male Blitzer
+model,60CC,,Guado Old Male
+model,60D4,,Guado Adult Female
+model,60D5,,Guado Adult Female Blitzer
+model,60D6,,Guado Old Female
+model,612D,,Hypello Child
+model,612E,,Hypello Adult
+model,6191,,Music Player 1 (Harp?)
+model,6192,,Music Player 2 (Drums?)
+model,6193,,Music Player 3 (Horns?)
+model,61F5,,Jyscal Guado
+model,61F6,,Yunalesca
+model,61F7,,Braska
+model,61F8,,Nomura's Provisional Character Diversion
+model,61F9,,Jecht
+model,63E6,,Sugimoto Test 2
+model,63E7,,Sugimoto Test

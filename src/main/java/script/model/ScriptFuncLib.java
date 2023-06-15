@@ -74,7 +74,7 @@ public abstract class ScriptFuncLib {
         putUnknownFunc(0x0012, 2);
         putFuncWithIdx(0x0013, new ScriptFunc("setPosition", "unknown", null, p("x", "float"), p("y", "float"), p("z", "float")));
         putUnknownFunc(0x0015, 3);
-        putFuncWithIdx(0x0016, new ScriptFunc("setMotionSpeed", "unknown", null, p("speed", "int")));
+        putFuncWithIdx(0x0016, new ScriptFunc("setMotionSpeed", "unknown", null, p("speed", "float")));
         putUnknownFunc(0x0017, 1); // noclip: set motion threshold/radius, used for collision and checking if a destination is reached
         putUnknownFunc(0x0018, 3);
         putFuncWithIdx(0x0019, new ScriptFunc("startRotation", "unknown", null, p("activeBits", "int"), p("flags", "int"), p("targetObjectIndex", "int"))); // see noclip for flags
@@ -102,9 +102,9 @@ public abstract class ScriptFuncLib {
         putUnknownFunc(0x0035, 1);
         putUnknownFunc(0x0036, 1);
         putUnknownFunc(0x0037, 1);
-        putUnknownFunc(0x0038, 1); // This is speculative
-        putUnknownFunc(0x0039, 1); // This is speculative
-        putUnknownFunc(0x003A, 1); // This is speculative
+        putUnknownFunc(0x0038, null, "float", 1);
+        putUnknownFunc(0x0039, null, "float", 1);
+        putUnknownFunc(0x003A, null, "float", 1);
         putUnknownFunc(0x003D, 0);
         putUnknownFunc(0x003F, 0);
         putFuncWithIdx(0x0042, new ScriptFunc("linkFieldToBattleActor?", "unknown", null, p("actor")));
@@ -170,7 +170,7 @@ public abstract class ScriptFuncLib {
         putUnknownFunc(0x0092, 1); // noclip: getYaw2()
         putUnknownFunc(0x0093, 1);
         putFuncWithIdx(0x0094, new ScriptFunc("setGravity", "unknown", null, p("g", "int")));
-        putUnknownFunc(0x0095, 1); // noclip: setRotationYaw()
+        putFuncWithIdx(0x0095, new ScriptFunc(p("float"))); // noclip: setRotationYaw()
         putUnknownFunc(0x0096, 1); // noclip: setRotationPitch()
         putUnknownFunc(0x0097, 1);
         putUnknownFunc(0x0098, 2);
