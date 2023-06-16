@@ -31,8 +31,10 @@ public class Main {
     private static final String MODE_PARSE_MONSTER = "PARSE_MONSTER";
 
     private static final String PATH_FFX_ROOT = "ffx_ps2/ffx/master/";
-    private static final String PATH_ORIGINALS_ROOT = PATH_FFX_ROOT + "jppc/";
-    private static final String PATH_LOCALIZED_ROOT = PATH_FFX_ROOT + "new_uspc/";
+    private static final String ORIGINALS_FOLDER = "jppc/";
+    private static final String LOCALIZED_FOLDER = "new_uspc/";
+    private static final String PATH_ORIGINALS_ROOT = PATH_FFX_ROOT + ORIGINALS_FOLDER;
+    private static final String PATH_LOCALIZED_ROOT = PATH_FFX_ROOT + LOCALIZED_FOLDER;
     private static final String PATH_ORIGINALS_KERNEL = PATH_ORIGINALS_ROOT + "battle/kernel/";
     private static final String PATH_LOCALIZED_KERNEL = PATH_LOCALIZED_ROOT + "battle/kernel/";
     private static final String PATH_MONSTER_FOLDER = PATH_ORIGINALS_ROOT + "battle/mon/";
@@ -125,7 +127,7 @@ public class Main {
                 break;
             case MODE_READ_STRING_FILE:
                 for (String filename : realArgs) {
-                    readStringFile(filename, true);
+                    StringHelper.readStringFile(filename, true);
                 }
                 break;
             default:
@@ -171,45 +173,6 @@ public class Main {
         System.out.println(regular);
         System.out.println(search);
         System.out.println("");
-    }
-
-    private static List<String> readStringData(int[] bytes, boolean print) {
-        if (bytes == null) {
-            return null;
-        }
-        int first = bytes[0x00] + bytes[0x01] * 0x100;
-        int second = bytes[0x04] + bytes[0x05] * 0x100;
-        boolean clones = first == second;
-        int count = first / (clones ? 0x08 : 0x04);
-        List<String> strings = new ArrayList<>(count);
-        for (int i = 0; i < count; i++) {
-            int addr = i * (clones ? 0x08 : 0x04);
-            int offset = bytes[addr] + bytes[addr + 0x01] * 0x100;
-            int somethingElse = bytes[addr + 0x02];
-            int options = bytes[addr + 0x03];
-            if (print) {
-                String choosable = options > 0 ? " (" + options + " selectable)" : "";
-                System.out.print("String #" + i + " [" + String.format("%04X", offset) + "h]" + choosable + ":");
-            }
-            String out = StringHelper.getStringAtLookupOffset(bytes, offset);
-            if (print) {
-                System.out.println(out);
-            }
-            strings.add(out);
-            if (clones) {
-                int clonedOffset = bytes[addr + 0x04] + bytes[addr + 0x05] * 0x100;
-                int clonedSomethingElse = bytes[addr + 0x06];
-                int clonedChoosableOptions = bytes[addr + 0x07];
-                if (offset != clonedOffset) {
-                    System.err.println("offset " + i + " not cloned: offset " + String.format("%04X", offset) + "; other " + String.format("%04X", clonedOffset));
-                } else if (options != clonedChoosableOptions) {
-                    System.err.println("options " + i + " not cloned: original " + options + "; other " + clonedChoosableOptions);
-                } else if (somethingElse != clonedSomethingElse) {
-                    System.err.println("somethingElse " + i + " not cloned: original " + somethingElse + "; other " + clonedSomethingElse);
-                }
-            }
-        }
-        return strings;
     }
 
     private static void translate(String str) {
@@ -329,7 +292,7 @@ public class Main {
                 Arrays.stream(contents).filter(sf -> !sf.startsWith(".")).sorted().forEach(sf -> readMonsterFile(filename + '/' + sf, print));
             }
             return null;
-        } else if (!filename.endsWith(".bin")) {
+        } else if (!filename.endsWith(".bin") && !filename.endsWith(".dat")) {
             return null;
         }
         List<Integer> knownLengths = new ArrayList<>();
@@ -362,13 +325,13 @@ public class Main {
                 Arrays.stream(contents).filter(sf -> !sf.startsWith(".")).sorted().forEach(sf -> readEncounterFile(filename + '/' + sf, print, strings));
             }
             return null;
-        } else if (!filename.endsWith(".bin")) {
+        } else if (!filename.endsWith(".bin") && !filename.endsWith(".dat")) {
             return null;
         }
         List<String> actualStrings = strings;
         if (strings == null) {
-            String stringFilePath = filename.replace("jppc/", "new_uspc/");
-            actualStrings = readStringFile(stringFilePath, false);
+            String stringFilePath = filename.replace(ORIGINALS_FOLDER, LOCALIZED_FOLDER);
+            actualStrings = StringHelper.readStringFile(stringFilePath, false);
         }
         List<Integer> knownLengths = new ArrayList<>();
         knownLengths.add(null);
@@ -397,14 +360,14 @@ public class Main {
                 Arrays.stream(contents).filter(sf -> !sf.startsWith(".")).sorted().forEach(sf -> readEventFile(filename + '/' + sf, print, strings));
             }
             return null;
-        } else if (!filename.endsWith(".ebp") || (SKIP_BLITZBALL_EVENTS && filename.contains("/bl/"))) {
+        } else if ((!filename.endsWith(".ebp") && !filename.endsWith(".dat")) || (SKIP_BLITZBALL_EVENTS && filename.contains("/bl/"))) {
             return null;
         }
         List<String> actualStrings = strings;
         if (strings == null) {
-            String stringFilePath = filename.replace("jppc/", "new_uspc/").replace("obj/", "obj_ps3/").replace(".ebp", ".bin");
+            String stringFilePath = filename.replace(ORIGINALS_FOLDER, LOCALIZED_FOLDER).replace("obj/", "obj_ps3/").replace(".ebp", ".bin");
             try {
-                actualStrings = readStringFile(stringFilePath, false);
+                actualStrings = StringHelper.readStringFile(stringFilePath, false);
             } catch (Exception e) {
                 System.out.println("Got exception while trying to parse strings: " + e.getLocalizedMessage());
             }
@@ -434,7 +397,7 @@ public class Main {
         String endPath = btl + '/' + btl + ".bin";
         String originalsPath = PATH_ORIGINALS_ENCOUNTER + endPath;
         String localizedPath = PATH_LOCALIZED_ENCOUNTER + endPath;
-        List<String> strings = readStringFile(localizedPath, false);
+        List<String> strings = StringHelper.readStringFile(localizedPath, false);
         return readEncounterFile(originalsPath, print, strings);
     }
 
@@ -443,7 +406,7 @@ public class Main {
         String midPath = shortened + '/' + event + '/' + event;
         String originalsPath = PATH_ORIGINALS_EVENT + midPath + ".ebp";
         String localizedPath = PATH_LOCALIZED_EVENT + midPath + ".bin";
-        List<String> strings = readStringFile(localizedPath, false);
+        List<String> strings = StringHelper.readStringFile(localizedPath, false);
         return readEventFile(originalsPath, print, strings);
     }
 
@@ -485,18 +448,5 @@ public class Main {
         }
         GearDataObject[] array = new GearDataObject[list.size()];
         return list.toArray(array);
-    }
-
-    private static List<String> readStringFile(String filename, boolean print) {
-        File file = FileAccessorWithMods.getRealFile(filename);
-        if (file.isDirectory()) {
-            String[] contents = file.list();
-            if (contents != null) {
-                Arrays.stream(contents).filter(sf -> !sf.startsWith(".")).sorted().forEach(sf -> readStringFile(filename + '/' + sf, print));
-            }
-            return null;
-        }
-        int[] bytes = ChunkedFileHelper.fileToBytes(FileAccessorWithMods.resolveFile(filename, print));
-        return readStringData(bytes, print);
     }
 }
