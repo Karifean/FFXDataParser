@@ -39,28 +39,31 @@ public class StackObject {
 
     @Override
     public String toString() {
-        if (!expression && !"unknown".equals(type)) {
+        if (!expression && type != null && !"unknown".equals(type)) {
             String hex = String.format(value >= 0x10000 ? "%08X" : value >= 0x100 ? "%04X" : "%02X", value);
             String hexSuffix = ScriptField.PRINT_WITH_HEX_SUFFIX ? " [" + hex + "h]" : "";
             if ("bool".equals(type)) {
-                return (value > 0 ? "true" : "false") + hexSuffix;
+                return (value != 0 ? "true" : "false") + hexSuffix;
             }
             if ("float".equals(type)) {
                 return Float.intBitsToFloat(value) + hexSuffix;
             }
-            if ("uint".equals(type)) {
+            if (type.startsWith("uint")) {
                 return value + hexSuffix;
             }
-            if ("int".equals(type)) {
-                int signed = value < 0x8000 ? value : (value - 0x10000);
+            if ("int16".equals(type)) {
+                short signed = (short) value;
                 return signed + hexSuffix;
+            }
+            if (type.startsWith("int")) {
+                return value + hexSuffix;
             }
             Nameable object = DataAccess.getNameableObject(type, value);
             if (object != null) {
                 return object.getName() + hexSuffix;
             }
             if ("encounter".equals(type)) {
-                int field = (value & 0xFFFF0000) / 0x10000;
+                int field = (value & 0xFFFF0000) >> 16;
                 int encIdx = value & 0x0000FFFF;
                 ScriptField fieldObj = ScriptConstants.getEnumMap("field").get(field);
                 if (fieldObj == null) {
@@ -107,17 +110,20 @@ public class StackObject {
     }
 
     private String interpretMenu() {
-        int b1 = (value & 0xFF000000) / 0x1000000;
-        int b2 = (value & 0x00FF0000) / 0x10000;
-        int b3 = (value & 0x0000FF00) / 0x100;
+        int b1 = (value & 0xFF000000) >> 24;
+        int b2 = (value & 0x00FF0000) >> 16;
+        int b3 = (value & 0x0000FF00) >> 8;
         int b4 = value & 0x000000FF;
         String b1s = b1 != 0x40 ? "b1:" + b1 + '.' : "";
         String inputType = switch (b2) {
+            case 0x00 -> "Menu";
             case 0x01 -> "BattleRewards.";
             case 0x02 -> "ItemShop";
             case 0x04 -> "WeaponShop";
             case 0x08 -> "EnterName.";
-            case 0x20 -> "Saving";
+            case 0x10 -> "LoadGame";
+            case 0x20 -> "SaveGame";
+            case 0x40 -> "SphereMonitor";
             case 0x80 -> "Tutorial";
             default -> "b2:?" + b2 + ".";
         };

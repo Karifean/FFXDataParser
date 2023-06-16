@@ -2,6 +2,7 @@ package model;
 
 import main.DataAccess;
 import script.model.ScriptConstants;
+import script.model.StackObject;
 
 /**
  * weapon.bin
@@ -93,12 +94,19 @@ public class GearDataObject {
         brotherhood = (variousFlags & 0x08) > 0;
     }
 
+    public String compactString() {
+        return "{ " + StackObject.enumToString("actor", character) +
+                ", " + (armor ? "Armor" : "Weapon") +
+                (formula != 1 ? " Formula=" + StackObject.enumToString("damageFormula", formula) : "") +
+                " " + getAbilityString() + " }";
+    }
+
     @Override
     public String toString() {
         String abilityString = getAbilityString();
-        return "{ " + ScriptConstants.getEnumMap("actor").get(character).name +
-                ", " + (armor ? "Armor" : "Weapon") + (armorByte > 1 ? "[" + armorByte + "]" : "") +
-                ", F=" + formula +
+        return "{ " + StackObject.enumToString("actor", character) +
+                ", " + (armor ? "Armor" : "Weapon") + " [" + String.format("%02X", armorByte) + "h]" +
+                ", Formula=" + StackObject.enumToString("damageFormula", formula) +
                 ", Power=" + power +
                 ", Crit=" + crit + '%' +
                 ", Slots=" + slots + ' ' +
@@ -118,7 +126,7 @@ public class GearDataObject {
     }
 
     private String getAbilityString() {
-        String abilityString = "[";
+        String abilityString = "{";
         String ability1Str = getGearAbilityLabel(ability1);
         String ability2Str = getGearAbilityLabel(ability2);
         String ability3Str = getGearAbilityLabel(ability3);
@@ -135,7 +143,7 @@ public class GearDataObject {
                 }
             }
         }
-        abilityString += "]";
+        abilityString += "}";
         return abilityString;
     }
 

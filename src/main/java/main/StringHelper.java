@@ -1,7 +1,10 @@
 package main;
 
-import java.util.HashMap;
-import java.util.Map;
+import reading.ChunkedFileHelper;
+import reading.FileAccessorWithMods;
+
+import java.io.File;
+import java.util.*;
 
 public abstract class StringHelper {
     public static final String ANSI_RESET = "\u001B[0m";
@@ -67,6 +70,58 @@ public abstract class StringHelper {
 
     public static String consoleColorIfEnabled(String ansiColor) {
         return COLORS_USE_CONSOLE_CODES ? ansiColor : "";
+    }
+
+    public static List<String> readStringFile(String filename, boolean print) {
+        File file = FileAccessorWithMods.getRealFile(filename);
+        if (file.isDirectory()) {
+            String[] contents = file.list();
+            if (contents != null) {
+                Arrays.stream(contents).filter(sf -> !sf.startsWith(".")).sorted().forEach(sf -> readStringFile(filename + '/' + sf, print));
+            }
+            return null;
+        }
+        int[] bytes = ChunkedFileHelper.fileToBytes(FileAccessorWithMods.resolveFile(filename, print));
+        return readStringData(bytes, print);
+    }
+
+    public static List<String> readStringData(int[] bytes, boolean print) {
+        if (bytes == null || bytes.length <= 0) {
+            return null;
+        }
+        int first = bytes[0x00] + bytes[0x01] * 0x100;
+        int second = bytes[0x04] + bytes[0x05] * 0x100;
+        boolean clones = first == second;
+        int count = first / (clones ? 0x08 : 0x04);
+        List<String> strings = new ArrayList<>(count);
+        for (int i = 0; i < count; i++) {
+            int addr = i * (clones ? 0x08 : 0x04);
+            int offset = bytes[addr] + bytes[addr + 0x01] * 0x100;
+            int somethingElse = bytes[addr + 0x02];
+            int options = bytes[addr + 0x03];
+            if (print) {
+                String choosable = options > 0 ? " (" + options + " selectable)" : "";
+                System.out.print("String #" + i + " [" + String.format("%04X", offset) + "h]" + choosable + ":");
+            }
+            String out = getStringAtLookupOffset(bytes, offset);
+            if (print) {
+                System.out.println(out);
+            }
+            strings.add(out);
+            if (clones) {
+                int clonedOffset = bytes[addr + 0x04] + bytes[addr + 0x05] * 0x100;
+                int clonedSomethingElse = bytes[addr + 0x06];
+                int clonedChoosableOptions = bytes[addr + 0x07];
+                if (offset != clonedOffset) {
+                    System.err.println("offset " + i + " not cloned: offset " + String.format("%04X", offset) + "; other " + String.format("%04X", clonedOffset));
+                } else if (options != clonedChoosableOptions) {
+                    System.err.println("options " + i + " not cloned: original " + options + "; other " + clonedChoosableOptions);
+                } else if (somethingElse != clonedSomethingElse) {
+                    System.err.println("somethingElse " + i + " not cloned: original " + somethingElse + "; other " + clonedSomethingElse);
+                }
+            }
+        }
+        return strings;
     }
 
     public static String getStringAtLookupOffset(int[] table, int offset) {

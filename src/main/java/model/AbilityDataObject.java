@@ -480,6 +480,7 @@ public class AbilityDataObject implements Nameable {
         list.add(affectedByDarkness ? "Darkable" : "");
         list.add(disableWhenSilenced ? "Silenceable" : "");
         list.add(canBeReflected ? "Reflectable" : "");
+        list.add(canBeCopycatted ? "Copycattable" : "");
         list.add(canCrit ? "Can crit" + (attackCritBonus > 0 ? " (+" + attackCritBonus + "%)" : "") : "");
         list.add(byte20bit08usedOnMostStrAttacks ? "byte20bit08" : "");
         list.add(byte1Cbit08SetOnCharAttacksAndSkillsAndValeforShivaAttack ? "byte1Cbit08" : "");

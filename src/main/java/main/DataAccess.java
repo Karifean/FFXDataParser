@@ -17,6 +17,7 @@ public abstract class DataAccess {
             case "move" -> getMove(idx);
             case "monster" -> getMonster(idx);
             case "keyItem" -> getKeyItem(idx);
+            case "treasure" -> getTreasure(idx);
             default -> DUMMY_OBJECT;
         };
         if (object == DUMMY_OBJECT) {

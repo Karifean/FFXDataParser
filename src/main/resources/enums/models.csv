@@ -68,13 +68,17 @@ model,102B,SAHAGIN_02N,Sahagin (on Land)
 model,102C,ZOO_01,Garuda
 model,102D,ZOO_02,Zu
 model,102E,SAND_01,Huge Worm
+model,102F,SAND_02
 model,1030,GOLEM_01,Defender
 model,1031,GOLEM_02
 model,1032,GHOST_01,Ghost
 model,1033,FLESIUS_01,Phlegyas
 model,1034,FLESIUS_02
 model,1035,RISING_01,Remora/Maelspike
+model,1036,RISING_02
 model,1037,_4SPIKE_01,Dual Horn
+model,1038,_4SPIKE_02
+model,1039,_4SPIKE_03
 model,103A,TAKO_01,Octopus (Via Purifico)
 model,103B,DRAGON_01,Drake
 model,1040,MORBOL_01,Malboro

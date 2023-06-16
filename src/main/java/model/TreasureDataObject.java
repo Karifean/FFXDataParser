@@ -5,7 +5,7 @@ import main.DataAccess;
 /**
  * takara.bin
  */
-public class TreasureDataObject {
+public class TreasureDataObject implements Nameable {
     private final int[] bytes;
 
     private int kind;
@@ -35,12 +35,17 @@ public class TreasureDataObject {
             return "Gil: " + quantity * 100 + (type != 0 ? "T=" + typeString : "") + " [" + String.format("%02X", quantity) + "h]";
         } else if (kind == 0x05) {
             GearDataObject gear = DataAccess.WEAPON_PICKUPS != null ? DataAccess.WEAPON_PICKUPS[type] : null;
-            return "Gear: buki_get #" + typeString + (quantity != 1 ? " Q=" + quantity : "") + " " + gear;
+            return "Gear: buki_get #" + typeString + (quantity != 1 ? " Q=" + quantity : "") + " " + (gear != null ? gear.compactString() : "null");
         } else if (kind == 0x0A) {
             KeyItemDataObject keyItem = DataAccess.getKeyItem(type);
             return "Key Item: " + (keyItem != null ? keyItem.getName() : "null") + typeHexSuffix;
         } else {
             return "Unknown K=" + kind + "; Q=" + quantity + "; T=" + typeString;
         }
+    }
+
+    @Override
+    public String getName() {
+        return this.toString();
     }
 }

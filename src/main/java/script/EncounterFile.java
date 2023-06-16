@@ -1,8 +1,10 @@
 package script;
 
+import main.StringHelper;
 import model.FormationDataObject;
 import reading.Chunk;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -13,15 +15,19 @@ public class EncounterFile {
     public FormationDataObject formation;
     Chunk scriptChunk;
     int[] formationBytes;
+    int[] textBytes;
+    List<String> originalStrings;
 
     public EncounterFile(List<Chunk> chunks) {
         mapChunks(chunks);
         mapObjects(chunks.size());
+        mapStrings();
     }
 
     private void mapChunks(List<Chunk> chunks) {
         scriptChunk = chunks.get(0);
         formationBytes = chunks.get(2).bytes;
+        textBytes = chunks.size() > 6 ? chunks.get(6).bytes : null;
     }
 
     private void mapObjects(int chunkCount) {
@@ -29,9 +35,26 @@ public class EncounterFile {
         formation = new FormationDataObject(formationBytes);
     }
 
+    private void mapStrings() {
+        originalStrings = StringHelper.readStringData(textBytes, false);
+    }
+
     public void parseScript(List<String> strings) {
         if (encounterScript != null) {
-            encounterScript.parseScript(strings);
+            List<String> combinedStrings = originalStrings != null ? new ArrayList<>(originalStrings) : new ArrayList<>();
+            if (strings != null && !strings.isEmpty()) {
+                for (int i = 0; i < strings.size(); i++) {
+                    String str = strings.get(i);
+                    if (str != null && !str.isBlank()) {
+                        if (i < combinedStrings.size()) {
+                            combinedStrings.set(i, str);
+                        } else {
+                            combinedStrings.add(str);
+                        }
+                    }
+                }
+            }
+            encounterScript.parseScript(combinedStrings);
         }
     }
 

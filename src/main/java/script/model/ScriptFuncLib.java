@@ -113,9 +113,9 @@ public abstract class ScriptFuncLib {
         putUnknownFunc(0x0046, 0);
         putUnknownFunc(0x0047, 0);
         putUnknownFunc(0x004C, 1);
-        putFuncWithIdx(0x004D, new ScriptFunc("controllerButtonHeld?", "bool", null, p("controllerButton")));
+        putFuncWithIdx(0x004D, new ScriptFunc("controllerButtonPressed1?", "bool", null, p("controllerButton")));
         putUnknownFunc(0x0050, 1);
-        putFuncWithIdx(0x0051, new ScriptFunc("controllerButtonPressed?", "bool", null, p("controllerButton")));
+        putFuncWithIdx(0x0051, new ScriptFunc("controllerButtonPressed2?", "bool", null, p("controllerButton")));
         putUnknownFunc(0x0054, 6); // noclip: collision detection
         putUnknownFunc(0x0055, 1); // noclip: collision detection
         putUnknownFunc(0x0056, 1); // noclip: collision detection
@@ -222,8 +222,8 @@ public abstract class ScriptFuncLib {
         putUnknownFunc(0x00D8, 0);
         putUnknownFunc(0x00D9, 0);
         putUnknownFunc(0x00DA, 0);
-        putUnknownFunc(0x00DB, 1);
-        putUnknownFunc(0x00DC, 0);
+        putFuncWithIdx(0x00DB, new ScriptFunc("loadMoveAnimation?", "unknown", null, p("moveAnim")));
+        putFuncWithIdx(0x00DC, new ScriptFunc("playLoadedMoveAnimation?", "unknown", null, true));
         putUnknownFunc(0x00DE, 0);
         putFuncWithIdx(0x00DF, new ScriptFunc("playSFX?", "unknown", null, p("sfx")));
         putUnknownFunc(0x00E0, 1);
@@ -299,6 +299,7 @@ public abstract class ScriptFuncLib {
         putFuncWithIdx(0x0137, new ScriptFunc("makeGilPayment", "bool", null, p("amount", "int")));
         putUnknownFunc(0x0138, 1);
         putUnknownFunc(0x0139, 8);
+        putFuncWithIdx(0x0139, new ScriptFunc("requestNumericInput?", "int", null, p(1), p(2), p(3), p(4), p(5), p("x?", "int"), p("y?", "int"), p("alignment?", "textAlignment")));
         putFuncWithIdx(0x013B, new ScriptFunc("displayFieldChoice", "int", null, p("boxIndex?", "int"), p("string"), p(3), p(4), p("x?", "int"), p("y?", "int"), p("alignment?", "textAlignment")));
         putUnknownFunc(0x013D, 1);
         putUnknownFunc(0x013E, 1);
@@ -404,7 +405,7 @@ public abstract class ScriptFuncLib {
         putUnknownFunc(0x01CF, 0);
         putUnknownFunc(0x01D0, 0);
         putUnknownFunc(0x01D1, 1);
-        putUnknownFunc(0x01D2, 1);
+        putFuncWithIdx(0x01D2, new ScriptFunc("enteredAirshipPasswordEquals", "boolean", null, p("string")));
         putUnknownFunc(0x01D4, 2);
         putUnknownFunc(0x01D9, 0);
         putUnknownFunc(0x01DA, 4);
@@ -442,7 +443,7 @@ public abstract class ScriptFuncLib {
         putUnknownFunc(0x020B, 0);
         putUnknownFunc(0x020D, 1);
         putUnknownFunc(0x020F, 1);
-        putUnknownFunc(0x0210, 1);
+        putFuncWithIdx(0x0210, new ScriptFunc("setMonsterArenaUnlocked", "unknown", null, p("monsterArenaUnlock")));
         putUnknownFunc(0x0212, 2);
         putUnknownFunc(0x0213, 1);
         putUnknownFunc(0x0215, 2);
@@ -483,7 +484,7 @@ public abstract class ScriptFuncLib {
         putUnknownFunc(0x024D, 1);
         putUnknownFunc(0x0251, 1);
         putUnknownFunc(0x0253, 0);
-        putUnknownFunc(0x0254, 1);
+        putFuncWithIdx(0x0254, new ScriptFunc("setSphereGrid", "unknown", null, p("sphereGrid")));
         putUnknownFunc(0x0255, 0);
         putUnknownFunc(0x0256, 1);
         putUnknownFunc(0x0257, 1);

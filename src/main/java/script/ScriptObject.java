@@ -65,40 +65,39 @@ public class ScriptObject {
     public void parseScript(List<String> strings) {
         this.strings = strings;
         byteCursor = 0;
-        scriptCodeLength = read4Bytes();
+        scriptCodeLength = read4Bytes(0x0);
         // System.out.println("Script Length: " + scriptCodeLength);
-        int map_start = read4Bytes();
-        int creatorTagAddress = read4Bytes();
-        int event_name_start = read4Bytes();
-        int jumpsEndAddress = read4Bytes();
-        int obj_5b8_count = read2Bytes();
-        int obj_558_count = read2Bytes();
-        int main_script_index = read2Bytes();
-        int unk01 = read2Bytes();
-        int obj_2e8_count = read2Bytes();
-        int zoneBytes = read2Bytes();
-        int event_data_offset = read4Bytes();
-        int unk02 = read4Bytes();
-        int area_offset = read4Bytes();
-        int other_offset = read4Bytes();
-        scriptCodeStartAddress = read4Bytes();
-        int numberOfScripts = read2Bytes();
-        int numberOfScriptsWithoutSubroutines = read2Bytes();
+        int map_start = read4Bytes(0x4);
+        int creatorTagAddress = read4Bytes(0x8);
+        int event_name_start = read4Bytes(0xC);
+        int jumpsEndAddress = read4Bytes(0x10);
+        int obj_5b8_count = read2Bytes(0x14);
+        int obj_558_count = read2Bytes(0x16);
+        int main_script_index = read2Bytes(0x18);
+        int unk01 = read2Bytes(0x1A);
+        int obj_2e8_count = read2Bytes(0x1C);
+        int zoneBytes = read2Bytes(0x1E);
+        int event_data_offset = read4Bytes(0x20);
+        int unk02 = read4Bytes(0x24);
+        int area_offset = read4Bytes(0x28);
+        int other_offset = read4Bytes(0x2C);
+        scriptCodeStartAddress = read4Bytes(0x30);
+        int numberOfScripts = read2Bytes(0x34);
+        int numberOfScriptsWithoutSubroutines = read2Bytes(0x36);
         // System.out.println("Number of Scripts: " + numberOfScripts + " / " + numberOfScripts2);
         int[] scriptHeaderOffsets = new int[numberOfScripts];
         for (int i = 0; i < numberOfScripts; i++) {
-            scriptHeaderOffsets[i] = read4Bytes();
+            scriptHeaderOffsets[i] = read4Bytes(0x38 + i * 4);
         }
         int scriptIndex = 0;
         headers = new ArrayList<>();
         for (int headerStart : scriptHeaderOffsets) {
-            byteCursor = headerStart;
-            ScriptHeader scriptHeader = parseScriptHeader();
+            ScriptHeader scriptHeader = parseScriptHeader(headerStart);
             parseScriptJumps(scriptHeader, scriptIndex);
             scriptIndex++;
             headers.add(scriptHeader);
         }
-        parseReferenceFloatsAndInts(headers);
+        parseVarIntFloatTables(headers);
         scriptCodeEndAddress = scriptCodeStartAddress + scriptCodeLength;
         actualScriptCodeBytes = Arrays.copyOfRange(bytes, scriptCodeStartAddress, scriptCodeEndAddress);
         parseScriptCode();
@@ -110,51 +109,58 @@ public class ScriptObject {
         parseScriptCode();
     }
 
-    private ScriptHeader parseScriptHeader() {
+    private ScriptHeader parseScriptHeader(int offset) {
         ScriptHeader header = new ScriptHeader();
-        header.scriptType = read2Bytes();
-        header.variablesCount = read2Bytes();
-        header.refIntCount = read2Bytes();
-        header.refFloatCount = read2Bytes();
-        header.entryPointCount = read2Bytes();
-        header.jumpCount = read2Bytes();
-        header.alwaysZero1 = read4Bytes();
-        header.privateDataLengthOrUnknownBitmask = read4Bytes();
-        header.variableStructsTableOffset = read4Bytes();
-        header.intTableOffset = read4Bytes();
-        header.floatTableOffset = read4Bytes();
-        header.scriptEntryPointsOffset = read4Bytes();
-        header.jumpsOffset = read4Bytes();
-        header.alwaysZero2 = read4Bytes();
-        header.privateDataOffset = read4Bytes();
-        header.sharedDataOffset = read4Bytes();
+        header.scriptType = read2Bytes(offset);
+        header.variablesCount = read2Bytes(offset+0x02);
+        header.refIntCount = read2Bytes(offset+0x04);
+        header.refFloatCount = read2Bytes(offset+0x06);
+        header.entryPointCount = read2Bytes(offset+0x08);
+        header.jumpCount = read2Bytes(offset+0x0A);
+        header.alwaysZero1 = read4Bytes(offset+0x0C);
+        header.privateDataLength = read4Bytes(offset+0x10);
+        header.variableStructsTableOffset = read4Bytes(offset+0x14);
+        header.intTableOffset = read4Bytes(offset+0x18);
+        header.floatTableOffset = read4Bytes(offset+0x1C);
+        header.scriptEntryPointsOffset = read4Bytes(offset+0x20);
+        header.jumpsOffset = read4Bytes(offset+0x24);
+        header.alwaysZero2 = read4Bytes(offset+0x28);
+        header.privateDataOffset = read4Bytes(offset+0x2C);
+        header.sharedDataOffset = read4Bytes(offset+0x30);
         return header;
     }
 
-    private void parseReferenceFloatsAndInts(List<ScriptHeader> headers) {
+    private void parseVarIntFloatTables(List<ScriptHeader> headers) {
         variableStructsTableOffset = -1;
         intTableOffset = -1;
         floatTableOffset = -1;
         for (ScriptHeader h : headers) {
-            if (floatTableOffset < 0) {
-                floatTableOffset = h.floatTableOffset;
-                byteCursor = h.floatTableOffset;
-                refFloats = new int[h.refFloatCount];
-                for (int i = 0; i < h.refFloatCount; i++) {
-                    refFloats[i] = read4Bytes();
+            if (variableStructsTableOffset < 0) {
+                variableStructsTableOffset = h.variableStructsTableOffset;
+                byteCursor = h.variableStructsTableOffset;
+                variableDeclarations = new ScriptVariable[h.variablesCount];
+                for (int i = 0; i < h.variablesCount; i++) {
+                    int lb = read4Bytes(variableStructsTableOffset + i * 8);
+                    int hb = read4Bytes(variableStructsTableOffset + i * 8 + 4);
+                    ScriptVariable scriptVariable = new ScriptVariable(i, lb, hb);
+                    if (scriptVariable.location == 4) {
+                        scriptVariable.parseValues(this, bytes, h.sharedDataOffset);
+                    }
+                    variableDeclarations[i] = scriptVariable;
                 }
-                h.refFloats = refFloats;
-            } else if (h.floatTableOffset != floatTableOffset || h.refFloatCount != refFloats.length) {
-                System.err.println("WARNING, float table mismatch!");
+                h.variableDeclarations = variableDeclarations;
+                h.setVariableInitialValues(this, bytes);
+            } else if (h.variableStructsTableOffset != variableStructsTableOffset || h.variablesCount != variableDeclarations.length) {
+                System.err.println("WARNING, variables table mismatch!");
             } else {
-                h.refFloats = refFloats;
+                h.variableDeclarations = variableDeclarations;
+                h.setVariableInitialValues(this, bytes);
             }
             if (intTableOffset < 0) {
                 intTableOffset = h.intTableOffset;
-                byteCursor = h.intTableOffset;
                 refInts = new int[h.refIntCount];
                 for (int i = 0; i < h.refIntCount; i++) {
-                    refInts[i] = read4Bytes();
+                    refInts[i] = read4Bytes(intTableOffset + i * 4);
                 }
                 h.refInts = refInts;
             } else if (h.intTableOffset != intTableOffset || h.refIntCount != refInts.length) {
@@ -162,20 +168,17 @@ public class ScriptObject {
             } else {
                 h.refInts = refInts;
             }
-            if (variableStructsTableOffset < 0) {
-                variableStructsTableOffset = h.variableStructsTableOffset;
-                byteCursor = h.variableStructsTableOffset;
-                variableDeclarations = new ScriptVariable[h.variablesCount];
-                for (int i = 0; i < h.variablesCount; i++) {
-                    int lb = read4Bytes();
-                    int hb = read4Bytes();
-                    variableDeclarations[i] = new ScriptVariable(lb, hb);
+            if (floatTableOffset < 0) {
+                floatTableOffset = h.floatTableOffset;
+                refFloats = new int[h.refFloatCount];
+                for (int i = 0; i < h.refFloatCount; i++) {
+                    refFloats[i] = read4Bytes(floatTableOffset + i * 4);
                 }
-                h.variableDeclarations = variableDeclarations;
-            } else if (h.variableStructsTableOffset != variableStructsTableOffset || h.variablesCount != variableDeclarations.length) {
-                System.err.println("WARNING, other refs table mismatch!");
+                h.refFloats = refFloats;
+            } else if (h.floatTableOffset != floatTableOffset || h.refFloatCount != refFloats.length) {
+                System.err.println("WARNING, float table mismatch!");
             } else {
-                h.variableDeclarations = variableDeclarations;
+                h.refFloats = refFloats;
             }
         }
     }
@@ -183,11 +186,10 @@ public class ScriptObject {
     private void parseScriptJumps(ScriptHeader header, int scriptIndex) {
         String sPrefix = "s" + format2Or4Byte(scriptIndex);
         jumpTableString.append(sPrefix).append('\n');
-        byteCursor = header.scriptEntryPointsOffset;
         int entryPointCount = header.entryPointCount;
         ScriptJump[] entryPoints = new ScriptJump[entryPointCount];
         for (int i = 0; i < entryPointCount; i++) {
-            int addr = read4Bytes();
+            int addr = read4Bytes(header.scriptEntryPointsOffset + i * 4);
             ScriptJump entryPoint = new ScriptJump(addr, scriptIndex, i, true);
             entryPoints[i] = entryPoint;
             scriptJumps.add(entryPoint);
@@ -200,11 +202,10 @@ public class ScriptObject {
         }
         header.entryPoints = entryPoints;
         jumpTableString.append('\n');
-        byteCursor = header.jumpsOffset;
         int jumpCount = header.jumpCount;
         ScriptJump[] jumps = new ScriptJump[jumpCount];
         for (int i = 0; i < jumpCount; i++) {
-            int addr = read4Bytes();
+            int addr = read4Bytes(header.jumpsOffset + i * 4);
             ScriptJump jump = new ScriptJump(addr, scriptIndex, i, false);
             jumps[i] = jump;
             scriptJumps.add(jump);
@@ -220,7 +221,6 @@ public class ScriptObject {
     }
 
     protected void parseScriptCode() {
-        byteCursor = scriptCodeStartAddress;
         lineCount = 0;
         instructions = new ArrayList<>();
         offsetLines = new ArrayList<>();
@@ -234,6 +234,7 @@ public class ScriptObject {
         warnLine = "";
         int opcode;
         int nextLineOffset = 0;
+        byteCursor = scriptCodeStartAddress;
         while (byteCursor < scriptCodeEndAddress) {
             opcode = nextAiByte(jumpsOnLine);
             ScriptInstruction instruction;
@@ -454,7 +455,7 @@ public class ScriptObject {
             textScriptLine += "REQCHG(" + p1 + ", " + p2 + ", " + p3 + ");";
         } else if (opcode == 0x7A) { // Never used: ACTREQ / SET_EDGE_TRIGGER
         } else if (opcode == 0x9F) { // PUSHV / GET_DATUM
-            StackObject stackObject = new StackObject(this, "var", true, "var" + argvsh, argv);
+            StackObject stackObject = new StackObject(this, "var", true, ensureVariableValid(argv), argv);
             stackObject.referenceIndex = argv;
             stack.push(stackObject);
         } else if (opcode == 0xA0 || opcode == 0xA1) { // POPV(L) / SET_DATUM_(W/T)
@@ -470,32 +471,32 @@ public class ScriptObject {
                 textScriptLine += "(limit) ";
             }
             String val = typed(p1, varTypes.get(argv));
-            textScriptLine += "var" + argvsh + " = " + val;
+            textScriptLine += ensureVariableValid(argv) + " = " + val;
         } else if (opcode == 0xA2) { // PUSHAR / GET_DATUM_INDEX
-            String arrayIndex = '[' + ("int".equals(p1.type) && !p1.expression ? String.format("%04X", p1.value) : p1.toString()) + ']';
-            StackObject stackObject = new StackObject(this, "int", true, "var" + argvsh + arrayIndex, argv);
+            String arrayIndex = '[' + ("int16".equals(p1.type) && !p1.expression ? String.format("%04X", p1.value) : p1.toString()) + ']';
+            StackObject stackObject = new StackObject(this, "var", true, ensureVariableValid(argv) + arrayIndex, argv);
             stackObject.referenceIndex = argv;
             stack.push(stackObject);
         } else if (opcode == 0xA3 || opcode == 0xA4) { // POPAR(L) / SET_DATUM_INDEX_(W/T)
-            String arrayIndex = '[' + ("int".equals(p1.type) && !p1.expression ? String.format("%04X", p1.value) : p1.toString()) + ']';
+            String arrayIndex = '[' + ("int16".equals(p1.type) && !p1.expression ? String.format("%04X", p1.value) : p1.toString()) + ']';
             textScriptLine += "Set ";
             if (opcode == 0xA4) {
                 textScriptLine += "(limit) ";
             }
-            textScriptLine += "var" + argvsh + arrayIndex + " = " + p2;
+            textScriptLine += ensureVariableValid(argv) + arrayIndex + " = " + p2;
         } else if (opcode == 0xA7) { // PUSHARP / GET_DATUM_DESC
             String arrayIndex = '[' + String.format("%04X", p1.value) + ']';
-            StackObject stackObject = new StackObject(this, "int", true, "ArrayPointer:var" + argvsh + arrayIndex, argv);
+            StackObject stackObject = new StackObject(this, "int16", true, "ArrayPointer:var" + argvsh + arrayIndex, argv);
             stackObject.referenceIndex = argv;
             stack.push(stackObject);
         } else if (opcode == 0xAD) { // PUSHI / CONST_INT
             int refInt = refInts[argv];
             String content = "rI[" + argvsh + "]:" + refInt + " [" + String.format("%08X", refInt) + "h]";
-            StackObject stackObject = new StackObject(this, "uint", false, content, refInt);
+            StackObject stackObject = new StackObject(this, "uint32", false, content, refInt);
             stackObject.referenceIndex = argv;
             stack.push(stackObject);
         } else if (opcode == 0xAE) { // PUSHII / IMM
-            stack.push(new StackObject(this, "int", false, ins.argvSigned + " [" + argvsh + "h]", argv));
+            stack.push(new StackObject(this, "int16", false, ins.argvSigned + " [" + argvsh + "h]", argv));
         } else if (opcode == 0xAF) { // PUSHF / CONST_FLOAT
             int refFloat = refFloats[argv];
             String content = "rF[" + argvsh + "]:" + Float.intBitsToFloat(refFloat) + " [" + String.format("%08X", refFloat) + "h]";
@@ -503,20 +504,20 @@ public class ScriptObject {
             stackObject.referenceIndex = argv;
             stack.push(stackObject);
         } else if (opcode == 0xB0) { // JMP / JUMP
-            textScriptLine += "Jump to j" + argvsh;
+            textScriptLine += "Jump to j" + String.format("%02X", argv);
             scriptJumps.stream().filter(j -> j.scriptIndex == currentScriptIndex && j.jumpIndex == argv).forEach(j -> j.setTypes(currentRAType, currentRXType, currentRYType, currentTempITypes));
             resetRegisterTypes();
         } else if (opcode == 0xB1) { // Never used: CJMP / BNEZ
         } else if (opcode == 0xB2) { // Never used: NCJMP / BEZ
         } else if (opcode == 0xB3) { // JSR
-            textScriptLine += "Jump to subroutine s" + argvsh;
+            textScriptLine += "Jump to subroutine s" + String.format("%02X", argv);
         } else if (opcode == 0xB5) { // CALL / FUNC_RET
             processB5(argv);
         } else if (opcode == 0xD6) { // POPXCJMP / SET_BNEZ
-            textScriptLine += "(" + p1 + ") -> j" + argvsh;
+            textScriptLine += "(" + p1 + ") -> j" + String.format("%02X", argv);
             scriptJumps.stream().filter(j -> j.scriptIndex == currentScriptIndex && j.jumpIndex == argv).forEach(j -> j.setTypes(currentRAType, currentRXType, currentRYType, currentTempITypes));
         } else if (opcode == 0xD7) { // POPXNCJMP / SET_BEZ
-            textScriptLine += "Check (" + p1 + ") else jump to j" + argvsh;
+            textScriptLine += "Check (" + p1 + ") else jump to j" + String.format("%02X", argv);
             scriptJumps.stream().filter(j -> j.scriptIndex == currentScriptIndex && j.jumpIndex == argv).forEach(j -> j.setTypes(currentRAType, currentRXType, currentRYType, currentTempITypes));
         } else if (opcode == 0xD8) { // CALLPOPA / FUNC
             processD8(argv);
@@ -602,7 +603,7 @@ public class ScriptObject {
     }
 
     protected static boolean isWeakType(String type) {
-        return type == null || "int".equals(type) || "uint".equals(type) || "unknown".equals(type) || type.isBlank();
+        return type == null || "unknown".equals(type) || type.isBlank() || type.startsWith("int") || type.startsWith("uint");
     }
 
     protected String typed(StackObject obj, String type) {
@@ -618,6 +619,15 @@ public class ScriptObject {
                 return new StackObject(type, obj).toString();
             }
         }
+    }
+
+    private String ensureVariableValid(int index) {
+        if (variableDeclarations == null || variableDeclarations.length <= index) {
+            String hexIdx = String.format("%02X", index);
+            warnLine += "Variable index " + hexIdx + " out of bounds!";
+            return "var" + hexIdx;
+        }
+        return variableDeclarations[index].getLabel();
     }
 
     protected static int getArgc(int opcode) {
@@ -675,16 +685,12 @@ public class ScriptObject {
         return rd;
     }
 
-    private int read2Bytes() {
-        int a = readByte();
-        int b = readByte() * 0x100;
-        return a + b;
+    private int read2Bytes(int offset) {
+        return bytes[offset] + bytes[offset+1] * 0x100;
     }
 
-    private int read4Bytes() {
-        int a = read2Bytes();
-        int b = read2Bytes() * 0x10000;
-        return a + b;
+    private int read4Bytes(int offset) {
+        return bytes[offset] + bytes[offset+1] * 0x100 + bytes[offset+2] * 0x10000 + bytes[offset+3] * 0x1000000;
     }
 
     private static String format2Or4Byte(int b) {
@@ -748,7 +754,7 @@ public class ScriptObject {
         if (variableDeclarations.length > 0) {
             List<String> refsStrings = new ArrayList<>();
             for (int i = 0; i < variableDeclarations.length; i++) {
-                refsStrings.add("var" + String.format("%02X", i) + ":" + variableDeclarations[i] + " [" + String.format("%016X", variableDeclarations[i].struct) + "h]");
+                refsStrings.add("var" + String.format("%02X", i) + ": " + variableDeclarations[i] + " [" + String.format("%016X", variableDeclarations[i].struct) + "h]");
             }
             lines.add(String.join("\n", refsStrings));
         }

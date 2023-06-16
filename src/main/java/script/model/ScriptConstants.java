@@ -277,6 +277,8 @@ public abstract class ScriptConstants {
 
         addEnumsFromAllCsvsInFolder(new File(ENUM_CSV_ROOT));
 
+        putEnum("globalVar", 0x0A00, "GameMoment");
+
         putEnum("deathAnimation", 0x00, "Character (Body remains and targetable)", "death_normal");
         putEnum("deathAnimation", 0x01, "Boss (Body remains but untargetable)", "death_nop");
         putEnum("deathAnimation", 0x02, "Humanoid (No Pyreflies, body fades out)", "death_fadeout");
@@ -381,6 +383,7 @@ public abstract class ScriptConstants {
         putEnum("bgm", 0x0091, "Challenge");
         putEnum("bgm", 0x00A5, "?Run!!");
         putEnum("bgm", 0x00AB, "Lulu's Theme");
+        putEnum("bgm", 0x00B0, "A Contest of Aeons");
 
         putEnum("battleTransition", 0x00, "Screen Shatter");
         putEnum("battleTransition", 0x01, "Fade");
@@ -402,6 +405,9 @@ public abstract class ScriptConstants {
         putEnum("damageFormula", 0x0D, "Ticks/16");
         putEnum("damageFormula", 0x0F, "Special MAG (ignore MDF)");
         putEnum("damageFormula", 0x10, "Fixed x User MaxHP / 10");
+        putEnum("damageFormula", 0x11, "Celestial HP-based");
+        putEnum("damageFormula", 0x12, "Celestial MP-based");
+        putEnum("damageFormula", 0x13, "Celestial Auron");
         putEnum("damageFormula", 0x15, "Fixed x Gil chosen / 10");
         putEnum("damageFormula", 0x16, "Fixed xKills");
         putEnum("damageFormula", 0x17, "Fixed x9999");
@@ -409,6 +415,17 @@ public abstract class ScriptConstants {
         putEnum("damageType", 0x00, "Special");
         putEnum("damageType", 0x01, "Physical");
         putEnum("damageType", 0x02, "Magical");
+
+        putEnum("sphereGrid", 0x00, "Original (JP/NTSC) Sphere Grid");
+        putEnum("sphereGrid", 0x01, "Standard Sphere Grid");
+        putEnum("sphereGrid", 0x02, "Expert Sphere Grid");
+
+        putEnum("monsterArenaUnlock", 0x01, "Area Conquest unlocked");
+        putEnum("monsterArenaUnlock", 0x02, "Species Conquest unlocked");
+        putEnum("monsterArenaUnlock", 0x03, "Original Creations unlocked");
+        for (int i = 0x300; i < 0x323; i++) {
+            putEnum("monsterArenaUnlock", i, "Creation #" + i + " defeated");
+        }
 
         putEnum("actor", 0x0000, "Tidus", "PC_TIDUS");
         putEnum("actor", 0x0001, "Yuna", "PC_YUNA");
