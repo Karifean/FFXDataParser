@@ -3,7 +3,6 @@ package script.model;
 import script.ScriptObject;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -35,7 +34,7 @@ public class ScriptHeader {
 
     public String getNonCommonString() {
         List<String> list = new ArrayList<>();
-        list.add("Type=" + scriptTypeToString(scriptType) + " [" + scriptType + "h]");
+        list.add("Type=" + scriptTypeToString(scriptType) + " [" + String.format("%02X", scriptType) + "h]");
         list.add("Entrypoints=" + entryPointCount);
         list.add("Jumps=" + jumpCount);
         list.add(privateValuesString());
@@ -66,10 +65,6 @@ public class ScriptHeader {
         }
         privateVars.forEach(p -> p.parseValues(script, bytes, privateDataOffset));
         sharedVars.forEach(s -> s.parseValues(script, bytes, sharedDataOffset));
-    }
-
-    private static String formatUnknownByte(int bt) {
-        return String.format("%02X", bt) + '=' + String.format("%03d", bt) + '(' + String.format("%8s", Integer.toBinaryString(bt)).replace(' ', '0') + ')';
     }
 
     public static String scriptTypeToString(int scriptType) {

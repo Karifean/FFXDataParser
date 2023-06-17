@@ -58,11 +58,14 @@ public class ScriptVariable {
         }
         for (int i = 0; i < elementCount; i++) {
             String type = formatToType();
-            int value = bytes[valueLocation + i * length];
-            if (length > 1) {
-                value += bytes[valueLocation + 1 + i * length] * 0x100;
-                if (length > 2) {
-                    value += bytes[valueLocation + 2 + i * length] * 0x10000 + bytes[valueLocation + 3 + i * length] * 0x1000000;
+            int value = 0;
+            if (outerOffset > 0) {
+                value += bytes[valueLocation + i * length];
+                if (length > 1) {
+                    value += bytes[valueLocation + 1 + i * length] * 0x100;
+                    if (length > 2) {
+                        value += bytes[valueLocation + 2 + i * length] * 0x10000 + bytes[valueLocation + 3 + i * length] * 0x1000000;
+                    }
                 }
             }
             StackObject obj = new StackObject(script, type, false, null, value);
@@ -81,14 +84,12 @@ public class ScriptVariable {
     }
 
     private String fullStoreLocation() {
-        String loc = locationToString();
-        String arrayIndex = "[" + String.format("%04X", offset) + "]";
-        String suffix = " (" + loc + arrayIndex + ")";
+        String deref = getDereference();
         if (location == 0) {
             ScriptField scriptField = StackObject.enumToScriptField("globalVar", offset);
-            return Objects.requireNonNullElse(scriptField.name, "Unknown") + suffix;
+            return Objects.requireNonNullElse(scriptField.name, "Unknown") + " (" + deref + ")";
         }
-        return loc + arrayIndex;
+        return deref;
     }
 
     private String fullTypeString() {
@@ -105,6 +106,8 @@ public class ScriptVariable {
             ScriptField scriptField = StackObject.enumToScriptField("globalVar", offset);
             if (scriptField.name != null) {
                 return scriptField.name;
+            } else {
+                return getDereference();
             }
         }
         return getVarLabel();
@@ -112,6 +115,12 @@ public class ScriptVariable {
 
     public String getVarLabel() {
         return "var" + String.format("%02X", index);
+    }
+
+    public String getDereference() {
+        String loc = locationToString();
+        String arrayIndex = "[" + String.format("%04X", offset) + "]";
+        return loc + arrayIndex;
     }
 
     public String initString() {
@@ -143,7 +152,7 @@ public class ScriptVariable {
             case 3 -> "private";
             case 4 -> "sharedOffset";
             case 5 -> "int variables";
-            case 6 -> "event-level data";
+            case 6 -> "eventData";
             default -> "unknown?";
         };
     }
@@ -160,38 +169,4 @@ public class ScriptVariable {
             default -> "unknown";
         };
     }
-
-    /**
-     * script header + 0x14 has a bunch of eight-byte descriptors with the following format:
-     *
-     * OO OO OO ffffaaa_ CC CC XX XX
-     *
-     * offset : 24
-     * format : 4
-     * location : 3
-     * pad : 1
-     * element count : 16
-     * unused? : 16
-     *
-     * (i.e. the format info is in the high bits of the first u32)
-     *
-     * format:
-     *   u8 = 0
-     *   i8
-     *   u16
-     *   i16
-     *   u32
-     *   i32
-     *   float = 6
-     *
-     *
-     * location:
-     *     0 ?
-     *     1 ?
-     *     2 "dataOffset" (script header + 0x28)
-     *     3 callback, or "privateOffset" (script header + 0x2c)
-     *     4 "sharedOffset" (script header + 0x30)
-     *     5 int variables (which are followed by float variables, could in principle access other script context vars)
-     *     6 event-level data (event file + 0x20)
-     */
 }

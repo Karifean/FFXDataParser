@@ -24,6 +24,17 @@ public class ScriptObject {
     protected int floatTableOffset;
     protected int intTableOffset;
     protected int variableStructsTableOffset;
+    protected int map_start;
+    protected int creatorTagAddress;
+    protected int event_name_start;
+    protected int obj_5b8_count;
+    protected int obj_558_count;
+    protected int obj_2e8_count;
+    protected int zoneBytes;
+    protected int area_offset;
+    protected int other_offset;
+    protected int mainScriptIndex;
+    protected int eventDataOffset;
     protected int scriptCodeLength;
     protected int scriptCodeStartAddress;
     protected int scriptCodeEndAddress;
@@ -67,20 +78,20 @@ public class ScriptObject {
         byteCursor = 0;
         scriptCodeLength = read4Bytes(0x0);
         // System.out.println("Script Length: " + scriptCodeLength);
-        int map_start = read4Bytes(0x4);
-        int creatorTagAddress = read4Bytes(0x8);
-        int event_name_start = read4Bytes(0xC);
+        map_start = read4Bytes(0x4);
+        creatorTagAddress = read4Bytes(0x8);
+        event_name_start = read4Bytes(0xC);
         int jumpsEndAddress = read4Bytes(0x10);
-        int obj_5b8_count = read2Bytes(0x14);
-        int obj_558_count = read2Bytes(0x16);
-        int main_script_index = read2Bytes(0x18);
+        obj_5b8_count = read2Bytes(0x14);
+        obj_558_count = read2Bytes(0x16);
+        mainScriptIndex = read2Bytes(0x18);
         int unk01 = read2Bytes(0x1A);
-        int obj_2e8_count = read2Bytes(0x1C);
-        int zoneBytes = read2Bytes(0x1E);
-        int event_data_offset = read4Bytes(0x20);
+        obj_2e8_count = read2Bytes(0x1C);
+        zoneBytes = read2Bytes(0x1E);
+        eventDataOffset = read4Bytes(0x20);
         int unk02 = read4Bytes(0x24);
-        int area_offset = read4Bytes(0x28);
-        int other_offset = read4Bytes(0x2C);
+        area_offset = read4Bytes(0x28);
+        other_offset = read4Bytes(0x2C);
         scriptCodeStartAddress = read4Bytes(0x30);
         int numberOfScripts = read2Bytes(0x34);
         int numberOfScriptsWithoutSubroutines = read2Bytes(0x36);
@@ -145,6 +156,8 @@ public class ScriptObject {
                     ScriptVariable scriptVariable = new ScriptVariable(i, lb, hb);
                     if (scriptVariable.location == 4) {
                         scriptVariable.parseValues(this, bytes, h.sharedDataOffset);
+                    } else if (scriptVariable.location == 6) {
+                        scriptVariable.parseValues(this, bytes, eventDataOffset);
                     }
                     variableDeclarations[i] = scriptVariable;
                 }
@@ -746,7 +759,19 @@ public class ScriptObject {
             return "No Headers";
         }
         List<String> lines = new ArrayList<>();
-        lines.add(headers.size() + " Headers Total");
+        if (mainScriptIndex != 0xFFFF) {
+            lines.add("Main Script: s" + String.format("%02X", mainScriptIndex));
+        }
+        lines.add("map_start = " + map_start);
+        // lines.add("creatorTagAddr = " + creatorTagAddress + " = " + new String(Arrays.copyOfRange(bytes, creatorTagAddress, event_name_start)))).trim());
+        // lines.add("event_name_start = " + event_name_start + " = " + new String(Arrays.copyOfRange(bytes, event_name_start, event_name_start + 9)).trim());
+        lines.add("obj_5b8_count = " + obj_5b8_count);
+        lines.add("obj_558_count = " + obj_558_count);
+        lines.add("obj_2e8_count = " + obj_2e8_count);
+        lines.add("zoneBytes = " + String.format("%16s", Integer.toBinaryString(zoneBytes)));
+        lines.add("area_offset = " + String.format("%06X", area_offset));
+        lines.add("other_offset = " + String.format("%06X", other_offset));
+        lines.add(headers.size() + " Scripts Total");
         for (int i = 0; i < headers.size(); i++) {
             lines.add("s" + String.format("%02X", i) + ": " + headers.get(i).getNonCommonString());
         }

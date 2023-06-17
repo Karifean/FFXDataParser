@@ -66,7 +66,7 @@ public abstract class ScriptFuncLib {
         putUnknownFunc(0x0002, 3);
         putFuncWithIdx(0x0003, new ScriptFunc("attachToLevelPart", "unknown", null, p("partIndex", "int")));
         putFuncWithIdx(0x0004, new ScriptFunc("attachToMapGroup", "unknown", null, p("groupIndex", "int")));
-        putFuncWithIdx(0x0005, new ScriptFunc("applyTransform", "unknown", null));
+        putFuncWithIdx(0x0005, new ScriptFunc("applyTransform", "unknown", null, true));
         putUnknownFunc(0x0006, 3);
         putUnknownFunc(0x0007, 1);
         putUnknownFunc(0x0010, 0);
@@ -405,7 +405,7 @@ public abstract class ScriptFuncLib {
         putUnknownFunc(0x01CF, 0);
         putUnknownFunc(0x01D0, 0);
         putUnknownFunc(0x01D1, 1);
-        putFuncWithIdx(0x01D2, new ScriptFunc("enteredAirshipPasswordEquals", "boolean", null, p("string")));
+        putFuncWithIdx(0x01D2, new ScriptFunc("enteredAirshipPasswordEquals", "bool", null, p("string")));
         putUnknownFunc(0x01D4, 2);
         putUnknownFunc(0x01D9, 0);
         putUnknownFunc(0x01DA, 4);
@@ -446,7 +446,7 @@ public abstract class ScriptFuncLib {
         putFuncWithIdx(0x0210, new ScriptFunc("setMonsterArenaUnlocked", "unknown", null, p("monsterArenaUnlock")));
         putUnknownFunc(0x0212, 2);
         putUnknownFunc(0x0213, 1);
-        putUnknownFunc(0x0215, 2);
+        putFuncWithIdx(0x0215, new ScriptFunc("grantCelestialUpgrade", "unknown", null, p("actor"), p("level", "int")));
         putUnknownFunc(0x0216, 3);
         putUnknownFunc(0x0217, 0);
         putUnknownFunc(0x021A, 2);
@@ -1108,8 +1108,8 @@ public abstract class ScriptFuncLib {
         putFuncWithIdx(0x8004, new ScriptFunc("waitForGfxStopped", "unknown", null, p("gfxIndex", "int"))); // equivalent to 8005 with true
         putFuncWithIdx(0x8005, new ScriptFunc("waitForGfxEnding", "unknown", null, p("gfxIndex", "int"), p("waitForChildren", "bool")));
         putUnknownFunc(0x8006, 1);
-        putFuncWithIdx(0x8007, new ScriptFunc("setAllGfxActive", "unknown", null)));
-        putFuncWithIdx(0x8008, new ScriptFunc("stopAllGfx", "unknown", null)));
+        putFuncWithIdx(0x8007, new ScriptFunc("setAllGfxActive", "unknown", null, true));
+        putFuncWithIdx(0x8008, new ScriptFunc("stopAllGfx", "unknown", null, true));
         putFuncWithIdx(0x8009, new ScriptFunc("bindGfxToTarget", "unknown", null, p("gfxIndex", "int"), p("target", "int"))); // for actors, target is a bone index
         putFuncWithIdx(0x800A, new ScriptFunc("bindGfxPosition", "unknown", "mpfpbindpos", p("gfxIndex", "int"), p("x", "float"), p("y", "float"), p("z", "float")));
         putFuncWithIdx(0x800B, new ScriptFunc("unbindGfx", "unknown", null, p("gfxIndex", "int")));
@@ -1146,9 +1146,9 @@ public abstract class ScriptFuncLib {
         putFuncWithIdx(0x803F, new ScriptFunc("setFogRed", "unknown", null, p("red", "int")));
         putFuncWithIdx(0x8040, new ScriptFunc("setFogGreen", "unknown", null, p("green", "int")));
         putFuncWithIdx(0x8041, new ScriptFunc("setFogBlue", "unknown", null, p("blue", "int")));
-        putFuncWithIdx(0x8042, new ScriptFunc("getFogRed", "int", null));
-        putFuncWithIdx(0x8043, new ScriptFunc("getFogGreen", "int", null));
-        putFuncWithIdx(0x8044, new ScriptFunc("getFogBlue", "int", null));
+        putFuncWithIdx(0x8042, new ScriptFunc("getFogRed", "int", null, true));
+        putFuncWithIdx(0x8043, new ScriptFunc("getFogGreen", "int", null, true));
+        putFuncWithIdx(0x8044, new ScriptFunc("getFogBlue", "int", null, true));
         putFuncWithIdx(0x8045, new ScriptFunc("setClearColor", "unknown", null, p("red", "int"), p("green", "int"), p("blue", "int")));
         putUnknownFunc(0x8049, 0);
         putUnknownFunc(0x804A, 0);

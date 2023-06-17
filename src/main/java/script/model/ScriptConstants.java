@@ -278,6 +278,8 @@ public abstract class ScriptConstants {
         addEnumsFromAllCsvsInFolder(new File(ENUM_CSV_ROOT));
 
         putEnum("globalVar", 0x0A00, "GameMoment");
+        putEnum("globalVar", 0x0A34, "GilLentToOAka");
+        putEnum("globalVar", 0x0A95, "AirshipDestinationUnlocks");
 
         putEnum("deathAnimation", 0x00, "Character (Body remains and targetable)", "death_normal");
         putEnum("deathAnimation", 0x01, "Boss (Body remains but untargetable)", "death_nop");

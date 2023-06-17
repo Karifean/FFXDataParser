@@ -2,9 +2,7 @@ package script.model;
 
 import main.DataAccess;
 import model.AbilityDataObject;
-import model.KeyItemDataObject;
 import model.Nameable;
-import model.TreasureDataObject;
 import script.MonsterFile;
 import script.ScriptObject;
 
@@ -99,7 +97,7 @@ public class StackObject {
             if ("string".equals(type) && parentScript != null && parentScript.strings != null && parentScript.strings.size() > value) {
                 String targetString = parentScript.strings.get(value);
                 String nullSafeString = targetString != null ? targetString : "null";
-                String noLineBreakString = nullSafeString.replace('\n', ' ');
+                String noLineBreakString = nullSafeString.replace("\n", "\\n");
                 return '"' + noLineBreakString + '"' + hexSuffix;
             }
             if (ScriptConstants.ENUMERATIONS.containsKey(type)) {
