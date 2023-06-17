@@ -65,7 +65,7 @@ public abstract class ScriptFuncLib {
         putUnknownFunc(0x0001, 1); // noclip: load character/summon/weapon etc
         putUnknownFunc(0x0002, 3);
         putFuncWithIdx(0x0003, new ScriptFunc("attachToLevelPart", "unknown", null, p("partIndex", "int")));
-        putFuncWithIdx(0x0004, new ScriptFunc("attachToLevelLayer", "unknown", null, p("layerIndex", "int")));
+        putFuncWithIdx(0x0004, new ScriptFunc("attachToMapGroup", "unknown", null, p("groupIndex", "int")));
         putFuncWithIdx(0x0005, new ScriptFunc("applyTransform", "unknown", null));
         putUnknownFunc(0x0006, 3);
         putUnknownFunc(0x0007, 1);
@@ -1102,23 +1102,24 @@ public abstract class ScriptFuncLib {
         putUnknownFunc(0x7127, 2);
 
         putFuncWithIdx(0x8000, new ScriptFunc("setLevelLayerVisibility", "unknown", null, p("layerIndex", "int"), p("visible", "bool")));
-        putUnknownFunc(0x8001, 1);
-        putFuncWithIdx(0x8002, new ScriptFunc("setGfxActive?", "unknown", null, p("gfxIndex?", "int"), p("active", "bool")));
-        putUnknownFunc(0x8003, 1);
-        putUnknownFunc(0x8004, 1);
-        putUnknownFunc(0x8005, 2);
+        putFuncWithIdx(0x8001, new ScriptFunc("setSkyboxVisibility", "unknown", null, p("visible", "bool")));
+        putFuncWithIdx(0x8002, new ScriptFunc("setGfxActive?", "unknown", null, p("gfxIndex", "int"), p("active", "bool"))); // GFX are either lights or particle effects
+        putFuncWithIdx(0x8003, new ScriptFunc("startGfxTimer", "unknown", null, p("gfxIndex", "int")));
+        putFuncWithIdx(0x8004, new ScriptFunc("waitForGfxStopped", "unknown", null, p("gfxIndex", "int"))); // equivalent to 8005 with true
+        putFuncWithIdx(0x8005, new ScriptFunc("waitForGfxEnding", "unknown", null, p("gfxIndex", "int"), p("waitForChildren", "bool")));
         putUnknownFunc(0x8006, 1);
-        putUnknownFunc(0x8007, 0);
-        putUnknownFunc(0x8008, 0);
-        putUnknownFunc(0x8009, 2);
-        putUnknownFunc(0x800A, 4);
-        putUnknownFunc(0x800B, 1);
-        putUnknownFunc(0x800C, 1);
-        putUnknownFunc(0x800D, 2);
-        putUnknownFunc(0x800F, 1);
-        putUnknownFunc(0x8010, 1);
-        putUnknownFunc(0x8011, 3);
-        putUnknownFunc(0x8014, 2);
+        putFuncWithIdx(0x8007, new ScriptFunc("setAllGfxActive", "unknown", null)));
+        putFuncWithIdx(0x8008, new ScriptFunc("stopAllGfx", "unknown", null)));
+        putFuncWithIdx(0x8009, new ScriptFunc("bindGfxToTarget", "unknown", null, p("gfxIndex", "int"), p("target", "int"))); // for actors, target is a bone index
+        putFuncWithIdx(0x800A, new ScriptFunc("bindGfxPosition", "unknown", "mpfpbindpos", p("gfxIndex", "int"), p("x", "float"), p("y", "float"), p("z", "float")));
+        putFuncWithIdx(0x800B, new ScriptFunc("unbindGfx", "unknown", null, p("gfxIndex", "int")));
+        putFuncWithIdx(0x800C, new ScriptFunc("setGfxEnabledGlobal", "unknown", null, p("enabled", "bool"))); // controls all gfx rendering/updates 
+        putFuncWithIdx(0x800D, new ScriptFunc("setGfxVisibility", "unknown", null, p("gfxIndex", "int"), p("visible", "bool")));
+        // next several are about the image planes used for forced-perspective areas
+        putUnknownFunc(0x800F, 1); // clear image hidden flag
+        putUnknownFunc(0x8010, 1); // set image hidden flag
+        putUnknownFunc(0x8011, 3); 
+        putUnknownFunc(0x8014, 2); // set image depth
         putUnknownFunc(0x801D, 2);
         putUnknownFunc(0x801E, 1);
         putUnknownFunc(0x801F, 1);
@@ -1130,40 +1131,40 @@ public abstract class ScriptFuncLib {
         putUnknownFunc(0x802D, 0);
         putUnknownFunc(0x802E, 2);
         putUnknownFunc(0x802F, 1);
-        putUnknownFunc(0x8030, 2);
-        putUnknownFunc(0x8032, 1);
-        putUnknownFunc(0x8035, 2);
-        putUnknownFunc(0x8036, 2);
-        putUnknownFunc(0x8037, 3);
-        putUnknownFunc(0x8038, 1);
+        putUnknownFunc(0x8030, 2); // set image opacity
+        putUnknownFunc(0x8032, 1); // minimap related?
+        putFuncWithIdx(0x8035, new ScriptFunc("setGfxGroupActive", "unknown", null, p("group", "int"), p("active", "bool")));
+        putFuncWithIdx(0x8036, new ScriptFunc("setGfxGroupVisibility", "unknown", null, p("group", "int"), p("visible", "bool")));
+        putUnknownFunc(0x8037, 3); // set global scale?
+        putUnknownFunc(0x8038, 1); // set/get scale components
         putUnknownFunc(0x8039, 0);
         putUnknownFunc(0x803A, 1);
         putUnknownFunc(0x803B, 0);
         putUnknownFunc(0x803C, 1);
         putUnknownFunc(0x803D, 0);
-        putUnknownFunc(0x803E, 3);
-        putUnknownFunc(0x803F, 1);
-        putUnknownFunc(0x8040, 1);
-        putUnknownFunc(0x8041, 1);
-        putUnknownFunc(0x8042, 0);
-        putUnknownFunc(0x8043, 0);
-        putUnknownFunc(0x8044, 0);
-        putUnknownFunc(0x8045, 3);
+        putFuncWithIdx(0x803E, new ScriptFunc("setFogColor", "unknown", null, p("red", "int"), p("green", "int"), p("blue", "int")));
+        putFuncWithIdx(0x803F, new ScriptFunc("setFogRed", "unknown", null, p("red", "int")));
+        putFuncWithIdx(0x8040, new ScriptFunc("setFogGreen", "unknown", null, p("green", "int")));
+        putFuncWithIdx(0x8041, new ScriptFunc("setFogBlue", "unknown", null, p("blue", "int")));
+        putFuncWithIdx(0x8042, new ScriptFunc("getFogRed", "int", null));
+        putFuncWithIdx(0x8043, new ScriptFunc("getFogGreen", "int", null));
+        putFuncWithIdx(0x8044, new ScriptFunc("getFogBlue", "int", null));
+        putFuncWithIdx(0x8045, new ScriptFunc("setClearColor", "unknown", null, p("red", "int"), p("green", "int"), p("blue", "int")));
         putUnknownFunc(0x8049, 0);
         putUnknownFunc(0x804A, 0);
         putUnknownFunc(0x804B, 0);
         putUnknownFunc(0x804F, 3);
-        putUnknownFunc(0x8059, 2);
-        putUnknownFunc(0x805B, 4);
+        putFuncWithIdx(0x8059, new ScriptFunc("bindGfxToMapGroup", "unknown", null, p("gfxIndex", "int"), p("groupIndex", "int")));
+        putFuncWithIdx(0x805B, new ScriptFunc("setGfxPosition", "unknown", null, p("gfxIndex", "int"), p("x", "float"), p("y", "float"), p("z", "float")));
         putUnknownFunc(0x805C, 1);
         putUnknownFunc(0x805D, 0);
         putUnknownFunc(0x805E, 1);
-        putUnknownFunc(0x805F, 1);
-        putUnknownFunc(0x8060, 1);
-        putUnknownFunc(0x8066, 1);
+        putFuncWithIdx(0x805F, new ScriptFunc("stopGfx", "unknown", null, p("gfxIndex", "int")));
+        putFuncWithIdx(0x8060, new ScriptFunc("stopGfxGroup", "unknown", null, p("groupIndex", "int")));
+        putFuncWithIdx(0x8066, new ScriptFunc("setGfxPausedGlobal", "unknown", null, p("paused", "bool")));
         putUnknownFunc(0x8067, 4);
-        putUnknownFunc(0x806A, 1);
-        putUnknownFunc(0x806B, 1);
+        putUnknownFunc(0x806A, 1); // set an image plane's map group
+        putUnknownFunc(0x806B, 1); // totally empty?!
         putUnknownFunc(0xB000, 2); // Inference based on A2 popping 1 and pushing 1
         putUnknownFunc(0xB001, 0);
         putUnknownFunc(0xB002, 0);
