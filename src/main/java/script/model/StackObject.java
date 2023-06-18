@@ -77,7 +77,7 @@ public class StackObject {
                 if (value == 0) {
                     return "Null Move" + hexSuffix;
                 } else if (value <= 0x11) {
-                    return "Switch/Summon:" + ScriptConstants.getEnumMap("actor").get(value) + hexSuffix;
+                    return "Switch/Summon:" + ScriptConstants.getEnumMap("btlActor").get(value) + hexSuffix;
                 } else {
                     AbilityDataObject ability = DataAccess.getMove(value);
                     return (ability != null ? '"'+ability.getName()+'"' : "????") + hexSuffix;
@@ -86,7 +86,7 @@ public class StackObject {
                 AbilityDataObject ability = DataAccess.getMove(value + 0x3000);
                 return (ability != null ? '"'+ability.getName()+'"' : "????") + hexSuffix;
             }
-            if ("actor".equals(type) && value >= 0x1000 && value < 0x2000) {
+            if ("btlActor".equals(type) && value >= 0x1000 && value < 0x2000) {
                 try {
                     MonsterFile monster = DataAccess.getMonster(value);
                     if (monster != null) {
@@ -131,7 +131,7 @@ public class StackObject {
             if (b4 == 0x20) {
                 index = "AirshipPassword";
             } else if (b4 <= 0x11) {
-                index = ScriptConstants.getEnumMap("actor").get(b4).name;
+                index = ScriptConstants.getEnumMap("btlActor").get(b4).name;
             } else {
                 index = "?" + b4;
             }

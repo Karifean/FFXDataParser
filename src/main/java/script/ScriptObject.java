@@ -27,17 +27,20 @@ public class ScriptObject {
     protected int map_start;
     protected int creatorTagAddress;
     protected int event_name_start;
-    protected int obj_5b8_count;
-    protected int obj_558_count;
-    protected int obj_2e8_count;
+    protected int amountOfType2or3Scripts;
+    protected int amountOfType4Scripts;
+    protected int amountOfType5Scripts;
     protected int zoneBytes;
     protected int area_offset;
     protected int other_offset;
     protected int mainScriptIndex;
+    protected int unk01;
+    protected int unk02;
     protected int eventDataOffset;
     protected int scriptCodeLength;
     protected int scriptCodeStartAddress;
     protected int scriptCodeEndAddress;
+    protected int numberOfScripts;
     public List<String> strings;
     public StringBuilder jumpTableString = new StringBuilder();
     Stack<StackObject> stack = new Stack<>();
@@ -82,18 +85,18 @@ public class ScriptObject {
         creatorTagAddress = read4Bytes(0x8);
         event_name_start = read4Bytes(0xC);
         int jumpsEndAddress = read4Bytes(0x10);
-        obj_5b8_count = read2Bytes(0x14);
-        obj_558_count = read2Bytes(0x16);
+        amountOfType2or3Scripts = read2Bytes(0x14);
+        amountOfType4Scripts = read2Bytes(0x16);
         mainScriptIndex = read2Bytes(0x18);
-        int unk01 = read2Bytes(0x1A);
-        obj_2e8_count = read2Bytes(0x1C);
+        unk01 = read2Bytes(0x1A);
+        amountOfType5Scripts = read2Bytes(0x1C);
         zoneBytes = read2Bytes(0x1E);
         eventDataOffset = read4Bytes(0x20);
-        int unk02 = read4Bytes(0x24);
+        unk02 = read4Bytes(0x24);
         area_offset = read4Bytes(0x28);
         other_offset = read4Bytes(0x2C);
         scriptCodeStartAddress = read4Bytes(0x30);
-        int numberOfScripts = read2Bytes(0x34);
+        numberOfScripts = read2Bytes(0x34);
         int numberOfScriptsWithoutSubroutines = read2Bytes(0x36);
         // System.out.println("Number of Scripts: " + numberOfScripts + " / " + numberOfScripts2);
         int[] scriptHeaderOffsets = new int[numberOfScripts];
@@ -101,7 +104,7 @@ public class ScriptObject {
             scriptHeaderOffsets[i] = read4Bytes(0x38 + i * 4);
         }
         int scriptIndex = 0;
-        headers = new ArrayList<>();
+        headers = new ArrayList<>(numberOfScripts);
         for (int headerStart : scriptHeaderOffsets) {
             ScriptHeader scriptHeader = parseScriptHeader(headerStart);
             parseScriptJumps(scriptHeader, scriptIndex);
@@ -121,24 +124,7 @@ public class ScriptObject {
     }
 
     private ScriptHeader parseScriptHeader(int offset) {
-        ScriptHeader header = new ScriptHeader();
-        header.scriptType = read2Bytes(offset);
-        header.variablesCount = read2Bytes(offset+0x02);
-        header.refIntCount = read2Bytes(offset+0x04);
-        header.refFloatCount = read2Bytes(offset+0x06);
-        header.entryPointCount = read2Bytes(offset+0x08);
-        header.jumpCount = read2Bytes(offset+0x0A);
-        header.alwaysZero1 = read4Bytes(offset+0x0C);
-        header.privateDataLength = read4Bytes(offset+0x10);
-        header.variableStructsTableOffset = read4Bytes(offset+0x14);
-        header.intTableOffset = read4Bytes(offset+0x18);
-        header.floatTableOffset = read4Bytes(offset+0x1C);
-        header.scriptEntryPointsOffset = read4Bytes(offset+0x20);
-        header.jumpsOffset = read4Bytes(offset+0x24);
-        header.alwaysZero2 = read4Bytes(offset+0x28);
-        header.privateDataOffset = read4Bytes(offset+0x2C);
-        header.sharedDataOffset = read4Bytes(offset+0x30);
-        return header;
+        return new ScriptHeader(Arrays.copyOfRange(bytes, offset, offset + ScriptHeader.LENGTH));
     }
 
     private void parseVarIntFloatTables(List<ScriptHeader> headers) {
@@ -756,23 +742,20 @@ public class ScriptObject {
 
     public String headersString() {
         if (headers == null || headers.isEmpty()) {
-            return "No Headers";
+            return "No Scripts";
         }
         List<String> lines = new ArrayList<>();
         if (mainScriptIndex != 0xFFFF) {
-            lines.add("Main Script: s" + String.format("%02X", mainScriptIndex));
+            lines.add("Main Script: " + mainScriptIndex + " [" + String.format("%02X", mainScriptIndex) + "h]");
         }
-        lines.add("map_start = " + map_start);
-        // lines.add("creatorTagAddr = " + creatorTagAddress + " = " + new String(Arrays.copyOfRange(bytes, creatorTagAddress, event_name_start)))).trim());
-        // lines.add("event_name_start = " + event_name_start + " = " + new String(Arrays.copyOfRange(bytes, event_name_start, event_name_start + 9)).trim());
-        lines.add("obj_5b8_count = " + obj_5b8_count);
-        lines.add("obj_558_count = " + obj_558_count);
-        lines.add("obj_2e8_count = " + obj_2e8_count);
-        lines.add("zoneBytes = " + String.format("%16s", Integer.toBinaryString(zoneBytes)));
+        lines.add("map_start = " + String.format("%04X", map_start));
+        lines.add("unk1 = " + String.format("%04X", unk01));
+        lines.add("unk2 = " + String.format("%04X", unk02));
+        lines.add("zoneBytes = " + String.format("%04X", zoneBytes));
         lines.add("area_offset = " + String.format("%06X", area_offset));
         lines.add("other_offset = " + String.format("%06X", other_offset));
-        lines.add(headers.size() + " Scripts Total");
-        for (int i = 0; i < headers.size(); i++) {
+        lines.add(numberOfScripts + " Scripts Total");
+        for (int i = 0; i < numberOfScripts; i++) {
             lines.add("s" + String.format("%02X", i) + ": " + headers.get(i).getNonCommonString());
         }
         lines.add("Variables (" + variableDeclarations.length + " at offset " + String.format("%04X", variableStructsTableOffset) + ")");

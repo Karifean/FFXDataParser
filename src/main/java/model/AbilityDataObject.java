@@ -435,8 +435,8 @@ public class AbilityDataObject implements Nameable {
         specialBuffOverdrive200 = (specialBuffFlags & 0x40) > 0;
         specialBuffUnused = (specialBuffFlags & 0x80) > 0;
         if (overdriveCategorizationByte > 0) {
-            overdriveCharacter = ScriptConstants.getEnumMap("actor").get(overdriveCategorizationByte & 0x0F).name;
-            overdriveCategory = overdriveCategorizationByte / 0x10;
+            overdriveCharacter = StackObject.enumToScriptField("char", overdriveCategorizationByte & 0x0F).name;
+            overdriveCategory = overdriveCategorizationByte >> 4;
         }
     }
 
@@ -537,7 +537,7 @@ public class AbilityDataObject implements Nameable {
             if (characterUser == 0xFF) {
                 return "Usable by anyone";
             } else {
-                return "Usable by " + ScriptConstants.getEnumMap("actor").get(characterUser).name;
+                return "Usable by " + StackObject.enumToScriptField("char", characterUser).name;
             }
         } else {
             return "";

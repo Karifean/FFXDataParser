@@ -1,7 +1,7 @@
 package model;
 
 import main.DataAccess;
-import script.model.ScriptConstants;
+import script.model.StackObject;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -189,7 +189,7 @@ public class MonsterSpoilsDataObject {
     }
 
     private static String getCharIndicator(int chr) {
-        return ScriptConstants.getEnumMap("actor").get(chr).name.substring(0, 1);
+        return StackObject.enumToScriptField("char", chr).name.substring(0, 1);
     }
 
     private static String abilityMapToString(Map<String, List<Integer>> map) {

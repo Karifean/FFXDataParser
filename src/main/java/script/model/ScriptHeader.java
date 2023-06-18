@@ -7,6 +7,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class ScriptHeader {
+    public static final int LENGTH = 0x34;
+
     public int scriptType;
     public int variablesCount;
     public int refIntCount;
@@ -31,6 +33,25 @@ public class ScriptHeader {
     public int[] refInts;
     public List<ScriptVariable> privateVars;
     public List<ScriptVariable> sharedVars;
+
+    public ScriptHeader(int[] bytes) {
+        scriptType = read2Bytes(bytes,0x00);
+        variablesCount = read2Bytes(bytes,0x02);
+        refIntCount = read2Bytes(bytes,0x04);
+        refFloatCount = read2Bytes(bytes, 0x06);
+        entryPointCount = read2Bytes(bytes, 0x08);
+        jumpCount = read2Bytes(bytes, 0x0A);
+        alwaysZero1 = read4Bytes(bytes, 0x0C);
+        privateDataLength = read4Bytes(bytes, 0x10);
+        variableStructsTableOffset = read4Bytes(bytes, 0x14);
+        intTableOffset = read4Bytes(bytes, 0x18);
+        floatTableOffset = read4Bytes(bytes, 0x1C);
+        scriptEntryPointsOffset = read4Bytes(bytes, 0x20);
+        jumpsOffset = read4Bytes(bytes, 0x24);
+        alwaysZero2 = read4Bytes(bytes, 0x28);
+        privateDataOffset = read4Bytes(bytes, 0x2C);
+        sharedDataOffset = read4Bytes(bytes, 0x30);
+    }
 
     public String getNonCommonString() {
         List<String> list = new ArrayList<>();
@@ -91,5 +112,13 @@ public class ScriptHeader {
         }
         String joined = sharedVars.stream().filter(v -> !v.values.isEmpty()).map(ScriptVariable::valuesString).collect(Collectors.joining(", "));
         return "sharedVars=[" + joined + "]";
+    }
+
+    private static int read2Bytes(int[] bytes, int offset) {
+        return bytes[offset] + bytes[offset+1] * 0x100;
+    }
+
+    private static int read4Bytes(int[] bytes, int offset) {
+        return bytes[offset] + bytes[offset+1] * 0x100 + bytes[offset+2] * 0x10000 + bytes[offset+3] * 0x1000000;
     }
 }

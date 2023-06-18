@@ -95,7 +95,7 @@ public class GearDataObject {
     }
 
     public String compactString() {
-        return "{ " + StackObject.enumToString("actor", character) +
+        return "{ " + StackObject.enumToString("char", character) +
                 ", " + (armor ? "Armor" : "Weapon") +
                 (formula != 1 ? " Formula=" + StackObject.enumToString("damageFormula", formula) : "") +
                 " " + getAbilityString() + " }";
@@ -104,7 +104,7 @@ public class GearDataObject {
     @Override
     public String toString() {
         String abilityString = getAbilityString();
-        return "{ " + StackObject.enumToString("actor", character) +
+        return "{ " + StackObject.enumToString("char", character) +
                 ", " + (armor ? "Armor" : "Weapon") + " [" + String.format("%02X", armorByte) + "h]" +
                 ", Formula=" + StackObject.enumToString("damageFormula", formula) +
                 ", Power=" + power +
