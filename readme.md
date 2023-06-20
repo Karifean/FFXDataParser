@@ -4,7 +4,7 @@
 
 1. Get your own legal copy of Final Fantasy X/X-2 Remaster
 2. Use **vbfextract** to extract everything from `FFX_Data.vbf`
-3. Copy the extracted `ffx_ps2` folder into `src/main/resources/`
+3. Copy the extracted `ffx_ps2` folder into `src/main/resources/` or put it elsewhere locally (will need to set the `SourcesRootPath` to wherever you put it)
 4. Build and run the parser with modes of your choice
 
 ## Build & Usage
@@ -18,7 +18,9 @@ This requires having maven installed on your command line PATH; if you have it i
 By default, this will create a file inside the `target` folder named `FFXDataParser-1.0-SNAPSHOT.jar`.
 You can then run the parser with the following command:
 
-`java -jar target/FFXDataParser-1.0-SNAPSHOT.jar <ParserMode> [<ModeArgument>] ...`
+`java -jar target/FFXDataParser-1.0-SNAPSHOT.jar <SourcesRootPath> <ParserMode> [<ModeArgument>] ...`
+
+`SourcesRootPath` must be a path to a folder that contains within it the `ffx_ps2` folder and must end in a `/`. All other paths are relative to this one. If you set it to `.` it will automatically resolve to `src/main/resources/` 
 
 #### ParserModes
 

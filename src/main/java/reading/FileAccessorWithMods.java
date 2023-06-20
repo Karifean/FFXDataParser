@@ -3,8 +3,8 @@ package reading;
 import java.io.*;
 
 public class FileAccessorWithMods {
-    public static final String RESOURCES_ROOT = "src/main/resources/";
-    public static final String MODS_ROOT = RESOURCES_ROOT + "mods/";
+    public static String RESOURCES_ROOT = "src/main/resources/";
+    public static final String MODS_FOLDER = "mods/";
     private static final boolean DISABLE_MODS = false;
 
     public static File getRealFile(String path) {
@@ -12,7 +12,7 @@ public class FileAccessorWithMods {
     }
 
     public static File getModdedFile(String path) {
-        return new File(MODS_ROOT + path);
+        return new File(RESOURCES_ROOT + MODS_FOLDER + path);
     }
 
     public static File resolveFile(String path, boolean print) {

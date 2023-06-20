@@ -50,8 +50,12 @@ public class Main {
     private static final boolean SKIP_BLITZBALL_EVENTS = true;
 
     public static void main(String[] args) {
-        String mode = args[0];
-        List<String> realArgs = Arrays.asList(args).subList(1, args.length);
+        String pathRoot = args[0];
+        if (!".".equals(pathRoot)) {
+            FileAccessorWithMods.RESOURCES_ROOT = pathRoot;
+        }
+        String mode = args[1];
+        List<String> realArgs = Arrays.asList(args).subList(2, args.length);
         readAndPrepareDataModel();
         switch (mode) {
             case MODE_GREP:
