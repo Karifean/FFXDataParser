@@ -3,16 +3,17 @@ package reading;
 import java.io.*;
 
 public class FileAccessorWithMods {
-    public static String RESOURCES_ROOT = "src/main/resources/";
+    public static final String RESOURCES_ROOT = "src/main/resources/";
+    public static String GAME_FILES_ROOT = RESOURCES_ROOT;
     public static final String MODS_FOLDER = "mods/";
     private static final boolean DISABLE_MODS = false;
 
     public static File getRealFile(String path) {
-        return new File(RESOURCES_ROOT + path);
+        return new File(GAME_FILES_ROOT + path);
     }
 
     public static File getModdedFile(String path) {
-        return new File(RESOURCES_ROOT + MODS_FOLDER + path);
+        return new File(GAME_FILES_ROOT + MODS_FOLDER + path);
     }
 
     public static File resolveFile(String path, boolean print) {

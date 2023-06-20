@@ -530,7 +530,7 @@ public abstract class ScriptConstants {
         putBattleActorProperty(0x001C, "?BattleRow", "int", "stat_area");
         putBattleActorProperty(0x001D, "?BattleArenaStandingPosition", "int", "stat_pos");
         putBattleActorProperty(0x001E, "BattleDistance", "int", "stat_far");
-        putBattleActorProperty(0x001F, null, "bool", "stat_group");
+        putBattleActorProperty(0x001F, null, "int", "stat_group");
         putBattleActorProperty(0x0020, "Armored", "bool", "stat_sp_hard");
         putBattleActorProperty(0x0021, "?ImmuneToFractionalDmg", "bool", "stat_sp_ratio");
         putBattleActorProperty(0x0022, "?ImmuneToLife", "bool", "stat_sp_zombie");

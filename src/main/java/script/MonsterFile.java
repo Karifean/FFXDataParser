@@ -22,6 +22,7 @@ public class MonsterFile implements Nameable {
     public String monsterScanText;
     public String monsterScanDash;
     Chunk scriptChunk;
+    int[] scriptMappingBytes;
     int[] statBytes;
     int[] spoilsBytes;
     int[] textBytes;
@@ -34,13 +35,14 @@ public class MonsterFile implements Nameable {
 
     private void mapChunks(List<Chunk> chunks) {
         scriptChunk = chunks.get(0);
+        scriptMappingBytes = chunks.get(1).bytes;
         statBytes = chunks.get(2).bytes;
         spoilsBytes = chunks.get(4).bytes;
         textBytes = chunks.get(6).bytes;
     }
 
     private void mapObjects() {
-        monsterAi = new ScriptObject(scriptChunk);
+        monsterAi = new ScriptObject(scriptChunk, scriptMappingBytes);
         monsterStatData = new MonsterStatDataObject(statBytes);
         monsterSpoilsData = new MonsterSpoilsDataObject(spoilsBytes);
     }
@@ -77,8 +79,6 @@ public class MonsterFile implements Nameable {
             full.append(monsterAi.allLinesString());
             full.append("- Headers -").append('\n');
             full.append(monsterAi.headersString()).append('\n');
-            full.append("- Jump Table -").append('\n');
-            full.append(monsterAi.jumpTableString.toString()).append('\n');
         } else {
             full.append("Monster AI missing");
         }

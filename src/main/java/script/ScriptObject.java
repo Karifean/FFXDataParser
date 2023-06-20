@@ -13,9 +13,13 @@ public class ScriptObject {
     private static final int HEX_LINE_MINLENGTH = COLORS_USE_CONSOLE_CODES ? 58 : 48;
     private static final int JUMP_PLUS_HEX_LINE_MINLENGTH = JUMP_LINE_MINLENGTH + HEX_LINE_MINLENGTH + 1;
 
-    protected int[] bytes;
+    private static final boolean VERBOSE_HEADER_OUTPUT = false;
+
+    protected final int[] bytes;
+    protected final int absoluteOffset;
+    protected final int[] scriptMappingBytes;
+
     protected int[] actualScriptCodeBytes;
-    protected int absoluteOffset;
     protected int byteCursor = 0;
     protected List<ScriptHeader> headers;
     protected int[] refFloats;
@@ -42,7 +46,6 @@ public class ScriptObject {
     protected int scriptCodeEndAddress;
     protected int numberOfScripts;
     public List<String> strings;
-    public StringBuilder jumpTableString = new StringBuilder();
     Stack<StackObject> stack = new Stack<>();
     Map<Integer, String> currentTempITypes = new HashMap<>();
     Map<Integer, String> varTypes = new HashMap<>();
@@ -53,8 +56,8 @@ public class ScriptObject {
     String currentRXType = "unknown";
     String currentRYType = "unknown";
     boolean gatheringInfo = true;
-    List<ScriptJump> scriptJumps = new ArrayList<>();
-    Map<Integer, List<ScriptJump>> scriptJumpsByDestination = new HashMap<>();
+    List<ScriptJump> scriptJumps;
+    Map<Integer, List<ScriptJump>> scriptJumpsByDestination;
 
     int lineCount = 0;
     String textScriptLine;
@@ -66,24 +69,25 @@ public class ScriptObject {
     List<String> warnLines;
     List<ScriptInstruction> instructions = new ArrayList<>();
 
-    public ScriptObject(Chunk chunk) {
-        this.bytes = chunk.bytes;
-        this.absoluteOffset = chunk.offset;
+    public ScriptObject(Chunk chunk, int[] scriptMappingBytes) {
+        this(chunk.bytes, chunk.offset, scriptMappingBytes);
     }
 
-    public ScriptObject(int[] bytes, int absoluteOffset) {
+    public ScriptObject(int[] bytes, int absoluteOffset, int[] scriptMappingBytes) {
         this.bytes = bytes;
         this.absoluteOffset = absoluteOffset;
+        this.scriptMappingBytes = scriptMappingBytes;
+        mapFields();
+        parseHeaders();
     }
 
-    public void parseScript(List<String> strings) {
-        this.strings = strings;
+    private void mapFields() {
         byteCursor = 0;
-        scriptCodeLength = read4Bytes(0x0);
+        scriptCodeLength = read4Bytes(0x00);
         // System.out.println("Script Length: " + scriptCodeLength);
-        map_start = read4Bytes(0x4);
-        creatorTagAddress = read4Bytes(0x8);
-        event_name_start = read4Bytes(0xC);
+        map_start = read4Bytes(0x04);
+        creatorTagAddress = read4Bytes(0x08);
+        event_name_start = read4Bytes(0x0C);
         int jumpsEndAddress = read4Bytes(0x10);
         amountOfType2or3Scripts = read2Bytes(0x14);
         amountOfType4Scripts = read2Bytes(0x16);
@@ -99,6 +103,9 @@ public class ScriptObject {
         numberOfScripts = read2Bytes(0x34);
         int numberOfScriptsWithoutSubroutines = read2Bytes(0x36);
         // System.out.println("Number of Scripts: " + numberOfScripts + " / " + numberOfScripts2);
+    }
+
+    private void parseHeaders() {
         int[] scriptHeaderOffsets = new int[numberOfScripts];
         for (int i = 0; i < numberOfScripts; i++) {
             scriptHeaderOffsets[i] = read4Bytes(0x38 + i * 4);
@@ -106,28 +113,34 @@ public class ScriptObject {
         int scriptIndex = 0;
         headers = new ArrayList<>(numberOfScripts);
         for (int headerStart : scriptHeaderOffsets) {
-            ScriptHeader scriptHeader = parseScriptHeader(headerStart);
+            ScriptHeader scriptHeader = parseScriptHeader(headerStart, scriptIndex);
             parseScriptJumps(scriptHeader, scriptIndex);
             scriptIndex++;
             headers.add(scriptHeader);
         }
-        parseVarIntFloatTables(headers);
+        parseVarIntFloatTables();
+        parseScriptPurposes();
+    }
+
+    public void parseScript(List<String> strings) {
+        this.strings = strings;
         scriptCodeEndAddress = scriptCodeStartAddress + scriptCodeLength;
         actualScriptCodeBytes = Arrays.copyOfRange(bytes, scriptCodeStartAddress, scriptCodeEndAddress);
-        parseScriptCode();
-        if (!stack.empty()) {
-            System.err.println("Stack not empty: " + stack.size() + " els: " + stack.stream().map(StackObject::toString).collect(Collectors.joining("::")));
-        }
+        syntacticParseScriptCode();
+
+        gatheringInfo = true;
+        semanticParseScriptCode();
         inferEnums();
+
         gatheringInfo = false;
-        parseScriptCode();
+        semanticParseScriptCode();
     }
 
-    private ScriptHeader parseScriptHeader(int offset) {
-        return new ScriptHeader(Arrays.copyOfRange(bytes, offset, offset + ScriptHeader.LENGTH));
+    private ScriptHeader parseScriptHeader(int offset, int scriptIndex) {
+        return new ScriptHeader(scriptIndex, Arrays.copyOfRange(bytes, offset, offset + ScriptHeader.LENGTH));
     }
 
-    private void parseVarIntFloatTables(List<ScriptHeader> headers) {
+    private void parseVarIntFloatTables() {
         variableStructsTableOffset = -1;
         intTableOffset = -1;
         floatTableOffset = -1;
@@ -182,90 +195,108 @@ public class ScriptObject {
         }
     }
 
+    private void parseScriptPurposes() {
+        if (scriptMappingBytes == null || scriptMappingBytes.length == 0) {
+            return;
+        }
+        int sectionCount = scriptMappingBytes[0];
+        int preSectionLength = scriptMappingBytes[1];
+        int sectionsLineOffset = preSectionLength + 2;
+        for (int i = 0; i < sectionCount; i++) {
+            int offset = sectionsLineOffset + i * 4;
+            int header = scriptMappingBytes[offset];
+            int scriptKind = scriptMappingBytes[offset + 1];
+            int sectionOffset = scriptMappingBytes[offset + 2] + scriptMappingBytes[offset + 3] * 0x100;
+            int sectionValueCount = scriptMappingBytes[sectionOffset] + scriptMappingBytes[sectionOffset + 1] * 0x100;
+            int sectionPayloadOffset = sectionOffset + 2;
+            headers.get(header).setPurpose(scriptKind, sectionValueCount, Arrays.copyOfRange(scriptMappingBytes, sectionPayloadOffset, sectionPayloadOffset + sectionValueCount * 2));
+        }
+    }
+
     private void parseScriptJumps(ScriptHeader header, int scriptIndex) {
-        String sPrefix = "s" + format2Or4Byte(scriptIndex);
-        jumpTableString.append(sPrefix).append('\n');
+        scriptJumps = new ArrayList<>();
+        scriptJumpsByDestination = new HashMap<>();
         int entryPointCount = header.entryPointCount;
         ScriptJump[] entryPoints = new ScriptJump[entryPointCount];
         for (int i = 0; i < entryPointCount; i++) {
             int addr = read4Bytes(header.scriptEntryPointsOffset + i * 4);
-            ScriptJump entryPoint = new ScriptJump(addr, scriptIndex, i, true);
+            ScriptJump entryPoint = new ScriptJump(header, addr, i, true);
             entryPoints[i] = entryPoint;
             scriptJumps.add(entryPoint);
-            String epSuffix = "e" + format2Or4Byte(i);
             if (!scriptJumpsByDestination.containsKey(addr)) {
                 scriptJumpsByDestination.put(addr, new ArrayList<>());
             }
             scriptJumpsByDestination.get(addr).add(entryPoint);
-            jumpTableString.append(epSuffix).append('=').append(String.format("%04X", addr)).append(' ');
         }
         header.entryPoints = entryPoints;
-        jumpTableString.append('\n');
         int jumpCount = header.jumpCount;
         ScriptJump[] jumps = new ScriptJump[jumpCount];
         for (int i = 0; i < jumpCount; i++) {
             int addr = read4Bytes(header.jumpsOffset + i * 4);
-            ScriptJump jump = new ScriptJump(addr, scriptIndex, i, false);
+            ScriptJump jump = new ScriptJump(header, addr, i, false);
             jumps[i] = jump;
             scriptJumps.add(jump);
-            String jSuffix = "j" + format2Or4Byte(i);
             if (!scriptJumpsByDestination.containsKey(addr)) {
                 scriptJumpsByDestination.put(addr, new ArrayList<>());
             }
             scriptJumpsByDestination.get(addr).add(jump);
-            jumpTableString.append(jSuffix).append('=').append(String.format("%04X", addr)).append(' ');
         }
         header.jumps = jumps;
-        jumpTableString.append('\n');
     }
 
-    protected void parseScriptCode() {
+    protected void syntacticParseScriptCode() {
         lineCount = 0;
         instructions = new ArrayList<>();
         offsetLines = new ArrayList<>();
         hexScriptLines = new ArrayList<>();
-        textScriptLines = new ArrayList<>();
         jumpLines = new ArrayList<>();
-        warnLines = new ArrayList<>();
         List<ScriptInstruction> lineInstructions = new ArrayList<>();
         List<ScriptJump> jumpsOnLine = new ArrayList<>();
-        textScriptLine = "";
-        warnLine = "";
-        int opcode;
         int nextLineOffset = 0;
-        byteCursor = scriptCodeStartAddress;
-        while (byteCursor < scriptCodeEndAddress) {
-            opcode = nextAiByte(jumpsOnLine);
+        int cursor = 0;
+        while (cursor < scriptCodeLength) {
+            int opcode = nextAiByte(cursor, jumpsOnLine);
+            cursor++;
             ScriptInstruction instruction;
-            switch (getArgc(opcode)) {
-                case 2:
-                    final int arg1 = nextAiByte(jumpsOnLine);
-                    final int arg2 = nextAiByte(jumpsOnLine);
-                    instruction = new ScriptInstruction(opcode, arg1, arg2);
-                    break;
-                case 0:
-                default:
-                    instruction = new ScriptInstruction(opcode);
-                    break;
+            if (hasArgs(opcode)) {
+                final int arg1 = nextAiByte(cursor, jumpsOnLine);
+                cursor++;
+                final int arg2 = nextAiByte(cursor, jumpsOnLine);
+                cursor++;
+                instruction = new ScriptInstruction(opcode, arg1, arg2);
+            } else {
+                instruction = new ScriptInstruction(opcode);
             }
-            processInstruction(instruction);
             lineInstructions.add(instruction);
             instructions.add(instruction);
             if (getLineEnd(opcode)) {
+                lineCount++;
+                offsetLines.add(String.format("%04X", nextLineOffset));
+                nextLineOffset = cursor;
+                hexScriptLines.add(getHexLine(lineInstructions));
+                jumpLines.add(getJumpLine(jumpsOnLine));
+                textScriptLine = "";
+                jumpsOnLine.clear();
+                lineInstructions.clear();
+            }
+        }
+    }
+
+    private void semanticParseScriptCode() {
+        textScriptLines = new ArrayList<>();
+        warnLines = new ArrayList<>();
+        textScriptLine = "";
+        warnLine = "";
+        for (ScriptInstruction instruction : instructions) {
+            processInstruction(instruction);
+            if (getLineEnd(instruction.opcode)) {
                 if (!stack.empty()) {
                     warnLine += " Stack not empty (" + stack.size() + "): " + stack;
                     stack.clear();
                 }
-                lineCount++;
-                offsetLines.add(String.format("%04X", nextLineOffset));
-                nextLineOffset = byteCursor - scriptCodeStartAddress;
                 textScriptLines.add(textScriptLine);
-                hexScriptLines.add(getHexLine(lineInstructions));
-                jumpLines.add(getJumpLine(jumpsOnLine));
                 warnLines.add(warnLine);
                 textScriptLine = "";
-                jumpsOnLine.clear();
-                lineInstructions.clear();
                 warnLine = "";
             }
         }
@@ -305,14 +336,13 @@ public class ScriptObject {
         return String.join(" ", segments);
     }
 
-    protected int nextAiByte(List<ScriptJump> jumpsOnLine) {
-        int scriptCodeByteCursor = byteCursor - scriptCodeStartAddress;
-        if (scriptJumpsByDestination.containsKey(scriptCodeByteCursor)) {
-            List<ScriptJump> jumps = scriptJumpsByDestination.get(scriptCodeByteCursor);
+    protected int nextAiByte(int cursor, List<ScriptJump> jumpsOnLine) {
+        if (scriptJumpsByDestination.containsKey(cursor)) {
+            List<ScriptJump> jumps = scriptJumpsByDestination.get(cursor);
             contextualizeJumps(jumps);
             jumpsOnLine.addAll(jumps);
         }
-        return readByte();
+        return actualScriptCodeBytes[cursor];
     }
 
     protected void contextualizeJumps(List<ScriptJump> jumps) {
@@ -629,13 +659,13 @@ public class ScriptObject {
         return variableDeclarations[index].getLabel();
     }
 
-    protected static int getArgc(int opcode) {
+    protected static boolean hasArgs(int opcode) {
         if (opcode == 0xFF) {
-            return 0;
+            return false;
         } else if (opcode >= 0x80) {
-            return 2;
+            return true;
         } else {
-            return 0;
+            return false;
         }
     }
 
@@ -676,12 +706,6 @@ public class ScriptObject {
                 }
             }
         }
-    }
-
-    private int readByte() {
-        int rd = bytes[byteCursor];
-        byteCursor++;
-        return rd;
     }
 
     private int read2Bytes(int offset) {
@@ -748,39 +772,50 @@ public class ScriptObject {
         if (mainScriptIndex != 0xFFFF) {
             lines.add("Main Script: " + mainScriptIndex + " [" + String.format("%02X", mainScriptIndex) + "h]");
         }
-        lines.add("map_start = " + String.format("%04X", map_start));
-        lines.add("unk1 = " + String.format("%04X", unk01));
-        lines.add("unk2 = " + String.format("%04X", unk02));
-        lines.add("zoneBytes = " + String.format("%04X", zoneBytes));
-        lines.add("area_offset = " + String.format("%06X", area_offset));
-        lines.add("other_offset = " + String.format("%06X", other_offset));
+        if (VERBOSE_HEADER_OUTPUT) {
+            lines.add("map_start = " + String.format("%04X", map_start));
+            lines.add("unk1 = " + String.format("%04X", unk01));
+            lines.add("unk2 = " + String.format("%04X", unk02));
+            lines.add("zoneBytes = " + String.format("%04X", zoneBytes));
+            lines.add("area_offset = " + String.format("%06X", area_offset));
+            lines.add("other_offset = " + String.format("%06X", other_offset));
+        }
         lines.add(numberOfScripts + " Scripts Total");
         for (int i = 0; i < numberOfScripts; i++) {
             lines.add("s" + String.format("%02X", i) + ": " + headers.get(i).getNonCommonString());
         }
-        lines.add("Variables (" + variableDeclarations.length + " at offset " + String.format("%04X", variableStructsTableOffset) + ")");
-        if (variableDeclarations.length > 0) {
-            List<String> refsStrings = new ArrayList<>();
-            for (int i = 0; i < variableDeclarations.length; i++) {
-                refsStrings.add("var" + String.format("%02X", i) + ": " + variableDeclarations[i] + " [" + String.format("%016X", variableDeclarations[i].struct) + "h]");
+        if (VERBOSE_HEADER_OUTPUT) {
+            lines.add("Variables (" + variableDeclarations.length + " at offset " + String.format("%04X", variableStructsTableOffset) + ")");
+            if (variableDeclarations.length > 0) {
+                List<String> refsStrings = new ArrayList<>();
+                for (int i = 0; i < variableDeclarations.length; i++) {
+                    refsStrings.add("var" + String.format("%02X", i) + ": " + variableDeclarations[i] + " [" + String.format("%016X", variableDeclarations[i].struct) + "h]");
+                }
+                lines.add(String.join("\n", refsStrings));
             }
-            lines.add(String.join("\n", refsStrings));
-        }
-        lines.add("Integers (" + refInts.length + " at offset " + String.format("%04X", intTableOffset) + ")");
-        if (refInts.length > 0) {
-            List<String> intStrings = new ArrayList<>();
-            for (int i = 0; i < refInts.length; i++) {
-                intStrings.add("refI" + String.format("%02X", i) + ": " + refInts[i] + " [" + String.format("%08X", refInts[i]) + "h]");
+            lines.add("Integers (" + refInts.length + " at offset " + String.format("%04X", intTableOffset) + ")");
+            if (refInts.length > 0) {
+                List<String> intStrings = new ArrayList<>();
+                for (int i = 0; i < refInts.length; i++) {
+                    intStrings.add("refI" + String.format("%02X", i) + ": " + refInts[i] + " [" + String.format("%08X", refInts[i]) + "h]");
+                }
+                lines.add(String.join(", ", intStrings));
             }
-            lines.add(String.join(", ", intStrings));
-        }
-        lines.add("Floats (" + refFloats.length + " at offset " + String.format("%04X", floatTableOffset) + ")");
-        if (refFloats.length > 0) {
-            List<String> floatStrings = new ArrayList<>();
-            for (int i = 0; i < refFloats.length; i++) {
-                floatStrings.add("refF" + String.format("%02X", i) + ": " + Float.intBitsToFloat(refFloats[i]) + " [" + String.format("%08X", refFloats[i]) + "h]");
+            lines.add("Floats (" + refFloats.length + " at offset " + String.format("%04X", floatTableOffset) + ")");
+            if (refFloats.length > 0) {
+                List<String> floatStrings = new ArrayList<>();
+                for (int i = 0; i < refFloats.length; i++) {
+                    floatStrings.add("refF" + String.format("%02X", i) + ": " + Float.intBitsToFloat(refFloats[i]) + " [" + String.format("%08X", refFloats[i]) + "h]");
+                }
+                lines.add(String.join(", ", floatStrings));
             }
-            lines.add(String.join(", ", floatStrings));
+            lines.add("- Jump Table -");
+            for (int i = 0; i < numberOfScripts; i++) {
+                lines.add("s" + String.format("%02X", i));
+                ScriptHeader h = headers.get(i);
+                lines.add(h.getEntryPointsLine());
+                lines.add(h.getJumpsLine());
+            }
         }
         return String.join("\n", lines);
     }

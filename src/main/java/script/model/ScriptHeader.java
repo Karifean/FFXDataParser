@@ -3,28 +3,30 @@ package script.model;
 import script.ScriptObject;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
 public class ScriptHeader {
     public static final int LENGTH = 0x34;
 
-    public int scriptType;
-    public int variablesCount;
-    public int refIntCount;
-    public int refFloatCount;
-    public int entryPointCount;
-    public int jumpCount;
-    public int alwaysZero1;
-    public int privateDataLength;
-    public int variableStructsTableOffset;
-    public int intTableOffset;
-    public int floatTableOffset;
-    public int scriptEntryPointsOffset;
-    public int jumpsOffset;
-    public int alwaysZero2;
-    public int privateDataOffset;
-    public int sharedDataOffset;
+    public final int scriptIndex;
+    public final int scriptType;
+    public final int variablesCount;
+    public final int refIntCount;
+    public final int refFloatCount;
+    public final int entryPointCount;
+    public final int jumpCount;
+    public final int alwaysZero1;
+    public final int privateDataLength;
+    public final int variableStructsTableOffset;
+    public final int intTableOffset;
+    public final int floatTableOffset;
+    public final int scriptEntryPointsOffset;
+    public final int jumpsOffset;
+    public final int alwaysZero2;
+    public final int privateDataOffset;
+    public final int sharedDataOffset;
 
     public ScriptJump[] entryPoints;
     public ScriptJump[] jumps;
@@ -34,7 +36,11 @@ public class ScriptHeader {
     public List<ScriptVariable> privateVars;
     public List<ScriptVariable> sharedVars;
 
-    public ScriptHeader(int[] bytes) {
+    private Integer purpose;
+    private int[] purposeBytes;
+
+    public ScriptHeader(int scriptIndex, int[] bytes) {
+        this.scriptIndex = scriptIndex;
         scriptType = read2Bytes(bytes,0x00);
         variablesCount = read2Bytes(bytes,0x02);
         refIntCount = read2Bytes(bytes,0x04);
@@ -56,6 +62,9 @@ public class ScriptHeader {
     public String getNonCommonString() {
         List<String> list = new ArrayList<>();
         list.add("Type=" + scriptTypeToString(scriptType) + " [" + String.format("%02X", scriptType) + "h]");
+        if (purpose != null) {
+            list.add("Purpose=" + purposeToString(purpose) + " [" + String.format("%02X", purpose) + "h]");
+        }
         list.add("Entrypoints=" + entryPointCount);
         list.add("Jumps=" + jumpCount);
         list.add(privateValuesString());
@@ -65,6 +74,20 @@ public class ScriptHeader {
         list.add(alwaysZero2 != 0 ? "alwaysZero2=" + alwaysZero2 : "");
         String full = list.stream().filter(s -> s != null && !s.isBlank()).collect(Collectors.joining(", "));
         return "{ " + full + " }";
+    }
+
+    public String getEntryPointsLine() {
+        if (entryPoints == null || entryPoints.length == 0) {
+            return null;
+        }
+        return Arrays.stream(entryPoints).map(e -> "e" + String.format("%02X", e.jumpIndex) + "=" + String.format("%04X", e.addr)).collect(Collectors.joining(" "));
+    }
+
+    public String getJumpsLine() {
+        if (jumps == null || jumps.length == 0) {
+            return null;
+        }
+        return Arrays.stream(jumps).map(j -> "j" + String.format("%02X", j.jumpIndex) + "=" + String.format("%04X", j.addr)).collect(Collectors.joining(" "));
     }
 
     public void setVariableInitialValues(ScriptObject script, int[] bytes) {
@@ -88,12 +111,34 @@ public class ScriptHeader {
         sharedVars.forEach(s -> s.parseValues(script, bytes, sharedDataOffset));
     }
 
+    public void setPurpose(int purpose, int valueCount, int[] payload) {
+        this.purpose = purpose;
+        this.purposeBytes = payload;
+        for (int i = 0; i < valueCount; i++) {
+            int val = read2Bytes(payload, i * 2);
+            if (purpose == 2) {
+                if (val < entryPoints.length) {
+                    entryPoints[val].setCtbPurpose(i);
+                }
+            }
+        }
+    }
+
     public static String scriptTypeToString(int scriptType) {
         return switch (scriptType) {
             case 0 -> "Subroutine";
             case 1 -> "FieldObject";
             case 2 -> "BattleObject";
             case 4 -> "Cutscene";
+            default -> "unknown?";
+        };
+    }
+
+    public static String purposeToString(int purpose) {
+        return switch (purpose) {
+            case 0 -> "CameraControl";
+            case 1 -> "MotionControl";
+            case 2 -> "CombatControl";
             default -> "unknown?";
         };
     }

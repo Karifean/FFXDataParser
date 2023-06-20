@@ -14,6 +14,7 @@ public class EncounterFile {
     public ScriptObject encounterScript;
     public FormationDataObject formation;
     Chunk scriptChunk;
+    int[] scriptMappingBytes;
     int[] formationBytes;
     int[] textBytes;
     List<String> originalStrings;
@@ -26,12 +27,13 @@ public class EncounterFile {
 
     private void mapChunks(List<Chunk> chunks) {
         scriptChunk = chunks.get(0);
+        scriptMappingBytes = chunks.get(1).bytes;
         formationBytes = chunks.get(2).bytes;
         textBytes = chunks.size() > 6 ? chunks.get(6).bytes : null;
     }
 
     private void mapObjects(int chunkCount) {
-        encounterScript = new ScriptObject(scriptChunk);
+        encounterScript = new ScriptObject(scriptChunk, scriptMappingBytes);
         formation = new FormationDataObject(formationBytes);
     }
 
@@ -69,8 +71,6 @@ public class EncounterFile {
             full.append(encounterScript.allLinesString());
             full.append("- Headers -").append('\n');
             full.append(encounterScript.headersString()).append('\n');
-            full.append("- Jump Table -").append('\n');
-            full.append(encounterScript.jumpTableString.toString()).append('\n');
         } else {
             full.append("Encounter Script missing");
         }

@@ -27,7 +27,7 @@ public class EventFile {
     }
 
     private void mapObjects() {
-        eventScript = new ScriptObject(scriptChunk);
+        eventScript = new ScriptObject(scriptChunk, null);
     }
 
     private void mapStrings() {
@@ -61,8 +61,6 @@ public class EventFile {
             full.append(eventScript.allLinesString());
             full.append("- Headers -").append('\n');
             full.append(eventScript.headersString()).append('\n');
-            full.append("- Jump Table -").append('\n');
-            full.append(eventScript.jumpTableString.toString()).append('\n');
         } else {
             full.append("Event Script missing");
         }

@@ -52,7 +52,7 @@ public class Main {
     public static void main(String[] args) {
         String pathRoot = args[0];
         if (!".".equals(pathRoot)) {
-            FileAccessorWithMods.RESOURCES_ROOT = pathRoot;
+            FileAccessorWithMods.GAME_FILES_ROOT = pathRoot;
         }
         String mode = args[1];
         List<String> realArgs = Arrays.asList(args).subList(2, args.length);
