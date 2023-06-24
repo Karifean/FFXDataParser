@@ -10,6 +10,9 @@ public abstract class DataAccess {
     public static KeyItemDataObject[] KEY_ITEMS;
     public static TreasureDataObject[] TREASURES;
     public static GearDataObject[] WEAPON_PICKUPS;
+    public static GearDataObject[] BUYABLE_GEAR;
+    public static GearShopDataObject[] GEAR_SHOPS;
+    public static ItemShopDataObject[] ITEM_SHOPS;
     private final static Nameable DUMMY_OBJECT = () -> "null";
 
     public static Nameable getNameableObject(String type, int idx) {
