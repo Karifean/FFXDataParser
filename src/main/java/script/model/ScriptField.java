@@ -8,6 +8,7 @@ public class ScriptField {
     public String type;
     public Integer idx;
     public String hexFormat;
+    public String indexType;
 
     public ScriptField(String typeAndName) {
         this.name = typeAndName;

@@ -280,17 +280,23 @@ public abstract class ScriptConstants {
         putGlobalVariable(0x014B, "ControllableCharacterInLuca", "char");
         putGlobalVariable(0x01CD, "MacalaniaProgressionFlags", "int");
         putGlobalVariable(0x01D4, "HomeProgressionFlags", "int");
+        putGlobalVariable(0x024C, "BlitzballWakkaPowerProgress", "int");
         putGlobalVariable(0x0A00, "GameMoment", "int");
         putGlobalVariable(0x0A34, "GilLentToOAka", "int");
         putGlobalVariable(0x0A38, "MacalaniaPricesChosenForOAka", "int");
         putGlobalVariable(0x0A4A, "SaveSphereInstructionsSeen", "int");
         putGlobalVariable(0x0A60, "AlBhedPrimersCollected", "int");
-        putGlobalVariable(0x0A88, "BlitzballTeamPlayerCount", "int");
+        putGlobalVariable(0x0A88, "BlitzballTeamPlayerCount", "int", "blitzballTeam");
         putGlobalVariable(0x0A95, "AirshipDestinationUnlocks", "int");
         putGlobalVariable(0x0A9A, "AlBhedPrimersInstructionsSeen", "bool");
-        putGlobalVariable(0x141A, "BlitzballTeamPlayers", "int");
-        putGlobalVariable(0x152A, "BlitzballPlayerContractDurations", "int");
-        putGlobalVariable(0x1798, "BlitzballPlayerCostPerGame", "int");
+        putGlobalVariable(0x141A, "BlitzballTeamPlayers", "blitzballPlayer");
+        putGlobalVariable(0x1465, "BlitzballEnemyTeam", "blitzballTeam");
+        putGlobalVariable(0x152A, "BlitzballPlayerContractDurations", "int", "blitzballPlayer");
+        putGlobalVariable(0x1798, "BlitzballPlayerCostPerGame", "int", "blitzballPlayer");
+        putGlobalVariable(0x1810, "BlitzballLeaguePrizeIndex", "int");
+        putGlobalVariable(0x1816, "BlitzballTournamentPrizeIndex", "int");
+        putGlobalVariable(0x181C, "BlitzballLeagueTopScorerPrizeIndex", "int");
+        putGlobalVariable(0x181E, "BlitzballTournamentTopScorerPrizeIndex", "int");
 
         putEnum("deathAnimation", 0x00, "Character (Body remains and targetable)", "death_normal");
         putEnum("deathAnimation", 0x01, "Boss (Body remains but untargetable)", "death_nop");
@@ -325,6 +331,24 @@ public abstract class ScriptConstants {
         putEnum("controllerButton", 0x13, "?Right");
         putEnum("controllerButton", 0x14, "?Down");
         putEnum("controllerButton", 0x15, "?Left");
+
+        putEnum("blitzballPlayer", 0x00, "Tidus");
+        putEnum("blitzballPlayer", 0x01, "Wakka");
+        putEnum("blitzballPlayer", 0x02, "Datto");
+        putEnum("blitzballPlayer", 0x03, "Letty");
+        putEnum("blitzballPlayer", 0x04, "Jassu");
+        putEnum("blitzballPlayer", 0x05, "Botta");
+        putEnum("blitzballPlayer", 0x06, "Keepa");
+        putEnum("blitzballPlayer", 0x3C, "<Empty>");
+
+        putEnum("blitzballTeam", 0x00, "Luca Goers");
+        putEnum("blitzballTeam", 0x01, "Kilika Beasts");
+        putEnum("blitzballTeam", 0x02, "Al Bhed Psyches");
+        putEnum("blitzballTeam", 0x03, "Ronso Fangs");
+        putEnum("blitzballTeam", 0x04, "Guado Glories");
+        putEnum("blitzballTeam", 0x05, "Besaid Aurochs");
+
+        putEnum("battleDebugFlag", 0x07, "?NeverCrit");
 
         putEnum("textAlignment", 0x01, "?Left");
         putEnum("textAlignment", 0x03, "?Right");
@@ -618,7 +642,7 @@ public abstract class ScriptConstants {
         putBattleActorProperty(0x0074, "WeakWater", "bool", "stat_weak_water");
         putBattleActorProperty(0x0075, "WeakHoly", "bool", "stat_weak_holy");
         putBattleActorProperty(0x0076, null, "bool", "stat_adjust_pos_flag");
-        putBattleActorProperty(0x0077, null, "bool", "stat_inv_physic_motion");
+        putBattleActorProperty(0x0077, null, "bool", "stat_inv_physic_motion"); // "Block" anim?
         putBattleActorProperty(0x0078, null, "bool", "stat_inv_magic_motion");
         putBattleActorProperty(0x0079, "TimesStolenFrom", "int", "stat_steal_count");
         putBattleActorProperty(0x007A, null, "bool", "stat_wait_motion_flag");
@@ -872,10 +896,15 @@ public abstract class ScriptConstants {
         COMP_OPERATORS.put(idx, field);
     }
 
-    private static void putGlobalVariable(int idx, String name, String type) {
+    private static void putGlobalVariable(int idx, String name, String type, String indexType) {
         ScriptField field = new ScriptField(name, type);
         field.idx = idx;
+        field.indexType = indexType;
         getEnumMap("globalVar").put(idx, field);
+    }
+
+    private static void putGlobalVariable(int idx, String name, String type) {
+        putGlobalVariable(idx, name, type, "unknown");
     }
 
     private static void putBattleActorProperty(int idx, String name, String type, String internalName) {

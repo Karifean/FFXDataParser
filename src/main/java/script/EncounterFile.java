@@ -34,7 +34,9 @@ public class EncounterFile {
 
     private void mapObjects(int chunkCount) {
         encounterScript = new ScriptObject(scriptChunk, scriptMappingBytes);
-        formation = new FormationDataObject(formationBytes);
+        if (formationBytes != null && formationBytes.length > 0) {
+            formation = new FormationDataObject(formationBytes);
+        }
     }
 
     private void mapStrings() {

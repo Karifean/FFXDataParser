@@ -1,6 +1,9 @@
 package script.model;
 
+import java.util.List;
+
 public class ScriptInstruction {
+    public final int offset;
     public final int opcode;
     public final boolean hasArgs;
     public final int length;
@@ -10,7 +13,10 @@ public class ScriptInstruction {
     public final int argvSigned;
     public final String argvsh;
 
-    public ScriptInstruction(int opcode) {
+    public List<ScriptJump> jumps;
+
+    public ScriptInstruction(int addr, int opcode) {
+        this.offset = addr;
         this.opcode = opcode;
         this.hasArgs = false;
         this.length = 1;
@@ -21,7 +27,8 @@ public class ScriptInstruction {
         this.argvsh = null;
     }
 
-    public ScriptInstruction(int opcode, int arg1, int arg2) {
+    public ScriptInstruction(int addr, int opcode, int arg1, int arg2) {
+        this.offset = addr;
         this.opcode = opcode;
         this.hasArgs = true;
         this.length = 3;

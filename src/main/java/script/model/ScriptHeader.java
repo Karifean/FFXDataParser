@@ -120,6 +120,10 @@ public class ScriptHeader {
                 if (val < entryPoints.length) {
                     entryPoints[val].setCtbPurpose(i);
                 }
+            } else if (purpose == 4) {
+                if (val < entryPoints.length) {
+                    entryPoints[val].setEncScript(i);
+                }
             }
         }
     }
@@ -136,9 +140,10 @@ public class ScriptHeader {
 
     public static String purposeToString(int purpose) {
         return switch (purpose) {
-            case 0 -> "CameraControl";
-            case 1 -> "MotionControl";
-            case 2 -> "CombatControl";
+            case 0 -> "CameraHandler";
+            case 1 -> "MotionHandler";
+            case 2 -> "CombatHandler";
+            case 4 -> "EncounterScripts";
             default -> "unknown?";
         };
     }

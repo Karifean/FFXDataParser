@@ -126,7 +126,7 @@ public abstract class ScriptFuncLib {
         putUnknownFunc(0x005C, 1); // noclip: collision detection
         putFuncWithIdx(0x005D, new ScriptFunc("enablePlayerControl?", "unknown", null, true));
         putFuncWithIdx(0x005E, new ScriptFunc("disablePlayerControl?", "unknown", null, true));
-        putFuncWithIdx(0x005F, new ScriptFunc("yield?", "unknown", null, true));
+        putFuncWithIdx(0x005F, new ScriptFunc("halt", "unknown", null, true));
         putUnknownFunc(0x0060, 1);
         putUnknownFunc(0x0061, 1); // noclip: collision detection
         putUnknownFunc(0x0062, 1); // noclip: collision detection
@@ -375,7 +375,7 @@ public abstract class ScriptFuncLib {
         putUnknownFunc(0x01A6, 0);
         putFuncWithIdx(0x01A7, new ScriptFunc("obtainTreasureSilently", "unknown", null, p("treasure")));
         putUnknownFunc(0x01A8, 1);
-        putUnknownFunc(0x01AB, 0);
+        putFuncWithIdx(0x01AB, new ScriptFunc("TotalBattlesFought", "int", null, false));
         putUnknownFunc(0x01AC, 1);
         putUnknownFunc(0x01AD, 1);
         putUnknownFunc(0x01AF, 2);
@@ -932,7 +932,7 @@ public abstract class ScriptFuncLib {
         putUnknownFunc(0x707A, "btlGetCalcResult", 1);
         putUnknownFunc(0x707B, "btlSoundEffect", 2);
         putUnknownFunc(0x707C, "btlWaitSound", 0);
-        putUnknownFunc(0x707D, "btlSetDebug", 2);
+        putFuncWithIdx(0x707D, new ScriptFunc("setDebugFlag?", "unknown", "btlSetDebug", p("battleDebugFlag"), p("active", "bool")));
         putUnknownFunc(0x707E, "btlGetDebug", 1);
         putUnknownFunc(0x707F, "btlSetBtlPos", 1);
         putUnknownFunc(0x7080, "btlChangeAuron", 1);

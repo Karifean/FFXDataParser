@@ -13,7 +13,7 @@ public class ScriptObject {
     private static final int HEX_LINE_MINLENGTH = COLORS_USE_CONSOLE_CODES ? 58 : 48;
     private static final int JUMP_PLUS_HEX_LINE_MINLENGTH = JUMP_LINE_MINLENGTH + HEX_LINE_MINLENGTH + 1;
 
-    private static final boolean VERBOSE_HEADER_OUTPUT = false;
+    private static final boolean VERBOSE_HEADER_OUTPUT = true;
 
     protected final int[] bytes;
     protected final int absoluteOffset;
@@ -21,7 +21,7 @@ public class ScriptObject {
 
     protected int[] actualScriptCodeBytes;
     protected int byteCursor = 0;
-    protected List<ScriptHeader> headers;
+    protected ScriptHeader[] headers;
     protected int[] refFloats;
     protected int[] refInts;
     protected ScriptVariable[] variableDeclarations;
@@ -106,17 +106,14 @@ public class ScriptObject {
     }
 
     private void parseHeaders() {
-        int[] scriptHeaderOffsets = new int[numberOfScripts];
+        scriptJumps = new ArrayList<>();
+        scriptJumpsByDestination = new HashMap<>();
+        headers = new ScriptHeader[numberOfScripts];
         for (int i = 0; i < numberOfScripts; i++) {
-            scriptHeaderOffsets[i] = read4Bytes(0x38 + i * 4);
-        }
-        int scriptIndex = 0;
-        headers = new ArrayList<>(numberOfScripts);
-        for (int headerStart : scriptHeaderOffsets) {
-            ScriptHeader scriptHeader = parseScriptHeader(headerStart, scriptIndex);
-            parseScriptJumps(scriptHeader, scriptIndex);
-            scriptIndex++;
-            headers.add(scriptHeader);
+            int offset = read4Bytes(0x38 + i * 4);
+            ScriptHeader scriptHeader = parseScriptHeader(offset, i);
+            parseScriptJumps(scriptHeader);
+            headers[i] = scriptHeader;
         }
         parseVarIntFloatTables();
         parseScriptPurposes();
@@ -199,23 +196,28 @@ public class ScriptObject {
         if (scriptMappingBytes == null || scriptMappingBytes.length == 0) {
             return;
         }
-        int sectionCount = scriptMappingBytes[0];
+        int notActuallySectionCount = scriptMappingBytes[0];
         int preSectionLength = scriptMappingBytes[1];
-        int sectionsLineOffset = preSectionLength + 2;
-        for (int i = 0; i < sectionCount; i++) {
+        int sectionsLineOffset = preSectionLength + (preSectionLength % 2 == 0 ? 2 : 3);
+        Integer firstOffset = null;
+        for (int i = 0; i < notActuallySectionCount; i++) {
             int offset = sectionsLineOffset + i * 4;
             int header = scriptMappingBytes[offset];
             int scriptKind = scriptMappingBytes[offset + 1];
             int sectionOffset = scriptMappingBytes[offset + 2] + scriptMappingBytes[offset + 3] * 0x100;
+            if (i == 0) {
+                firstOffset = sectionOffset;
+            } else if (offset >= firstOffset) {
+                System.err.println("WARNING - Offset number mismatch at index " + i + " expected " + notActuallySectionCount);
+                break;
+            }
             int sectionValueCount = scriptMappingBytes[sectionOffset] + scriptMappingBytes[sectionOffset + 1] * 0x100;
             int sectionPayloadOffset = sectionOffset + 2;
-            headers.get(header).setPurpose(scriptKind, sectionValueCount, Arrays.copyOfRange(scriptMappingBytes, sectionPayloadOffset, sectionPayloadOffset + sectionValueCount * 2));
+            headers[header].setPurpose(scriptKind, sectionValueCount, Arrays.copyOfRange(scriptMappingBytes, sectionPayloadOffset, sectionPayloadOffset + sectionValueCount * 2));
         }
     }
 
-    private void parseScriptJumps(ScriptHeader header, int scriptIndex) {
-        scriptJumps = new ArrayList<>();
-        scriptJumpsByDestination = new HashMap<>();
+    private void parseScriptJumps(ScriptHeader header) {
         int entryPointCount = header.entryPointCount;
         ScriptJump[] entryPoints = new ScriptJump[entryPointCount];
         for (int i = 0; i < entryPointCount; i++) {
@@ -255,18 +257,22 @@ public class ScriptObject {
         int nextLineOffset = 0;
         int cursor = 0;
         while (cursor < scriptCodeLength) {
-            int opcode = nextAiByte(cursor, jumpsOnLine);
+            List<ScriptJump> jumpsOnInstruction = new ArrayList<>();
+            int offset = cursor;
+            int opcode = nextAiByte(cursor, jumpsOnInstruction);
             cursor++;
             ScriptInstruction instruction;
             if (hasArgs(opcode)) {
-                final int arg1 = nextAiByte(cursor, jumpsOnLine);
+                final int arg1 = nextAiByte(cursor, jumpsOnInstruction);
                 cursor++;
-                final int arg2 = nextAiByte(cursor, jumpsOnLine);
+                final int arg2 = nextAiByte(cursor, jumpsOnInstruction);
                 cursor++;
-                instruction = new ScriptInstruction(opcode, arg1, arg2);
+                instruction = new ScriptInstruction(offset, opcode, arg1, arg2);
             } else {
-                instruction = new ScriptInstruction(opcode);
+                instruction = new ScriptInstruction(offset, opcode);
             }
+            instruction.jumps = jumpsOnInstruction;
+            jumpsOnLine.addAll(jumpsOnInstruction);
             lineInstructions.add(instruction);
             instructions.add(instruction);
             if (getLineEnd(opcode)) {
@@ -289,6 +295,7 @@ public class ScriptObject {
         warnLine = "";
         for (ScriptInstruction instruction : instructions) {
             processInstruction(instruction);
+            contextualizeJumps(instruction.jumps);
             if (getLineEnd(instruction.opcode)) {
                 if (!stack.empty()) {
                     warnLine += " Stack not empty (" + stack.size() + "): " + stack;
@@ -346,6 +353,9 @@ public class ScriptObject {
     }
 
     protected void contextualizeJumps(List<ScriptJump> jumps) {
+        if (jumps == null || jumps.isEmpty()) {
+            return;
+        }
         jumps.stream().filter(j -> j.isEntryPoint).findFirst().ifPresent(j -> currentScriptIndex = j.scriptIndex);
         jumps.stream().filter(j -> j.rAType != null && !"unknown".equals(j.rAType)).findFirst().ifPresent(j -> currentRAType = j.rAType);
         jumps.stream().filter(j -> j.rXType != null && !"unknown".equals(j.rXType)).findFirst().ifPresent(j -> currentRXType = j.rXType);
@@ -435,10 +445,11 @@ public class ScriptObject {
                 cmd += "Sync";
             }
             String i = p1.expression ? ""+p1 : ""+p1.value;
+            boolean direct = !p2.expression && !p3.expression && isWeakType(p2.type) && isWeakType(p3.type) && p2.value < headers.length && p3.value < headers[p2.value].entryPoints.length;
             String s = p2.expression ? "(" + p2 + ")" : format2Or4Byte(p2.value);
             String e = p3.expression ? "(" + p3 + ")" : format2Or4Byte(p3.value);
-            String sep = "s" + s + "e" + e;
-            String content = cmd + " " + sep + " (" + i + ")";
+            String scriptLabel = direct ? headers[p2.value].entryPoints[p3.value].getLabel() : ("s" + s + "e" + e);
+            String content = cmd + " " + scriptLabel + " (" + i + ")";
             stack.push(new StackObject(this, "script", true, content, opcode));
         } else if (opcode == 0x39) { // PREQ
             String content = "PREQ(" + p1 + ", " + p2 + ", " + p3 + ")";
@@ -502,17 +513,15 @@ public class ScriptObject {
             String val = typed(p1, varTypes.get(argv));
             textScriptLine += ensureVariableValid(argv) + " = " + val;
         } else if (opcode == 0xA2) { // PUSHAR / GET_DATUM_INDEX
-            String arrayIndex = '[' + ("int16".equals(p1.type) && !p1.expression ? String.format("%04X", p1.value) : p1.toString()) + ']';
-            StackObject stackObject = new StackObject(this, "var", true, ensureVariableValid(argv) + arrayIndex, argv);
+            StackObject stackObject = new StackObject(this, "var", true, ensureVariableValidWithArray(argv, p1), argv);
             stackObject.referenceIndex = argv;
             stack.push(stackObject);
         } else if (opcode == 0xA3 || opcode == 0xA4) { // POPAR(L) / SET_DATUM_INDEX_(W/T)
-            String arrayIndex = '[' + ("int16".equals(p1.type) && !p1.expression ? String.format("%04X", p1.value) : p1.toString()) + ']';
             textScriptLine += "Set ";
             if (opcode == 0xA4) {
                 textScriptLine += "(limit) ";
             }
-            textScriptLine += ensureVariableValid(argv) + arrayIndex + " = " + p2;
+            textScriptLine += ensureVariableValidWithArray(argv, p1) + " = " + p2;
         } else if (opcode == 0xA7) { // PUSHARP / GET_DATUM_DESC
             String arrayIndex = '[' + String.format("%04X", p1.value) + ']';
             StackObject stackObject = new StackObject(this, "int16", true, "ArrayPointer:var" + argvsh + arrayIndex, argv);
@@ -534,7 +543,7 @@ public class ScriptObject {
             stack.push(stackObject);
         } else if (opcode == 0xB0) { // JMP / JUMP
             textScriptLine += "Jump to j" + String.format("%02X", argv);
-            scriptJumps.stream().filter(j -> j.scriptIndex == currentScriptIndex && j.jumpIndex == argv).forEach(j -> j.setTypes(currentRAType, currentRXType, currentRYType, currentTempITypes));
+            headers[currentScriptIndex].jumps[argv].setTypes(currentRAType, currentRXType, currentRYType, currentTempITypes);
             resetRegisterTypes();
         } else if (opcode == 0xB1) { // Never used: CJMP / BNEZ
         } else if (opcode == 0xB2) { // Never used: NCJMP / BEZ
@@ -544,10 +553,10 @@ public class ScriptObject {
             processB5(argv);
         } else if (opcode == 0xD6) { // POPXCJMP / SET_BNEZ
             textScriptLine += "(" + p1 + ") -> j" + String.format("%02X", argv);
-            scriptJumps.stream().filter(j -> j.scriptIndex == currentScriptIndex && j.jumpIndex == argv).forEach(j -> j.setTypes(currentRAType, currentRXType, currentRYType, currentTempITypes));
+            headers[currentScriptIndex].jumps[argv].setTypes(currentRAType, currentRXType, currentRYType, currentTempITypes);
         } else if (opcode == 0xD7) { // POPXNCJMP / SET_BEZ
             textScriptLine += "Check (" + p1 + ") else jump to j" + String.format("%02X", argv);
-            scriptJumps.stream().filter(j -> j.scriptIndex == currentScriptIndex && j.jumpIndex == argv).forEach(j -> j.setTypes(currentRAType, currentRXType, currentRYType, currentTempITypes));
+            headers[currentScriptIndex].jumps[argv].setTypes(currentRAType, currentRXType, currentRYType, currentTempITypes);
         } else if (opcode == 0xD8) { // CALLPOPA / FUNC
             processD8(argv);
         }
@@ -611,13 +620,12 @@ public class ScriptObject {
         if (!gatheringInfo) {
             return;
         }
-        if (!varTypes.containsKey(var)) {
+        if (!varTypes.containsKey(var) && variableDeclarations != null && var < variableDeclarations.length) {
+            varTypes.put(var, variableDeclarations[var].getType());
+        }
+        String prevType = varTypes.get(var);
+        if (isWeakType(prevType)) {
             varTypes.put(var, type);
-        } else {
-            String prevType = varTypes.get(var);
-            if (isWeakType(prevType)) {
-                varTypes.put(var, type);
-            }
         }
     }
 
@@ -651,12 +659,22 @@ public class ScriptObject {
     }
 
     private String ensureVariableValid(int index) {
-        if (variableDeclarations == null || variableDeclarations.length <= index) {
-            String hexIdx = String.format("%02X", index);
-            warnLine += "Variable index " + hexIdx + " out of bounds!";
-            return "var" + hexIdx;
+        if (variableDeclarations != null && index < variableDeclarations.length) {
+            return variableDeclarations[index].getLabel();
         }
-        return variableDeclarations[index].getLabel();
+        String hexIdx = String.format("%02X", index);
+        warnLine += "Variable index " + hexIdx + " out of bounds!";
+        return "var" + hexIdx;
+    }
+
+    private String ensureVariableValidWithArray(int index, StackObject p1) {
+        String varLabel = ensureVariableValid(index);
+        String indexType = p1.type;
+        if (isWeakType(indexType) && (variableDeclarations != null && index < variableDeclarations.length)) {
+            indexType = variableDeclarations[index].getArrayIndexType();
+        }
+        String arrayIndex = !p1.expression && isWeakType(indexType) ? String.format("%04X", p1.value) : typed(p1, indexType);
+        return varLabel + '[' + arrayIndex + ']';
     }
 
     protected static boolean hasArgs(int opcode) {
@@ -765,7 +783,7 @@ public class ScriptObject {
     }
 
     public String headersString() {
-        if (headers == null || headers.isEmpty()) {
+        if (headers == null || headers.length == 0) {
             return "No Scripts";
         }
         List<String> lines = new ArrayList<>();
@@ -782,7 +800,7 @@ public class ScriptObject {
         }
         lines.add(numberOfScripts + " Scripts Total");
         for (int i = 0; i < numberOfScripts; i++) {
-            lines.add("s" + String.format("%02X", i) + ": " + headers.get(i).getNonCommonString());
+            lines.add("s" + String.format("%02X", i) + ": " + headers[i].getNonCommonString());
         }
         if (VERBOSE_HEADER_OUTPUT) {
             lines.add("Variables (" + variableDeclarations.length + " at offset " + String.format("%04X", variableStructsTableOffset) + ")");
@@ -812,11 +830,11 @@ public class ScriptObject {
             lines.add("- Jump Table -");
             for (int i = 0; i < numberOfScripts; i++) {
                 lines.add("s" + String.format("%02X", i));
-                ScriptHeader h = headers.get(i);
+                ScriptHeader h = headers[i];
                 lines.add(h.getEntryPointsLine());
                 lines.add(h.getJumpsLine());
             }
         }
-        return String.join("\n", lines);
+        return lines.stream().filter(s -> s != null && !s.isEmpty()).collect(Collectors.joining("\n"));
     }
 }

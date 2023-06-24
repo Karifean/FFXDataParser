@@ -48,7 +48,7 @@ public class MonsterFile implements Nameable {
     }
 
     private void mapStrings() {
-        if (textBytes.length < 0x12) {
+        if (textBytes == null || textBytes.length == 0) {
             return;
         }
         int nameOffset = textBytes[0x00] + textBytes[0x01] * 0x100;

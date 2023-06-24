@@ -47,7 +47,7 @@ public class Main {
     private static final String PATH_SKILL_TABLE_6 = PATH_LOCALIZED_KERNEL + "monmagic2.bin"; // "FILE07741.dat"; // "monmagic2.bin"; //
     private static final String PATH_SKILL_TABLE_2 = PATH_LOCALIZED_KERNEL + "item.bin"; // "FILE07734.dat"; // "item.bin"; //
 
-    private static final boolean SKIP_BLITZBALL_EVENTS = true;
+    private static final boolean SKIP_BLITZBALL_EVENTS_FOLDER = true;
 
     public static void main(String[] args) {
         String pathRoot = args[0];
@@ -112,6 +112,7 @@ public class Main {
                         readEventFile(filename, true, null);
                     } else {
                         System.out.println("Failed to identify file: " + filename);
+                        readEncounterFile(filename, true, null);
                     }
                 }
                 break;
@@ -361,10 +362,10 @@ public class Main {
         if (file.isDirectory()) {
             String[] contents = file.list();
             if (contents != null) {
-                Arrays.stream(contents).filter(sf -> !sf.startsWith(".")).sorted().forEach(sf -> readEventFile(filename + '/' + sf, print, strings));
+                Arrays.stream(contents).filter(sf -> !sf.startsWith(".") && (!SKIP_BLITZBALL_EVENTS_FOLDER || !sf.equals("bl"))).sorted().forEach(sf -> readEventFile(filename + '/' + sf, print, strings));
             }
             return null;
-        } else if ((!filename.endsWith(".ebp") && !filename.endsWith(".dat")) || (SKIP_BLITZBALL_EVENTS && filename.contains("/bl/"))) {
+        } else if (!filename.endsWith(".ebp") && !filename.endsWith(".dat")) {
             return null;
         }
         List<String> actualStrings = strings;

@@ -57,6 +57,10 @@ public class ScriptJump {
         }
     }
 
+    public void setEncScript(int slot) {
+        label = "encScript" + slot;
+    }
+
     private static String ctbPurposeSlotToString(int slot) {
         return switch (slot) {
             case 0 -> "onTurn";

@@ -113,6 +113,26 @@ public class ScriptVariable {
         return getVarLabel();
     }
 
+    public String getArrayIndexType() {
+        if (location == 0) {
+            ScriptField scriptField = StackObject.enumToScriptField("globalVar", offset);
+            if (scriptField.indexType != null) {
+                return scriptField.indexType;
+            }
+        }
+        return "unknown";
+    }
+
+    public String getType() {
+        if (location == 0) {
+            ScriptField enumTarget = ScriptConstants.ENUMERATIONS.get("globalVar").get(offset);
+            if (enumTarget != null) {
+                return enumTarget.type;
+            }
+        }
+        return formatToType();
+    }
+
     public String getVarLabel() {
         return "var" + String.format("%02X", index);
     }
@@ -136,7 +156,7 @@ public class ScriptVariable {
         return values.size() > 1 ? "[" + joined + "]" : joined;
     }
 
-    private String formatToType() {
+    public String formatToType() {
         return formatToType(format);
     }
 

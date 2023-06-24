@@ -61,6 +61,8 @@ public class MonsterStatDataObject {
     int autoStatuses2;
     int autoStatuses3;
     int autoStatuses4;
+    int autoStatuses5;
+    int autoStatuses6;
 
     int extraStatusImmunities1;
     int extraStatusImmunities2;
@@ -96,6 +98,10 @@ public class MonsterStatDataObject {
     boolean autoSleep;
     boolean autoSilence;
     boolean autoDarkness;
+    boolean autoUnknown280;
+    boolean autoUnknown301;
+    boolean autoUnknown302;
+    boolean autoUnknown304;
     boolean autoShell;
     boolean autoProtect;
     boolean autoReflect;
@@ -106,6 +112,23 @@ public class MonsterStatDataObject {
     boolean autoRegen;
     boolean autoHaste;
     boolean autoSlow;
+    boolean autoUnknown4;
+    boolean autoScan;
+    boolean autoShield;
+    boolean autoBoost;
+    boolean autoDistillPower;
+    boolean autoDistillMana;
+    boolean autoDistillSpeed;
+    boolean autoDistillAbility;
+    boolean autoUnused1;
+    boolean autoEject;
+    boolean autoAutoLife;
+    boolean autoCurse;
+    boolean autoDoom;
+    boolean autoDefend;
+    boolean autoGuard;
+    boolean autoSentinel;
+    boolean autoUnused2;
 
     boolean resistScan;
     boolean resistDistillPower;
@@ -177,6 +200,8 @@ public class MonsterStatDataObject {
         autoStatuses2 = bytes[0x49];
         autoStatuses3 = bytes[0x4A];
         autoStatuses4 = bytes[0x4B];
+        autoStatuses5 = bytes[0x4C];
+        autoStatuses6 = bytes[0x4D];
 
         extraStatusImmunities1 = bytes[0x4E];
         extraStatusImmunities2 = bytes[0x4F];
@@ -216,7 +241,10 @@ public class MonsterStatDataObject {
         autoSleep = (autoStatuses2 & 0x10) > 0;
         autoSilence = (autoStatuses2 & 0x20) > 0;
         autoDarkness = (autoStatuses2 & 0x40) > 0;
-
+        autoUnknown280 = (autoStatuses2 & 0x80) > 0;
+        autoUnknown301 = (autoStatuses3 & 0x01) > 0;
+        autoUnknown302 = (autoStatuses3 & 0x02) > 0;
+        autoUnknown304 = (autoStatuses3 & 0x04) > 0;
         autoShell = (autoStatuses3 & 0x08) > 0;
         autoProtect = (autoStatuses3 & 0x10) > 0;
         autoReflect = (autoStatuses3 & 0x20) > 0;
@@ -227,6 +255,23 @@ public class MonsterStatDataObject {
         autoRegen = (autoStatuses4 & 0x04) > 0;
         autoHaste = (autoStatuses4 & 0x08) > 0;
         autoSlow = (autoStatuses4 & 0x10) > 0;
+        autoUnknown4 = autoStatuses4 >= 0x20;
+        autoScan = (autoStatuses5 & 0x01) > 0;
+        autoDistillPower = (autoStatuses5 & 0x02) > 0;
+        autoDistillMana = (autoStatuses5 & 0x04) > 0;
+        autoDistillSpeed = (autoStatuses5 & 0x08) > 0;
+        autoUnused1 = (autoStatuses5 & 0x10) > 0;
+        autoDistillAbility = (autoStatuses5 & 0x20) > 0;
+        autoShield = (autoStatuses5 & 0x40) > 0;
+        autoBoost = (autoStatuses5 & 0x80) > 0;
+        autoEject = (autoStatuses6 & 0x01) > 0;
+        autoAutoLife = (autoStatuses6 & 0x02) > 0;
+        autoCurse = (autoStatuses6 & 0x04) > 0;
+        autoDefend = (autoStatuses6 & 0x08) > 0;
+        autoGuard = (autoStatuses6 & 0x10) > 0;
+        autoSentinel = (autoStatuses6 & 0x20) > 0;
+        autoDoom = (autoStatuses6 & 0x40) > 0;
+        autoUnused2 = (autoStatuses6 & 0x80) > 0;
         resistScan = (extraStatusImmunities1 & 0x01) > 0;
         resistDistillPower = (extraStatusImmunities1 & 0x02) > 0;
         resistDistillMana = (extraStatusImmunities1 & 0x04) > 0;
@@ -435,7 +480,7 @@ public class MonsterStatDataObject {
 
     private String autoBuffs() {
         StringBuilder buffs = new StringBuilder("Auto");
-        if (autoStatuses1 == 0 && autoStatuses2 == 0 && autoStatuses3 == 0 && autoStatuses4 == 0) {
+        if (autoStatuses1 == 0 && autoStatuses2 == 0 && autoStatuses3 == 0 && autoStatuses4 == 0 && autoStatuses5 == 0 && autoStatuses6 == 0) {
             return "";
         }
         if (autoDeath) {
@@ -487,6 +532,18 @@ public class MonsterStatDataObject {
         if (autoDarkness) {
             buffs.append("-Darkness");
         }
+        if (autoUnknown280) {
+            buffs.append("-uk280");
+        }
+        if (autoUnknown301) {
+            buffs.append("-uk301");
+        }
+        if (autoUnknown302) {
+            buffs.append("-uk302");
+        }
+        if (autoUnknown304) {
+            buffs.append("-uk304");
+        }
         if (autoShell) {
             buffs.append("-Shell");
         }
@@ -520,6 +577,57 @@ public class MonsterStatDataObject {
         }
         if (autoSlow) {
             buffs.append("-Slow");
+        }
+        if (autoUnknown4) {
+            buffs.append("-uk4");
+        }
+        if (autoScan) {
+            buffs.append("-Scan");
+        }
+        if (autoShield) {
+            buffs.append("-Shield");
+        }
+        if (autoBoost) {
+            buffs.append("-Boost");
+        }
+        if (autoDistillPower) {
+            buffs.append("-DistillPower");
+        }
+        if (autoDistillMana) {
+            buffs.append("-DistillMana");
+        }
+        if (autoDistillSpeed) {
+            buffs.append("-DistillSpeed");
+        }
+        if (autoDistillAbility) {
+            buffs.append("-DistillAbility");
+        }
+        if (autoUnused1) {
+            buffs.append("-Unused1");
+        }
+        if (autoEject) {
+            buffs.append("-Eject??");
+        }
+        if (autoAutoLife) {
+            buffs.append("-AutoLife");
+        }
+        if (autoCurse) {
+            buffs.append("-Curse");
+        }
+        if (autoDoom) {
+            buffs.append("-Doom");
+        }
+        if (autoDefend) {
+            buffs.append("-Defend");
+        }
+        if (autoGuard) {
+            buffs.append("-Guard");
+        }
+        if (autoSentinel) {
+            buffs.append("-Sentinel");
+        }
+        if (autoUnused2) {
+            buffs.append("-Unused2");
         }
         return buffs.toString();
     }
