@@ -58,10 +58,11 @@ public class ScriptObject {
     boolean gatheringInfo = true;
     List<ScriptJump> scriptJumps;
     Map<Integer, List<ScriptJump>> scriptJumpsByDestination;
+    List<ScriptJump> currentExecutionLines;
 
     int lineCount = 0;
     String textScriptLine;
-    String warnLine;
+    List<String> warningsOnLine;
     List<String> offsetLines;
     List<String> textScriptLines;
     List<String> hexScriptLines;
@@ -289,22 +290,32 @@ public class ScriptObject {
     }
 
     private void semanticParseScriptCode() {
+        currentExecutionLines = new ArrayList<>();
         textScriptLines = new ArrayList<>();
         warnLines = new ArrayList<>();
         textScriptLine = "";
-        warnLine = "";
+        warningsOnLine = new ArrayList<>();
         for (ScriptInstruction instruction : instructions) {
+            if (!instruction.jumps.isEmpty()) {
+                restoreTypingsFromJumps(instruction.jumps);
+                instruction.jumps.forEach(j -> j.reachableFrom = currentExecutionLines);
+                currentExecutionLines = new ArrayList<>(currentExecutionLines);
+                currentExecutionLines.addAll(instruction.jumps);
+            }
+            if (currentExecutionLines.stream().noneMatch(j -> j.isEntryPoint)) {
+                warningsOnLine.add("Unreachable code");
+            }
+            instruction.reachableFrom = currentExecutionLines;
             processInstruction(instruction);
-            contextualizeJumps(instruction.jumps);
             if (getLineEnd(instruction.opcode)) {
                 if (!stack.empty()) {
-                    warnLine += " Stack not empty (" + stack.size() + "): " + stack;
+                    warningsOnLine.add("Stack not empty (" + stack.size() + "): " + stack);
                     stack.clear();
                 }
                 textScriptLines.add(textScriptLine);
-                warnLines.add(warnLine);
+                warnLines.add(" " + String.join("; ", warningsOnLine));
                 textScriptLine = "";
-                warnLine = "";
+                warningsOnLine = new ArrayList<>();
             }
         }
     }
@@ -346,13 +357,13 @@ public class ScriptObject {
     protected int nextAiByte(int cursor, List<ScriptJump> jumpsOnLine) {
         if (scriptJumpsByDestination.containsKey(cursor)) {
             List<ScriptJump> jumps = scriptJumpsByDestination.get(cursor);
-            contextualizeJumps(jumps);
+            restoreTypingsFromJumps(jumps);
             jumpsOnLine.addAll(jumps);
         }
         return actualScriptCodeBytes[cursor];
     }
 
-    protected void contextualizeJumps(List<ScriptJump> jumps) {
+    protected void restoreTypingsFromJumps(List<ScriptJump> jumps) {
         if (jumps == null || jumps.isEmpty()) {
             return;
         }
@@ -378,7 +389,7 @@ public class ScriptObject {
                     break;
             }
         } catch (EmptyStackException e) {
-            warnLine += " Empty stack for opcode " + String.format("%02X", opcode);
+            warningsOnLine.add("Empty stack for opcode " + String.format("%02X", opcode));
             return;
         }
         if (opcode == 0x00 || opcode == 0x1D || opcode == 0x1E) { // NOP, LABEL, TAG
@@ -407,24 +418,24 @@ public class ScriptObject {
                 p2s = '(' + p2s + ')';
             }
             String content = p1s + ' ' + op.name + ' ' + p2s;
-            StackObject stackObject = new StackObject(this, resultType, true, content, opcode);
+            StackObject stackObject = new StackObject(this, ins, resultType, true, content, opcode);
             stackObject.maybeBracketize = true;
             stack.push(stackObject);
         } else if (opcode == 0x19) { // OPNOT / NOT_LOGIC
-            stack.push(new StackObject(this, "bool", true, "not " + p1, 0x19));
+            stack.push(new StackObject(this, ins, "bool", true, "not " + p1, 0x19));
         } else if (opcode == 0x1A) { // OPUMINUS / NEG
-            stack.push(new StackObject(this, p1.type, true, "-(" + p1 + ")", 0x1A));
+            stack.push(new StackObject(this, ins, p1.type, true, "-(" + p1 + ")", 0x1A));
         } else if (opcode == 0x1C) { // OPBNOT / NOT
-            stack.push(new StackObject(this, p1.type, true, "~(" + p1 + ")", 0x1C));
+            stack.push(new StackObject(this, ins, p1.type, true, "~(" + p1 + ")", 0x1C));
         } else if (opcode == 0x25) { // POPA / SET_RETURN_VALUE
             textScriptLine += p1 + ";";
             currentRAType = resolveType(p1);
         } else if (opcode == 0x26) { // PUSHA / GET_RETURN_VALUE
-            stack.push(new StackObject(this, currentRAType, true, "LastCallResult", 0x26));
+            stack.push(new StackObject(this, ins, currentRAType, true, "LastCallResult", 0x26));
         } else if (opcode == 0x28) { // PUSHX / GET_TEST
-            stack.push(new StackObject(this, currentRXType, true, "rX", 0x28));
+            stack.push(new StackObject(this, ins, currentRXType, true, "rX", 0x28));
         } else if (opcode == 0x29) { // PUSHY / GET_CASE
-            stack.push(new StackObject(this, currentRYType, true, "case", 0x29));
+            stack.push(new StackObject(this, ins, currentRYType, true, "case", 0x29));
         } else if (opcode == 0x2A) { // POPX / SET_TEST
             textScriptLine += "Set rX = " + p1;
             currentRXType = resolveType(p1);
@@ -450,10 +461,10 @@ public class ScriptObject {
             String e = p3.expression ? "(" + p3 + ")" : format2Or4Byte(p3.value);
             String scriptLabel = direct ? headers[p2.value].entryPoints[p3.value].getLabel() : ("s" + s + "e" + e);
             String content = cmd + " " + scriptLabel + " (" + i + ")";
-            stack.push(new StackObject(this, "script", true, content, opcode));
+            stack.push(new StackObject(this, ins, "script", true, content, opcode));
         } else if (opcode == 0x39) { // PREQ
             String content = "PREQ(" + p1 + ", " + p2 + ", " + p3 + ")";
-            stack.push(new StackObject(this, "unknown", true, content, 0x39));
+            stack.push(new StackObject(this, ins, "unknown", true, content, 0x39));
         } else if (opcode == 0x3C) { // RET / END
             textScriptLine += "return;";
             resetRegisterTypes();
@@ -466,23 +477,31 @@ public class ScriptObject {
             textScriptLine += "halt";
         } else if (opcode == 0x46) { // TREQ
             String content = "TREQ(" + p1 + ", " + p2 + ", " + p3 + ")";
-            stack.push(new StackObject(this, "unknown", true, content, 0x46));
+            stack.push(new StackObject(this, ins, "unknown", true, content, 0x46));
         } else if (opcode == 0x54) { // DRET / CLEANUP_ALL_END
             textScriptLine += "direct return;";
             resetRegisterTypes();
         } else if (opcode >= 0x59 && opcode <= 0x5C) { // POPI0..3 / SET_INT
-            currentTempITypes.put(opcode-0x59, resolveType(p1));
-            textScriptLine += "tempI" + (opcode-0x59) + " = " + p1 + ";";
+            String p1t = resolveType(p1);
+            int tempIndex = opcode - 0x59;
+            if (p1t != null && !"unknown".equals(p1t)) {
+                currentTempITypes.put(tempIndex, p1t);
+            } else {
+                currentTempITypes.remove(tempIndex);
+            }
+            String val = typed(p1, varTypes.get(argv));
+            textScriptLine += "tempI" + tempIndex + " = " + val + ";";
         } else if (opcode >= 0x5D && opcode <= 0x66) { // POPF0..9 / SET_FLOAT
-            textScriptLine += "tempF" + (opcode-0x5D) + " = " + p1 + ";";
+            int tempIndex = opcode - 0x5D;
+            textScriptLine += "tempF" + tempIndex + " = " + p1 + ";";
         } else if (opcode >= 0x67 && opcode <= 0x6A) { // PUSHI0..3 / GET_INT
             int tempIndex = opcode - 0x67;
-            StackObject stackObject = new StackObject(this, currentTempITypes.getOrDefault(tempIndex, "unknown"), true, "tempI" + tempIndex, opcode);
+            StackObject stackObject = new StackObject(this, ins, "tempI", true, "tempI" + tempIndex, tempIndex);
             stackObject.referenceIndex = tempIndex;
             stack.push(stackObject);
         } else if (opcode >= 0x6B && opcode <= 0x74) { // PUSHF0..9 / GET_FLOAT
             int tempIndex = opcode - 0x6B;
-            StackObject stackObject = new StackObject(this, "float", true, "tempF" + tempIndex, opcode);
+            StackObject stackObject = new StackObject(this, ins, "float", true, "tempF" + tempIndex, opcode);
             stackObject.referenceIndex = tempIndex;
             stack.push(stackObject);
         } else if (opcode == 0x77) { // REQWAIT / WAIT_DELETE
@@ -495,7 +514,7 @@ public class ScriptObject {
             textScriptLine += "REQCHG(" + p1 + ", " + p2 + ", " + p3 + ");";
         } else if (opcode == 0x7A) { // Never used: ACTREQ / SET_EDGE_TRIGGER
         } else if (opcode == 0x9F) { // PUSHV / GET_DATUM
-            StackObject stackObject = new StackObject(this, "var", true, ensureVariableValid(argv), argv);
+            StackObject stackObject = new StackObject(this, ins, "var", true, ensureVariableValid(argv), argv);
             stackObject.referenceIndex = argv;
             stack.push(stackObject);
         } else if (opcode == 0xA0 || opcode == 0xA1) { // POPV(L) / SET_DATUM_(W/T)
@@ -511,9 +530,9 @@ public class ScriptObject {
                 textScriptLine += "(limit) ";
             }
             String val = typed(p1, varTypes.get(argv));
-            textScriptLine += ensureVariableValid(argv) + " = " + val;
+            textScriptLine += ensureVariableValid(argv) + " = " + val + ";";
         } else if (opcode == 0xA2) { // PUSHAR / GET_DATUM_INDEX
-            StackObject stackObject = new StackObject(this, "var", true, ensureVariableValidWithArray(argv, p1), argv);
+            StackObject stackObject = new StackObject(this, ins, "var", true, ensureVariableValidWithArray(argv, p1), argv);
             stackObject.referenceIndex = argv;
             stack.push(stackObject);
         } else if (opcode == 0xA3 || opcode == 0xA4) { // POPAR(L) / SET_DATUM_INDEX_(W/T)
@@ -524,42 +543,68 @@ public class ScriptObject {
             textScriptLine += ensureVariableValidWithArray(argv, p1) + " = " + p2;
         } else if (opcode == 0xA7) { // PUSHARP / GET_DATUM_DESC
             String arrayIndex = '[' + String.format("%04X", p1.value) + ']';
-            StackObject stackObject = new StackObject(this, "int16", true, "ArrayPointer:var" + argvsh + arrayIndex, argv);
+            StackObject stackObject = new StackObject(this, ins, "int16", true, "ArrayPointer:var" + argvsh + arrayIndex, argv);
             stackObject.referenceIndex = argv;
             stack.push(stackObject);
         } else if (opcode == 0xAD) { // PUSHI / CONST_INT
             int refInt = refInts[argv];
             String content = "rI[" + argvsh + "]:" + refInt + " [" + String.format("%08X", refInt) + "h]";
-            StackObject stackObject = new StackObject(this, "uint32", false, content, refInt);
+            StackObject stackObject = new StackObject(this, ins, "uint32", false, content, refInt);
             stackObject.referenceIndex = argv;
             stack.push(stackObject);
         } else if (opcode == 0xAE) { // PUSHII / IMM
-            stack.push(new StackObject(this, "int16", false, ins.argvSigned + " [" + argvsh + "h]", argv));
+            stack.push(new StackObject(this, ins, "int16", false, ins.argvSigned + " [" + argvsh + "h]", argv));
         } else if (opcode == 0xAF) { // PUSHF / CONST_FLOAT
             int refFloat = refFloats[argv];
             String content = "rF[" + argvsh + "]:" + Float.intBitsToFloat(refFloat) + " [" + String.format("%08X", refFloat) + "h]";
-            StackObject stackObject = new StackObject(this, "float", false, content, refFloat);
+            StackObject stackObject = new StackObject(this, ins, "float", false, content, refFloat);
             stackObject.referenceIndex = argv;
             stack.push(stackObject);
         } else if (opcode == 0xB0) { // JMP / JUMP
             textScriptLine += "Jump to j" + String.format("%02X", argv);
-            headers[currentScriptIndex].jumps[argv].setTypes(currentRAType, currentRXType, currentRYType, currentTempITypes);
+            setJumpTypes(argv);
             resetRegisterTypes();
         } else if (opcode == 0xB1) { // Never used: CJMP / BNEZ
         } else if (opcode == 0xB2) { // Never used: NCJMP / BEZ
         } else if (opcode == 0xB3) { // JSR
             textScriptLine += "Jump to subroutine s" + String.format("%02X", argv);
         } else if (opcode == 0xB5) { // CALL / FUNC_RET
-            processB5(argv);
+            List<StackObject> params = popParamsForFunc(argv);
+            ScriptFunc func = getAndTypeFuncCall(argv, params);
+            StackObject stackObject = new StackObject(this, ins, func.getType(params), true, func.callB5(params), argv);
+            stackObject.referenceIndex = argv;
+            stack.push(stackObject);
         } else if (opcode == 0xD6) { // POPXCJMP / SET_BNEZ
             textScriptLine += "(" + p1 + ") -> j" + String.format("%02X", argv);
-            headers[currentScriptIndex].jumps[argv].setTypes(currentRAType, currentRXType, currentRYType, currentTempITypes);
+            setJumpTypes(argv);
         } else if (opcode == 0xD7) { // POPXNCJMP / SET_BEZ
             textScriptLine += "Check (" + p1 + ") else jump to j" + String.format("%02X", argv);
-            headers[currentScriptIndex].jumps[argv].setTypes(currentRAType, currentRXType, currentRYType, currentTempITypes);
+            setJumpTypes(argv);
         } else if (opcode == 0xD8) { // CALLPOPA / FUNC
-            processD8(argv);
+            List<StackObject> params = popParamsForFunc(argv);
+            ScriptFunc func = getAndTypeFuncCall(argv, params);
+            currentRAType = func.getType(params);
+            String call = func.callD8(params);
+            textScriptLine += call + ';';
         }
+    }
+
+    private void setJumpTypes(int argv) {
+        if (headers == null || headers.length <= currentScriptIndex) {
+            return;
+        }
+        ScriptHeader header = headers[currentScriptIndex];
+        if (header == null || header.jumps == null || header.jumps.length <= argv) {
+            return;
+        }
+        setJumpTypes(header.jumps[argv]);
+    }
+
+    private void setJumpTypes(ScriptJump jump) {
+        if (jump == null) {
+            return;
+        }
+        jump.setTypes(currentRAType, currentRXType, currentRYType, currentTempITypes);
     }
 
     protected List<StackObject> popParamsForFunc(int idx) {
@@ -581,7 +626,7 @@ public class ScriptObject {
                     break;
             }
         } catch (EmptyStackException e) {
-            warnLine += " Empty stack for func " + String.format("%04X", idx);
+            warningsOnLine.add("Empty stack for func " + String.format("%04X", idx));
         }
         return params;
     }
@@ -598,22 +643,6 @@ public class ScriptObject {
             }
         }
         return func;
-    }
-
-    protected void processB5(int idx) {
-        List<StackObject> params = popParamsForFunc(idx);
-        ScriptFunc func = getAndTypeFuncCall(idx, params);
-        StackObject stackObject = new StackObject(this, func.getType(params), true, func.callB5(params), idx);
-        stackObject.referenceIndex = idx;
-        stack.push(stackObject);
-    }
-
-    protected void processD8(int idx) {
-        List<StackObject> params = popParamsForFunc(idx);
-        ScriptFunc func = getAndTypeFuncCall(idx, params);
-        currentRAType = func.getType(params);
-        String call = func.callD8(params);
-        textScriptLine += call + ';';
     }
 
     protected void addVarType(int var, String type) {
@@ -636,6 +665,9 @@ public class ScriptObject {
         if ("var".equals(obj.type)) {
             return varTypes.get(obj.value);
         }
+        if ("tempI".equals(obj.type)) {
+            return currentTempITypes.getOrDefault(obj.value, "unknown");
+        }
         return obj.type;
     }
 
@@ -650,6 +682,9 @@ public class ScriptObject {
             if ("var".equals(obj.type)) {
                 addVarType(obj.value, type);
             }
+            if ("tempI".equals(obj.type) && type != null && !"unknown".equals(type)) {
+                currentTempITypes.put(obj.value, type);
+            }
             if (obj.expression || "unknown".equals(type)) {
                 return obj.toString();
             } else {
@@ -663,7 +698,7 @@ public class ScriptObject {
             return variableDeclarations[index].getLabel();
         }
         String hexIdx = String.format("%02X", index);
-        warnLine += "Variable index " + hexIdx + " out of bounds!";
+        warningsOnLine.add("Variable index " + hexIdx + " out of bounds!");
         return "var" + hexIdx;
     }
 
@@ -690,7 +725,7 @@ public class ScriptObject {
     protected int getStackPops(int opcode) {
         int stackpops = ScriptConstants.OPCODE_STACKPOPS[opcode];
         if (stackpops < 0) {
-            warnLine += " Undefined stackpops for opcode " + String.format("%02X", opcode);
+            warningsOnLine.add("Undefined stackpops for opcode " + String.format("%02X", opcode));
             return 0;
         }
         return stackpops;
@@ -699,7 +734,7 @@ public class ScriptObject {
     protected int getFunctionParamCount(int idx) {
         ScriptFunc func = ScriptFuncLib.get(idx, null);
         if (func == null) {
-            warnLine += " Undefined stackpops for func " + String.format("%04X", idx);
+            warningsOnLine.add("Undefined stackpops for func " + String.format("%04X", idx));
             return 0;
         }
         return func.inputs != null ? func.inputs.size() : 0;
@@ -739,6 +774,10 @@ public class ScriptObject {
     }
 
     private void resetRegisterTypes() {
+        if (!currentExecutionLines.isEmpty()) {
+            // currentExecutionLines.forEach(this::setJumpTypes);
+            currentExecutionLines = new ArrayList<>();
+        }
         currentRAType = "unknown";
         currentRXType = "unknown";
         currentRYType = "unknown";

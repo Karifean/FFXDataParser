@@ -14,36 +14,40 @@ public abstract class DataFileReader<T> {
         File file = FileAccessorWithMods.resolveFile(filename, print);
         if (!file.isDirectory()) {
             try (DataInputStream inputStream = FileAccessorWithMods.readFile(file)) {
-                inputStream.skipBytes(0xA);
-                int maxIndex = inputStream.read();
-                maxIndex += inputStream.read() * 0x100;
-                List<T> objects = new ArrayList<>(maxIndex + 1);
-                int individualLength = inputStream.read();
-                individualLength += inputStream.read() * 0x100;
-                int totalLength = inputStream.read();
-                totalLength += inputStream.read() * 0x100;
+                inputStream.skipBytes(0x8);
+                final int minIndex = read2Bytes(inputStream);
+                final int maxIndex = read2Bytes(inputStream);
+                final List<T> objects = new ArrayList<>(maxIndex + 1 - minIndex);
+                final int individualLength = read2Bytes(inputStream);
+                final int totalLength = read2Bytes(inputStream);
                 inputStream.skipBytes(4);
-                int[] moveBytes = new int[totalLength];
+                final int[] dataBytes = new int[totalLength];
                 for (int i = 0; i < totalLength; i++) {
-                    moveBytes[i] = inputStream.read();
+                    dataBytes[i] = inputStream.read();
                 }
-                byte[] stringBytes = inputStream.readAllBytes();
-                int stringsLength = stringBytes.length;
-                int[] allStrings = new int[stringsLength];
+                final byte[] stringBytes = inputStream.readAllBytes();
+                final int stringsLength = stringBytes.length;
+                final int[] allStrings = new int[stringsLength];
                 for (int i = 0; i < stringsLength; i++) {
                     allStrings[i] = Byte.toUnsignedInt(stringBytes[i]);
                 }
-                for (int i = 0; i <= maxIndex; i++) {
-                    T obj = objectCreator(Arrays.copyOfRange(moveBytes, i * individualLength, (i + 1) * individualLength), allStrings);
+                final int j = maxIndex - minIndex;
+                for (int i = 0; i <= j; i++) {
+                    T obj = objectCreator(Arrays.copyOfRange(dataBytes, i * individualLength, (i + 1) * individualLength), allStrings);
                     objects.add(obj);
                     if (print) {
                         String offset = String.format("%04X", (i * individualLength) + 20);
-                        System.out.println(indexWriter(i) + " (Offset " + offset + ") - " + obj);
+                        System.out.println(indexWriter(i + minIndex) + " (Offset " + offset + ") - " + obj);
                     }
                 }
                 return objects;
             } catch (IOException ignored) {}
         }
         return null;
+    }
+
+    private int read2Bytes(DataInputStream stream) throws IOException {
+        int x = stream.read();
+        return x + stream.read() * 0x100;
     }
 }

@@ -13,6 +13,7 @@ public abstract class ScriptConstants {
     public static List<Integer> OPCODE_ENDLINE;
     public static Map<String, Map<Integer, ScriptField>> ENUMERATIONS = new HashMap<>();
     public static Map<Integer, ScriptField> COMP_OPERATORS;
+    public static List<String> INDEX_ENUMS_ONLY = List.of("globalVar");
 
     private static boolean initialized = false;
 
@@ -277,16 +278,24 @@ public abstract class ScriptConstants {
 
         addEnumsFromAllCsvsInFolder(new File(ENUM_CSV_ROOT));
 
+        putGlobalVariable(0x0092, "MushroomRockRoadTreasureFlags", "int");
+        putGlobalVariable(0x00CE, "BikanelTreasureFlags1", "int");
+        putGlobalVariable(0x00CF, "BikanelTreasureFlags2", "int");
+        putGlobalVariable(0x00D0, "BikanelTreasureFlags3", "int");
         putGlobalVariable(0x014B, "ControllableCharacterInLuca", "char");
-        putGlobalVariable(0x01CD, "MacalaniaProgressionFlags", "int");
+        putGlobalVariable(0x01C0, "KilikaForestTreasureFlags", "int");
+        putGlobalVariable(0x01C5, "BesaidTreasureFlags", "int");
+        putGlobalVariable(0x01CD, "MacalaniaTreasureFlags", "int");
         putGlobalVariable(0x01D4, "HomeProgressionFlags", "int");
+        putGlobalVariable(0x0205, "ThunderPlainsProgressionFlags", "int");
         putGlobalVariable(0x024C, "BlitzballWakkaPowerProgress", "int");
         putGlobalVariable(0x0A00, "GameMoment", "int");
         putGlobalVariable(0x0A34, "GilLentToOAka", "int");
         putGlobalVariable(0x0A38, "MacalaniaPricesChosenForOAka", "int");
         putGlobalVariable(0x0A4A, "SaveSphereInstructionsSeen", "int");
-        putGlobalVariable(0x0A60, "AlBhedPrimersCollected", "int");
+        putGlobalVariable(0x0A60, "AlBhedPrimersCollectedCount", "int");
         putGlobalVariable(0x0A88, "BlitzballTeamPlayerCount", "int", "blitzballTeam");
+        putGlobalVariable(0x0A93, "JechtSpheresCollectedCount", "int");
         putGlobalVariable(0x0A95, "AirshipDestinationUnlocks", "int");
         putGlobalVariable(0x0A9A, "AlBhedPrimersInstructionsSeen", "bool");
         putGlobalVariable(0x141A, "BlitzballTeamPlayers", "blitzballPlayer");
@@ -416,6 +425,7 @@ public abstract class ScriptConstants {
         putEnum("bgm", 0x001D, "Thunder Plains");
         putEnum("bgm", 0x0025, "People of the North Pole");
         putEnum("bgm", 0x0029, "Truth Revealed");
+        putEnum("bgm", 0x0031, "Otherworld (BFA)");
         putEnum("bgm", 0x0082, "To Zanarkand");
         putEnum("bgm", 0x0091, "Challenge");
         putEnum("bgm", 0x00A5, "?Run!!");
@@ -425,9 +435,10 @@ public abstract class ScriptConstants {
         putEnum("battleTransition", 0x00, "Screen Shatter");
         putEnum("battleTransition", 0x01, "Fade");
 
-        putEnum("battleEndType", 0x01, "Game Over");
+        putEnum("battleEndType", 0x01, "Defeat");
         putEnum("battleEndType", 0x02, "Victory");
         putEnum("battleEndType", 0x03, "?Escape");
+        putEnum("battleEndType", 0x04, null); // Seems to be a special case override thing?
 
         putEnum("damageFormula", 0x00, "None");
         putEnum("damageFormula", 0x01, "STR vs DEF");

@@ -1,5 +1,6 @@
 package script.model;
 
+import java.util.List;
 import java.util.Map;
 
 public class ScriptJump {
@@ -13,6 +14,7 @@ public class ScriptJump {
     public String rXType;
     public String rYType;
     public Map<Integer, String> tempITypes;
+    public List<ScriptJump> reachableFrom;
 
     private String label;
 
@@ -29,17 +31,22 @@ public class ScriptJump {
     }
 
     public String getDefaultLabel() {
-        if (isEntryPoint) {
+        if (!isEntryPoint) {
+            return "j" + String.format("%02X", jumpIndex);
+        } else {
             String sPrefix = "s" + String.format("%02X", scriptIndex);
             if (jumpIndex == 0) {
                 return sPrefix + "init";
             } else if (jumpIndex == 1) {
-                return sPrefix + "step";
+                return sPrefix + "main";
             } else {
-                return sPrefix + "e" + String.format("%02X", jumpIndex);
+                if (scriptHeader.scriptType == 1 && jumpIndex == 2) {
+                    return sPrefix + "talk";
+                } else if (scriptHeader.scriptType == 1 && jumpIndex == 3) {
+                    return sPrefix + "scout";
+                }
             }
-        } else {
-            return "j" + String.format("%02X", jumpIndex);
+            return sPrefix + "e" + String.format("%02X", jumpIndex);
         }
     }
 
@@ -48,6 +55,9 @@ public class ScriptJump {
         this.rXType = rXType;
         this.rYType = rYType;
         this.tempITypes = tempITypes;
+        /* if (reachableFrom != null && !reachableFrom.isEmpty()) {
+            reachableFrom.forEach(rf -> rf.setTypes(rAType, rXType, rYType, tempITypes));
+        } */
     }
 
     public void setCtbPurpose(int slot) {

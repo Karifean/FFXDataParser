@@ -10,6 +10,7 @@ import java.util.Map;
 
 public class StackObject {
     public ScriptObject parentScript;
+    public ScriptInstruction parentInstruction;
     public String type;
     public boolean expression;
     public String content;
@@ -17,8 +18,9 @@ public class StackObject {
     public boolean maybeBracketize = false;
     public Integer referenceIndex;
 
-    public StackObject(ScriptObject script, String type, boolean expression, String content, int value) {
+    public StackObject(ScriptObject script, ScriptInstruction instruction, String type, boolean expression, String content, int value) {
         this.parentScript = script;
+        this.parentInstruction = instruction;
         this.type = type;
         this.expression = expression;
         this.content = content;
@@ -27,7 +29,9 @@ public class StackObject {
 
     public StackObject(String type, StackObject obj) {
         this.parentScript = obj.parentScript;
-        this.type = (type == null || "unknown".equals(type)) ? obj.type : type;
+        this.parentInstruction = obj.parentInstruction;
+        // direct values should never be type-cast to float as the format will just be wrong.
+        this.type = (type == null || "unknown".equals(type) || ("float".equals(type) && !obj.expression)) ? obj.type : type;
         this.expression = obj.expression;
         this.content = obj.content;
         this.value = obj.value;
@@ -161,7 +165,7 @@ public class StackObject {
                 return enumTarget;
             }
         }
-        ScriptField field = new ScriptField(null, type);
+        ScriptField field = new ScriptField(null, ScriptConstants.INDEX_ENUMS_ONLY.contains(type) ? "unknown" : type);
         field.idx = value;
         return field;
     }

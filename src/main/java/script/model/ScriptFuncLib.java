@@ -48,10 +48,6 @@ public abstract class ScriptFuncLib {
     }
 
     public static ScriptFunc get(int idx, List<StackObject> params) {
-        if (FUNCS[idx] == null) {
-            System.err.println("Unknown Function call: " + String.format("%04X", idx));
-            return null;
-        }
         return FUNCS[idx];
     }
 
@@ -132,7 +128,7 @@ public abstract class ScriptFuncLib {
         putUnknownFunc(0x0062, 1); // noclip: collision detection
         putUnknownFunc(0x0063, 1); // noclip: collision detection
         putFuncWithIdx(0x0064, new ScriptFunc("displayFieldString", "unknown", null, p("boxIndex", "int"), p("string")));
-        putFuncWithIdx(0x0065, new ScriptFunc("positionText", "unknown", null, p("boxIndex", "int"), p("x?", "int"), p("y?", "int"), p("alignment?", "textAlignment")));
+        putFuncWithIdx(0x0065, new ScriptFunc("positionText", "unknown", null, p("boxIndex", "int"), p("x?", "int"), p("y?", "int"), p("align", "textAlignment")));
         putUnknownFunc(0x0066, 2);
         putUnknownFunc(0x0069, 3);
         putUnknownFunc(0x006A, 2);
@@ -203,7 +199,7 @@ public abstract class ScriptFuncLib {
         putUnknownFunc(0x00C1, 1); // /
         putUnknownFunc(0x00C2, 1); // noclip: getHeading()
         putUnknownFunc(0x00C4, 0);
-        putFuncWithIdx(0x00C5, new ScriptFunc(p("p1", "motion"), p("p2", "motion"), p("p3", "motion"), p("p4", "motion")));
+        putFuncWithIdx(0x00C5, new ScriptFunc("registerTurnMotions?", "unknown", null, p("p1", "motion"), p("p2", "motion"), p("p3", "motion"), p("p4", "motion")));
         putUnknownFunc(0x00C6, 0);
         putUnknownFunc(0x00C7, 1);
         putUnknownFunc(0x00C8, 3);
@@ -263,8 +259,8 @@ public abstract class ScriptFuncLib {
         putUnknownFunc(0x010A, 1);
         putUnknownFunc(0x010B, 2);
         putUnknownFunc(0x010C, 2);
-        putUnknownFunc(0x010D, 1);
-        putUnknownFunc(0x010E, 0);
+        putFuncWithIdx(0x010D, new ScriptFunc("SetPrimerCollected", "unknown", null, p("primerIndex", "int")));
+        putFuncWithIdx(0x010E, new ScriptFunc("CollectedPrimersBitmask", "int", null, false));
         putUnknownFunc(0x010F, 4);
         putUnknownFunc(0x0110, 1);
         putUnknownFunc(0x0111, 0);
@@ -299,8 +295,8 @@ public abstract class ScriptFuncLib {
         putFuncWithIdx(0x0137, new ScriptFunc("makeGilPayment", "bool", null, p("amount", "int")));
         putUnknownFunc(0x0138, 1);
         putUnknownFunc(0x0139, 8);
-        putFuncWithIdx(0x0139, new ScriptFunc("requestNumericInput?", "int", null, p(1), p(2), p(3), p(4), p(5), p("x?", "int"), p("y?", "int"), p("alignment?", "textAlignment")));
-        putFuncWithIdx(0x013B, new ScriptFunc("displayFieldChoice", "int", null, p("boxIndex?", "int"), p("string"), p(3), p(4), p("x?", "int"), p("y?", "int"), p("alignment?", "textAlignment")));
+        putFuncWithIdx(0x0139, new ScriptFunc("requestNumericInput?", "int", null, p(1), p(2), p(3), p(4), p(5), p("x?", "int"), p("y?", "int"), p("align", "textAlignment")));
+        putFuncWithIdx(0x013B, new ScriptFunc("displayFieldChoice", "int", null, p("boxIndex?", "int"), p("string"), p(3), p(4), p("x?", "int"), p("y?", "int"), p("align", "textAlignment")));
         putUnknownFunc(0x013D, 1);
         putUnknownFunc(0x013E, 1);
         putUnknownFunc(0x013F, 2);
@@ -429,11 +425,11 @@ public abstract class ScriptFuncLib {
         putUnknownFunc(0x01F9, 1);
         putUnknownFunc(0x01FA, 0);
         putUnknownFunc(0x01FB, 0);
-        putFuncWithIdx(0x01FC, new ScriptFunc("teachAbilityToPartyMember", "unknown", null, p("char"), p("charMove")));
+        putFuncWithIdx(0x01FC, new ScriptFunc("teachAbilityToPartyMemberSilently", "unknown", null, p("char"), p("charMove")));
         putUnknownFunc(0x0200, 1);
         putUnknownFunc(0x0201, 0);
         putUnknownFunc(0x0202, 1);
-        putUnknownFunc(0x0203, 1);
+        putFuncWithIdx(0x0203, new ScriptFunc(p("model")));
         putUnknownFunc(0x0204, 1);
         putUnknownFunc(0x0205, 0);
         putUnknownFunc(0x0206, 0);
@@ -447,7 +443,7 @@ public abstract class ScriptFuncLib {
         putUnknownFunc(0x0212, 2);
         putUnknownFunc(0x0213, 1);
         putFuncWithIdx(0x0215, new ScriptFunc("grantCelestialUpgrade", "unknown", null, p("char"), p("level", "int")));
-        putUnknownFunc(0x0216, 3);
+        putFuncWithIdx(0x0216, new ScriptFunc("teachAbilityToPartyMemberWithMsg", "unknown", null, p("boxIndex?", "int"), p("char"), p("charMove")));
         putUnknownFunc(0x0217, 0);
         putUnknownFunc(0x021A, 2);
         putUnknownFunc(0x021B, 2);
@@ -873,7 +869,7 @@ public abstract class ScriptFuncLib {
         putUnknownFunc(0x703F, "camReq", 2);
         putUnknownFunc(0x7040, "btlMagicStart", 1);
         putUnknownFunc(0x7041, "btlMagicEnd", 0);
-        putFuncWithIdx(0x7042, new ScriptFunc("displayBattleString", "unknown", "btlmes", p("boxIndex", "int"), p("string"), p("x?", "int"), p("y?", "int"), p("p5", "unknown")));
+        putFuncWithIdx(0x7042, new ScriptFunc("displayBattleString", "unknown", "btlmes", p("boxIndex", "int"), p("string"), p("x?", "int"), p("y?", "int"), p("align", "textAlignment")));
         putFuncWithIdx(0x7043, new ScriptFunc("closeTextOnConfirm", "unknown", "btlmeswait", p("boxIndex", "int")));
         putFuncWithIdx(0x7044, new ScriptFunc("closeTextImmediately", "unknown", "btlmesclose", p("boxIndex", "int")));
         putUnknownFunc(0x7045, "btlDistTargetFrame", 1);

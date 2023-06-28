@@ -73,6 +73,17 @@ public abstract class DataAccess {
         return TREASURES[idx];
     }
 
+    public static void addMonsterLocalizations(MonsterStatDataObject[] localizations) {
+        if (localizations == null) {
+            return;
+        }
+        for (int i = 0; i < localizations.length && i < MONSTERS.length; i++) {
+            if (MONSTERS[i] != null) {
+                MONSTERS[i].monsterLocalizationData = localizations[i];
+            }
+        }
+    }
+
     public static MonsterFile getMonster(int idx) {
         if (MONSTERS == null) {
             throw new UnsupportedOperationException();

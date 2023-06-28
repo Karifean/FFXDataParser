@@ -34,6 +34,7 @@ You can then run the parser with the following command:
 | `READ_TREASURES`                | | Prints information on treasure pickups in the game (from `takara.bin`) |
 | `READ_GEAR_SHOPS`                | | Prints information on gear shops in the game (from `arms_shop.bin`) |
 | `READ_ITEM_SHOPS`                | | Prints information on item shops in the game (from `item_shop.bin`) |
+| `READ_MONSTER_LOCALIZATIONS`     | | Prints localized strings for monsters (from `monster1/2/3.bin`) |
 | `READ_WEAPON_FILE`           | `<file1> [<file2>] ...` | Reads weapons from a dedicated weapon file (known valid target files are `weapon.bin`, `buki_get.bin`, `shop_arms.bin`) |
 | `READ_STRING_FILE`              | `<file1> [<file2>] ...` | Reads all strings (indexed) from a dedicated string file                                                           |
 | `PARSE_SCRIPT_FILE`     | `<file/folder1> [<file/folder2>] ...` | Reads the script from a file and prints it to the console. If given a folder, recurses through all script files within. |

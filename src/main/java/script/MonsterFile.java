@@ -16,6 +16,7 @@ public class MonsterFile implements Nameable {
     public ScriptObject monsterAi;
     public MonsterStatDataObject monsterStatData;
     public MonsterSpoilsDataObject monsterSpoilsData;
+    public MonsterStatDataObject monsterLocalizationData;
     public String monsterName;
     public String monsterSensorText;
     public String monsterSensorDash;
@@ -43,7 +44,7 @@ public class MonsterFile implements Nameable {
 
     private void mapObjects() {
         monsterAi = new ScriptObject(scriptChunk, scriptMappingBytes);
-        monsterStatData = new MonsterStatDataObject(statBytes);
+        monsterStatData = new MonsterStatDataObject(statBytes, null);
         monsterSpoilsData = new MonsterSpoilsDataObject(spoilsBytes);
     }
 
@@ -86,15 +87,32 @@ public class MonsterFile implements Nameable {
         full.append(monsterStatData).append('\n');
         full.append("- Monster Spoils -").append('\n');
         full.append(monsterSpoilsData).append('\n');
-        full.append("- Sensor Text -").append('\n');
-        full.append(monsterSensorText).append('\n');
-        if (!"-".equals(monsterSensorDash)) {
-            full.append("DH=").append(monsterSensorDash).append('\n');
-        }
-        full.append("- Scan Text -").append('\n');
-        full.append(monsterScanText).append('\n');
-        if (!"-".equals(monsterScanDash)) {
-            full.append("DH=").append(monsterScanDash).append('\n');
+        if (monsterLocalizationData != null) {
+            full.append("- Localized Strings -").append('\n');
+            full.append("Name: ").append(monsterLocalizationData.monsterName).append('\n');
+            full.append("- Sensor Text -").append('\n');
+            full.append(monsterLocalizationData.monsterSensorText).append('\n');
+            if (!"-".equals(monsterLocalizationData.monsterSensorDash)) {
+                full.append("DH=").append(monsterLocalizationData.monsterSensorDash).append('\n');
+            }
+            full.append("- Scan Text -").append('\n');
+            full.append(monsterLocalizationData.monsterScanText).append('\n');
+            if (!"-".equals(monsterLocalizationData.monsterScanDash)) {
+                full.append("DH=").append(monsterLocalizationData.monsterScanDash).append('\n');
+            }
+        } else {
+            full.append("- Unlocalized Strings -").append('\n');
+            full.append("Name: ").append(monsterName).append('\n');
+            full.append("- Sensor Text -").append('\n');
+            full.append(monsterSensorText).append('\n');
+            if (!"-".equals(monsterSensorDash)) {
+                full.append("DH=").append(monsterSensorDash).append('\n');
+            }
+            full.append("- Scan Text -").append('\n');
+            full.append(monsterScanText).append('\n');
+            if (!"-".equals(monsterScanDash)) {
+                full.append("DH=").append(monsterScanDash).append('\n');
+            }
         }
         return full.toString();
     }

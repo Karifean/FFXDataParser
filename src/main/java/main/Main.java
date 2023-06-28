@@ -21,6 +21,7 @@ public class Main {
     private static final String MODE_READ_TREASURES = "READ_TREASURES";
     private static final String MODE_READ_GEAR_SHOPS = "READ_GEAR_SHOPS";
     private static final String MODE_READ_ITEM_SHOPS = "READ_ITEM_SHOPS";
+    private static final String MODE_READ_MONSTER_LOCALIZATIONS = "READ_MONSTER_LOCALIZATIONS";
     private static final String MODE_READ_WEAPON_FILE = "READ_WEAPON_FILE";
     private static final String MODE_READ_STRING_FILE = "READ_STRING_FILE";
     private static final String MODE_PARSE_SCRIPT_FILE = "PARSE_SCRIPT_FILE";
@@ -103,6 +104,9 @@ public class Main {
                 break;
             case MODE_READ_ITEM_SHOPS:
                 readItemShops(PATH_ORIGINALS_KERNEL + "item_shop.bin", true);
+                break;
+            case MODE_READ_MONSTER_LOCALIZATIONS:
+                readMonsterLocalizations(true);
                 break;
             case MODE_READ_WEAPON_FILE:
                 for (String filename : realArgs) {

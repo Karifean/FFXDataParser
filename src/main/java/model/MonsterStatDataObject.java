@@ -1,6 +1,7 @@
 package model;
 
 import main.DataAccess;
+import main.StringHelper;
 import script.model.StackObject;
 
 import java.util.ArrayList;
@@ -10,9 +11,21 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 public class MonsterStatDataObject {
-    public static final int LENGTH = 0x8C;
+    public static final int LENGTH = 0x80;
 
     private final int[] bytes;
+
+    int nameOffset;
+    int sensorOffset;
+    int sensorDashOffset;
+    int scanOffset;
+    int scanDashOffset;
+    public String monsterName;
+    public String monsterSensorText;
+    public String monsterSensorDash;
+    public String monsterScanText;
+    public String monsterScanDash;
+    boolean isLocalizationData = false;
 
     int hp;
     int mp;
@@ -147,12 +160,19 @@ public class MonsterStatDataObject {
     boolean resistDoom;
     boolean resistUnused2;
 
-    public MonsterStatDataObject(int[] bytes) {
+    public MonsterStatDataObject(int[] bytes, int[] stringBytes) {
         this.bytes = bytes;
-        mapStatBytes();
+        mapBytes();
+        mapFlags();
+        mapStrings(stringBytes);
     }
 
-    private void mapStatBytes() {
+    private void mapBytes() {
+        nameOffset = read2Bytes(bytes, 0x00);
+        sensorOffset = read2Bytes(bytes, 0x04);
+        sensorDashOffset = read2Bytes(bytes, 0x08);
+        scanOffset = read2Bytes(bytes, 0x0C);
+        scanDashOffset = read2Bytes(bytes, 0x10);
         hp = read4Bytes(bytes, 0x14);
         mp = read4Bytes(bytes, 0x18);
         overkillThreshold = read4Bytes(bytes, 0x1C);
@@ -211,11 +231,9 @@ public class MonsterStatDataObject {
         modelIdx = read2Bytes(bytes, 0x74);
         doomCounter = bytes[0x77];
         monsterArenaIdx = read2Bytes(bytes, 0x78);
-
-        mapStatsFlags();
     }
 
-    private void mapStatsFlags() {
+    private void mapFlags() {
         armored = (miscProperties28 & 0x01) > 0;
         immunityFractionalDamage = (miscProperties28 & 0x02) > 0;
         immunityLife = (miscProperties28 & 0x04) > 0;
@@ -290,28 +308,48 @@ public class MonsterStatDataObject {
         resistUnused2 = (extraStatusImmunities2 & 0x80) > 0;
     }
 
+    private void mapStrings(int[] stringBytes) {
+        if (stringBytes == null || stringBytes.length == 0) {
+            return;
+        }
+        isLocalizationData = true;
+        monsterName = StringHelper.getStringAtLookupOffset(stringBytes, nameOffset);
+        monsterSensorText = StringHelper.getStringAtLookupOffset(stringBytes, sensorOffset);
+        monsterSensorDash = StringHelper.getStringAtLookupOffset(stringBytes, sensorDashOffset);
+        monsterScanText = StringHelper.getStringAtLookupOffset(stringBytes, scanOffset);
+        monsterScanDash = StringHelper.getStringAtLookupOffset(stringBytes, scanDashOffset);
+    }
+
     @Override
     public String toString() {
         List<String> list = new ArrayList<>();
-        list.add("HP=" + hp + " MP=" + mp + " Overkill=" + overkillThreshold);
-        list.add("STR=" + str + " DEF=" + def + " MAG=" + mag + " MDF=" + mdf);
-        list.add("AGI=" + agi + " LCK=" + lck + " EVA=" + eva + " ACC=" + acc);
-        if (armored) {
-            list.add("Armored");
-        }
-        list.add(specialImmunities());
-        list.add(allElemental());
-        list.add(statusResists());
-        list.add("Threaten Base Chance=" + statusChanceThreaten + "%");
-        list.add("Poison Damage=" + poisonDamage + "%");
-        list.add(autoBuffs());
-        if (forcedAction > 0) {
-            list.add("Forced Action: " + asMove(forcedAction));
+        if (isLocalizationData) {
+            list.add("Name: " + monsterName + " (Offset " + String.format("%04X", nameOffset) + ")");
+            list.add("- Sensor Text - (Offset " + String.format("%04X", sensorOffset) + ")");
+            list.add(monsterSensorText);
+            list.add("- Scan Text - (Offset " + String.format("%04X", scanOffset) + ")");
+            list.add(monsterScanText);
         } else {
-            list.add("No Forced Action");
+            list.add("HP=" + hp + " MP=" + mp + " Overkill=" + overkillThreshold);
+            list.add("STR=" + str + " DEF=" + def + " MAG=" + mag + " MDF=" + mdf);
+            list.add("AGI=" + agi + " LCK=" + lck + " EVA=" + eva + " ACC=" + acc);
+            if (armored) {
+                list.add("Armored");
+            }
+            list.add(specialImmunities());
+            list.add(allElemental());
+            list.add(statusResists());
+            list.add("Threaten Base Chance=" + statusChanceThreaten + "%");
+            list.add("Poison Damage=" + poisonDamage + "%");
+            list.add(autoBuffs());
+            if (forcedAction > 0) {
+                list.add("Forced Action: " + asMove(forcedAction));
+            } else {
+                list.add("No Forced Action");
+            }
+            list.add("Doom Counter=" + doomCounter);
+            list.add("Model=" + StackObject.enumToString("model", modelIdx));
         }
-        list.add("Doom Counter=" + doomCounter);
-        list.add("Model=" + StackObject.enumToString("model", modelIdx));
 
         String full = list.stream().filter(s -> s != null && !s.isBlank()).collect(Collectors.joining("\n"));
         return full;

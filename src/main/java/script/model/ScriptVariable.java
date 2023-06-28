@@ -68,7 +68,7 @@ public class ScriptVariable {
                     }
                 }
             }
-            StackObject obj = new StackObject(script, type, false, null, value);
+            StackObject obj = new StackObject(script, null, type, false, null, value);
             values.add(obj);
         }
     }

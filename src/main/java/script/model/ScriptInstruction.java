@@ -14,6 +14,7 @@ public class ScriptInstruction {
     public final String argvsh;
 
     public List<ScriptJump> jumps;
+    public List<ScriptJump> reachableFrom;
 
     public ScriptInstruction(int addr, int opcode) {
         this.offset = addr;
