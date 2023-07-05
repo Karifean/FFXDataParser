@@ -144,14 +144,14 @@ public abstract class ScriptFuncLib {
         putFuncWithIdx(0x0077, new ScriptFunc("stopObjectMotion", "unknown", null, p("index", "int"))); // Is this object index or motion index?
         putUnknownFunc(0x0078, 1);
         putUnknownFunc(0x007A, 2); // noclip: collision detection
-        putUnknownFunc(0x007C, 1);
+        putFuncWithIdx(0x007C, new ScriptFunc("waitForText", "unknown", null, p("boxIndex", "int"))); // equivalent to 0x0084 with second param 0
         putUnknownFunc(0x007D, 1);
         putUnknownFunc(0x007F, 1);
         putUnknownFunc(0x0080, 0); // noclip: getMapPointPosition1()
         putUnknownFunc(0x0081, 0); // noclip: getMapPointPosition2()
         putUnknownFunc(0x0082, 0); // noclip: getMapPointPosition3()
         putUnknownFunc(0x0083, 0); // noclip: getMapPointHeading()
-        putUnknownFunc(0x0084, 2);
+        putFuncWithIdx(0x0084, new ScriptFunc("waitForText", "unknown", null, p("boxIndex", "int"), p(2)));
         putUnknownFunc(0x0085, 1); // noclip: setCollisionRadius()
         putUnknownFunc(0x0086, 0);
         putUnknownFunc(0x0087, 0);
@@ -160,7 +160,7 @@ public abstract class ScriptFuncLib {
         putUnknownFunc(0x008B, 0); // noclip: checking line crossing
         putUnknownFunc(0x008D, 1);
         putUnknownFunc(0x008E, 1); // noclip: setCollisionHeight()
-        putUnknownFunc(0x008F, 1);
+        putFuncWithIdx(0x008F, new ScriptFunc("isTextGone", "int", null, p("boxIndex", "int")));
         putUnknownFunc(0x0090, 0); // noclip: getYaw1()
         putUnknownFunc(0x0091, 0);
         putUnknownFunc(0x0092, 1); // noclip: getYaw2()
@@ -168,7 +168,7 @@ public abstract class ScriptFuncLib {
         putFuncWithIdx(0x0094, new ScriptFunc("setGravity", "unknown", null, p("g", "int")));
         putFuncWithIdx(0x0095, new ScriptFunc(p("float"))); // noclip: setRotationYaw()
         putUnknownFunc(0x0096, 1); // noclip: setRotationPitch()
-        putUnknownFunc(0x0097, 1);
+        putFuncWithIdx(0x0097, new ScriptFunc("getTextState", "int", null, p("boxIndex", "int")));
         putUnknownFunc(0x0098, 2);
         putUnknownFunc(0x009A, 1);
         putUnknownFunc(0x009B, 2);
@@ -238,7 +238,7 @@ public abstract class ScriptFuncLib {
         putUnknownFunc(0x00EF, 1);
         putUnknownFunc(0x00F2, 1);
         putUnknownFunc(0x00F3, 1);
-        putUnknownFunc(0x00F4, null, "float", 3);
+        putFuncWithIdx(0x00F4, new ScriptFunc("yawToPoint", "float", null, p("x", "float"), p("y", "float"), p("z", "float"))); // y is unused
         putUnknownFunc(0x00F5, 3); // Could also be 0-2, must add up to 3 with 0x0096
         putUnknownFunc(0x00F6, 2);
         putUnknownFunc(0x00F8, 3);
@@ -359,8 +359,8 @@ public abstract class ScriptFuncLib {
         putUnknownFunc(0x0195, 0);
         putUnknownFunc(0x0196, 1);
         putUnknownFunc(0x0197, 1);
-        putFuncWithIdx(0x0198, new ScriptFunc("enableVisualEffectIndex", "unknown", null, p("levelPartIndex?", "int"), p("effectIndex?", "int"), p("runOnce", "bool")));
-        putFuncWithIdx(0x0199, new ScriptFunc("enableOwnVisualEffectIndex", "unknown", null, p("effectIndex", "int"), p("runOnce", "bool")));
+        putFuncWithIdx(0x0198, new ScriptFunc("enableVisualEffectIndex", "unknown", null, p("levelPartIndex", "int"), p("effectType"), p("runOnce", "bool")));
+        putFuncWithIdx(0x0199, new ScriptFunc("enableOwnVisualEffectIndex", "unknown", null, p("effectType"), p("runOnce", "bool")));
         putUnknownFunc(0x019C, 0);
         putUnknownFunc(0x019D, 1);
         putUnknownFunc(0x019E, 0);
@@ -394,7 +394,7 @@ public abstract class ScriptFuncLib {
         putUnknownFunc(0x01C5, 2);
         putUnknownFunc(0x01C6, 0);
         putFuncWithIdx(0x01C8, new ScriptFunc("disableOwnVisualEffect", "unknown", null, p("effectType", "int"))); // Never used by the game
-        putFuncWithIdx(0x01C9, new ScriptFunc("enableVisualEffect", "unknown", null, p("effectType?", "int"), p("levelPartIndex?", "int")));
+        putFuncWithIdx(0x01C9, new ScriptFunc("disableVisualEffect", "unknown", null, p("levelPartIndex", "int"), p("effectType")));
         putUnknownFunc(0x01CA, 0);
         putUnknownFunc(0x01CC, 0);
         putUnknownFunc(0x01CE, 0);
@@ -511,17 +511,17 @@ public abstract class ScriptFuncLib {
         putUnknownFunc(0x101B, 6);
         putUnknownFunc(0x101C, 2);
         putUnknownFunc(0x4001, 1);
-        putUnknownFunc(0x4003, 4);
+        putFuncWithIdx(0x4003, new ScriptFunc("fadeinFromColor", "unknown", null, p("frames", "int"), p("red", "int"), p("green", "int"), p("blue", "int")));
         putFuncWithIdx(0x4004, new ScriptFunc("fadeinFromBlack?", "unknown", null, p("frames", "int")));
         putFuncWithIdx(0x4005, new ScriptFunc("fadeoutToBlack?", "unknown", null, p("frames", "int")));
-        putUnknownFunc(0x4006, 1);
-        putUnknownFunc(0x4007, 1);
-        putUnknownFunc(0x4008, 4);
-        putUnknownFunc(0x4009, 4);
-        putUnknownFunc(0x400A, 1);
-        putUnknownFunc(0x400B, 0);
-        putUnknownFunc(0x400C, 0);
-        putUnknownFunc(0x400D, 0);
+        putFuncWithIdx(0x4006, new ScriptFunc("fadeinFromWhite", "unknown", null, p("frames", "int")));
+        putFuncWithIdx(0x4007, new ScriptFunc("fadeoutToWhite", "unknown", null, p("frames", "int")));
+        putFuncWithIdx(0x4008, new ScriptFunc("setScreenOverlayColor", "unknown", null, p("red", "int"), p("green", "int"), p("blue", "int"), p("alpha", "int")));
+        putFuncWithIdx(0x4009, new ScriptFunc("dimScreen", "unknown", null, p("red", "int"), p("green", "int"), p("blue", "int"), p("factor", "int"))); // blends (screen - color)*factor, super weird if color isn't close to black
+        putFuncWithIdx(0x400A, new ScriptFunc("motionBlurEffect", "unknown", null, p("alpha", "int"))); // alpha for overlaying previous frame
+        putFuncWithIdx(0x400B, new ScriptFunc("disableFade", "unknown", null)); // only for the black and white fades
+        putFuncWithIdx(0x400C, new ScriptFunc("disableScreenOverlayColor", "unknown", null));
+        putFuncWithIdx(0x400D, new ScriptFunc("waitForFade", "unknown", null)); // only for the black and white fades
         putUnknownFunc(0x400E, 1);
         putUnknownFunc(0x400F, 1);
         putUnknownFunc(0x4013, 6);
@@ -530,7 +530,7 @@ public abstract class ScriptFuncLib {
         putUnknownFunc(0x4016, 2);
         putUnknownFunc(0x4017, 2);
         putUnknownFunc(0x4019, 1);
-        putUnknownFunc(0x401A, 2);
+        putFuncWithIdx(0x401A, new ScriptFunc("cameraCrossFade", "unknown", null, p("frames", "int"), p("alpha", "int")));
         putUnknownFunc(0x401B, 1);
         putUnknownFunc(0x401C, 1);
         putFuncWithIdx(0x401D, new ScriptFunc("showModularMenu", "unknown", null, p("menu")));

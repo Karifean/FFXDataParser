@@ -363,6 +363,13 @@ public abstract class ScriptConstants {
         putEnum("textAlignment", 0x03, "?Right");
         putEnum("textAlignment", 0x04, "?Center");
 
+        putEnum("effectType", 0x00, "Position");
+        putEnum("effectType", 0x01, "Rotation");
+        putEnum("effectType", 0x02, "RenderParameter");
+        putEnum("effectType", 0x03, "Texture");
+        putEnum("effectType", 0x05, "PositionAndRotation");
+        putEnum("effectType", 0xFFFF, "All");
+
         putEnum("field", 0x0000, "system");
         putEnum("field", 0x0002, "test00");
         putEnum("field", 0x0005, "test10");
