@@ -116,15 +116,14 @@ public class ScriptHeader {
         this.purposeBytes = payload;
         for (int i = 0; i < valueCount; i++) {
             int val = read2Bytes(payload, i * 2);
-            if (purpose == 2) {
-                if (val < entryPoints.length) {
-                    entryPoints[val].setCtbPurpose(i);
-                }
-            } else if (purpose == 4) {
-                if (val < entryPoints.length) {
-                    entryPoints[val].setEncScript(i);
-                }
+            if (val == 0xFFFF) {
+                continue;
             }
+            if (val >= entryPoints.length) {
+                System.err.println("val out of bounds! val=" + val + " eps=" + entryPoints.length);
+                continue;
+            }
+            entryPoints[val].setGenericPurpose(i, purpose);
         }
     }
 

@@ -20,7 +20,6 @@ public class ScriptObject {
     protected final int[] scriptMappingBytes;
 
     protected int[] actualScriptCodeBytes;
-    protected int byteCursor = 0;
     protected ScriptHeader[] headers;
     protected int[] refFloats;
     protected int[] refInts;
@@ -31,6 +30,7 @@ public class ScriptObject {
     protected int map_start;
     protected int creatorTagAddress;
     protected int event_name_start;
+    protected int jumpsEndAddress;
     protected int amountOfType2or3Scripts;
     protected int amountOfType4Scripts;
     protected int amountOfType5Scripts;
@@ -45,6 +45,7 @@ public class ScriptObject {
     protected int scriptCodeStartAddress;
     protected int scriptCodeEndAddress;
     protected int numberOfScripts;
+    protected int numberOfScriptsWithoutSubroutines;
     public List<String> strings;
     Stack<StackObject> stack = new Stack<>();
     Map<Integer, String> currentTempITypes = new HashMap<>();
@@ -83,13 +84,11 @@ public class ScriptObject {
     }
 
     private void mapFields() {
-        byteCursor = 0;
         scriptCodeLength = read4Bytes(0x00);
-        // System.out.println("Script Length: " + scriptCodeLength);
         map_start = read4Bytes(0x04);
         creatorTagAddress = read4Bytes(0x08);
         event_name_start = read4Bytes(0x0C);
-        int jumpsEndAddress = read4Bytes(0x10);
+        jumpsEndAddress = read4Bytes(0x10);
         amountOfType2or3Scripts = read2Bytes(0x14);
         amountOfType4Scripts = read2Bytes(0x16);
         mainScriptIndex = read2Bytes(0x18);
@@ -102,8 +101,7 @@ public class ScriptObject {
         other_offset = read4Bytes(0x2C);
         scriptCodeStartAddress = read4Bytes(0x30);
         numberOfScripts = read2Bytes(0x34);
-        int numberOfScriptsWithoutSubroutines = read2Bytes(0x36);
-        // System.out.println("Number of Scripts: " + numberOfScripts + " / " + numberOfScripts2);
+        numberOfScriptsWithoutSubroutines = read2Bytes(0x36);
     }
 
     private void parseHeaders() {
@@ -145,7 +143,6 @@ public class ScriptObject {
         for (ScriptHeader h : headers) {
             if (variableStructsTableOffset < 0) {
                 variableStructsTableOffset = h.variableStructsTableOffset;
-                byteCursor = h.variableStructsTableOffset;
                 variableDeclarations = new ScriptVariable[h.variablesCount];
                 for (int i = 0; i < h.variablesCount; i++) {
                     int lb = read4Bytes(variableStructsTableOffset + i * 8);
@@ -302,9 +299,9 @@ public class ScriptObject {
                 currentExecutionLines = new ArrayList<>(currentExecutionLines);
                 currentExecutionLines.addAll(instruction.jumps);
             }
-            if (currentExecutionLines.stream().noneMatch(j -> j.isEntryPoint)) {
+            /* if (currentExecutionLines.stream().noneMatch(j -> j.isEntryPoint)) {
                 warningsOnLine.add("Unreachable code");
-            }
+            } */
             instruction.reachableFrom = currentExecutionLines;
             processInstruction(instruction);
             if (getLineEnd(instruction.opcode)) {

@@ -17,6 +17,8 @@ public class ScriptJump {
     public List<ScriptJump> reachableFrom;
 
     private String label;
+    private int purposeKind;
+    private int purposeSlot;
 
     public ScriptJump(ScriptHeader scriptHeader, int addr, int jumpIndex, boolean isEntryPoint) {
         this.scriptHeader = scriptHeader;
@@ -46,7 +48,8 @@ public class ScriptJump {
                     return sPrefix + "scout";
                 }
             }
-            return sPrefix + "e" + String.format("%02X", jumpIndex);
+            String pSuffix = purposeSlot > 0 ? "p" + String.format("%02X", purposeSlot) : "";
+            return sPrefix + "e" + String.format("%02X", jumpIndex) + pSuffix;
         }
     }
 
@@ -60,15 +63,25 @@ public class ScriptJump {
         } */
     }
 
-    public void setCtbPurpose(int slot) {
-        String purpose = ctbPurposeSlotToString(slot);
+    public void setGenericPurpose(int slot, int kind) {
+        purposeKind = kind;
+        purposeSlot = slot;
+        if (kind == 2) {
+            setCtbPurpose();
+        } else if (kind == 4) {
+            setEncScript();
+        }
+    }
+
+    private void setCtbPurpose() {
+        String purpose = ctbPurposeSlotToString(purposeSlot);
         if (purpose != null) {
             label = "s" + String.format("%02X", scriptIndex) + purpose;
         }
     }
 
-    public void setEncScript(int slot) {
-        label = "encScript" + slot;
+    private void setEncScript() {
+        label = "encScript" + purposeSlot;
     }
 
     private static String ctbPurposeSlotToString(int slot) {
@@ -79,8 +92,9 @@ public class ScriptJump {
             case 3 -> "onHit";
             case 4 -> "onDeath";
             case 5 -> "onMove";
-            case 6 -> "postTurn";
-            case 7 -> "postMove";
+            case 6 -> "postTurn"; // prePoison
+            case 7 -> "postMove?";
+            case 8 -> "postPoison?";
             default -> null;
         };
     }

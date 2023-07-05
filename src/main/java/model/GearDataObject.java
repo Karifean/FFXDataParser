@@ -39,6 +39,10 @@ public class GearDataObject {
     boolean brotherhood;
 
     public GearDataObject(int[] bytes) {
+        this(bytes, null);
+    }
+
+    public GearDataObject(int[] bytes, int[] stringBytes) {
         this.bytes = bytes;
         isBukiGet = (bytes.length == 16);
         if (isBukiGet) {

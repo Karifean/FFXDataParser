@@ -1,14 +1,22 @@
 package reading;
 
+import model.TreasureDataObject;
+
 import java.io.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public abstract class DataFileReader<T> {
+public class DataFileReader<T> {
+    private final DataObjectCreator<T> objectCreator;
 
-    public abstract T objectCreator(int[] bytes, int[] stringBytes) throws IOException;
-    public abstract String indexWriter(int idx);
+    public DataFileReader(DataObjectCreator<T> objectCreator) {
+        this.objectCreator = objectCreator;
+    }
+
+    public String indexWriter(int idx) {
+        return "Index " + idx + " [" + String.format("%02X", idx) + "h]";
+    }
 
     public List<T> readGenericDataFile(String filename, boolean print) {
         File file = FileAccessorWithMods.resolveFile(filename, print);
@@ -33,7 +41,7 @@ public abstract class DataFileReader<T> {
                 }
                 final int j = maxIndex - minIndex;
                 for (int i = 0; i <= j; i++) {
-                    T obj = objectCreator(Arrays.copyOfRange(dataBytes, i * individualLength, (i + 1) * individualLength), allStrings);
+                    T obj = objectCreator.create(Arrays.copyOfRange(dataBytes, i * individualLength, (i + 1) * individualLength), allStrings);
                     objects.add(obj);
                     if (print) {
                         String offset = String.format("%04X", (i * individualLength) + 20);

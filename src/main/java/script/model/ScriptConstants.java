@@ -432,6 +432,7 @@ public abstract class ScriptConstants {
         putEnum("bgm", 0x001D, "Thunder Plains");
         putEnum("bgm", 0x0025, "People of the North Pole");
         putEnum("bgm", 0x0029, "Truth Revealed");
+        putEnum("bgm", 0x0030, "Prelude");
         putEnum("bgm", 0x0031, "Otherworld (BFA)");
         putEnum("bgm", 0x0082, "To Zanarkand");
         putEnum("bgm", 0x0091, "Challenge");
@@ -675,7 +676,7 @@ public abstract class ScriptConstants {
         putBattleActorProperty(0x0083, "StealItemRareType", "move", "stat_rareitem");
         putBattleActorProperty(0x0084, "StealItemRareAmount", "int", "stat_rareitem_num");
         putBattleActorProperty(0x0085, null, "unknown", "stat_magiclv");
-        putBattleActorProperty(0x0086, "?showBirthAnimation", "bool", "stat_appear_motion_flag");
+        putBattleActorProperty(0x0086, "?birthAnimation", "int", "stat_appear_motion_flag");
         putBattleActorProperty(0x0087, null, "unknown", "stat_cursor_element");
         putBattleActorProperty(0x0088, null, "unknown", "stat_limit_bar_flag_cam");
         putBattleActorProperty(0x0089, "showOverdriveBar", "bool", "stat_limit_bar_flag");

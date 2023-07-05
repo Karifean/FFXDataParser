@@ -15,9 +15,13 @@ public class ItemShopDataObject implements Nameable {
     private int unusedPrices;
     private int[] offeredItemIndexes = new int[0x10];
 
-    public ItemShopDataObject(int[] bytes) {
+    public ItemShopDataObject(int[] bytes, int[] stringBytes) {
         this.bytes = bytes;
         mapBytes();
+    }
+
+    public ItemShopDataObject(int[] bytes) {
+        this(bytes, null);
     }
 
     private void mapBytes() {

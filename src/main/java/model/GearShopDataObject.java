@@ -13,15 +13,20 @@ public class GearShopDataObject implements Nameable {
     private final int[] bytes;
 
     private int unusedPrices;
-    private int[] offeredGearIndexes = new int[0x10];
+    private int[] offeredGearIndexes;
 
-    public GearShopDataObject(int[] bytes) {
+    public GearShopDataObject(int[] bytes, int[] stringBytes) {
         this.bytes = bytes;
         mapBytes();
     }
 
+    public GearShopDataObject(int[] bytes) {
+        this(bytes, null);
+    }
+
     private void mapBytes() {
         unusedPrices = read2Bytes(0x00);
+        offeredGearIndexes = new int[0x10];
         for (int i = 0; i < 0x10; i++) {
             offeredGearIndexes[i] = read2Bytes(i * 2 + 2);
         }

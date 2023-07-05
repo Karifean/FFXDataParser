@@ -69,12 +69,7 @@ public class DataReadingManager {
     }
 
     public static AbilityDataObject[] readAbilitiesFromFile(String filename, int group, boolean print) {
-        DataFileReader<AbilityDataObject> reader = new DataFileReader<>() {
-            @Override
-            public AbilityDataObject objectCreator(int[] bytes, int[] stringBytes) {
-                return new AbilityDataObject(bytes, stringBytes);
-            }
-
+        DataFileReader<AbilityDataObject> reader = new DataFileReader<>(AbilityDataObject::new) {
             @Override
             public String indexWriter(int idx) {
                 return String.format("%04X", idx + group * 0x1000);
@@ -89,12 +84,7 @@ public class DataReadingManager {
     }
 
     public static KeyItemDataObject[] readKeyItemsFromFile(String filename, boolean print) {
-        DataFileReader<KeyItemDataObject> reader = new DataFileReader<>() {
-            @Override
-            public KeyItemDataObject objectCreator(int[] bytes, int[] stringBytes) {
-                return new KeyItemDataObject(bytes, stringBytes);
-            }
-
+        DataFileReader<KeyItemDataObject> reader = new DataFileReader<>(KeyItemDataObject::new) {
             @Override
             public String indexWriter(int idx) {
                 return "A0" + String.format("%02X", idx);
@@ -109,12 +99,7 @@ public class DataReadingManager {
     }
 
     public static GearAbilityDataObject[] readGearAbilitiesFromFile(String filename, boolean print) {
-        DataFileReader<GearAbilityDataObject> reader = new DataFileReader<>() {
-            @Override
-            public GearAbilityDataObject objectCreator(int[] bytes, int[] stringBytes) {
-                return new GearAbilityDataObject(bytes, stringBytes);
-            }
-
+        DataFileReader<GearAbilityDataObject> reader = new DataFileReader<>(GearAbilityDataObject::new) {
             @Override
             public String indexWriter(int idx) {
                 return "80" + String.format("%02X", idx);
@@ -152,13 +137,7 @@ public class DataReadingManager {
         } else if (!filename.endsWith(".bin") && !filename.endsWith(".dat")) {
             return null;
         }
-        List<Integer> knownLengths = new ArrayList<>();
-        knownLengths.add(null);
-        knownLengths.add(null);
-        knownLengths.add(MonsterStatDataObject.LENGTH);
-        knownLengths.add(null);
-        knownLengths.add(MonsterSpoilsDataObject.LENGTH);
-        List<Chunk> chunks = ChunkedFileHelper.readGenericChunkedFile(filename, print, knownLengths, true);
+        List<Chunk> chunks = ChunkedFileHelper.readGenericChunkedFile(filename, print, null, true);
         MonsterFile monsterFile = new MonsterFile(chunks);
         try {
             int idx = Integer.parseInt(filename.substring(filename.length() - 7, filename.length() - 4), 10);
@@ -268,17 +247,7 @@ public class DataReadingManager {
     }
 
     public static TreasureDataObject[] readTreasures(String filename, boolean print) {
-        DataFileReader<TreasureDataObject> reader = new DataFileReader<>() {
-            @Override
-            public TreasureDataObject objectCreator(int[] bytes, int[] stringBytes) {
-                return new TreasureDataObject(bytes);
-            }
-
-            @Override
-            public String indexWriter(int idx) {
-                return "Index " + idx + " [" + String.format("%02X", idx) + "h]";
-            }
-        };
+        DataFileReader<TreasureDataObject> reader = new DataFileReader<>(TreasureDataObject::new);
         List<TreasureDataObject> list = reader.readGenericDataFile(filename, print);
         if (list == null) {
             return null;
@@ -288,17 +257,7 @@ public class DataReadingManager {
     }
 
     public static GearDataObject[] readWeaponPickups(String filename, boolean print) {
-        DataFileReader<GearDataObject> reader = new DataFileReader<>() {
-            @Override
-            public GearDataObject objectCreator(int[] bytes, int[] stringBytes) {
-                return new GearDataObject(bytes);
-            }
-
-            @Override
-            public String indexWriter(int idx) {
-                return "Index " + idx + " [" + String.format("%02X", idx) + "h]";
-            }
-        };
+        DataFileReader<GearDataObject> reader = new DataFileReader<>(GearDataObject::new);
         List<GearDataObject> list = reader.readGenericDataFile(filename, print);
         if (list == null) {
             return null;
@@ -308,17 +267,7 @@ public class DataReadingManager {
     }
 
     public static GearShopDataObject[] readWeaponShops(String filename, boolean print) {
-        DataFileReader<GearShopDataObject> reader = new DataFileReader<>() {
-            @Override
-            public GearShopDataObject objectCreator(int[] bytes, int[] stringBytes) {
-                return new GearShopDataObject(bytes);
-            }
-
-            @Override
-            public String indexWriter(int idx) {
-                return "Index " + idx + " [" + String.format("%02X", idx) + "h]";
-            }
-        };
+        DataFileReader<GearShopDataObject> reader = new DataFileReader<>(GearShopDataObject::new);
         List<GearShopDataObject> list = reader.readGenericDataFile(filename, print);
         if (list == null) {
             return null;
@@ -328,17 +277,7 @@ public class DataReadingManager {
     }
 
     public static ItemShopDataObject[] readItemShops(String filename, boolean print) {
-        DataFileReader<ItemShopDataObject> reader = new DataFileReader<>() {
-            @Override
-            public ItemShopDataObject objectCreator(int[] bytes, int[] stringBytes) {
-                return new ItemShopDataObject(bytes);
-            }
-
-            @Override
-            public String indexWriter(int idx) {
-                return "Index " + idx + " [" + String.format("%02X", idx) + "h]";
-            }
-        };
+        DataFileReader<ItemShopDataObject> reader = new DataFileReader<>(ItemShopDataObject::new);
         List<ItemShopDataObject> list = reader.readGenericDataFile(filename, print);
         if (list == null) {
             return null;
@@ -348,19 +287,7 @@ public class DataReadingManager {
     }
 
     public static MonsterStatDataObject[] readMonsterLocalizations(boolean print) {
-        class MonsterLocalizationReader extends DataFileReader<MonsterStatDataObject> {
-            int offset = 0;
-            @Override
-            public MonsterStatDataObject objectCreator(int[] bytes, int[] stringBytes) {
-                return new MonsterStatDataObject(bytes, stringBytes);
-            }
-
-            @Override
-            public String indexWriter(int idx) {
-                return "Index " + (idx) + " [" + String.format("%02X", idx) + "h]";
-            }
-        };
-        MonsterLocalizationReader reader = new MonsterLocalizationReader();
+        DataFileReader<MonsterStatDataObject> reader = new DataFileReader<>(MonsterStatDataObject::new);
         int fileIndex = 0;
         File file;
         List<MonsterStatDataObject> fullList = new ArrayList<>();
@@ -373,7 +300,6 @@ public class DataReadingManager {
                 if (list != null) {
                     fullList.addAll(list);
                 }
-                reader.offset = fullList.size();
             }
         } while (file.exists());
         MonsterStatDataObject[] array = new MonsterStatDataObject[fullList.size()];

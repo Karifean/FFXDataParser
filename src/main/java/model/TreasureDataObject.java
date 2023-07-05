@@ -10,19 +10,21 @@ public class TreasureDataObject implements Nameable {
 
     private int kind;
     private int quantity;
-    private int typeLow;
     private int type;
 
-    public TreasureDataObject(int[] bytes) {
+    public TreasureDataObject(int[] bytes, int[] stringBytes) {
         this.bytes = bytes;
         mapBytes();
+    }
+
+    public TreasureDataObject(int[] bytes) {
+        this(bytes, null);
     }
 
     private void mapBytes() {
         kind = bytes[0x00];
         quantity = bytes[0x01];
-        typeLow = bytes[0x02];
-        type = bytes[0x03] * 0x100 + typeLow;
+        type = bytes[0x02] + bytes[0x03] * 0x100;
     }
 
     @Override
