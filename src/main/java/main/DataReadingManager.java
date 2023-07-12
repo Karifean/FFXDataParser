@@ -1,6 +1,7 @@
 package main;
 
 import model.*;
+import model.spheregrid.SphereGridLayoutDataObject;
 import reading.Chunk;
 import reading.ChunkedFileHelper;
 import reading.DataFileReader;
@@ -304,5 +305,18 @@ public class DataReadingManager {
         } while (file.exists());
         MonsterStatDataObject[] array = new MonsterStatDataObject[fullList.size()];
         return fullList.toArray(array);
+    }
+
+    public static SphereGridLayoutDataObject readSphereGridLayout(String layout, String contents, boolean print) {
+        int[] contentBytes = ChunkedFileHelper.fileToBytes(FileAccessorWithMods.resolveFile(contents, false));
+        int[] layoutBytes = ChunkedFileHelper.fileToBytes(FileAccessorWithMods.resolveFile(layout, false));
+        SphereGridLayoutDataObject obj = new SphereGridLayoutDataObject(layoutBytes);
+        if (contentBytes != null) {
+            obj.setNodeContents(Arrays.copyOfRange(contentBytes, 0x8, contentBytes.length));
+        }
+        if (print) {
+            System.out.println(obj);
+        }
+        return obj;
     }
 }
