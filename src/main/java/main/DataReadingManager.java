@@ -30,6 +30,7 @@ public class DataReadingManager {
     public static final String PATH_LOCALIZED_ENCOUNTER = PATH_LOCALIZED_ROOT + "battle/btl/";
     public static final String PATH_ORIGINALS_EVENT = PATH_ORIGINALS_ROOT + "event/obj/";
     public static final String PATH_LOCALIZED_EVENT = PATH_LOCALIZED_ROOT + "event/obj_ps3/";
+    public static final String PATH_ABMAP = PATH_ORIGINALS_ROOT + "menu/abmap/";
     public static final String PATH_SKILL_TABLE_3 = PATH_LOCALIZED_KERNEL + "command.bin"; // "FILE07723.dat"; // "command.bin"; //
     public static final String PATH_SKILL_TABLE_4 = PATH_LOCALIZED_KERNEL + "monmagic1.bin"; // "FILE07740.dat"; // "monmagic1.bin"; //
     public static final String PATH_SKILL_TABLE_6 = PATH_LOCALIZED_KERNEL + "monmagic2.bin"; // "FILE07741.dat"; // "monmagic2.bin"; //
@@ -37,10 +38,13 @@ public class DataReadingManager {
 
     private static final boolean SKIP_BLITZBALL_EVENTS_FOLDER = true;
 
-    public static void readAndPrepareDataModel() {
+    public static void initializeInternals() {
         StringHelper.initialize();
         ScriptConstants.initialize();
         ScriptFuncLib.initialize();
+    }
+
+    public static void readAndPrepareDataModel() {
         prepareAbilities();
         DataAccess.GEAR_ABILITIES = readGearAbilitiesFromFile(PATH_LOCALIZED_KERNEL + "a_ability.bin", false);
         DataAccess.BUYABLE_GEAR = readWeaponPickups(PATH_ORIGINALS_KERNEL + "shop_arms.bin", false);
@@ -51,6 +55,9 @@ public class DataReadingManager {
         DataAccess.TREASURES = readTreasures(PATH_ORIGINALS_KERNEL + "takara.bin", false);
         readMonsterFile(PATH_MONSTER_FOLDER, false);
         DataAccess.addMonsterLocalizations(readMonsterLocalizations(false));
+        DataAccess.OSG_LAYOUT = readSphereGridLayout(PATH_ABMAP + "dat01.dat", PATH_ABMAP + "dat09.dat", false);
+        DataAccess.SSG_LAYOUT = readSphereGridLayout(PATH_ABMAP + "dat02.dat", PATH_ABMAP + "dat10.dat", false);
+        DataAccess.ESG_LAYOUT = readSphereGridLayout(PATH_ABMAP + "dat03.dat", PATH_ABMAP + "dat11.dat", false);
     }
 
     public static void prepareAbilities() {
@@ -288,7 +295,11 @@ public class DataReadingManager {
     }
 
     public static MonsterStatDataObject[] readMonsterLocalizations(boolean print) {
-        DataFileReader<MonsterStatDataObject> reader = new DataFileReader<>(MonsterStatDataObject::new);
+        DataFileReader<MonsterStatDataObject> reader = new DataFileReader<>((b, sb) -> {
+            MonsterStatDataObject statDataObject = new MonsterStatDataObject(b, sb);
+            statDataObject.isLocalizationData = true;
+            return statDataObject;
+        });
         int fileIndex = 0;
         File file;
         List<MonsterStatDataObject> fullList = new ArrayList<>();
@@ -308,12 +319,10 @@ public class DataReadingManager {
     }
 
     public static SphereGridLayoutDataObject readSphereGridLayout(String layout, String contents, boolean print) {
-        int[] contentBytes = ChunkedFileHelper.fileToBytes(FileAccessorWithMods.resolveFile(contents, false));
+        int[] fullContentBytes = ChunkedFileHelper.fileToBytes(FileAccessorWithMods.resolveFile(contents, false));
+        int[] contentBytes = fullContentBytes != null ? Arrays.copyOfRange(fullContentBytes, 0x8, fullContentBytes.length) : null;
         int[] layoutBytes = ChunkedFileHelper.fileToBytes(FileAccessorWithMods.resolveFile(layout, false));
-        SphereGridLayoutDataObject obj = new SphereGridLayoutDataObject(layoutBytes);
-        if (contentBytes != null) {
-            obj.setNodeContents(Arrays.copyOfRange(contentBytes, 0x8, contentBytes.length));
-        }
+        SphereGridLayoutDataObject obj = new SphereGridLayoutDataObject(layoutBytes, contentBytes);
         if (print) {
             System.out.println(obj);
         }

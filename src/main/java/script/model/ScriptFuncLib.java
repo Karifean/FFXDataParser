@@ -66,7 +66,7 @@ public abstract class ScriptFuncLib {
         putUnknownFunc(0x0006, 3);
         putUnknownFunc(0x0007, 1);
         putUnknownFunc(0x0010, 0);
-        putUnknownFunc(0x0011, 2);
+        putFuncWithIdx(0x0011, new ScriptFunc("transitionToMap?", "unknown", null, p("map"), p("entranceIndex?", "int")));
         putUnknownFunc(0x0012, 2);
         putFuncWithIdx(0x0013, new ScriptFunc("setPosition", "unknown", null, p("x", "float"), p("y", "float"), p("z", "float")));
         putUnknownFunc(0x0015, 3);
@@ -160,7 +160,7 @@ public abstract class ScriptFuncLib {
         putUnknownFunc(0x008B, 0); // noclip: checking line crossing
         putUnknownFunc(0x008D, 1);
         putUnknownFunc(0x008E, 1); // noclip: setCollisionHeight()
-        putFuncWithIdx(0x008F, new ScriptFunc("isTextGone", "int", null, p("boxIndex", "int")));
+        putFuncWithIdx(0x008F, new ScriptFunc("isTextGone", "bool", null, p("boxIndex", "int")));
         putUnknownFunc(0x0090, 0); // noclip: getYaw1()
         putUnknownFunc(0x0091, 0);
         putUnknownFunc(0x0092, 1); // noclip: getYaw2()
@@ -168,7 +168,7 @@ public abstract class ScriptFuncLib {
         putFuncWithIdx(0x0094, new ScriptFunc("setGravity", "unknown", null, p("g", "int")));
         putFuncWithIdx(0x0095, new ScriptFunc(p("float"))); // noclip: setRotationYaw()
         putUnknownFunc(0x0096, 1); // noclip: setRotationPitch()
-        putFuncWithIdx(0x0097, new ScriptFunc("getTextState", "int", null, p("boxIndex", "int")));
+        putFuncWithIdx(0x0097, new ScriptFunc("getTextState", "textState", null, p("boxIndex", "int")));
         putUnknownFunc(0x0098, 2);
         putUnknownFunc(0x009A, 1);
         putUnknownFunc(0x009B, 2);
@@ -257,7 +257,7 @@ public abstract class ScriptFuncLib {
         putUnknownFunc(0x0108, 5);
         putUnknownFunc(0x0109, 1);
         putUnknownFunc(0x010A, 1);
-        putUnknownFunc(0x010B, 2);
+        putFuncWithIdx(0x010B, new ScriptFunc("warpToMap?", "unknown", null, p("map"), p("entranceIndex?", "int")));
         putUnknownFunc(0x010C, 2);
         putFuncWithIdx(0x010D, new ScriptFunc("SetPrimerCollected", "unknown", null, p("primerIndex", "int")));
         putFuncWithIdx(0x010E, new ScriptFunc("CollectedPrimersBitmask", "int", null, false));

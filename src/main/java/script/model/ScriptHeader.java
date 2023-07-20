@@ -37,6 +37,7 @@ public class ScriptHeader {
     public List<ScriptVariable> sharedVars;
 
     private Integer purpose;
+    private Integer purposeSlot;
     private int[] purposeBytes;
 
     public ScriptHeader(int scriptIndex, int[] bytes) {
@@ -125,6 +126,10 @@ public class ScriptHeader {
             }
             entryPoints[val].setGenericPurpose(i, purpose);
         }
+    }
+
+    public void setPurposeSlot(int purposeSlot) {
+        this.purposeSlot = purposeSlot;
     }
 
     public static String scriptTypeToString(int scriptType) {

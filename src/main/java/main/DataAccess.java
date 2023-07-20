@@ -1,6 +1,7 @@
 package main;
 
 import model.*;
+import model.spheregrid.SphereGridLayoutDataObject;
 import script.MonsterFile;
 
 public abstract class DataAccess {
@@ -13,6 +14,9 @@ public abstract class DataAccess {
     public static GearDataObject[] BUYABLE_GEAR;
     public static GearShopDataObject[] GEAR_SHOPS;
     public static ItemShopDataObject[] ITEM_SHOPS;
+    public static SphereGridLayoutDataObject OSG_LAYOUT;
+    public static SphereGridLayoutDataObject SSG_LAYOUT;
+    public static SphereGridLayoutDataObject ESG_LAYOUT;
     private final static Nameable DUMMY_OBJECT = () -> "null";
 
     public static Nameable getNameableObject(String type, int idx) {

@@ -282,6 +282,7 @@ public abstract class ScriptConstants {
         putGlobalVariable(0x00CE, "BikanelTreasureFlags1", "int");
         putGlobalVariable(0x00CF, "BikanelTreasureFlags2", "int");
         putGlobalVariable(0x00D0, "BikanelTreasureFlags3", "int");
+        putGlobalVariable(0x0115, "BesaidVillageTreasureFlags", "int");
         putGlobalVariable(0x014B, "ControllableCharacterInLuca", "char");
         putGlobalVariable(0x01C0, "KilikaForestTreasureFlags", "int");
         putGlobalVariable(0x01C5, "BesaidTreasureFlags", "int");
@@ -297,7 +298,18 @@ public abstract class ScriptConstants {
         putGlobalVariable(0x0A88, "BlitzballTeamPlayerCount", "int", "blitzballTeam");
         putGlobalVariable(0x0A93, "JechtSpheresCollectedCount", "int");
         putGlobalVariable(0x0A95, "AirshipDestinationUnlocks", "int");
+        putGlobalVariable(0x0A99, "CactuarGuardiansBeaten", "int");
         putGlobalVariable(0x0A9A, "AlBhedPrimersInstructionsSeen", "bool");
+        putGlobalVariable(0x0A9B, "RemiemRaceTreasureFlags", "int");
+        putGlobalVariable(0x0A9D, "DarkValeforCompletionFlags", "int");
+        putGlobalVariable(0x0A9E, "DarkIfritCompletionFlags", "int");
+        putGlobalVariable(0x0A9F, "DarkIxionCompletionFlags", "int");
+        putGlobalVariable(0x0AA0, "DarkShivaCompletionFlags", "int");
+        putGlobalVariable(0x0AA1, "DarkBahamutCompletionFlags", "int");
+        putGlobalVariable(0x0AA2, "DarkYojimboCompletionFlags", "int");
+        putGlobalVariable(0x0AA3, "DarkAnimaCompletionFlags", "int");
+        putGlobalVariable(0x0AA4, "DarkMagusSistersCompletionFlags", "int");
+        putGlobalVariable(0x0AA5, "PenanceUnlockState", "int");
         putGlobalVariable(0x141A, "BlitzballTeamPlayers", "blitzballPlayer");
         putGlobalVariable(0x1465, "BlitzballEnemyTeam", "blitzballTeam");
         putGlobalVariable(0x152A, "BlitzballPlayerContractDurations", "int", "blitzballPlayer");

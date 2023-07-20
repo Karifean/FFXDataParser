@@ -196,6 +196,11 @@ public class ScriptObject {
         }
         int notActuallySectionCount = scriptMappingBytes[0];
         int preSectionLength = scriptMappingBytes[1];
+        for (int i = 2; i < preSectionLength; i++) {
+            if (scriptMappingBytes[i] != 0xFF) {
+                headers[scriptMappingBytes[i]].setPurposeSlot(i);
+            }
+        }
         int sectionsLineOffset = preSectionLength + (preSectionLength % 2 == 0 ? 2 : 3);
         Integer firstOffset = null;
         for (int i = 0; i < notActuallySectionCount; i++) {

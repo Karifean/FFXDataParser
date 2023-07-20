@@ -33,10 +33,11 @@ public class SphereGridLayoutDataObject implements Nameable {
     private SphereGridLinkDataObject[] linkObjects;
     int[] nodeContents;
 
-    public SphereGridLayoutDataObject(int[] bytes, int[] stringBytes) {
+    public SphereGridLayoutDataObject(int[] bytes, int[] contentBytes) {
         this.bytes = bytes;
         mapBytes();
         mapObjects();
+        setNodeContents(contentBytes);
     }
 
     public SphereGridLayoutDataObject(int[] bytes) {
@@ -87,7 +88,7 @@ public class SphereGridLayoutDataObject implements Nameable {
         if (nodeObjects != null) {
             list.add(nodeCount + " Nodes");
             for (int i = 0; i < nodeObjects.length; i++) {
-                list.add("#" + i + ": " + (nodeContents != null ? byteToNodeContent(nodeContents[i]) : "?") + " " + nodeObjects[i]);
+                list.add("#" + i + ": " + nodeObjects[i]);
             }
         }
         if (linkObjects != null) {
@@ -106,13 +107,19 @@ public class SphereGridLayoutDataObject implements Nameable {
 
     public void setNodeContents(int[] nodeContents) {
         this.nodeContents = nodeContents;
+        if (nodeObjects == null || nodeContents == null) {
+            return;
+        }
+        for (int i = 0; i < nodeContents.length && i < nodeObjects.length; i++) {
+            nodeObjects[i].setContent(nodeContents[i]);
+        }
     }
 
     private int read2Bytes(int offset) {
         return bytes[offset] + bytes[offset+1] * 0x100;
     }
 
-    private String byteToNodeContent(int b) {
+    public static String byteToNodeContent(int b) {
         return switch (b) {
             case 0x00 -> "Lv 3 Lock";
             case 0x01 -> "Empty";

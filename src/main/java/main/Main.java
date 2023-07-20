@@ -37,6 +37,7 @@ public class Main {
         }
         String mode = args[1];
         List<String> realArgs = Arrays.asList(args).subList(2, args.length);
+        initializeInternals();
         readAndPrepareDataModel();
         switch (mode) {
             case MODE_GREP:

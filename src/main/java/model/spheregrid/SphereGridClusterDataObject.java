@@ -9,10 +9,10 @@ public class SphereGridClusterDataObject implements Nameable {
     public static final int LENGTH = 0x10;
     private final int[] bytes;
 
-    private int maybeX;
-    private int maybeY;
+    private int posX;
+    private int posY;
     private int unused3;
-    private int unknown4;
+    private int maybeType;
     private int unused5;
     private int unused6;
     private int unused7;
@@ -29,10 +29,10 @@ public class SphereGridClusterDataObject implements Nameable {
 
 
     private void mapBytes() {
-        maybeX = read2Bytes(0x00, true);
-        maybeY = read2Bytes(0x02, true);
+        posX = read2Bytes(0x00, true);
+        posY = read2Bytes(0x02, true);
         unused3 = read2Bytes(0x04, false);
-        unknown4 = read2Bytes(0x06, false);
+        maybeType = read2Bytes(0x06, false);
         unused5 = read2Bytes(0x08, false);
         unused6 = read2Bytes(0x0A, false);
         unused7 = read2Bytes(0x0C, false);
@@ -42,8 +42,8 @@ public class SphereGridClusterDataObject implements Nameable {
     @Override
     public String toString() {
         List<String> list = new ArrayList<>();
-        list.add("Offset=(" + maybeX + "/" + maybeY + ")");
-        list.add("U4=" + String.format("%04X", unknown4));
+        list.add("Position=(" + posX + "/" + posY + ")");
+        list.add("Type?=" + String.format("%04X", maybeType));
         if (unused3 != 0) {
             list.add("Unknown3=" + String.format("%04X", unused3));
         }

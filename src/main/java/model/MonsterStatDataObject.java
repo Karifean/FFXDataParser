@@ -25,7 +25,7 @@ public class MonsterStatDataObject {
     public String monsterSensorDash;
     public String monsterScanText;
     public String monsterScanDash;
-    boolean isLocalizationData = false;
+    public boolean isLocalizationData = false;
 
     int hp;
     int mp;
@@ -312,7 +312,6 @@ public class MonsterStatDataObject {
         if (stringBytes == null || stringBytes.length == 0) {
             return;
         }
-        isLocalizationData = true;
         monsterName = StringHelper.getStringAtLookupOffset(stringBytes, nameOffset);
         monsterSensorText = StringHelper.getStringAtLookupOffset(stringBytes, sensorOffset);
         monsterSensorDash = StringHelper.getStringAtLookupOffset(stringBytes, sensorDashOffset);
@@ -320,36 +319,42 @@ public class MonsterStatDataObject {
         monsterScanDash = StringHelper.getStringAtLookupOffset(stringBytes, scanDashOffset);
     }
 
+    public String getStrings() {
+        List<String> list = new ArrayList<>();
+        list.add("Name: " + monsterName + " (Offset " + String.format("%04X", nameOffset) + ")");
+        list.add("- Sensor Text - (Offset " + String.format("%04X", sensorOffset) + ")");
+        list.add(monsterSensorText);
+        list.add("- Scan Text - (Offset " + String.format("%04X", scanOffset) + ")");
+        list.add(monsterScanText);
+        String full = list.stream().filter(s -> s != null && !s.isBlank()).collect(Collectors.joining("\n"));
+        return full;
+    }
+
     @Override
     public String toString() {
-        List<String> list = new ArrayList<>();
         if (isLocalizationData) {
-            list.add("Name: " + monsterName + " (Offset " + String.format("%04X", nameOffset) + ")");
-            list.add("- Sensor Text - (Offset " + String.format("%04X", sensorOffset) + ")");
-            list.add(monsterSensorText);
-            list.add("- Scan Text - (Offset " + String.format("%04X", scanOffset) + ")");
-            list.add(monsterScanText);
-        } else {
-            list.add("HP=" + hp + " MP=" + mp + " Overkill=" + overkillThreshold);
-            list.add("STR=" + str + " DEF=" + def + " MAG=" + mag + " MDF=" + mdf);
-            list.add("AGI=" + agi + " LCK=" + lck + " EVA=" + eva + " ACC=" + acc);
-            if (armored) {
-                list.add("Armored");
-            }
-            list.add(specialImmunities());
-            list.add(allElemental());
-            list.add(statusResists());
-            list.add("Threaten Base Chance=" + statusChanceThreaten + "%");
-            list.add("Poison Damage=" + poisonDamage + "%");
-            list.add(autoBuffs());
-            if (forcedAction > 0) {
-                list.add("Forced Action: " + asMove(forcedAction));
-            } else {
-                list.add("No Forced Action");
-            }
-            list.add("Doom Counter=" + doomCounter);
-            list.add("Model=" + StackObject.enumToString("model", modelIdx));
+            return getStrings();
         }
+        List<String> list = new ArrayList<>();
+        list.add("HP=" + hp + " MP=" + mp + " Overkill=" + overkillThreshold);
+        list.add("STR=" + str + " DEF=" + def + " MAG=" + mag + " MDF=" + mdf);
+        list.add("AGI=" + agi + " LCK=" + lck + " EVA=" + eva + " ACC=" + acc);
+        if (armored) {
+            list.add("Armored");
+        }
+        list.add(specialImmunities());
+        list.add(allElemental());
+        list.add(statusResists());
+        list.add("Threaten Base Chance=" + statusChanceThreaten + "%");
+        list.add("Poison Damage=" + poisonDamage + "%");
+        list.add(autoBuffs());
+        if (forcedAction > 0) {
+            list.add("Forced Action: " + asMove(forcedAction));
+        } else {
+            list.add("No Forced Action");
+        }
+        list.add("Doom Counter=" + doomCounter);
+        list.add("Model=" + StackObject.enumToString("model", modelIdx));
 
         String full = list.stream().filter(s -> s != null && !s.isBlank()).collect(Collectors.joining("\n"));
         return full;
