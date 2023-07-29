@@ -1,7 +1,6 @@
 package model;
 
 import main.StringHelper;
-import script.model.ScriptConstants;
 import script.model.StackObject;
 
 import java.util.ArrayList;
@@ -435,7 +434,7 @@ public class AbilityDataObject implements Nameable {
         specialBuffOverdrive200 = (specialBuffFlags & 0x40) > 0;
         specialBuffUnused = (specialBuffFlags & 0x80) > 0;
         if (overdriveCategorizationByte > 0) {
-            overdriveCharacter = StackObject.enumToScriptField("char", overdriveCategorizationByte & 0x0F).name;
+            overdriveCharacter = StackObject.enumToScriptField("playerChar", overdriveCategorizationByte & 0x0F).name;
             overdriveCategory = overdriveCategorizationByte >> 4;
         }
     }
@@ -537,7 +536,7 @@ public class AbilityDataObject implements Nameable {
             if (characterUser == 0xFF) {
                 return "Usable by anyone";
             } else {
-                return "Usable by " + StackObject.enumToScriptField("char", characterUser).name;
+                return "Usable by " + StackObject.enumToScriptField("playerChar", characterUser).name;
             }
         } else {
             return "";

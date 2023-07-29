@@ -38,8 +38,8 @@ public class ScriptObject {
     protected int area_offset;
     protected int other_offset;
     protected int mainScriptIndex;
-    protected int unk01;
-    protected int unk02;
+    protected int unknown1A;
+    protected int unknown24;
     protected int eventDataOffset;
     protected int scriptCodeLength;
     protected int scriptCodeStartAddress;
@@ -92,11 +92,11 @@ public class ScriptObject {
         amountOfType2or3Scripts = read2Bytes(0x14);
         amountOfType4Scripts = read2Bytes(0x16);
         mainScriptIndex = read2Bytes(0x18);
-        unk01 = read2Bytes(0x1A);
+        unknown1A = read2Bytes(0x1A);
         amountOfType5Scripts = read2Bytes(0x1C);
         zoneBytes = read2Bytes(0x1E);
         eventDataOffset = read4Bytes(0x20);
-        unk02 = read4Bytes(0x24);
+        unknown24 = read4Bytes(0x24);
         area_offset = read4Bytes(0x28);
         other_offset = read4Bytes(0x2C);
         scriptCodeStartAddress = read4Bytes(0x30);
@@ -126,7 +126,7 @@ public class ScriptObject {
 
         gatheringInfo = true;
         semanticParseScriptCode();
-        inferEnums();
+        inferBooleans();
 
         gatheringInfo = false;
         semanticParseScriptCode();
@@ -746,7 +746,7 @@ public class ScriptObject {
         return ScriptConstants.OPCODE_ENDLINE.contains(opcode);
     }
 
-    protected void inferEnums() {
+    protected void inferBooleans() {
         for (Map.Entry<Integer, String> entry : varTypes.entrySet()) {
             Integer varIdx = entry.getKey();
             if (isWeakType(entry.getValue()) && varEnums.containsKey(varIdx)) {
@@ -833,8 +833,8 @@ public class ScriptObject {
         }
         if (VERBOSE_HEADER_OUTPUT) {
             lines.add("map_start = " + String.format("%04X", map_start));
-            lines.add("unk1 = " + String.format("%04X", unk01));
-            lines.add("unk2 = " + String.format("%04X", unk02));
+            lines.add("unk1 = " + String.format("%04X", unknown1A));
+            lines.add("unk2 = " + String.format("%04X", unknown24));
             lines.add("zoneBytes = " + String.format("%04X", zoneBytes));
             lines.add("area_offset = " + String.format("%06X", area_offset));
             lines.add("other_offset = " + String.format("%06X", other_offset));

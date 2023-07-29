@@ -79,7 +79,7 @@ public class MonsterFile implements Nameable {
             if (!"-".equals(monsterLocalizationData.monsterScanDash)) {
                 full.append("DH=").append(monsterLocalizationData.monsterScanDash).append('\n');
             }
-        } else {
+        } else if (englishTextStatData != null) {
             full.append("- Unlocalized Strings -").append('\n');
             full.append("Name: ").append(englishTextStatData.monsterName).append('\n');
             full.append("- Sensor Text -").append('\n');

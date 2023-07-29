@@ -83,18 +83,27 @@ public class MonsterStatDataObject {
     int forcedAction;
     int monsterIdx;
     int modelIdx;
+    int ctbIconTypeMaybe;
     int doomCounter;
     int monsterArenaIdx;
+    int modelIdxOther;
+
+    int alwaysZero7C;
+    int alwaysZero7D;
+    int alwaysZero7E;
+    int alwaysZero7F;
 
     boolean armored;
     boolean immunityFractionalDamage;
     boolean immunityLife;
     boolean immunitySensor;
-    boolean props28bit10;
+    boolean immunitySliceMaybe;
     boolean immunityPhysicalDamage;
     boolean immunityMagicalDamage;
     boolean props28bit80;
     boolean immunityDelay;
+    boolean props29bit02;
+    boolean props29bit04;
 
     boolean autoDeath;
     boolean autoZombie;
@@ -229,8 +238,14 @@ public class MonsterStatDataObject {
         forcedAction = read2Bytes(bytes, 0x70);
         monsterIdx = read2Bytes(bytes, 0x72);
         modelIdx = read2Bytes(bytes, 0x74);
+        ctbIconTypeMaybe = bytes[0x76];
         doomCounter = bytes[0x77];
         monsterArenaIdx = read2Bytes(bytes, 0x78);
+        modelIdxOther = read2Bytes(bytes, 0x7A);
+        alwaysZero7C = bytes[0x7C];
+        alwaysZero7D = bytes[0x7D];
+        alwaysZero7E = bytes[0x7E];
+        alwaysZero7F = bytes[0x7F];
     }
 
     private void mapFlags() {
@@ -238,11 +253,13 @@ public class MonsterStatDataObject {
         immunityFractionalDamage = (miscProperties28 & 0x02) > 0;
         immunityLife = (miscProperties28 & 0x04) > 0;
         immunitySensor = (miscProperties28 & 0x08) > 0;
-        props28bit10 = (miscProperties28 & 0x10) > 0;
+        immunitySliceMaybe = (miscProperties28 & 0x10) > 0;
         immunityPhysicalDamage = (miscProperties28 & 0x20) > 0;
         immunityMagicalDamage = (miscProperties28 & 0x40) > 0;
         props28bit80 = (miscProperties28 & 0x80) > 0;
         immunityDelay = (miscProperties29 & 0x01) > 0;
+        props29bit02 = (miscProperties29 & 0x02) > 0;
+        props29bit04 = (miscProperties29 & 0x04) > 0;
 
         autoDeath = (autoStatuses1 & 0x01) > 0;
         autoZombie = (autoStatuses1 & 0x02) > 0;
@@ -343,18 +360,47 @@ public class MonsterStatDataObject {
             list.add("Armored");
         }
         list.add(specialImmunities());
+        if (props29bit02) {
+            list.add("byte29bit02");
+        }
+        if (props29bit04) {
+            list.add("byte29bit04");
+        }
+        if (miscProperties29 >= 0x08) {
+            list.add("Unknown byte 29: " + String.format("%02X", miscProperties29));
+        }
         list.add(allElemental());
         list.add(statusResists());
-        list.add("Threaten Base Chance=" + statusChanceThreaten + "%");
+        list.add("Threaten Base Chance=" + statusChanceThreaten + "%" + (statusChanceThreaten == 0 ? " (Immune)" : ""));
         list.add("Poison Damage=" + poisonDamage + "%");
         list.add(autoBuffs());
         if (forcedAction > 0) {
             list.add("Forced Action: " + asMove(forcedAction));
         } else {
-            list.add("No Forced Action");
+            list.add("Forced Action: Skip Turn");
         }
         list.add("Doom Counter=" + doomCounter);
-        list.add("Model=" + StackObject.enumToString("model", modelIdx));
+        list.add("CTB Icon Type?=" + ctbIconTypeMaybe + " [" + String.format("%02X", ctbIconTypeMaybe) + "h]");
+        if (monsterArenaIdx != 0xFF) {
+            list.add("Captured Monster Index=" + monsterArenaIdx + " [" + String.format("%02X", monsterArenaIdx) + "h]");
+        } else {
+            list.add("Cannot be Captured");
+        }
+        list.add("Model Base?=" + StackObject.enumToString("model", modelIdx));
+        list.add("Model Texture?=" + StackObject.enumToString("model", modelIdxOther));
+
+        if (alwaysZero7C != 0) {
+            list.add("byte 7C not zero!: " + String.format("%02X", alwaysZero7C));
+        }
+        if (alwaysZero7D != 0) {
+            list.add("byte 7D not zero!: " + String.format("%02X", alwaysZero7D));
+        }
+        if (alwaysZero7E != 0) {
+            list.add("byte 7E not zero!: " + String.format("%02X", alwaysZero7E));
+        }
+        if (alwaysZero7F != 0) {
+            list.add("byte 7F not zero!: " + String.format("%02X", alwaysZero7F));
+        }
 
         String full = list.stream().filter(s -> s != null && !s.isBlank()).collect(Collectors.joining("\n"));
         return full;
@@ -371,8 +417,8 @@ public class MonsterStatDataObject {
         if (immunityLife) {
             specials.add("Life (Instakill by Revival when Zombied)");
         }
-        if (props28bit10) {
-            specials.add("Unknown:b28b10");
+        if (immunitySliceMaybe) {
+            specials.add("Zan?");
         }
         if (immunityPhysicalDamage) {
             specials.add("Physical Damage");

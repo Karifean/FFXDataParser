@@ -189,7 +189,7 @@ public class MonsterSpoilsDataObject {
     }
 
     private static String getCharIndicator(int chr) {
-        return StackObject.enumToScriptField("char", chr).name.substring(0, 1);
+        return StackObject.enumToScriptField("playerChar", chr).name.substring(0, 1);
     }
 
     private static String abilityMapToString(Map<String, List<Integer>> map) {

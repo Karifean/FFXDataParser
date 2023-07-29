@@ -7,13 +7,14 @@ import java.util.*;
 
 public abstract class ScriptConstants {
     private static final String ENUM_CSV_ROOT = FileAccessorWithMods.RESOURCES_ROOT + "enums";
+    private static final String LOCAL_SRC_PATH = FileAccessorWithMods.RESOURCES_ROOT + "local.src";
     public static String[] FUNCSPACES;
     public static String[] OPCODE_LABELS;
     public static int[] OPCODE_STACKPOPS;
     public static List<Integer> OPCODE_ENDLINE;
     public static Map<String, Map<Integer, ScriptField>> ENUMERATIONS = new HashMap<>();
     public static Map<Integer, ScriptField> COMP_OPERATORS;
-    public static List<String> INDEX_ENUMS_ONLY = List.of("globalVar");
+    public static List<String> INDEX_ENUMS_ONLY = List.of("saveData", "commonVar");
 
     private static boolean initialized = false;
 
@@ -277,47 +278,48 @@ public abstract class ScriptConstants {
         putCompOperator(0x18, "mod", "int", "OPMOD");
 
         addEnumsFromAllCsvsInFolder(new File(ENUM_CSV_ROOT));
+        // addDeclaredCommonVars();
 
-        putGlobalVariable(0x0092, "MushroomRockRoadTreasureFlags", "int");
-        putGlobalVariable(0x00CE, "BikanelTreasureFlags1", "int");
-        putGlobalVariable(0x00CF, "BikanelTreasureFlags2", "int");
-        putGlobalVariable(0x00D0, "BikanelTreasureFlags3", "int");
-        putGlobalVariable(0x0115, "BesaidVillageTreasureFlags", "int");
-        putGlobalVariable(0x014B, "ControllableCharacterInLuca", "char");
-        putGlobalVariable(0x01C0, "KilikaForestTreasureFlags", "int");
-        putGlobalVariable(0x01C5, "BesaidTreasureFlags", "int");
-        putGlobalVariable(0x01CD, "MacalaniaTreasureFlags", "int");
-        putGlobalVariable(0x01D4, "HomeProgressionFlags", "int");
-        putGlobalVariable(0x0205, "ThunderPlainsProgressionFlags", "int");
-        putGlobalVariable(0x024C, "BlitzballWakkaPowerProgress", "int");
-        putGlobalVariable(0x0A00, "GameMoment", "int");
-        putGlobalVariable(0x0A34, "GilLentToOAka", "int");
-        putGlobalVariable(0x0A38, "MacalaniaPricesChosenForOAka", "int");
-        putGlobalVariable(0x0A4A, "SaveSphereInstructionsSeen", "int");
-        putGlobalVariable(0x0A60, "AlBhedPrimersCollectedCount", "int");
-        putGlobalVariable(0x0A88, "BlitzballTeamPlayerCount", "int", "blitzballTeam");
-        putGlobalVariable(0x0A93, "JechtSpheresCollectedCount", "int");
-        putGlobalVariable(0x0A95, "AirshipDestinationUnlocks", "int");
-        putGlobalVariable(0x0A99, "CactuarGuardiansBeaten", "int");
-        putGlobalVariable(0x0A9A, "AlBhedPrimersInstructionsSeen", "bool");
-        putGlobalVariable(0x0A9B, "RemiemRaceTreasureFlags", "int");
-        putGlobalVariable(0x0A9D, "DarkValeforCompletionFlags", "int");
-        putGlobalVariable(0x0A9E, "DarkIfritCompletionFlags", "int");
-        putGlobalVariable(0x0A9F, "DarkIxionCompletionFlags", "int");
-        putGlobalVariable(0x0AA0, "DarkShivaCompletionFlags", "int");
-        putGlobalVariable(0x0AA1, "DarkBahamutCompletionFlags", "int");
-        putGlobalVariable(0x0AA2, "DarkYojimboCompletionFlags", "int");
-        putGlobalVariable(0x0AA3, "DarkAnimaCompletionFlags", "int");
-        putGlobalVariable(0x0AA4, "DarkMagusSistersCompletionFlags", "int");
-        putGlobalVariable(0x0AA5, "PenanceUnlockState", "int");
-        putGlobalVariable(0x141A, "BlitzballTeamPlayers", "blitzballPlayer");
-        putGlobalVariable(0x1465, "BlitzballEnemyTeam", "blitzballTeam");
-        putGlobalVariable(0x152A, "BlitzballPlayerContractDurations", "int", "blitzballPlayer");
-        putGlobalVariable(0x1798, "BlitzballPlayerCostPerGame", "int", "blitzballPlayer");
-        putGlobalVariable(0x1810, "BlitzballLeaguePrizeIndex", "int");
-        putGlobalVariable(0x1816, "BlitzballTournamentPrizeIndex", "int");
-        putGlobalVariable(0x181C, "BlitzballLeagueTopScorerPrizeIndex", "int");
-        putGlobalVariable(0x181E, "BlitzballTournamentTopScorerPrizeIndex", "int");
+        putSaveDataVariable(0x0092, "MushroomRockRoadTreasureFlags", "int");
+        putSaveDataVariable(0x00CE, "BikanelTreasureFlags1", "int");
+        putSaveDataVariable(0x00CF, "BikanelTreasureFlags2", "int");
+        putSaveDataVariable(0x00D0, "BikanelTreasureFlags3", "int");
+        putSaveDataVariable(0x0115, "BesaidVillageTreasureFlags", "int");
+        putSaveDataVariable(0x014B, "ControllableCharacterInLuca", "playerChar");
+        putSaveDataVariable(0x01C0, "KilikaForestTreasureFlags", "int");
+        putSaveDataVariable(0x01C5, "BesaidTreasureFlags", "int");
+        putSaveDataVariable(0x01CD, "MacalaniaTreasureFlags", "int");
+        putSaveDataVariable(0x01D4, "HomeProgressionFlags", "int");
+        putSaveDataVariable(0x0205, "ThunderPlainsProgressionFlags", "int");
+        putSaveDataVariable(0x024C, "BlitzballWakkaPowerProgress", "int");
+        putSaveDataVariable(0x0A00, "GameMoment", "int");
+        putSaveDataVariable(0x0A34, "GilLentToOAka", "int");
+        putSaveDataVariable(0x0A38, "MacalaniaPricesChosenForOAka", "int");
+        putSaveDataVariable(0x0A4A, "SaveSphereInstructionsSeen", "int");
+        putSaveDataVariable(0x0A60, "AlBhedPrimersCollectedCount", "int");
+        putSaveDataVariable(0x0A88, "BlitzballTeamPlayerCount", "int", "blitzballTeam");
+        putSaveDataVariable(0x0A93, "JechtSpheresCollectedCount", "int");
+        putSaveDataVariable(0x0A95, "AirshipDestinationUnlocks", "int");
+        putSaveDataVariable(0x0A99, "CactuarGuardiansBeaten", "int");
+        putSaveDataVariable(0x0A9A, "AlBhedPrimersInstructionsSeen", "bool");
+        putSaveDataVariable(0x0A9B, "RemiemRaceTreasureFlags", "int");
+        putSaveDataVariable(0x0A9D, "DarkValeforCompletionFlags", "int");
+        putSaveDataVariable(0x0A9E, "DarkIfritCompletionFlags", "int");
+        putSaveDataVariable(0x0A9F, "DarkIxionCompletionFlags", "int");
+        putSaveDataVariable(0x0AA0, "DarkShivaCompletionFlags", "int");
+        putSaveDataVariable(0x0AA1, "DarkBahamutCompletionFlags", "int");
+        putSaveDataVariable(0x0AA2, "DarkYojimboCompletionFlags", "int");
+        putSaveDataVariable(0x0AA3, "DarkAnimaCompletionFlags", "int");
+        putSaveDataVariable(0x0AA4, "DarkMagusSistersCompletionFlags", "int");
+        putSaveDataVariable(0x0AA5, "PenanceUnlockState", "int");
+        putSaveDataVariable(0x141A, "BlitzballTeamPlayers", "blitzballPlayer");
+        putSaveDataVariable(0x1465, "BlitzballEnemyTeam", "blitzballTeam");
+        putSaveDataVariable(0x152A, "BlitzballPlayerContractDurations", "int", "blitzballPlayer");
+        putSaveDataVariable(0x1798, "BlitzballPlayerCostPerGame", "int", "blitzballPlayer");
+        putSaveDataVariable(0x1810, "BlitzballLeaguePrizeIndex", "int");
+        putSaveDataVariable(0x1816, "BlitzballTournamentPrizeIndex", "int");
+        putSaveDataVariable(0x181C, "BlitzballLeagueTopScorerPrizeIndex", "int");
+        putSaveDataVariable(0x181E, "BlitzballTournamentTopScorerPrizeIndex", "int");
 
         putEnum("deathAnimation", 0x00, "Character (Body remains and targetable)", "death_normal");
         putEnum("deathAnimation", 0x01, "Boss (Body remains but untargetable)", "death_nop");
@@ -495,29 +497,29 @@ public abstract class ScriptConstants {
             putEnum("monsterArenaUnlock", i, "Creation #" + i + " defeated");
         }
 
-        putEnum("char", 0x0000, "Tidus", "PC_TIDUS");
-        putEnum("char", 0x0001, "Yuna", "PC_YUNA");
-        putEnum("char", 0x0002, "Auron", "PC_AURON");
-        putEnum("char", 0x0003, "Kimahri", "PC_KIMAHRI");
-        putEnum("char", 0x0004, "Wakka", "PC_WAKKA");
-        putEnum("char", 0x0005, "Lulu", "PC_LULU");
-        putEnum("char", 0x0006, "Rikku", "PC_RIKKU");
-        putEnum("char", 0x0007, "Seymour", "PC_SEYMOUR");
-        putEnum("char", 0x0008, "Valefor", "PC_VALEFOR");
-        putEnum("char", 0x0009, "Ifrit", "PC_IFRIT");
-        putEnum("char", 0x000A, "Ixion", "PC_IXION");
-        putEnum("char", 0x000B, "Shiva", "PC_SHIVA");
-        putEnum("char", 0x000C, "Bahamut", "PC_BAHAMUT");
-        putEnum("char", 0x000D, "Anima", "PC_ANIMA");
-        putEnum("char", 0x000E, "Yojimbo", "PC_YOJIMBO");
-        putEnum("char", 0x000F, "Cindy", "PC_MAGUS1");
-        putEnum("char", 0x0010, "Sandy", "PC_MAGUS2");
-        putEnum("char", 0x0011, "Mindy", "PC_MAGUS3");
-        putEnum("char", 0x0012, null, "PC_DUMMY");
-        putEnum("char", 0x0013, null, "PC_DUMMY2");
+        putEnum("playerChar", 0x0000, "Tidus", "PC_TIDUS");
+        putEnum("playerChar", 0x0001, "Yuna", "PC_YUNA");
+        putEnum("playerChar", 0x0002, "Auron", "PC_AURON");
+        putEnum("playerChar", 0x0003, "Kimahri", "PC_KIMAHRI");
+        putEnum("playerChar", 0x0004, "Wakka", "PC_WAKKA");
+        putEnum("playerChar", 0x0005, "Lulu", "PC_LULU");
+        putEnum("playerChar", 0x0006, "Rikku", "PC_RIKKU");
+        putEnum("playerChar", 0x0007, "Seymour", "PC_SEYMOUR");
+        putEnum("playerChar", 0x0008, "Valefor", "PC_VALEFOR");
+        putEnum("playerChar", 0x0009, "Ifrit", "PC_IFRIT");
+        putEnum("playerChar", 0x000A, "Ixion", "PC_IXION");
+        putEnum("playerChar", 0x000B, "Shiva", "PC_SHIVA");
+        putEnum("playerChar", 0x000C, "Bahamut", "PC_BAHAMUT");
+        putEnum("playerChar", 0x000D, "Anima", "PC_ANIMA");
+        putEnum("playerChar", 0x000E, "Yojimbo", "PC_YOJIMBO");
+        putEnum("playerChar", 0x000F, "Cindy", "PC_MAGUS1");
+        putEnum("playerChar", 0x0010, "Sandy", "PC_MAGUS2");
+        putEnum("playerChar", 0x0011, "Mindy", "PC_MAGUS3");
+        putEnum("playerChar", 0x0012, null, "PC_DUMMY");
+        putEnum("playerChar", 0x0013, null, "PC_DUMMY2");
 
         for (int i = 0; i <= 0x0013; i++) {
-            getEnumMap("btlActor").put(i, getEnumMap("char").get(i));
+            getEnumMap("btlActor").put(i, getEnumMap("playerChar").get(i));
         }
         for (int i = 1; i <= 10; i++) {
             putEnum("btlActor", 0x0013 + i, "Monster#" + i);
@@ -581,9 +583,9 @@ public abstract class ScriptConstants {
         putBattleActorProperty(0x0018, null, "bool", "stat_summon");
         putBattleActorProperty(0x0019, null, "bool", "stat_monster");
         putBattleActorProperty(0x001A, null, "bool", "stat_fly");
-        putBattleActorProperty(0x001B, null, "bool", "stat_will_die");
-        putBattleActorProperty(0x001C, "?BattleRow", "int", "stat_area");
-        putBattleActorProperty(0x001D, "?BattleArenaStandingPosition", "int", "stat_pos");
+        putBattleActorProperty(0x001B, "?willDieToAttack", "bool", "stat_will_die");
+        putBattleActorProperty(0x001C, "?Area", "int", "stat_area");
+        putBattleActorProperty(0x001D, "?Position", "int", "stat_pos");
         putBattleActorProperty(0x001E, "BattleDistance", "int", "stat_far");
         putBattleActorProperty(0x001F, null, "int", "stat_group");
         putBattleActorProperty(0x0020, "Armored", "bool", "stat_sp_hard");
@@ -639,8 +641,8 @@ public abstract class ScriptConstants {
         putBattleActorProperty(0x0052, "Targetable", "bool", "stat_cursor");
         putBattleActorProperty(0x0053, "VisibleOnCTB", "bool", "stat_ctb_list");
         putBattleActorProperty(0x0054, null, "unknown", "stat_visible");
-        putBattleActorProperty(0x0055, "?Location1", "int", "stat_move_area");
-        putBattleActorProperty(0x0056, "?Location2(Tonberry)", "int", "stat_move_pos");
+        putBattleActorProperty(0x0055, "?AreaToMoveTo", "int", "stat_move_area");
+        putBattleActorProperty(0x0056, "?PositionToMoveTo", "int", "stat_move_pos");
         putBattleActorProperty(0x0057, null, "int", "stat_efflv");
         putBattleActorProperty(0x0058, null, "unknown", "stat_model");
         putBattleActorProperty(0x0059, "?Host", "btlActor", "stat_damage_chr");
@@ -673,8 +675,8 @@ public abstract class ScriptConstants {
         putBattleActorProperty(0x0074, "WeakWater", "bool", "stat_weak_water");
         putBattleActorProperty(0x0075, "WeakHoly", "bool", "stat_weak_holy");
         putBattleActorProperty(0x0076, null, "bool", "stat_adjust_pos_flag");
-        putBattleActorProperty(0x0077, null, "bool", "stat_inv_physic_motion"); // "Block" anim?
-        putBattleActorProperty(0x0078, null, "bool", "stat_inv_magic_motion");
+        putBattleActorProperty(0x0077, "DullHitReactionToPhys", "bool", "stat_inv_physic_motion");
+        putBattleActorProperty(0x0078, "DullHitReactionToMag", "bool", "stat_inv_magic_motion");
         putBattleActorProperty(0x0079, "TimesStolenFrom", "int", "stat_steal_count");
         putBattleActorProperty(0x007A, null, "bool", "stat_wait_motion_flag");
         putBattleActorProperty(0x007B, null, "bool", "stat_attack_return_flag");
@@ -810,10 +812,10 @@ public abstract class ScriptConstants {
         putBattleActorProperty(0x00FD, null, "unknown", "stat_own_attack_near");
         putBattleActorProperty(0x00FE, null, "unknown", "stat_talk_stat3");
         putBattleActorProperty(0x00FF, null, "unknown", "stat_command_set");
-        putBattleActorProperty(0x0100, "?RetainsControlWhenProvoked", "bool", "stat_prov_command_flag");
+        putBattleActorProperty(0x0100, "RetainsControlWhenProvoked", "bool", "stat_prov_command_flag");
         putBattleActorProperty(0x0101, "ProvokerActor", "btlActor", "stat_prov_chr");
-        putBattleActorProperty(0x0102, "?Spellspring", "bool", "stat_use_mp0");
-        putBattleActorProperty(0x0103, "?CTBIcon", "int", "stat_icon_number");
+        putBattleActorProperty(0x0102, "MP0", "bool", "stat_use_mp0");
+        putBattleActorProperty(0x0103, "CTBIconNumber", "int", "stat_icon_number");
         putBattleActorProperty(0x0104, null, "unknown", "stat_sound_hit_num");
         putBattleActorProperty(0x0105, null, "unknown", "stat_damage_num_pos");
         putBattleActorProperty(0x0106, null, "unknown", "stat_summoner");
@@ -821,7 +823,7 @@ public abstract class ScriptConstants {
         putBattleActorProperty(0x0108, "NullMagic", "bool", "stat_sp_inv_magic");
         putBattleActorProperty(0x0109, "NullPhysical", "bool", "stat_sp_inv_physic");
         putBattleActorProperty(0x010A, "LearnableRonsoRage", "move", "stat_blue_magic");
-        putBattleActorProperty(0x010B, null, "unknown", "stat_sp_disable_zan");
+        putBattleActorProperty(0x010B, "?NullSlice", "unknown", "stat_sp_disable_zan");
         putBattleActorProperty(0x010C, "OverkillThreshold", "int", "stat_over_kill_hp");
         putBattleActorProperty(0x010D, null, "unknown", "stat_return_motion_type");
         putBattleActorProperty(0x010E, null, "unknown", "stat_cam_width");
@@ -927,15 +929,26 @@ public abstract class ScriptConstants {
         COMP_OPERATORS.put(idx, field);
     }
 
-    private static void putGlobalVariable(int idx, String name, String type, String indexType) {
+    private static void putSaveDataVariable(int idx, String name, String type, String indexType) {
         ScriptField field = new ScriptField(name, type);
         field.idx = idx;
         field.indexType = indexType;
-        getEnumMap("globalVar").put(idx, field);
+        getEnumMap("saveData").put(idx, field);
     }
 
-    private static void putGlobalVariable(int idx, String name, String type) {
-        putGlobalVariable(idx, name, type, "unknown");
+    private static void putSaveDataVariable(int idx, String name, String type) {
+        putSaveDataVariable(idx, name, type, "unknown");
+    }
+
+    private static void putCommonVariable(int idx, String name, String type, String indexType) {
+        ScriptField field = new ScriptField(name, type);
+        field.idx = idx;
+        field.indexType = indexType;
+        getEnumMap("commonVar").put(idx, field);
+    }
+
+    private static void putCommonVariable(int idx, String name, String type) {
+        putSaveDataVariable(idx, name, type, "unknown");
     }
 
     private static void putBattleActorProperty(int idx, String name, String type, String internalName) {
@@ -1001,7 +1014,53 @@ public abstract class ScriptConstants {
         }
     }
 
-    /*
+    /* private static void addDeclaredCommonVars() {
+        // Maybe will have to make path, initial offset and enum type into parameters.
+        // Well, if there will be more .src files to load enums from.
+        File file = new File(LOCAL_SRC_PATH);
+        if (!file.exists()) {
+            System.err.println("local.src is missing for variable mapping.");
+            return;
+        }
+        try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
+            String line;
+            int offset = 0x18;
+            while ((line = reader.readLine()) != null) {
+                if (!line.startsWith("\t")) {
+                    continue;
+                }
+                String[] split = line.split("\t+");
+                if (split.length < 2) {
+                    continue;
+                }
+                String rawType = split[1];
+                String name = split[2];
+                String type;
+                int offsetIncrease;
+                if ("int".equals(rawType)) {
+                    type = "int32";
+                    offsetIncrease = 4;
+                } else if ("char".equals(rawType)) {
+                    type = "int8";
+                    offsetIncrease = 1;
+                } else if ("float".equals(rawType)) {
+                    type = "float";
+                    offsetIncrease = 4;
+                } else {
+                    System.err.println("Unknown local.src type: " + rawType);
+                    continue;
+                }
+                ScriptField field = new ScriptField(name, type);
+                field.idx = offset;
+                getEnumMap("commonVar").put(offset, field);
+                offset += offsetIncrease;
+            }
+        } catch (IOException e) {
+            System.err.println("IOException during local.src reading. Skipped.");
+            e.printStackTrace();
+        }
+    }
+
     private static void convertFileToCsv(File file) throws IOException {
         try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
             String type = "motion";

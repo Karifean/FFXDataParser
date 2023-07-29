@@ -86,7 +86,10 @@ public class ScriptVariable {
     private String fullStoreLocation() {
         String deref = getDereference();
         if (location == 0) {
-            ScriptField scriptField = StackObject.enumToScriptField("globalVar", offset);
+            ScriptField scriptField = StackObject.enumToScriptField("saveData", offset);
+            return Objects.requireNonNullElse(scriptField.name, "Unknown") + " (" + deref + ")";
+        } else if (location == 1) {
+            ScriptField scriptField = StackObject.enumToScriptField("commonVar", offset);
             return Objects.requireNonNullElse(scriptField.name, "Unknown") + " (" + deref + ")";
         }
         return deref;
@@ -103,7 +106,15 @@ public class ScriptVariable {
 
     public String getLabel() {
         if (location == 0) {
-            ScriptField scriptField = StackObject.enumToScriptField("globalVar", offset);
+            ScriptField scriptField = StackObject.enumToScriptField("saveData", offset);
+            if (scriptField.name != null) {
+                return scriptField.name;
+            } else {
+                return getDereference();
+            }
+        }
+        if (location == 1) {
+            ScriptField scriptField = StackObject.enumToScriptField("commonVar", offset);
             if (scriptField.name != null) {
                 return scriptField.name;
             } else {
@@ -115,7 +126,7 @@ public class ScriptVariable {
 
     public String getArrayIndexType() {
         if (location == 0) {
-            ScriptField scriptField = StackObject.enumToScriptField("globalVar", offset);
+            ScriptField scriptField = StackObject.enumToScriptField("saveData", offset);
             if (scriptField.indexType != null) {
                 return scriptField.indexType;
             }
@@ -125,7 +136,13 @@ public class ScriptVariable {
 
     public String getType() {
         if (location == 0) {
-            ScriptField enumTarget = ScriptConstants.ENUMERATIONS.get("globalVar").get(offset);
+            ScriptField enumTarget = ScriptConstants.ENUMERATIONS.get("saveData").get(offset);
+            if (enumTarget != null) {
+                return enumTarget.type;
+            }
+        }
+        if (location == 1) {
+            ScriptField enumTarget = ScriptConstants.getEnumMap("commonVar").get(offset);
             if (enumTarget != null) {
                 return enumTarget.type;
             }
@@ -166,14 +183,14 @@ public class ScriptVariable {
 
     public static String locationToString(int location) {
         return switch (location) {
-            case 0 -> "global";
-            case 1 -> "shared1";
+            case 0 -> "saveData";
+            case 1 -> "commonVars";
             case 2 -> "dataOffset";
             case 3 -> "private";
             case 4 -> "sharedOffset";
             case 5 -> "int variables";
             case 6 -> "eventData";
-            default -> "unknown?";
+            default -> "unknown:" + location;
         };
     }
 
@@ -186,7 +203,7 @@ public class ScriptVariable {
             case 4 -> "uint32";
             case 5 -> "int32";
             case 6 -> "float";
-            default -> "unknown";
+            default -> "unknown:" + format;
         };
     }
 }

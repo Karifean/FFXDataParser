@@ -204,8 +204,8 @@ public abstract class ScriptFuncLib {
         putUnknownFunc(0x00C7, 1);
         putUnknownFunc(0x00C8, 3);
         putUnknownFunc(0x00C9, 1); // noclip: getEntrypoint()
-        putFuncWithIdx(0x00CA, new ScriptFunc("addPartyMember", "unknown", null, p("char")));
-        putFuncWithIdx(0x00CB, new ScriptFunc("removePartyMember", "unknown", null, p("char")));
+        putFuncWithIdx(0x00CA, new ScriptFunc("addPartyMember", "unknown", null, p("playerChar")));
+        putFuncWithIdx(0x00CB, new ScriptFunc("removePartyMember", "unknown", null, p("playerChar")));
         putUnknownFunc(0x00CC, 1);
         putUnknownFunc(0x00CE, 1);
         putUnknownFunc(0x00CF, 1);
@@ -228,7 +228,7 @@ public abstract class ScriptFuncLib {
         putUnknownFunc(0x00E3, 1);
         putUnknownFunc(0x00E4, 1);
         putUnknownFunc(0x00E6, 1);
-        putFuncWithIdx(0x00E7, new ScriptFunc("putPartyMemberInSlot", "unknown", null, p("slot", "int"), p("char")));
+        putFuncWithIdx(0x00E7, new ScriptFunc("putPartyMemberInSlot", "unknown", null, p("slot", "int"), p("playerChar")));
         putUnknownFunc(0x00E8, 3);
         putUnknownFunc(0x00E9, 1);
         putUnknownFunc(0x00EB, 0);
@@ -334,8 +334,8 @@ public abstract class ScriptFuncLib {
         putFuncWithIdx(0x016D, new ScriptFunc(p("bgm")));
         putUnknownFunc(0x016E, 2);
         putUnknownFunc(0x016F, 1);
-        putFuncWithIdx(0x0171, new ScriptFunc("restorePartyMemberHP?", "unknown", null, p("char")));
-        putFuncWithIdx(0x0172, new ScriptFunc("restorePartyMemberMP?", "unknown", null, p("char")));
+        putFuncWithIdx(0x0171, new ScriptFunc("restorePartyMemberHP?", "unknown", null, p("playerChar")));
+        putFuncWithIdx(0x0172, new ScriptFunc("restorePartyMemberMP?", "unknown", null, p("playerChar")));
         putUnknownFunc(0x0174, 0);
         putUnknownFunc(0x0177, 1);
         putUnknownFunc(0x0179, 1);
@@ -425,7 +425,7 @@ public abstract class ScriptFuncLib {
         putUnknownFunc(0x01F9, 1);
         putUnknownFunc(0x01FA, 0);
         putUnknownFunc(0x01FB, 0);
-        putFuncWithIdx(0x01FC, new ScriptFunc("teachAbilityToPartyMemberSilently", "unknown", null, p("char"), p("charMove")));
+        putFuncWithIdx(0x01FC, new ScriptFunc("teachAbilityToPartyMemberSilently", "unknown", null, p("playerChar"), p("charMove")));
         putUnknownFunc(0x0200, 1);
         putUnknownFunc(0x0201, 0);
         putUnknownFunc(0x0202, 1);
@@ -442,8 +442,8 @@ public abstract class ScriptFuncLib {
         putFuncWithIdx(0x0210, new ScriptFunc("setMonsterArenaUnlocked", "unknown", null, p("monsterArenaUnlock")));
         putUnknownFunc(0x0212, 2);
         putUnknownFunc(0x0213, 1);
-        putFuncWithIdx(0x0215, new ScriptFunc("grantCelestialUpgrade", "unknown", null, p("char"), p("level", "int")));
-        putFuncWithIdx(0x0216, new ScriptFunc("teachAbilityToPartyMemberWithMsg", "unknown", null, p("boxIndex?", "int"), p("char"), p("charMove")));
+        putFuncWithIdx(0x0215, new ScriptFunc("grantCelestialUpgrade", "unknown", null, p("playerChar"), p("level", "int")));
+        putFuncWithIdx(0x0216, new ScriptFunc("teachAbilityToPartyMemberWithMsg", "unknown", null, p("boxIndex?", "int"), p("playerChar"), p("charMove")));
         putUnknownFunc(0x0217, 0);
         putUnknownFunc(0x021A, 2);
         putUnknownFunc(0x021B, 2);

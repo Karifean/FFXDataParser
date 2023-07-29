@@ -37,6 +37,7 @@ public class DataReadingManager {
     public static final String PATH_SKILL_TABLE_2 = PATH_LOCALIZED_KERNEL + "item.bin"; // "FILE07734.dat"; // "item.bin"; //
 
     private static final boolean SKIP_BLITZBALL_EVENTS_FOLDER = true;
+    private static final boolean ALLOW_DAT_FILES = true;
 
     public static void initializeInternals() {
         StringHelper.initialize();
@@ -142,7 +143,7 @@ public class DataReadingManager {
                 Arrays.stream(contents).filter(sf -> !sf.startsWith(".")).sorted().forEach(sf -> readMonsterFile(filename + '/' + sf, print));
             }
             return null;
-        } else if (!filename.endsWith(".bin") && !filename.endsWith(".dat")) {
+        } else if (!(filename.endsWith(".bin") || (ALLOW_DAT_FILES && filename.endsWith(".dat")))) {
             return null;
         }
         List<Chunk> chunks = ChunkedFileHelper.readGenericChunkedFile(filename, print, null, true);
@@ -169,7 +170,7 @@ public class DataReadingManager {
                 Arrays.stream(contents).filter(sf -> !sf.startsWith(".")).sorted().forEach(sf -> readEncounterFile(filename + '/' + sf, print, strings));
             }
             return null;
-        } else if (!filename.endsWith(".bin") && !filename.endsWith(".dat")) {
+        } else if (!(filename.endsWith(".bin") || (ALLOW_DAT_FILES && filename.endsWith(".dat")))) {
             return null;
         }
         List<String> actualStrings = strings;
@@ -204,7 +205,7 @@ public class DataReadingManager {
                 Arrays.stream(contents).filter(sf -> !sf.startsWith(".") && (!SKIP_BLITZBALL_EVENTS_FOLDER || !sf.equals("bl"))).sorted().forEach(sf -> readEventFile(filename + '/' + sf, print, strings));
             }
             return null;
-        } else if (!filename.endsWith(".ebp") && !filename.endsWith(".dat")) {
+        } else if (!(filename.endsWith(".ebp") || (ALLOW_DAT_FILES && filename.endsWith(".dat")))) {
             return null;
         }
         List<String> actualStrings = strings;

@@ -94,32 +94,36 @@ public abstract class StringHelper {
         boolean clones = first == second;
         int count = first / (clones ? 0x08 : 0x04);
         List<String> strings = new ArrayList<>(count);
-        for (int i = 0; i < count; i++) {
-            int addr = i * (clones ? 0x08 : 0x04);
-            int offset = bytes[addr] + bytes[addr + 0x01] * 0x100;
-            int somethingElse = bytes[addr + 0x02];
-            int options = bytes[addr + 0x03];
-            if (print) {
-                String choosable = options > 0 ? " (" + options + " selectable)" : "";
-                System.out.print("String #" + i + " [" + String.format("%04X", offset) + "h]" + choosable + ":");
-            }
-            String out = getStringAtLookupOffset(bytes, offset);
-            if (print) {
-                System.out.println(out);
-            }
-            strings.add(out);
-            if (clones) {
-                int clonedOffset = bytes[addr + 0x04] + bytes[addr + 0x05] * 0x100;
-                int clonedSomethingElse = bytes[addr + 0x06];
-                int clonedChoosableOptions = bytes[addr + 0x07];
-                if (offset != clonedOffset) {
-                    System.err.println("offset " + i + " not cloned: offset " + String.format("%04X", offset) + "; other " + String.format("%04X", clonedOffset));
-                } else if (options != clonedChoosableOptions) {
-                    System.err.println("options " + i + " not cloned: original " + options + "; other " + clonedChoosableOptions);
-                } else if (somethingElse != clonedSomethingElse) {
-                    System.err.println("somethingElse " + i + " not cloned: original " + somethingElse + "; other " + clonedSomethingElse);
+        try {
+            for (int i = 0; i < count; i++) {
+                int addr = i * (clones ? 0x08 : 0x04);
+                int offset = bytes[addr] + bytes[addr + 0x01] * 0x100;
+                int somethingElse = bytes[addr + 0x02];
+                int options = bytes[addr + 0x03];
+                if (print) {
+                    String choosable = options > 0 ? " (" + options + " selectable)" : "";
+                    System.out.print("String #" + i + " [" + String.format("%04X", offset) + "h]" + choosable + ":");
+                }
+                String out = getStringAtLookupOffset(bytes, offset);
+                if (print) {
+                    System.out.println(out);
+                }
+                strings.add(out);
+                if (clones) {
+                    int clonedOffset = bytes[addr + 0x04] + bytes[addr + 0x05] * 0x100;
+                    int clonedSomethingElse = bytes[addr + 0x06];
+                    int clonedChoosableOptions = bytes[addr + 0x07];
+                    if (offset != clonedOffset) {
+                        System.err.println("offset " + i + " not cloned: offset " + String.format("%04X", offset) + "; other " + String.format("%04X", clonedOffset));
+                    } else if (options != clonedChoosableOptions) {
+                        System.err.println("options " + i + " not cloned: original " + options + "; other " + clonedChoosableOptions);
+                    } else if (somethingElse != clonedSomethingElse) {
+                        System.err.println("somethingElse " + i + " not cloned: original " + somethingElse + "; other " + clonedSomethingElse);
+                    }
                 }
             }
+        } catch (Exception e) {
+            System.err.println("Exception during string data reading. (" + e.getLocalizedMessage() + ")");
         }
         return strings;
     }

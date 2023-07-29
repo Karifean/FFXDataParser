@@ -66,6 +66,9 @@ public class ScriptHeader {
         if (purpose != null) {
             list.add("Purpose=" + purposeToString(purpose) + " [" + String.format("%02X", purpose) + "h]");
         }
+        if (purposeSlot != null) {
+            list.add("PurposeSlot=" + purposeSlot + " [" + String.format("%02X", purposeSlot) + "h]");
+        }
         list.add("Entrypoints=" + entryPointCount);
         list.add("Jumps=" + jumpCount);
         list.add(privateValuesString());
