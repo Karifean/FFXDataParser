@@ -12,9 +12,10 @@ public abstract class ScriptConstants {
     public static String[] OPCODE_LABELS;
     public static int[] OPCODE_STACKPOPS;
     public static List<Integer> OPCODE_ENDLINE;
-    public static Map<String, Map<Integer, ScriptField>> ENUMERATIONS = new HashMap<>();
-    public static Map<Integer, ScriptField> COMP_OPERATORS;
-    public static List<String> INDEX_ENUMS_ONLY = List.of("saveData", "commonVar");
+    public static final Map<String, Map<Integer, ScriptField>> ENUMERATIONS = new HashMap<>();
+    public static final Map<Integer, ScriptField> COMP_OPERATORS = new HashMap<>();
+    public static final List<String> INDEX_ENUMS_ONLY = List.of("saveData", "commonVar");
+    public static final List<String> BITFIELD_ENUMS = List.of("motionTypeFlags");
 
     private static boolean initialized = false;
 
@@ -251,7 +252,6 @@ public abstract class ScriptConstants {
         OPCODE_STACKPOPS[0xD8] = 0; // CALLPOPA / FUNC
         OPCODE_STACKPOPS[0xF6] = 0; // SYSTEM
 
-        COMP_OPERATORS = new HashMap<>();
         putCompOperator(0x01, "or", "bool", "OPLOR");
         putCompOperator(0x02, "and", "bool", "OPLAND");
         putCompOperator(0x03, "|", "int", "OPOR");
@@ -289,6 +289,7 @@ public abstract class ScriptConstants {
         putSaveDataVariable(0x01C0, "KilikaForestTreasureFlags", "int");
         putSaveDataVariable(0x01C5, "BesaidTreasureFlags", "int");
         putSaveDataVariable(0x01CD, "MacalaniaTreasureFlags", "int");
+        putSaveDataVariable(0x01D2, "OmegaRuinsProgressionFlags", "int");
         putSaveDataVariable(0x01D4, "HomeProgressionFlags", "int");
         putSaveDataVariable(0x0205, "ThunderPlainsProgressionFlags", "int");
         putSaveDataVariable(0x024C, "BlitzballWakkaPowerProgress", "int");
@@ -373,9 +374,11 @@ public abstract class ScriptConstants {
 
         putEnum("battleDebugFlag", 0x07, "?NeverCrit");
 
-        putEnum("textAlignment", 0x01, "?Left");
-        putEnum("textAlignment", 0x03, "?Right");
-        putEnum("textAlignment", 0x04, "?Center");
+        putEnum("textAlignment", 0x00, "?Left-Up", "MESWIN_POS_LEFTUP");
+        putEnum("textAlignment", 0x01, "?Left-Down", "MESWIN_POS_LEFTDOWN");
+        putEnum("textAlignment", 0x02, "?Right-Up", "MESWIN_POS_RIGHTUP");
+        putEnum("textAlignment", 0x03, "?Right-Down", "MESWIN_POS_RIGHTDOWN");
+        putEnum("textAlignment", 0x04, "?Center", "MESWIN_POS_CENTER");
 
         putEnum("effectType", 0x00, "Position");
         putEnum("effectType", 0x01, "Rotation");
@@ -462,14 +465,20 @@ public abstract class ScriptConstants {
         putEnum("battleEndType", 0x03, "?Escape");
         putEnum("battleEndType", 0x04, null); // Seems to be a special case override thing?
 
+        putEnum("appearMotion", 0x00, "No Animation", "appear_motion_off");
+        putEnum("appearMotion", 0x01, null, "appear_motion_off_trans");
+        putEnum("appearMotion", 0x02, null, "appear_motion_on");
+        putEnum("appearMotion", 0x03, null, "appear_motion_on_trans");
+        putEnum("appearMotion", 0x04, "Hidden", "appear_motion_off_hide");
+
         putEnum("damageFormula", 0x00, "None");
-        putEnum("damageFormula", 0x01, "STR vs DEF");
-        putEnum("damageFormula", 0x02, "STR (ignore DEF)");
-        putEnum("damageFormula", 0x03, "MAG vs MDF");
-        putEnum("damageFormula", 0x04, "MAG (ignore MDF)");
-        putEnum("damageFormula", 0x05, "Current/16");
-        putEnum("damageFormula", 0x06, "Fixed x50");
-        putEnum("damageFormula", 0x07, "Healing");
+        putEnum("damageFormula", 0x01, "STR vs DEF", "calc_physic");
+        putEnum("damageFormula", 0x02, "STR (ignore DEF)", "calc_ig_physic");
+        putEnum("damageFormula", 0x03, "MAG vs MDF", "calc_magic");
+        putEnum("damageFormula", 0x04, "MAG (ignore MDF)", "calc_ig_magic");
+        putEnum("damageFormula", 0x05, "Current/16", "calc_ratio");
+        putEnum("damageFormula", 0x06, "Fixed x50", "calc_fix");
+        putEnum("damageFormula", 0x07, "Healing", "calc_rc_magic");
         putEnum("damageFormula", 0x08, "Max/16");
         putEnum("damageFormula", 0x09, "Fixed x42.5~57.5");
         putEnum("damageFormula", 0x0D, "Ticks/16");
@@ -482,9 +491,9 @@ public abstract class ScriptConstants {
         putEnum("damageFormula", 0x16, "Fixed xKills");
         putEnum("damageFormula", 0x17, "Fixed x9999");
 
-        putEnum("damageType", 0x00, "Special");
-        putEnum("damageType", 0x01, "Physical");
-        putEnum("damageType", 0x02, "Magical");
+        putEnum("damageType", 0x00, "Special", "atc_type_not");
+        putEnum("damageType", 0x01, "Physical", "atc_type_physic");
+        putEnum("damageType", 0x02, "Magical", "atc_type_magic");
 
         putEnum("sphereGrid", 0x00, "Original (JP/NTSC) Sphere Grid");
         putEnum("sphereGrid", 0x01, "Standard Sphere Grid");
@@ -555,6 +564,35 @@ public abstract class ScriptConstants {
         putEnum("btlActor", 0xFFFD, "TargetActors", "CHR_TARGET");
         putEnum("btlActor", 0xFFFE, "ActiveActors", "CHR_ACTIVE");
         putEnum("btlActor", 0xFFFF, "Actor:Null", "CHR_NOP");
+
+        putMotionProperty(0x00, null, "motion_attack_start_dist");
+        putMotionProperty(0x01, null, "motion_attack_offset");
+        putMotionProperty(0x02, null, "motion_move_backjump_dist");
+        putMotionProperty(0x03, null, "motion_run_speed");
+        putMotionProperty(0x04, null, "motion_run_speed_return");
+        putMotionProperty(0x05, null, "motion_run_speed_v0");
+        putMotionProperty(0x06, null, "motion_run_speed_acc");
+        putMotionProperty(0x07, null, "motion_weight");
+        putMotionProperty(0x08, null, "motion_attack_height");
+        putMotionProperty(0x08, null, "motion_width");
+        
+        putEnum("motionTypeFlags", 0x00001, null, "motion_type_attack_run_00_01");
+        putEnum("motionTypeFlags", 0x00002, null, "motion_type_attack_run_01");
+        putEnum("motionTypeFlags", 0x00004, null, "motion_type_attack_miss");
+        putEnum("motionTypeFlags", 0x00008, null, "motion_type_attack_return");
+        putEnum("motionTypeFlags", 0x00010, null, "motion_type_attack_pos_check");
+        putEnum("motionTypeFlags", 0x00020, null, "motion_type_avoid_move");
+        putEnum("motionTypeFlags", 0x00040, null, "motion_type_hokan_wait_to_run");
+        putEnum("motionTypeFlags", 0x00080, null, "motion_type_hokan_normal");
+        putEnum("motionTypeFlags", 0x00100, null, "motion_type_move_back_jump");
+        putEnum("motionTypeFlags", 0x00200, null, "motion_type_move_avoid");
+        putEnum("motionTypeFlags", 0x00400, null, "motion_type_turn_stay");
+        putEnum("motionTypeFlags", 0x00800, null, "motion_type_turn_run");
+        putEnum("motionTypeFlags", 0x01000, null, "motion_type_attack_stay");
+        putEnum("motionTypeFlags", 0x02000, null, "motion_type_wait_return");
+        putEnum("motionTypeFlags", 0x04000, null, "motion_type_disable_avoid");
+        putEnum("motionTypeFlags", 0x08000, null, "motion_type_disable_chest_move");
+        putEnum("motionTypeFlags", 0x10000, null, "motion_type_attack_weight_max");
 
         putBattleActorProperty(0x0000, "HP", "int", "stat_hp");
         putBattleActorProperty(0x0001, "MP", "int", "stat_mp");
@@ -690,7 +728,7 @@ public abstract class ScriptConstants {
         putBattleActorProperty(0x0083, "StealItemRareType", "move", "stat_rareitem");
         putBattleActorProperty(0x0084, "StealItemRareAmount", "int", "stat_rareitem_num");
         putBattleActorProperty(0x0085, null, "unknown", "stat_magiclv");
-        putBattleActorProperty(0x0086, "?birthAnimation", "int", "stat_appear_motion_flag");
+        putBattleActorProperty(0x0086, "BirthAnimation", "appearMotion", "stat_appear_motion_flag");
         putBattleActorProperty(0x0087, null, "unknown", "stat_cursor_element");
         putBattleActorProperty(0x0088, null, "unknown", "stat_limit_bar_flag_cam");
         putBattleActorProperty(0x0089, "showOverdriveBar", "bool", "stat_limit_bar_flag");
@@ -714,7 +752,7 @@ public abstract class ScriptConstants {
         putBattleActorProperty(0x009B, "StatusGuard", "bool", "stat_protect");
         putBattleActorProperty(0x009C, "StatusSentinel", "bool", "stat_iron");
         putBattleActorProperty(0x009D, "StatusDoom", "bool", "stat_death_sentence");
-        putBattleActorProperty(0x009E, null, "unknown", "stat_motion_type");
+        putBattleActorProperty(0x009E, null, "motionTypeFlags", "stat_motion_type");
         putBattleActorProperty(0x009F, "DoomCounterInitial", "int", "stat_death_sentence_start");
         putBattleActorProperty(0x00A0, "?DoomCounterCurrent", "int", "stat_death_sentence_count");
         putBattleActorProperty(0x00A1, null, "unknown", "stat_dmg_dir");
@@ -955,6 +993,12 @@ public abstract class ScriptConstants {
         ScriptField field = new ScriptField(name, type, internalName);
         field.idx = idx;
         getEnumMap("btlActorProperty").put(idx, field);
+    }
+
+    private static void putMotionProperty(int idx, String name, String internalName) {
+        ScriptField field = new ScriptField(name, "float", internalName);
+        field.idx = idx;
+        getEnumMap("motionProperty").put(idx, field);
     }
 
     private static void putMoveProperty(int idx, String name, String type) {

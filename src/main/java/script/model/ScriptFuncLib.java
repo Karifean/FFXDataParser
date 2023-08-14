@@ -182,7 +182,7 @@ public abstract class ScriptFuncLib {
         putUnknownFunc(0x00A7, 1); // noclip: setIsNotActive()
         putUnknownFunc(0x00A8, 1); // noclip: setIsActive()
         putFuncWithIdx(0x00A9, new ScriptFunc("GetRandomValue", "int", null, true));
-        putUnknownFunc(0x00AA, 1);
+        putFuncWithIdx(0x00AA, new ScriptFunc("?SetRandomEncountersActive", "unknown", null, p("active", "bool")));
         putUnknownFunc(0x00AB, 2);
         putUnknownFunc(0x00AC, 1);
         putUnknownFunc(0x00B1, 1);
@@ -839,7 +839,7 @@ public abstract class ScriptFuncLib {
         putFuncWithIdx(0x7021, new ScriptFunc("dereferenceCharacter", "btlActor", "btlGetChrNum", p("btlActor")));
         putFuncWithIdx(0x7022, new ScriptFunc("SetAmbushState", "unknown", "btlSetFirstAttack", p("ambushState")));
         putUnknownFunc(0x7023, "btlDistTarget", 1);
-        putFuncWithIdx(0x7024, new ScriptFunc("CurrentEncounterIndex", "encounter", "btlGetBtlScene", false));
+        putFuncWithIdx(0x7024, new ScriptFunc("CurrentEncounter", "encounter", "btlGetBtlScene", false));
         putFuncWithIdx(0x7025, new ScriptFunc("defineActorSubset2?", "btlActor", "btlSearchChr2", p("group", "btlActor"), p("property", "btlActorProperty"), p("unknown"), p("selector")));
         putUnknownFunc(0x7026, "btlSetWeak", 1);
         putUnknownFunc(0x7027, "btlGetWeak", 0);
@@ -975,13 +975,13 @@ public abstract class ScriptFuncLib {
         putUnknownFunc(0x70A9, "btlmeswait_voice", 1);
         putFuncWithIdx(0x70AA, new ScriptFuncAccessor("readBattleActorProperty2", null, "btlGetStat2", null, "btlActorProperty"));
         putFuncWithIdx(0x70AB, new ScriptFuncAccessor("setBattleActorProperty2", null, "btlSetStat2", "=", "btlActorProperty"));
-        putUnknownFunc(0x70AC, "btlGetMotionData2", "float", 1);
+        putFuncWithIdx(0x70AC, new ScriptFuncAccessor("readMotionProperty2", null, "btlGetMotionData2", null, "motionProperty"));
         putUnknownFunc(0x70AD, "btlCheckWakkaWeapon", 0);
         putUnknownFunc(0x70AE, "btlGetLastDeathChr", 0);
         putUnknownFunc(0x70AF, "btlGetVoiceFlag", 0);
         putUnknownFunc(0x70B0, "btlDistTargetFrame2", 1);
         putUnknownFunc(0x70B1, "btlPrintSp", 1);
-        putUnknownFunc(0x70B2, "btlSetMotionData2", 2);
+        putFuncWithIdx(0x70B2, new ScriptFuncAccessor("setMotionValue", null, "btlSetMotionData2", "=", "motionProperty"));
         putUnknownFunc(0x70B3, "btlVoiceSet", 1);
         putUnknownFunc(0x70B4, "btlFadeOutWeapon", 0);
         putUnknownFunc(0x70B5, "btlResetMotionSpeed", 0);
@@ -1076,8 +1076,8 @@ public abstract class ScriptFuncLib {
         putUnknownFunc(0x710D, "btlDefensePosOff", 0);
         putUnknownFunc(0x710E, "btlGetWakkaLimitSkill", 0);
         putUnknownFunc(0x710F, "btlGetWakkaLimitNum", 0);
-        putUnknownFunc(0x7110, "btlMouseOn", 1);
-        putUnknownFunc(0x7111, "btlMouseOff", 1);
+        putFuncWithIdx(0x7110, new ScriptFunc(null, "unknown", "btlMouseOn", p("btlActor")));
+        putFuncWithIdx(0x7111, new ScriptFunc(null, "unknown", "btlMouseOff", p("btlActor")));
         putUnknownFunc(0x7112, "btlDirMove2", 4);
         putUnknownFunc(0x7113, "btlMonsterFarm", 0);
         putUnknownFunc(0x7114, "btlSphereMonitor", 0);
@@ -1161,12 +1161,12 @@ public abstract class ScriptFuncLib {
         putUnknownFunc(0x8067, 4);
         putUnknownFunc(0x806A, 1); // set an image plane's map group
         putUnknownFunc(0x806B, 1); // totally empty?!
-        putUnknownFunc(0xB000, 2); // Inference based on A2 popping 1 and pushing 1
-        putUnknownFunc(0xB001, 0);
+        putFuncWithIdx(0xB000, new ScriptFunc("loadFMV", "unknown", null, p("fmv"), p("flags", "uint")));
+        putFuncWithIdx(0xB001, new ScriptFunc("?unloadFMV", "unknown", null, true));
         putUnknownFunc(0xB002, 0);
-        putUnknownFunc(0xB003, 0);
-        putUnknownFunc(0xB004, 0);
-        putUnknownFunc(0xB009, 0);
+        putFuncWithIdx(0xB003, new ScriptFunc("CurrentPlaybackProgress", "int", null, false));
+        putFuncWithIdx(0xB004, new ScriptFunc("?awaitFMV", "unknown", null, true));
+        putFuncWithIdx(0xB009, new ScriptFunc("?playLoadedFMV", "unknown", null, true));
         putUnknownFunc(0xB00A, 2);
         putUnknownFunc(0xB00B, 0);
         putUnknownFunc(0xB00C, 0);

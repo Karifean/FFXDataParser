@@ -40,7 +40,7 @@ public class SphereGridNodeDataObject implements Nameable {
     public String toString() {
         List<String> list = new ArrayList<>();
         list.add("Position=(" + posX + "/" + posY + ")");
-        list.add("Cluster#" + cluster);
+        list.add("Cluster=C#" + cluster);
         if (hasContent() && content != redundantContent) {
             list.add("Content-Mismatch - Original=" + SphereGridLayoutDataObject.byteToNodeContent(redundantContent));
         }

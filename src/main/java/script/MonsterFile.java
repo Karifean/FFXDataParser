@@ -2,7 +2,6 @@ package script;
 
 import model.Nameable;
 import reading.Chunk;
-import main.StringHelper;
 import model.MonsterSpoilsDataObject;
 import model.MonsterStatDataObject;
 
@@ -19,6 +18,7 @@ public class MonsterFile implements Nameable {
     public MonsterStatDataObject englishTextStatData;
     public MonsterStatDataObject monsterLocalizationData;
     Chunk scriptChunk;
+    Chunk audioChunkApparently;
     int[] scriptMappingBytes;
     int[] statBytes;
     int[] spoilsBytes;
@@ -34,6 +34,7 @@ public class MonsterFile implements Nameable {
         scriptMappingBytes = chunks.get(1).bytes;
         statBytes = chunks.get(2).bytes;
         spoilsBytes = chunks.get(4).bytes;
+        audioChunkApparently = chunks.get(5);
         englishTextBytes = chunks.get(6).bytes;
     }
 

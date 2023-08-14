@@ -1,6 +1,8 @@
 package script.model;
 
-public class ScriptField {
+import model.Nameable;
+
+public class ScriptField implements Nameable {
     protected static final boolean PRINT_WITH_HEX_SUFFIX = true;
 
     public String name;
@@ -28,14 +30,23 @@ public class ScriptField {
 
     @Override
     public String toString() {
-        if (name == null || name.isEmpty()) {
-            if (internalName == null || internalName.isEmpty()) {
-                return type + ':' + idx + getHexSuffix();
-            } else {
-                return PRINT_WITH_HEX_SUFFIX ? internalName + getHexSuffix() : internalName;
-            }
+        boolean withHexSuffix = PRINT_WITH_HEX_SUFFIX || (name == null && internalName == null);
+        return getLabel() + (withHexSuffix ? getHexSuffix() : "");
+    }
+
+    @Override
+    public String getName() {
+        return name;
+    }
+
+    public String getLabel() {
+        if (name != null) {
+            return name;
+        } else if (internalName != null) {
+            return internalName;
+        } else {
+            return type + ":" + idx;
         }
-        return PRINT_WITH_HEX_SUFFIX ? name + getHexSuffix() : name;
     }
 
     public String getHexIndex() {

@@ -6,7 +6,11 @@ import model.Nameable;
 import script.MonsterFile;
 import script.ScriptObject;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 public class StackObject {
     public ScriptObject parentScript;
@@ -81,7 +85,7 @@ public class StackObject {
                 if (value == 0) {
                     return "Null Move" + hexSuffix;
                 } else if (value <= 0x11) {
-                    return "Switch/Summon:" + ScriptConstants.getEnumMap("btlActor").get(value) + hexSuffix;
+                    return "Switch/Summon:" + ScriptConstants.getEnumMap("playerChar").get(value) + hexSuffix;
                 } else {
                     AbilityDataObject ability = DataAccess.getMove(value);
                     return (ability != null ? '"'+ability.getName()+'"' : "????") + hexSuffix;
@@ -105,6 +109,9 @@ public class StackObject {
                 return '"' + noLineBreakString + '"' + hexSuffix;
             }
             if (ScriptConstants.ENUMERATIONS.containsKey(type)) {
+                if (ScriptConstants.BITFIELD_ENUMS.contains(type)) {
+                    return parseBitfield(type, value) + hexSuffix;
+                }
                 return enumToString(type, value);
             }
         }
@@ -168,5 +175,16 @@ public class StackObject {
         ScriptField field = new ScriptField(null, ScriptConstants.INDEX_ENUMS_ONLY.contains(type) ? "unknown" : type);
         field.idx = value;
         return field;
+    }
+
+    public static String parseBitfield(String type, int value) {
+        Set<Map.Entry<Integer, ScriptField>> allBits = ScriptConstants.ENUMERATIONS.get(type).entrySet();
+        List<ScriptField> bits = new ArrayList<>();
+        for (Map.Entry<Integer, ScriptField> bit : allBits) {
+            if ((value & bit.getKey()) != 0) {
+                bits.add(bit.getValue());
+            }
+        }
+        return "[" + bits.stream().map(ScriptField::getLabel).collect(Collectors.joining(", ")) + "]";
     }
 }

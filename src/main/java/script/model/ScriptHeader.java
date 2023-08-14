@@ -67,7 +67,7 @@ public class ScriptHeader {
             list.add("Purpose=" + purposeToString(purpose) + " [" + String.format("%02X", purpose) + "h]");
         }
         if (purposeSlot != null) {
-            list.add("PurposeSlot=" + purposeSlot + " [" + String.format("%02X", purposeSlot) + "h]");
+            list.add("PurposeSlot=" + purposeSlotToString(purposeSlot) + " [" + String.format("%02X", purposeSlot) + "h]");
         }
         list.add("Entrypoints=" + entryPointCount);
         list.add("Jumps=" + jumpCount);
@@ -135,6 +135,13 @@ public class ScriptHeader {
         this.purposeSlot = purposeSlot;
     }
 
+    public ScriptField purposeSlotToChar() {
+        if (purposeSlot < 0x2B || purposeSlot > 0x3C) {
+            return null;
+        }
+        return StackObject.enumToScriptField("playerChar", purposeSlot - 0x2B);
+    }
+
     public static String scriptTypeToString(int scriptType) {
         return switch (scriptType) {
             case 0 -> "Subroutine";
@@ -151,8 +158,16 @@ public class ScriptHeader {
             case 1 -> "MotionHandler";
             case 2 -> "CombatHandler";
             case 4 -> "EncounterScripts";
-            default -> "unknown?";
+            default -> "?" + String.format("%02X", purpose);
         };
+    }
+
+    public static String purposeSlotToString(int purposeSlot) {
+        if (purposeSlot >= 0x2B && purposeSlot <= 0x3C) {
+            String chr = StackObject.enumToString("playerChar", purposeSlot - 0x2B);
+            return "Ex" + chr;
+        }
+        return "?" + String.format("%02X", purposeSlot);
     }
 
     private String privateValuesString() {

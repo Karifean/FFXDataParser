@@ -33,9 +33,10 @@ public class SphereGridLinkDataObject implements Nameable {
     @Override
     public String toString() {
         List<String> list = new ArrayList<>();
-        list.add("From Node#" + node1 + " to Node#" + node2);
+        list.add("From Node N#" + node1 + " to N#" + node2);
         if (anchorNode != 0xFFFF) {
-            list.add("Anchor Node#" + anchorNode);
+            list.add("Curved");
+            list.add("Anchor=N#" + anchorNode);
         } else {
             list.add("Straight");
         }

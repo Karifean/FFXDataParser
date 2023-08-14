@@ -76,7 +76,9 @@ public class ScriptJump {
     private void setCtbPurpose() {
         String purpose = ctbPurposeSlotToString(purposeSlot);
         if (purpose != null) {
-            label = "s" + String.format("%02X", scriptIndex) + purpose;
+            ScriptField chr = scriptHeader.purposeSlotToChar();
+            String sPrefix = chr != null ? chr.getName() + "." : ("s" + String.format("%02X", scriptIndex));
+            label = sPrefix + purpose;
         }
     }
 
