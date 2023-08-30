@@ -60,6 +60,14 @@ public class ScriptHeader {
         sharedDataOffset = read4Bytes(bytes, 0x30);
     }
 
+    public String toString() {
+        return getIndexLabel();
+    }
+
+    public String getIndexLabel() {
+        return "s" + String.format("%02X", scriptIndex);
+    }
+
     public String getNonCommonString() {
         List<String> list = new ArrayList<>();
         list.add("Type=" + scriptTypeToString(scriptType) + " [" + String.format("%02X", scriptType) + "h]");
@@ -136,7 +144,7 @@ public class ScriptHeader {
     }
 
     public ScriptField purposeSlotToChar() {
-        if (purposeSlot < 0x2B || purposeSlot > 0x3C) {
+        if (purposeSlot == null || purposeSlot < 0x2B || purposeSlot > 0x3C) {
             return null;
         }
         return StackObject.enumToScriptField("playerChar", purposeSlot - 0x2B);
@@ -158,6 +166,7 @@ public class ScriptHeader {
             case 1 -> "MotionHandler";
             case 2 -> "CombatHandler";
             case 4 -> "EncounterScripts";
+            case 6 -> "StartEndHooks";
             default -> "?" + String.format("%02X", purpose);
         };
     }

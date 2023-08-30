@@ -136,6 +136,10 @@ public class ScriptObject {
         return new ScriptHeader(scriptIndex, Arrays.copyOfRange(bytes, offset, offset + ScriptHeader.LENGTH));
     }
 
+    public ScriptHeader getScriptHeader(int scriptIndex) {
+        return scriptIndex >= 0 && scriptIndex < headers.length ? headers[scriptIndex] : null;
+    }
+
     private void parseVarIntFloatTables() {
         variableStructsTableOffset = -1;
         intTableOffset = -1;
@@ -513,7 +517,15 @@ public class ScriptObject {
             textScriptLine += "await " + sep + ";";
         } else if (opcode == 0x78) { // Never used: PREQWAIT / WAIT_SPEC_DELETE
         } else if (opcode == 0x79) { // REQCHG / EDIT_ENTRY_TABLE
-            textScriptLine += "REQCHG(" + p1 + ", " + p2 + ", " + p3 + ");";
+            ScriptJump[] entryPoints = headers[currentScriptIndex].entryPoints;
+            int oldIdx = p2.value + 2;
+            int newIdx = p3.value;
+            boolean direct = !p2.expression && !p3.expression && isWeakType(p2.type) && isWeakType(p3.type) && oldIdx < entryPoints.length && newIdx < entryPoints.length;
+            String oldScriptLabel = direct ? entryPoints[oldIdx].getLabel() : ("e" + (p2.expression ? "(" + p2 + ")" : format2Or4Byte(oldIdx)));
+            String newScriptLabel = direct ? entryPoints[newIdx].getLabel() : ("e" + (p3.expression ? "(" + p3 + ")" : format2Or4Byte(newIdx)));
+            String i = p1.expression ? ""+p1 : ""+p1.value;
+            textScriptLine += "Replace script " + oldScriptLabel + " with " + newScriptLabel + " (" + i + ")";;
+            // textScriptLine += "REQCHG(" + p1 + ", " + p2 + ", " + p3 + ");";
         } else if (opcode == 0x7A) { // Never used: ACTREQ / SET_EDGE_TRIGGER
         } else if (opcode == 0x9F) { // PUSHV / GET_DATUM
             StackObject stackObject = new StackObject(this, ins, "var", true, ensureVariableValid(argv), argv);

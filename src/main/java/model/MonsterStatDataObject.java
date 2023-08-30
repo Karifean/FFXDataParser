@@ -97,13 +97,13 @@ public class MonsterStatDataObject {
     boolean immunityFractionalDamage;
     boolean immunityLife;
     boolean immunitySensor;
-    boolean immunitySliceMaybe;
+    boolean immunityScanAgainOrWhat;
     boolean immunityPhysicalDamage;
     boolean immunityMagicalDamage;
-    boolean props28bit80;
+    boolean immunityAllDamage;
     boolean immunityDelay;
-    boolean props29bit02;
-    boolean props29bit04;
+    boolean immunitySliceProbably;
+    boolean immunityBribeProbably;
 
     boolean autoDeath;
     boolean autoZombie;
@@ -253,13 +253,13 @@ public class MonsterStatDataObject {
         immunityFractionalDamage = (miscProperties28 & 0x02) > 0;
         immunityLife = (miscProperties28 & 0x04) > 0;
         immunitySensor = (miscProperties28 & 0x08) > 0;
-        immunitySliceMaybe = (miscProperties28 & 0x10) > 0;
+        immunityScanAgainOrWhat = (miscProperties28 & 0x10) > 0;
         immunityPhysicalDamage = (miscProperties28 & 0x20) > 0;
         immunityMagicalDamage = (miscProperties28 & 0x40) > 0;
-        props28bit80 = (miscProperties28 & 0x80) > 0;
+        immunityAllDamage = (miscProperties28 & 0x80) > 0;
         immunityDelay = (miscProperties29 & 0x01) > 0;
-        props29bit02 = (miscProperties29 & 0x02) > 0;
-        props29bit04 = (miscProperties29 & 0x04) > 0;
+        immunitySliceProbably = (miscProperties29 & 0x02) > 0;
+        immunityBribeProbably = (miscProperties29 & 0x04) > 0;
 
         autoDeath = (autoStatuses1 & 0x01) > 0;
         autoZombie = (autoStatuses1 & 0x02) > 0;
@@ -360,12 +360,6 @@ public class MonsterStatDataObject {
             list.add("Armored");
         }
         list.add(specialImmunities());
-        if (props29bit02) {
-            list.add("byte29bit02");
-        }
-        if (props29bit04) {
-            list.add("byte29bit04");
-        }
         if (miscProperties29 >= 0x08) {
             list.add("Unknown byte 29: " + String.format("%02X", miscProperties29));
         }
@@ -412,13 +406,13 @@ public class MonsterStatDataObject {
             specials.add("Sensor");
         }
         if (immunityFractionalDamage) {
-            specials.add("Fractional Damage");
+            specials.add("% Damage");
         }
         if (immunityLife) {
             specials.add("Life (Instakill by Revival when Zombied)");
         }
-        if (immunitySliceMaybe) {
-            specials.add("Zan?");
+        if (immunityScanAgainOrWhat) {
+            specials.add("Scan?");
         }
         if (immunityPhysicalDamage) {
             specials.add("Physical Damage");
@@ -426,11 +420,17 @@ public class MonsterStatDataObject {
         if (immunityMagicalDamage) {
             specials.add("Magical Damage");
         }
-        if (props28bit80) {
-            specials.add("Unknown:b28b80");
+        if (immunityAllDamage) {
+            specials.add("All Damage");
         }
         if (immunityDelay) {
             specials.add("Delay (All CTB Heal/Damage)");
+        }
+        if (immunitySliceProbably) {
+            specials.add("Zan/Slice");
+        }
+        if (immunityBribeProbably) {
+            specials.add("Bribe");
         }
         if (specials.isEmpty()) {
             return "";

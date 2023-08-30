@@ -15,7 +15,6 @@ public abstract class ScriptConstants {
     public static final Map<String, Map<Integer, ScriptField>> ENUMERATIONS = new HashMap<>();
     public static final Map<Integer, ScriptField> COMP_OPERATORS = new HashMap<>();
     public static final List<String> INDEX_ENUMS_ONLY = List.of("saveData", "commonVar");
-    public static final List<String> BITFIELD_ENUMS = List.of("motionTypeFlags");
 
     private static boolean initialized = false;
 
@@ -280,10 +279,24 @@ public abstract class ScriptConstants {
         addEnumsFromAllCsvsInFolder(new File(ENUM_CSV_ROOT));
         // addDeclaredCommonVars();
 
+        putSaveDataVariable(0x008D, "CalmLandsChocoboTrainingFlags", "int");
         putSaveDataVariable(0x0092, "MushroomRockRoadTreasureFlags", "int");
+        putSaveDataVariable(0x00A8, "WobblyChocoboRecordMinutes", "int");
+        putSaveDataVariable(0x00A9, "WobblyChocoboRecordSeconds", "int");
+        putSaveDataVariable(0x00AA, "WobblyChocoboRecordTenths", "int");
+        putSaveDataVariable(0x00AB, "DodgerChocoboRecordMinutes", "int");
+        putSaveDataVariable(0x00AC, "DodgerChocoboRecordSeconds", "int");
+        putSaveDataVariable(0x00AD, "DodgerChocoboRecordTenths", "int");
+        putSaveDataVariable(0x00AE, "HyperDodgerChocoboRecordMinutes", "int");
+        putSaveDataVariable(0x00AF, "HyperDodgerChocoboRecordSeconds", "int");
+        putSaveDataVariable(0x00B0, "HyperDodgerChocoboRecordTenths", "int");
+        putSaveDataVariable(0x00B1, "CatcherChocoboRecordMinutes", "int");
+        putSaveDataVariable(0x00B2, "CatcherChocoboRecordSeconds", "int");
+        putSaveDataVariable(0x00B3, "CatcherChocoboRecordTenths", "int");
         putSaveDataVariable(0x00CE, "BikanelTreasureFlags1", "int");
         putSaveDataVariable(0x00CF, "BikanelTreasureFlags2", "int");
         putSaveDataVariable(0x00D0, "BikanelTreasureFlags3", "int");
+        putSaveDataVariable(0x0104, "EnergyBlastProgressionFlags", "int");
         putSaveDataVariable(0x0115, "BesaidVillageTreasureFlags", "int");
         putSaveDataVariable(0x014B, "ControllableCharacterInLuca", "playerChar");
         putSaveDataVariable(0x01C0, "KilikaForestTreasureFlags", "int");
@@ -449,6 +462,7 @@ public abstract class ScriptConstants {
         putEnum("bgm", 0x001D, "Thunder Plains");
         putEnum("bgm", 0x0025, "People of the North Pole");
         putEnum("bgm", 0x0029, "Truth Revealed");
+        putEnum("bgm", 0x002A, "Seymour Battle");
         putEnum("bgm", 0x0030, "Prelude");
         putEnum("bgm", 0x0031, "Otherworld (BFA)");
         putEnum("bgm", 0x0082, "To Zanarkand");
@@ -491,6 +505,25 @@ public abstract class ScriptConstants {
         putEnum("damageFormula", 0x16, "Fixed xKills");
         putEnum("damageFormula", 0x17, "Fixed x9999");
 
+        putEnum("overdriveMode", 0x00, "Warrior", "limit_type_toushi");
+        putEnum("overdriveMode", 0x01, "Comrade", "limit_type_fundo");
+        putEnum("overdriveMode", 0x02, "Stoic", "limit_type_kuniku");
+        putEnum("overdriveMode", 0x03, "Healer", "limit_type_jiai");
+        putEnum("overdriveMode", 0x04, "Tactician", "limit_type_sakuryaku");
+        putEnum("overdriveMode", 0x05, "Sufferer", "limit_type_kyuuti");
+        putEnum("overdriveMode", 0x06, "Dancer", "limit_type_karei");
+        putEnum("overdriveMode", 0x07, "Avenger", "limit_type_hiai");
+        putEnum("overdriveMode", 0x08, "Slayer", "limit_type_gaika");
+        putEnum("overdriveMode", 0x09, "Hero", "limit_type_eiyuu");
+        putEnum("overdriveMode", 0x0A, "Rook", "limit_type_banjyaku");
+        putEnum("overdriveMode", 0x0B, "Victor", "limit_type_syouri");
+        putEnum("overdriveMode", 0x0C, "Coward", "limit_type_tijyoku");
+        putEnum("overdriveMode", 0x0D, "Ally", "limit_type_taiji");
+        putEnum("overdriveMode", 0x0E, "Victim", "limit_type_kugyou");
+        putEnum("overdriveMode", 0x0F, "Daredevil", "limit_type_kiki");
+        putEnum("overdriveMode", 0x10, "Loner", "limit_type_kokou");
+        putEnum("overdriveMode", 0x13, "Aeons Only", "limit_type_syoukan");
+
         putEnum("damageType", 0x00, "Special", "atc_type_not");
         putEnum("damageType", 0x01, "Physical", "atc_type_physic");
         putEnum("damageType", 0x02, "Magical", "atc_type_magic");
@@ -499,11 +532,21 @@ public abstract class ScriptConstants {
         putEnum("sphereGrid", 0x01, "Standard Sphere Grid");
         putEnum("sphereGrid", 0x02, "Expert Sphere Grid");
 
+        putEnum("achievement", 0x00, "Completion of FFX", "ACH_COMPLETION_OF_FFX");
+        putEnum("achievement", 0x02, "Teamwork!", "ACH_TEAMWORK_OF_FFX");
+        putEnum("achievement", 0x07, "Show Off!", "ACH_SHOW_OFF");
+        putEnum("achievement", 0x08, "Striker", "ACH_STRIKER");
+        putEnum("achievement", 0x09, "Chocobo License", "ACH_CHOCOBO_LICENSE");
+        putEnum("achievement", 0x0C, "Lightning Dancer", "ACH_LIGHTNING_DANCER");
+        putEnum("achievement", 0x11, "Chocobo Rider", "ACH_CHOCOBO_RIDER");
+        putEnum("achievement", 0x17, "Chocobo Master (Redirect)", "ACH_CHOCOBO_MASTER");
+        putEnum("achievement", 0x19, "Blitzball Master (Redirect)", "ACH_BLITZBALL_MASTER");
+
         putEnum("monsterArenaUnlock", 0x01, "Area Conquest unlocked");
         putEnum("monsterArenaUnlock", 0x02, "Species Conquest unlocked");
         putEnum("monsterArenaUnlock", 0x03, "Original Creations unlocked");
         for (int i = 0x300; i < 0x323; i++) {
-            putEnum("monsterArenaUnlock", i, "Creation #" + i + " defeated");
+            putEnum("monsterArenaUnlock", i, "Creation #" + (i - 0x2FF) + " defeated");
         }
 
         putEnum("playerChar", 0x0000, "Tidus", "PC_TIDUS");
@@ -526,6 +569,7 @@ public abstract class ScriptConstants {
         putEnum("playerChar", 0x0011, "Mindy", "PC_MAGUS3");
         putEnum("playerChar", 0x0012, null, "PC_DUMMY");
         putEnum("playerChar", 0x0013, null, "PC_DUMMY2");
+        putEnum("playerChar", 0xFFFF, "Empty", null);
 
         for (int i = 0; i <= 0x0013; i++) {
             getEnumMap("btlActor").put(i, getEnumMap("playerChar").get(i));
@@ -574,25 +618,7 @@ public abstract class ScriptConstants {
         putMotionProperty(0x06, null, "motion_run_speed_acc");
         putMotionProperty(0x07, null, "motion_weight");
         putMotionProperty(0x08, null, "motion_attack_height");
-        putMotionProperty(0x08, null, "motion_width");
-        
-        putEnum("motionTypeFlags", 0x00001, null, "motion_type_attack_run_00_01");
-        putEnum("motionTypeFlags", 0x00002, null, "motion_type_attack_run_01");
-        putEnum("motionTypeFlags", 0x00004, null, "motion_type_attack_miss");
-        putEnum("motionTypeFlags", 0x00008, null, "motion_type_attack_return");
-        putEnum("motionTypeFlags", 0x00010, null, "motion_type_attack_pos_check");
-        putEnum("motionTypeFlags", 0x00020, null, "motion_type_avoid_move");
-        putEnum("motionTypeFlags", 0x00040, null, "motion_type_hokan_wait_to_run");
-        putEnum("motionTypeFlags", 0x00080, null, "motion_type_hokan_normal");
-        putEnum("motionTypeFlags", 0x00100, null, "motion_type_move_back_jump");
-        putEnum("motionTypeFlags", 0x00200, null, "motion_type_move_avoid");
-        putEnum("motionTypeFlags", 0x00400, null, "motion_type_turn_stay");
-        putEnum("motionTypeFlags", 0x00800, null, "motion_type_turn_run");
-        putEnum("motionTypeFlags", 0x01000, null, "motion_type_attack_stay");
-        putEnum("motionTypeFlags", 0x02000, null, "motion_type_wait_return");
-        putEnum("motionTypeFlags", 0x04000, null, "motion_type_disable_avoid");
-        putEnum("motionTypeFlags", 0x08000, null, "motion_type_disable_chest_move");
-        putEnum("motionTypeFlags", 0x10000, null, "motion_type_attack_weight_max");
+        putMotionProperty(0x09, null, "motion_width");
 
         putBattleActorProperty(0x0000, "HP", "int", "stat_hp");
         putBattleActorProperty(0x0001, "MP", "int", "stat_mp");
@@ -612,7 +638,7 @@ public abstract class ScriptConstants {
         putBattleActorProperty(0x000F, "EVA", "int", "stat_avoid");
         putBattleActorProperty(0x0010, "ACC", "int", "stat_hit");
         putBattleActorProperty(0x0011, "PoisonDamage%", "int", "stat_poison_per");
-        putBattleActorProperty(0x0012, "OverdriveMode", "int", "stat_limit_type");
+        putBattleActorProperty(0x0012, "OverdriveMode", "overdriveMode", "stat_limit_type");
         putBattleActorProperty(0x0013, "OverdriveCurrent", "int", "stat_limit_gauge");
         putBattleActorProperty(0x0014, "OverdriveMax", "int", "stat_limit_gauge_max");
         putBattleActorProperty(0x0015, "isOnFrontline", "bool", "stat_inbattle");
@@ -752,7 +778,7 @@ public abstract class ScriptConstants {
         putBattleActorProperty(0x009B, "StatusGuard", "bool", "stat_protect");
         putBattleActorProperty(0x009C, "StatusSentinel", "bool", "stat_iron");
         putBattleActorProperty(0x009D, "StatusDoom", "bool", "stat_death_sentence");
-        putBattleActorProperty(0x009E, null, "motionTypeFlags", "stat_motion_type");
+        putBattleActorProperty(0x009E, null, "motionTypeBitfield", "stat_motion_type");
         putBattleActorProperty(0x009F, "DoomCounterInitial", "int", "stat_death_sentence_start");
         putBattleActorProperty(0x00A0, "?DoomCounterCurrent", "int", "stat_death_sentence_count");
         putBattleActorProperty(0x00A1, null, "unknown", "stat_dmg_dir");
@@ -834,7 +860,7 @@ public abstract class ScriptConstants {
         putBattleActorProperty(0x00ED, null, "unknown", "stat_visible_eff");
         putBattleActorProperty(0x00EE, null, "unknown", "stat_motion_dispose_flag");
         putBattleActorProperty(0x00EF, null, "unknown", "stat_model_dispose_flag");
-        putBattleActorProperty(0x00F0, null, "unknown", "stat_def_ctb");
+        putBattleActorProperty(0x00F0, "?ImmunityDelay", "unknown", "stat_def_ctb");
         putBattleActorProperty(0x00F1, null, "unknown", "stat_shadow");
         putBattleActorProperty(0x00F2, null, "unknown", "stat_death");
         putBattleActorProperty(0x00F3, null, "unknown", "stat_death_stone");
@@ -869,7 +895,7 @@ public abstract class ScriptConstants {
         putBattleActorProperty(0x0110, null, "unknown", "stat_height");
         putBattleActorProperty(0x0111, "YojimboCompatibility", "int", "stat_youjinbo");
         putBattleActorProperty(0x0112, "YojimboGivenGil", "int", "stat_payment");
-        putBattleActorProperty(0x0113, "ZanmatoLevel", "int", "stat_monster_value_max");
+        putBattleActorProperty(0x0113, "HighestZanmatoLevel", "int", "stat_monster_value_max");
         putBattleActorProperty(0x0114, "TurnsTaken", "int", "stat_command_exe_count");
         putBattleActorProperty(0x0115, "YojimboReaction", "yojimboReaction", "stat_consent");
         putBattleActorProperty(0x0116, null, "unknown", "stat_attack_near_frame");
@@ -908,22 +934,22 @@ public abstract class ScriptConstants {
         putBattleActorProperty(0x0137, null, "unknown", "stat_use_limit");
         putBattleActorProperty(0x0138, null, "unknown", "stat_use_limit_all");
         putBattleActorProperty(0x0139, "isDoublecasting", "bool", "stat_continue_magic");
-        putBattleActorProperty(0x013A, "?Item1CommonType", "move", "stat_item1_com");
-        putBattleActorProperty(0x013B, "?Item1RareType", "move", "stat_item1_rare");
-        putBattleActorProperty(0x013C, "?Item2CommonType", "move", "stat_item2_com");
-        putBattleActorProperty(0x013D, "?Item2RareType", "move", "stat_item2_rare");
-        putBattleActorProperty(0x013E, "?Item1CommonTypeOverkill", "move", "stat_item1_com_over_kill");
-        putBattleActorProperty(0x013F, "?Item1RareTypeOverkill", "move", "stat_item1_rare_over_kill");
-        putBattleActorProperty(0x0140, "?Item2CommonTypeOverkill", "move", "stat_item2_com_over_kill");
-        putBattleActorProperty(0x0141, "?Item2RareTypeOverkill", "move", "stat_item2_rare_over_kill");
-        putBattleActorProperty(0x0142, "?Item1CommonAmount", "int", "stat_item1_com_num");
-        putBattleActorProperty(0x0143, "?Item1RareAmount", "int", "stat_item1_rare_num");
-        putBattleActorProperty(0x0144, "?Item2CommonAmount", "int", "stat_item2_com_num");
-        putBattleActorProperty(0x0145, "?Item2RareAmount", "int", "stat_item2_rare_num");
-        putBattleActorProperty(0x0146, "?Item1CommonAmountOverkill", "int", "stat_item1_com_over_kill_num");
-        putBattleActorProperty(0x0147, "?Item1RareAmountOverkill", "int", "stat_item1_rare_over_kill_num");
-        putBattleActorProperty(0x0148, "?Item2CommonAmountOverkill", "int", "stat_item2_com_over_kill_num");
-        putBattleActorProperty(0x0149, "?Item2RareAmountOverkill", "int", "stat_item2_rare_over_kill_num");
+        putBattleActorProperty(0x013A, "Item1CommonType", "move", "stat_item1_com");
+        putBattleActorProperty(0x013B, "Item1RareType", "move", "stat_item1_rare");
+        putBattleActorProperty(0x013C, "Item2CommonType", "move", "stat_item2_com");
+        putBattleActorProperty(0x013D, "Item2RareType", "move", "stat_item2_rare");
+        putBattleActorProperty(0x013E, "Item1CommonTypeOverkill", "move", "stat_item1_com_over_kill");
+        putBattleActorProperty(0x013F, "Item1RareTypeOverkill", "move", "stat_item1_rare_over_kill");
+        putBattleActorProperty(0x0140, "Item2CommonTypeOverkill", "move", "stat_item2_com_over_kill");
+        putBattleActorProperty(0x0141, "Item2RareTypeOverkill", "move", "stat_item2_rare_over_kill");
+        putBattleActorProperty(0x0142, "Item1CommonAmount", "int", "stat_item1_com_num");
+        putBattleActorProperty(0x0143, "Item1RareAmount", "int", "stat_item1_rare_num");
+        putBattleActorProperty(0x0144, "Item2CommonAmount", "int", "stat_item2_com_num");
+        putBattleActorProperty(0x0145, "Item2RareAmount", "int", "stat_item2_rare_num");
+        putBattleActorProperty(0x0146, "Item1CommonAmountOverkill", "int", "stat_item1_com_over_kill_num");
+        putBattleActorProperty(0x0147, "Item1RareAmountOverkill", "int", "stat_item1_rare_over_kill_num");
+        putBattleActorProperty(0x0148, "Item2CommonAmountOverkill", "int", "stat_item2_com_over_kill_num");
+        putBattleActorProperty(0x0149, "Item2RareAmountOverkill", "int", "stat_item2_rare_over_kill_num");
         putBattleActorProperty(0x014A, null, "unknown", "stat_death_return");
         putBattleActorProperty(0x014B, null, "unknown", "stat_linear_move_reset");
         putBattleActorProperty(0x014C, null, "unknown", "stat_bodyhit_direct");

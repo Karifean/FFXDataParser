@@ -6,10 +6,7 @@ import model.Nameable;
 import script.MonsterFile;
 import script.ScriptObject;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class StackObject {
@@ -54,6 +51,9 @@ public class StackObject {
             if ("float".equals(type)) {
                 return Float.intBitsToFloat(value) + hexSuffix;
             }
+            if ("bitfield".equals(type)) {
+                return bitfieldToString(null, value) + hexSuffix;
+            }
             if (type.startsWith("uint")) {
                 return value + hexSuffix;
             }
@@ -67,6 +67,14 @@ public class StackObject {
             Nameable object = DataAccess.getNameableObject(type, value);
             if (object != null) {
                 return object.getName() + hexSuffix;
+            }
+            if ("script".equals(type)) {
+                ScriptHeader header = parentScript != null ? parentScript.getScriptHeader(value) : null;
+                if (header != null) {
+                    return header + hexSuffix;
+                } else {
+                    return "<s" + hex + ">";
+                }
             }
             if ("encounter".equals(type)) {
                 int field = (value & 0xFFFF0000) >> 16;
@@ -109,8 +117,8 @@ public class StackObject {
                 return '"' + noLineBreakString + '"' + hexSuffix;
             }
             if (ScriptConstants.ENUMERATIONS.containsKey(type)) {
-                if (ScriptConstants.BITFIELD_ENUMS.contains(type)) {
-                    return parseBitfield(type, value) + hexSuffix;
+                if (type.endsWith("Bitfield")) {
+                    return bitfieldToString(type, value) + hexSuffix;
                 }
                 return enumToString(type, value);
             }
@@ -154,7 +162,7 @@ public class StackObject {
                 case 0x05 -> "AeonAttributes";
                 default -> "b4:?" + b4;
             };
-        } else if (b4 != 0x00) {
+        } else if (b4 != 0x00 || b2 == 0x02 || b2 == 0x04) {
             index = "#" + b4;
         }
         return b1s + inputType + b3s + index;
@@ -177,12 +185,25 @@ public class StackObject {
         return field;
     }
 
-    public static String parseBitfield(String type, int value) {
+    /* public static String parseDefinedBitmask(String type, int value) {
         Set<Map.Entry<Integer, ScriptField>> allBits = ScriptConstants.ENUMERATIONS.get(type).entrySet();
         List<ScriptField> bits = new ArrayList<>();
         for (Map.Entry<Integer, ScriptField> bit : allBits) {
             if ((value & bit.getKey()) != 0) {
                 bits.add(bit.getValue());
+            }
+        }
+        return "[" + bits.stream().map(ScriptField::getLabel).collect(Collectors.joining(", ")) + "]";
+    } */
+
+    public static String bitfieldToString(String type, int value) {
+        Map<Integer, ScriptField> map = type != null ? ScriptConstants.ENUMERATIONS.getOrDefault(type, Collections.emptyMap()) : Collections.emptyMap();
+        List<ScriptField> bits = new ArrayList<>();
+        String format = value >= 0x10000 ? "b%08X" : "b%04X";
+        for (int bit = 0x01; bit < value; bit = bit << 1) {
+            if ((value & bit) != 0) {
+                ScriptField field = map.getOrDefault(bit, new ScriptField(String.format(format, bit), type).withIdx(value));
+                bits.add(field);
             }
         }
         return "[" + bits.stream().map(ScriptField::getLabel).collect(Collectors.joining(", ")) + "]";

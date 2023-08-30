@@ -63,4 +63,9 @@ public class ScriptField implements Nameable {
         }
         return " [" + hexIndex + "h]";
     }
+
+    public ScriptField withIdx(int idx) {
+        this.idx = idx;
+        return this;
+    }
 }

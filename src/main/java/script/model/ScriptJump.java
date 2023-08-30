@@ -46,6 +46,8 @@ public class ScriptJump {
                     return sPrefix + "talk";
                 } else if (scriptHeader.scriptType == 1 && jumpIndex == 3) {
                     return sPrefix + "scout";
+                } else if (scriptHeader.scriptType == 1 && jumpIndex == 5) {
+                    return sPrefix + "touch";
                 }
             }
             String pSuffix = purposeSlot > 0 ? "p" + String.format("%02X", purposeSlot) : "";
@@ -70,6 +72,8 @@ public class ScriptJump {
             setCtbPurpose();
         } else if (kind == 4) {
             setEncScript();
+        } else if (kind == 6) {
+            label = startEndHookPurposeSlotToString(purposeSlot);
         }
     }
 
@@ -97,6 +101,14 @@ public class ScriptJump {
             case 6 -> "postTurn"; // prePoison
             case 7 -> "postMove?";
             case 8 -> "postPoison?";
+            default -> null;
+        };
+    }
+
+    private static String startEndHookPurposeSlotToString(int slot) {
+        return switch (slot) {
+            case 4 -> "battleEnd";
+            case 5 -> "battleStart";
             default -> null;
         };
     }

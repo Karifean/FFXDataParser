@@ -156,7 +156,7 @@ public class AbilityDataObject implements Nameable {
     boolean randomTargets;
     boolean isPiercing;
     boolean disableWhenSilenced;
-    boolean usesWeaponProperties;
+    boolean usesWeaponProperties; // Gear overwrites Formula and Power, while element and status data are merged
     boolean isTriggerCommand;
     boolean useTier1CastAnimation;
     boolean useTier3CastAnimation;
@@ -166,7 +166,7 @@ public class AbilityDataObject implements Nameable {
     boolean damageTypePhysical;
     boolean damageTypeMagical;
     boolean canCrit;
-    boolean byte20bit08usedOnMostStrAttacks;
+    boolean useGearCritBonus;
     boolean suppressBDL;
     boolean damageClassHP;
     boolean damageClassMP;
@@ -379,7 +379,7 @@ public class AbilityDataObject implements Nameable {
         damageTypePhysical = (damageProperties20 & 0x01) > 0;
         damageTypeMagical = (damageProperties20 & 0x02) > 0;
         canCrit = (damageProperties20 & 0x04) > 0;
-        byte20bit08usedOnMostStrAttacks = (damageProperties20 & 0x08) > 0; // Seems to be needed for proper evasion?
+        useGearCritBonus = (damageProperties20 & 0x08) > 0;
         isHealing = (damageProperties20 & 0x10) > 0;
         isCleansingStatuses = (damageProperties20 & 0x20) > 0;
         suppressBDL = (damageProperties20 & 0x40) > 0;
@@ -480,8 +480,10 @@ public class AbilityDataObject implements Nameable {
         list.add(disableWhenSilenced ? "Silenceable" : "");
         list.add(canBeReflected ? "Reflectable" : "");
         list.add(canBeCopycatted ? "Copycattable" : "");
-        list.add(canCrit ? "Can crit" + (attackCritBonus > 0 ? " (+" + attackCritBonus + "%)" : "") : "");
-        list.add(byte20bit08usedOnMostStrAttacks ? "byte20bit08" : "");
+        if (canCrit) {
+            String bonus = useGearCritBonus ? " (+% from gear)" : (attackCritBonus > 0 ? " (+" + attackCritBonus + "%)" : "");
+            list.add("Can crit" + bonus);
+        }
         list.add(byte1Cbit08SetOnCharAttacksAndSkillsAndValeforShivaAttack ? "byte1Cbit08" : "");
         list.add(byte1Cbit20SetOnControllableAeonNormalAttacks ? "byte1Cbit20" : "");
         list.add(elements());
