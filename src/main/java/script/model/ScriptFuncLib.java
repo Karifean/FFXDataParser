@@ -621,7 +621,7 @@ public abstract class ScriptFuncLib {
         putUnknownFunc(0x5052, 5);
         putUnknownFunc(0x5054, 2);
         putUnknownFunc(0x5056, 1);
-        putFuncWithIdx(0x5057, new ScriptFunc(p("script"), p(2)));
+        putFuncWithIdx(0x5057, new ScriptFunc(p("worker"), p(2)));
         putUnknownFunc(0x5058, 1);
         putUnknownFunc(0x505A, 2);
         putUnknownFunc(0x505C, 1);

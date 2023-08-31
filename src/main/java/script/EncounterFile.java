@@ -14,7 +14,7 @@ public class EncounterFile {
     public ScriptObject encounterScript;
     public FormationDataObject formation;
     Chunk scriptChunk;
-    int[] scriptMappingBytes;
+    int[] workerMappingBytes;
     int[] formationBytes;
     int[] textBytes;
     List<String> originalStrings;
@@ -27,13 +27,13 @@ public class EncounterFile {
 
     private void mapChunks(List<Chunk> chunks) {
         scriptChunk = chunks.get(0);
-        scriptMappingBytes = chunks.get(1).bytes;
+        workerMappingBytes = chunks.get(1).bytes;
         formationBytes = chunks.get(2).bytes;
         textBytes = chunks.size() > 6 ? chunks.get(6).bytes : null;
     }
 
     private void mapObjects(int chunkCount) {
-        encounterScript = new ScriptObject(scriptChunk, scriptMappingBytes);
+        encounterScript = new ScriptObject(scriptChunk, workerMappingBytes);
         if (formationBytes != null && formationBytes.length > 0) {
             formation = new FormationDataObject(formationBytes);
         }

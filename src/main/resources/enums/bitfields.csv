@@ -15,5 +15,5 @@ motionTypeBitfield,02000,motion_type_wait_return
 motionTypeBitfield,04000,motion_type_disable_avoid
 motionTypeBitfield,08000,motion_type_disable_chest_move
 motionTypeBitfield,10000,motion_type_attack_weight_max
-battleFlags1Bitfield,0400,,?DisableBattleTheme
-battleFlags1Bitfield,0100,,?DisableVictoryDance
+battleFlags1Bitfield,0400,,DisableBattleTheme
+battleFlags1Bitfield,0100,,DisableVictoryDance

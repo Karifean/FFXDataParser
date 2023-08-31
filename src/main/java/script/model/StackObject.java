@@ -68,12 +68,12 @@ public class StackObject {
             if (object != null) {
                 return object.getName() + hexSuffix;
             }
-            if ("script".equals(type)) {
-                ScriptHeader header = parentScript != null ? parentScript.getScriptHeader(value) : null;
+            if ("worker".equals(type)) {
+                ScriptWorker header = parentScript != null ? parentScript.getWorker(value) : null;
                 if (header != null) {
                     return header + hexSuffix;
                 } else {
-                    return "<s" + hex + ">";
+                    return "<w" + hex + ">";
                 }
             }
             if ("encounter".equals(type)) {
@@ -200,7 +200,7 @@ public class StackObject {
         Map<Integer, ScriptField> map = type != null ? ScriptConstants.ENUMERATIONS.getOrDefault(type, Collections.emptyMap()) : Collections.emptyMap();
         List<ScriptField> bits = new ArrayList<>();
         String format = value >= 0x10000 ? "b%08X" : "b%04X";
-        for (int bit = 0x01; bit < value; bit = bit << 1) {
+        for (int bit = 0x01; bit <= value; bit = bit << 1) {
             if ((value & bit) != 0) {
                 ScriptField field = map.getOrDefault(bit, new ScriptField(String.format(format, bit), type).withIdx(value));
                 bits.add(field);

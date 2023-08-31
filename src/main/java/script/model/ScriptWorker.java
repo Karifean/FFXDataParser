@@ -7,11 +7,11 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class ScriptHeader {
+public class ScriptWorker {
     public static final int LENGTH = 0x34;
 
-    public final int scriptIndex;
-    public final int scriptType;
+    public final int workerIndex;
+    public final int workerType;
     public final int variablesCount;
     public final int refIntCount;
     public final int refFloatCount;
@@ -40,9 +40,9 @@ public class ScriptHeader {
     private Integer purposeSlot;
     private int[] purposeBytes;
 
-    public ScriptHeader(int scriptIndex, int[] bytes) {
-        this.scriptIndex = scriptIndex;
-        scriptType = read2Bytes(bytes,0x00);
+    public ScriptWorker(int workerIndex, int[] bytes) {
+        this.workerIndex = workerIndex;
+        workerType = read2Bytes(bytes,0x00);
         variablesCount = read2Bytes(bytes,0x02);
         refIntCount = read2Bytes(bytes,0x04);
         refFloatCount = read2Bytes(bytes, 0x06);
@@ -65,12 +65,12 @@ public class ScriptHeader {
     }
 
     public String getIndexLabel() {
-        return "s" + String.format("%02X", scriptIndex);
+        return "w" + String.format("%02X", workerIndex);
     }
 
     public String getNonCommonString() {
         List<String> list = new ArrayList<>();
-        list.add("Type=" + scriptTypeToString(scriptType) + " [" + String.format("%02X", scriptType) + "h]");
+        list.add("Type=" + scriptTypeToString(workerType) + " [" + String.format("%02X", workerType) + "h]");
         if (purpose != null) {
             list.add("Purpose=" + purposeToString(purpose) + " [" + String.format("%02X", purpose) + "h]");
         }

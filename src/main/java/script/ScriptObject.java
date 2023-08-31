@@ -17,10 +17,10 @@ public class ScriptObject {
 
     protected final int[] bytes;
     protected final int absoluteOffset;
-    protected final int[] scriptMappingBytes;
+    protected final int[] workerMappingBytes;
 
     protected int[] actualScriptCodeBytes;
-    protected ScriptHeader[] headers;
+    protected ScriptWorker[] workers;
     protected int[] refFloats;
     protected int[] refInts;
     protected ScriptVariable[] variableDeclarations;
@@ -71,16 +71,16 @@ public class ScriptObject {
     List<String> warnLines;
     List<ScriptInstruction> instructions = new ArrayList<>();
 
-    public ScriptObject(Chunk chunk, int[] scriptMappingBytes) {
-        this(chunk.bytes, chunk.offset, scriptMappingBytes);
+    public ScriptObject(Chunk chunk, int[] workerMappingBytes) {
+        this(chunk.bytes, chunk.offset, workerMappingBytes);
     }
 
-    public ScriptObject(int[] bytes, int absoluteOffset, int[] scriptMappingBytes) {
+    public ScriptObject(int[] bytes, int absoluteOffset, int[] workerMappingBytes) {
         this.bytes = bytes;
         this.absoluteOffset = absoluteOffset;
-        this.scriptMappingBytes = scriptMappingBytes;
+        this.workerMappingBytes = workerMappingBytes;
         mapFields();
-        parseHeaders();
+        parseWorkers();
     }
 
     private void mapFields() {
@@ -104,15 +104,15 @@ public class ScriptObject {
         numberOfScriptsWithoutSubroutines = read2Bytes(0x36);
     }
 
-    private void parseHeaders() {
+    private void parseWorkers() {
         scriptJumps = new ArrayList<>();
         scriptJumpsByDestination = new HashMap<>();
-        headers = new ScriptHeader[numberOfScripts];
+        workers = new ScriptWorker[numberOfScripts];
         for (int i = 0; i < numberOfScripts; i++) {
             int offset = read4Bytes(0x38 + i * 4);
-            ScriptHeader scriptHeader = parseScriptHeader(offset, i);
-            parseScriptJumps(scriptHeader);
-            headers[i] = scriptHeader;
+            ScriptWorker scriptWorker = parseScriptWorker(offset, i);
+            parseScriptJumps(scriptWorker);
+            workers[i] = scriptWorker;
         }
         parseVarIntFloatTables();
         parseScriptPurposes();
@@ -132,104 +132,104 @@ public class ScriptObject {
         semanticParseScriptCode();
     }
 
-    private ScriptHeader parseScriptHeader(int offset, int scriptIndex) {
-        return new ScriptHeader(scriptIndex, Arrays.copyOfRange(bytes, offset, offset + ScriptHeader.LENGTH));
+    private ScriptWorker parseScriptWorker(int offset, int scriptIndex) {
+        return new ScriptWorker(scriptIndex, Arrays.copyOfRange(bytes, offset, offset + ScriptWorker.LENGTH));
     }
 
-    public ScriptHeader getScriptHeader(int scriptIndex) {
-        return scriptIndex >= 0 && scriptIndex < headers.length ? headers[scriptIndex] : null;
+    public ScriptWorker getWorker(int workerIndex) {
+        return workerIndex >= 0 && workerIndex < workers.length ? workers[workerIndex] : null;
     }
 
     private void parseVarIntFloatTables() {
         variableStructsTableOffset = -1;
         intTableOffset = -1;
         floatTableOffset = -1;
-        for (ScriptHeader h : headers) {
+        for (ScriptWorker w : workers) {
             if (variableStructsTableOffset < 0) {
-                variableStructsTableOffset = h.variableStructsTableOffset;
-                variableDeclarations = new ScriptVariable[h.variablesCount];
-                for (int i = 0; i < h.variablesCount; i++) {
+                variableStructsTableOffset = w.variableStructsTableOffset;
+                variableDeclarations = new ScriptVariable[w.variablesCount];
+                for (int i = 0; i < w.variablesCount; i++) {
                     int lb = read4Bytes(variableStructsTableOffset + i * 8);
                     int hb = read4Bytes(variableStructsTableOffset + i * 8 + 4);
                     ScriptVariable scriptVariable = new ScriptVariable(i, lb, hb);
                     if (scriptVariable.location == 4) {
-                        scriptVariable.parseValues(this, bytes, h.sharedDataOffset);
+                        scriptVariable.parseValues(this, bytes, w.sharedDataOffset);
                     } else if (scriptVariable.location == 6) {
                         scriptVariable.parseValues(this, bytes, eventDataOffset);
                     }
                     variableDeclarations[i] = scriptVariable;
                 }
-                h.variableDeclarations = variableDeclarations;
-                h.setVariableInitialValues(this, bytes);
-            } else if (h.variableStructsTableOffset != variableStructsTableOffset || h.variablesCount != variableDeclarations.length) {
+                w.variableDeclarations = variableDeclarations;
+                w.setVariableInitialValues(this, bytes);
+            } else if (w.variableStructsTableOffset != variableStructsTableOffset || w.variablesCount != variableDeclarations.length) {
                 System.err.println("WARNING, variables table mismatch!");
             } else {
-                h.variableDeclarations = variableDeclarations;
-                h.setVariableInitialValues(this, bytes);
+                w.variableDeclarations = variableDeclarations;
+                w.setVariableInitialValues(this, bytes);
             }
             if (intTableOffset < 0) {
-                intTableOffset = h.intTableOffset;
-                refInts = new int[h.refIntCount];
-                for (int i = 0; i < h.refIntCount; i++) {
+                intTableOffset = w.intTableOffset;
+                refInts = new int[w.refIntCount];
+                for (int i = 0; i < w.refIntCount; i++) {
                     refInts[i] = read4Bytes(intTableOffset + i * 4);
                 }
-                h.refInts = refInts;
-            } else if (h.intTableOffset != intTableOffset || h.refIntCount != refInts.length) {
+                w.refInts = refInts;
+            } else if (w.intTableOffset != intTableOffset || w.refIntCount != refInts.length) {
                 System.err.println("WARNING, int table mismatch!");
             } else {
-                h.refInts = refInts;
+                w.refInts = refInts;
             }
             if (floatTableOffset < 0) {
-                floatTableOffset = h.floatTableOffset;
-                refFloats = new int[h.refFloatCount];
-                for (int i = 0; i < h.refFloatCount; i++) {
+                floatTableOffset = w.floatTableOffset;
+                refFloats = new int[w.refFloatCount];
+                for (int i = 0; i < w.refFloatCount; i++) {
                     refFloats[i] = read4Bytes(floatTableOffset + i * 4);
                 }
-                h.refFloats = refFloats;
-            } else if (h.floatTableOffset != floatTableOffset || h.refFloatCount != refFloats.length) {
+                w.refFloats = refFloats;
+            } else if (w.floatTableOffset != floatTableOffset || w.refFloatCount != refFloats.length) {
                 System.err.println("WARNING, float table mismatch!");
             } else {
-                h.refFloats = refFloats;
+                w.refFloats = refFloats;
             }
         }
     }
 
     private void parseScriptPurposes() {
-        if (scriptMappingBytes == null || scriptMappingBytes.length == 0) {
+        if (workerMappingBytes == null || workerMappingBytes.length == 0) {
             return;
         }
-        int notActuallySectionCount = scriptMappingBytes[0];
-        int preSectionLength = scriptMappingBytes[1];
+        int notActuallySectionCount = workerMappingBytes[0];
+        int preSectionLength = workerMappingBytes[1];
         for (int i = 2; i < preSectionLength; i++) {
-            if (scriptMappingBytes[i] != 0xFF) {
-                headers[scriptMappingBytes[i]].setPurposeSlot(i);
+            if (workerMappingBytes[i] != 0xFF) {
+                workers[workerMappingBytes[i]].setPurposeSlot(i);
             }
         }
         int sectionsLineOffset = preSectionLength + (preSectionLength % 2 == 0 ? 2 : 3);
         Integer firstOffset = null;
         for (int i = 0; i < notActuallySectionCount; i++) {
             int offset = sectionsLineOffset + i * 4;
-            int header = scriptMappingBytes[offset];
-            int scriptKind = scriptMappingBytes[offset + 1];
-            int sectionOffset = scriptMappingBytes[offset + 2] + scriptMappingBytes[offset + 3] * 0x100;
+            int header = workerMappingBytes[offset];
+            int scriptKind = workerMappingBytes[offset + 1];
+            int sectionOffset = workerMappingBytes[offset + 2] + workerMappingBytes[offset + 3] * 0x100;
             if (i == 0) {
                 firstOffset = sectionOffset;
             } else if (offset >= firstOffset) {
                 System.err.println("WARNING - Offset number mismatch at index " + i + " expected " + notActuallySectionCount);
                 break;
             }
-            int sectionValueCount = scriptMappingBytes[sectionOffset] + scriptMappingBytes[sectionOffset + 1] * 0x100;
+            int sectionValueCount = workerMappingBytes[sectionOffset] + workerMappingBytes[sectionOffset + 1] * 0x100;
             int sectionPayloadOffset = sectionOffset + 2;
-            headers[header].setPurpose(scriptKind, sectionValueCount, Arrays.copyOfRange(scriptMappingBytes, sectionPayloadOffset, sectionPayloadOffset + sectionValueCount * 2));
+            workers[header].setPurpose(scriptKind, sectionValueCount, Arrays.copyOfRange(workerMappingBytes, sectionPayloadOffset, sectionPayloadOffset + sectionValueCount * 2));
         }
     }
 
-    private void parseScriptJumps(ScriptHeader header) {
-        int entryPointCount = header.entryPointCount;
+    private void parseScriptJumps(ScriptWorker worker) {
+        int entryPointCount = worker.entryPointCount;
         ScriptJump[] entryPoints = new ScriptJump[entryPointCount];
         for (int i = 0; i < entryPointCount; i++) {
-            int addr = read4Bytes(header.scriptEntryPointsOffset + i * 4);
-            ScriptJump entryPoint = new ScriptJump(header, addr, i, true);
+            int addr = read4Bytes(worker.scriptEntryPointsOffset + i * 4);
+            ScriptJump entryPoint = new ScriptJump(worker, addr, i, true);
             entryPoints[i] = entryPoint;
             scriptJumps.add(entryPoint);
             if (!scriptJumpsByDestination.containsKey(addr)) {
@@ -237,12 +237,12 @@ public class ScriptObject {
             }
             scriptJumpsByDestination.get(addr).add(entryPoint);
         }
-        header.entryPoints = entryPoints;
-        int jumpCount = header.jumpCount;
+        worker.entryPoints = entryPoints;
+        int jumpCount = worker.jumpCount;
         ScriptJump[] jumps = new ScriptJump[jumpCount];
         for (int i = 0; i < jumpCount; i++) {
-            int addr = read4Bytes(header.jumpsOffset + i * 4);
-            ScriptJump jump = new ScriptJump(header, addr, i, false);
+            int addr = read4Bytes(worker.jumpsOffset + i * 4);
+            ScriptJump jump = new ScriptJump(worker, addr, i, false);
             jumps[i] = jump;
             scriptJumps.add(jump);
             if (!scriptJumpsByDestination.containsKey(addr)) {
@@ -250,7 +250,7 @@ public class ScriptObject {
             }
             scriptJumpsByDestination.get(addr).add(jump);
         }
-        header.jumps = jumps;
+        worker.jumps = jumps;
     }
 
     protected void syntacticParseScriptCode() {
@@ -373,7 +373,7 @@ public class ScriptObject {
         if (jumps == null || jumps.isEmpty()) {
             return;
         }
-        jumps.stream().filter(j -> j.isEntryPoint).findFirst().ifPresent(j -> currentScriptIndex = j.scriptIndex);
+        jumps.stream().filter(j -> j.isEntryPoint).findFirst().ifPresent(j -> currentScriptIndex = j.workerIndex);
         jumps.stream().filter(j -> j.rAType != null && !"unknown".equals(j.rAType)).findFirst().ifPresent(j -> currentRAType = j.rAType);
         jumps.stream().filter(j -> j.rXType != null && !"unknown".equals(j.rXType)).findFirst().ifPresent(j -> currentRXType = j.rXType);
         jumps.stream().filter(j -> j.rYType != null && !"unknown".equals(j.rYType)).findFirst().ifPresent(j -> currentRYType = j.rYType);
@@ -462,12 +462,12 @@ public class ScriptObject {
                 cmd += "Sync";
             }
             String i = p1.expression ? ""+p1 : ""+p1.value;
-            boolean direct = !p2.expression && !p3.expression && isWeakType(p2.type) && isWeakType(p3.type) && p2.value < headers.length && p3.value < headers[p2.value].entryPoints.length;
+            boolean direct = !p2.expression && !p3.expression && isWeakType(p2.type) && isWeakType(p3.type) && p2.value < workers.length && p3.value < workers[p2.value].entryPoints.length;
             String s = p2.expression ? "(" + p2 + ")" : format2Or4Byte(p2.value);
             String e = p3.expression ? "(" + p3 + ")" : format2Or4Byte(p3.value);
-            String scriptLabel = direct ? headers[p2.value].entryPoints[p3.value].getLabel() : ("s" + s + "e" + e);
+            String scriptLabel = direct ? workers[p2.value].entryPoints[p3.value].getLabel() : ("w" + s + "e" + e);
             String content = cmd + " " + scriptLabel + " (" + i + ")";
-            stack.push(new StackObject(this, ins, "script", true, content, opcode));
+            stack.push(new StackObject(this, ins, "worker", true, content, opcode));
         } else if (opcode == 0x39) { // PREQ
             String content = "PREQ(" + p1 + ", " + p2 + ", " + p3 + ")";
             stack.push(new StackObject(this, ins, "unknown", true, content, 0x39));
@@ -511,13 +511,14 @@ public class ScriptObject {
             stackObject.referenceIndex = tempIndex;
             stack.push(stackObject);
         } else if (opcode == 0x77) { // REQWAIT / WAIT_DELETE
-            String s = p1.expression ? "(" + p1 + ")" : format2Or4Byte(p1.value);
-            String e = p2.expression ? "(" + p2 + ")" : format2Or4Byte(p2.value);
-            String sep = "s" + s + "e" + e;
-            textScriptLine += "await " + sep + ";";
+            boolean direct = !p1.expression && !p2.expression && isWeakType(p1.type) && isWeakType(p2.type) && p1.value < workers.length && p2.value < workers[p1.value].entryPoints.length;
+            String s = p2.expression ? "(" + p1 + ")" : format2Or4Byte(p2.value);
+            String e = p3.expression ? "(" + p2 + ")" : format2Or4Byte(p3.value);
+            String scriptLabel = direct ? workers[p1.value].entryPoints[p2.value].getLabel() : ("w" + s + "e" + e);
+            textScriptLine += "await " + scriptLabel + ";";
         } else if (opcode == 0x78) { // Never used: PREQWAIT / WAIT_SPEC_DELETE
         } else if (opcode == 0x79) { // REQCHG / EDIT_ENTRY_TABLE
-            ScriptJump[] entryPoints = headers[currentScriptIndex].entryPoints;
+            ScriptJump[] entryPoints = workers[currentScriptIndex].entryPoints;
             int oldIdx = p2.value + 2;
             int newIdx = p3.value;
             boolean direct = !p2.expression && !p3.expression && isWeakType(p2.type) && isWeakType(p3.type) && oldIdx < entryPoints.length && newIdx < entryPoints.length;
@@ -604,10 +605,10 @@ public class ScriptObject {
     }
 
     private void setJumpTypes(int argv) {
-        if (headers == null || headers.length <= currentScriptIndex) {
+        if (workers == null || workers.length <= currentScriptIndex) {
             return;
         }
-        ScriptHeader header = headers[currentScriptIndex];
+        ScriptWorker header = workers[currentScriptIndex];
         if (header == null || header.jumps == null || header.jumps.length <= argv) {
             return;
         }
@@ -836,12 +837,12 @@ public class ScriptObject {
     }
 
     public String headersString() {
-        if (headers == null || headers.length == 0) {
+        if (workers == null || workers.length == 0) {
             return "No Scripts";
         }
         List<String> lines = new ArrayList<>();
         if (mainScriptIndex != 0xFFFF) {
-            lines.add("Main Script: " + mainScriptIndex + " [" + String.format("%02X", mainScriptIndex) + "h]");
+            lines.add("Main Worker: " + mainScriptIndex + " [" + String.format("%02X", mainScriptIndex) + "h]");
         }
         if (VERBOSE_HEADER_OUTPUT) {
             lines.add("map_start = " + String.format("%04X", map_start));
@@ -851,9 +852,9 @@ public class ScriptObject {
             lines.add("area_offset = " + String.format("%06X", area_offset));
             lines.add("other_offset = " + String.format("%06X", other_offset));
         }
-        lines.add(numberOfScripts + " Scripts Total");
+        lines.add(numberOfScripts + " Workers Total");
         for (int i = 0; i < numberOfScripts; i++) {
-            lines.add("s" + String.format("%02X", i) + ": " + headers[i].getNonCommonString());
+            lines.add("w" + String.format("%02X", i) + ": " + workers[i].getNonCommonString());
         }
         if (VERBOSE_HEADER_OUTPUT) {
             lines.add("Variables (" + variableDeclarations.length + " at offset " + String.format("%04X", variableStructsTableOffset) + ")");
@@ -882,8 +883,8 @@ public class ScriptObject {
             }
             lines.add("- Jump Table -");
             for (int i = 0; i < numberOfScripts; i++) {
-                lines.add("s" + String.format("%02X", i));
-                ScriptHeader h = headers[i];
+                lines.add("w" + String.format("%02X", i));
+                ScriptWorker h = workers[i];
                 lines.add(h.getEntryPointsLine());
                 lines.add(h.getJumpsLine());
             }

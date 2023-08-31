@@ -4,9 +4,9 @@ import java.util.List;
 import java.util.Map;
 
 public class ScriptJump {
-    public final ScriptHeader scriptHeader;
+    public final ScriptWorker scriptWorker;
     public final int addr;
-    public final int scriptIndex;
+    public final int workerIndex;
     public final int jumpIndex;
     public final boolean isEntryPoint;
 
@@ -20,10 +20,10 @@ public class ScriptJump {
     private int purposeKind;
     private int purposeSlot;
 
-    public ScriptJump(ScriptHeader scriptHeader, int addr, int jumpIndex, boolean isEntryPoint) {
-        this.scriptHeader = scriptHeader;
+    public ScriptJump(ScriptWorker scriptWorker, int addr, int jumpIndex, boolean isEntryPoint) {
+        this.scriptWorker = scriptWorker;
         this.addr = addr;
-        this.scriptIndex = scriptHeader.scriptIndex;
+        this.workerIndex = scriptWorker.workerIndex;
         this.jumpIndex = jumpIndex;
         this.isEntryPoint = isEntryPoint;
     }
@@ -36,22 +36,22 @@ public class ScriptJump {
         if (!isEntryPoint) {
             return "j" + String.format("%02X", jumpIndex);
         } else {
-            String sPrefix = "s" + String.format("%02X", scriptIndex);
+            String wPrefix = "w" + String.format("%02X", workerIndex);
             if (jumpIndex == 0) {
-                return sPrefix + "init";
+                return wPrefix + "init";
             } else if (jumpIndex == 1) {
-                return sPrefix + "main";
+                return wPrefix + "main";
             } else {
-                if (scriptHeader.scriptType == 1 && jumpIndex == 2) {
-                    return sPrefix + "talk";
-                } else if (scriptHeader.scriptType == 1 && jumpIndex == 3) {
-                    return sPrefix + "scout";
-                } else if (scriptHeader.scriptType == 1 && jumpIndex == 5) {
-                    return sPrefix + "touch";
+                if (scriptWorker.workerType == 1 && jumpIndex == 2) {
+                    return wPrefix + "talk";
+                } else if (scriptWorker.workerType == 1 && jumpIndex == 3) {
+                    return wPrefix + "scout";
+                } else if (scriptWorker.workerType == 1 && jumpIndex == 5) {
+                    return wPrefix + "touch";
                 }
             }
             String pSuffix = purposeSlot > 0 ? "p" + String.format("%02X", purposeSlot) : "";
-            return sPrefix + "e" + String.format("%02X", jumpIndex) + pSuffix;
+            return wPrefix + "e" + String.format("%02X", jumpIndex) + pSuffix;
         }
     }
 
@@ -80,8 +80,8 @@ public class ScriptJump {
     private void setCtbPurpose() {
         String purpose = ctbPurposeSlotToString(purposeSlot);
         if (purpose != null) {
-            ScriptField chr = scriptHeader.purposeSlotToChar();
-            String sPrefix = chr != null ? chr.getName() + "." : ("s" + String.format("%02X", scriptIndex));
+            ScriptField chr = scriptWorker.purposeSlotToChar();
+            String sPrefix = chr != null ? chr.getName() + "." : ("w" + String.format("%02X", workerIndex));
             label = sPrefix + purpose;
         }
     }
