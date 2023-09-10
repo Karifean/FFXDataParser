@@ -512,9 +512,9 @@ public class ScriptObject {
             stack.push(stackObject);
         } else if (opcode == 0x77) { // REQWAIT / WAIT_DELETE
             boolean direct = !p1.expression && !p2.expression && isWeakType(p1.type) && isWeakType(p2.type) && p1.value < workers.length && p2.value < workers[p1.value].entryPoints.length;
-            String s = p2.expression ? "(" + p1 + ")" : format2Or4Byte(p2.value);
-            String e = p3.expression ? "(" + p2 + ")" : format2Or4Byte(p3.value);
-            String scriptLabel = direct ? workers[p1.value].entryPoints[p2.value].getLabel() : ("w" + s + "e" + e);
+            String w = p1.expression ? "(" + p1 + ")" : format2Or4Byte(p1.value);
+            String e = p2.expression ? "(" + p2 + ")" : format2Or4Byte(p2.value);
+            String scriptLabel = direct ? workers[p1.value].entryPoints[p2.value].getLabel() : ("w" + w + "e" + e);
             textScriptLine += "await " + scriptLabel + ";";
         } else if (opcode == 0x78) { // Never used: PREQWAIT / WAIT_SPEC_DELETE
         } else if (opcode == 0x79) { // REQCHG / EDIT_ENTRY_TABLE

@@ -69,6 +69,9 @@ public class StackObject {
                 return object.getName() + hexSuffix;
             }
             if ("worker".equals(type)) {
+                if (value == 0xFFFF) {
+                    return "<Self>";
+                }
                 ScriptWorker header = parentScript != null ? parentScript.getWorker(value) : null;
                 if (header != null) {
                     return header + hexSuffix;

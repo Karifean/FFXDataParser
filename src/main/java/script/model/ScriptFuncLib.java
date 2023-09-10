@@ -93,10 +93,10 @@ public abstract class ScriptFuncLib {
         putUnknownFunc(0x002E, 1);
         putUnknownFunc(0x002F, 1);
         putUnknownFunc(0x0030, 1);
-        putFuncWithIdx(0x0033, new ScriptFunc("getWorkerIndex", "int", null, p("workerIndex", "int"))); // maybe arg is only useful for battle, would be just echoed back in events
+        putFuncWithIdx(0x0033, new ScriptFunc("getWorkerIndex", "int", null, p("worker"))); // maybe arg is only useful for battle, would be just echoed back in events
         putFuncWithIdx(0x0034, new ScriptFunc("enableInteractionAtLevel", "unknown", null, p("level", "int"))); // "level" from game, "thread" in noclip (like signal priority)
         putFuncWithIdx(0x0035, new ScriptFunc("disableInteractionAtLevel", "unknown", null, p("level", "int")));
-        putFuncWithIdx(0x0036, new ScriptFunc("stopOtherMotion", "unknown", null, p("workerIndex", "int")));
+        putFuncWithIdx(0x0036, new ScriptFunc("stopOtherMotion", "unknown", null, p("worker")));
         putUnknownFunc(0x0037, 1);
         putUnknownFunc(0x0038, null, "float", 1);
         putUnknownFunc(0x0039, null, "float", 1);
@@ -141,8 +141,8 @@ public abstract class ScriptFuncLib {
         putFuncWithIdx(0x0071, new ScriptFunc("setAllRotationRate3", "unknown", null, p("rate", "float")));
         putUnknownFunc(0x0074, 1); // noclip: get/set frames?
         putFuncWithIdx(0x0076, new ScriptFunc("getWorkerType", "int", null));
-        putFuncWithIdx(0x0077, new ScriptFunc("stopWorkerMotion", "unknown", null, p("workerIndex", "int")));
-        putFuncWithIdx(0x0078, new ScriptFunc("stopWorkerRotation", "unknown", null, p("workerIndex", "int")));
+        putFuncWithIdx(0x0077, new ScriptFunc("stopWorkerMotion", "unknown", null, p("worker")));
+        putFuncWithIdx(0x0078, new ScriptFunc("stopWorkerRotation", "unknown", null, p("worker")));
         putUnknownFunc(0x007A, 2); // noclip: collision detection
         putFuncWithIdx(0x007C, new ScriptFunc("waitForText", "unknown", null, p("boxIndex", "int"))); // equivalent to 0x0084 with second param 0
         putUnknownFunc(0x007D, 1);
@@ -175,9 +175,9 @@ public abstract class ScriptFuncLib {
         putUnknownFunc(0x009D, 2);
         putFuncWithIdx(0x009E, new ScriptFunc("prepareStringIntVariable", "unknown", null, p("boxIndex", "int"), p("varIndex", "int"), p(3), p("value", "int")));
         putUnknownFunc(0x00A2, 5);
-        putFuncWithIdx(0x00A3, new ScriptFunc("getWorkerPosition", "unknown", null, p("workerIndex", "int"), p("xDest", "int"), p("yDest", "int"), p("zDest", "int"))); // destinations are variable descriptors
+        putFuncWithIdx(0x00A3, new ScriptFunc("getWorkerPosition", "unknown", null, p("worker"), p("xDest", "int"), p("yDest", "int"), p("zDest", "int"))); // destinations are variable descriptors
         putUnknownFunc(0x00A4, 2);
-        putFuncWithIdx(0x00A5, new ScriptFunc("horizontalWorkerDist", "unknown", null, p("workerIndexA", "int"), p("workerIndexB", "int")));
+        putFuncWithIdx(0x00A5, new ScriptFunc("horizontalWorkerDist", "unknown", null, p("workerA", "worker"), p("workerB", "worker")));
         putFuncWithIdx(0x00A6, new ScriptFunc("GetRandomInRange", "int", null, p("maxExclusive", "int")));
         putUnknownFunc(0x00A7, 1); // noclip: setIsNotActive()
         putUnknownFunc(0x00A8, 1); // noclip: setIsActive()
@@ -240,7 +240,7 @@ public abstract class ScriptFuncLib {
         putUnknownFunc(0x00F3, 1);
         putFuncWithIdx(0x00F4, new ScriptFunc("yawToPoint", "float", null, p("x", "float"), p("y", "float"), p("z", "float"))); // y is unused
         putFuncWithIdx(0x00F5, new ScriptFunc("pitchToPoint", "float", null, p("x", "float"), p("y", "float"), p("z", "float")));
-        putFuncWithIdx(0x00F6, new ScriptFunc("waitForWorker", "float", null, p("level", "int"), p("workerIndex", "int"))); // waits until no signal is active or queued at level for the worker
+        putFuncWithIdx(0x00F6, new ScriptFunc("waitForWorker", "float", null, p("level", "int"), p("worker"))); // waits until no signal is active or queued at level for the worker
         putUnknownFunc(0x00F8, 3);
         putUnknownFunc(0x00F9, 0);
         putUnknownFunc(0x00FA, 1);
@@ -283,14 +283,14 @@ public abstract class ScriptFuncLib {
         putUnknownFunc(0x0128, 2);
         putUnknownFunc(0x0129, 4);
         putUnknownFunc(0x012A, 2);
-        putFuncWithIdx(0x012B, new ScriptFunc("workerWithinRadius", "boolean", null, p("workerIndex", "int"), p("radius", "int")));
+        putFuncWithIdx(0x012B, new ScriptFunc("workerWithinRadius", "bool", null, p("worker"), p("radius", "int")));
         putFuncWithIdx(0x012D, new ScriptFunc("GetAffectionValue", "int", null, p("char")));
         putFuncWithIdx(0x012E, new ScriptFunc("IncreaseAffectionValue", "unknown", null, p("char"), p("amount", "int")));
         putFuncWithIdx(0x012F, new ScriptFunc("DecreaseAffectionValue", "unknown", null, p("char"), p("amount", "int"))); // Never used, will set to 0 if it would go negative
         putFuncWithIdx(0x0130, new ScriptFunc("SetAffectionValue", "unknown", null, p("char"), p("amount", "int")));
-        putFuncWithIdx(0x0132, new ScriptFunc("setActorCollisionActive", "unknown", null, p("workerIndex", "int"), p("active", "boolean")));
-        putFuncWithIdx(0x0133, new ScriptFunc("setActorCollisionActive", "unknown", null, p("workerIndex", "int"), p("active", "boolean"))); // same as 0132
-        putFuncWithIdx(0x0134, new ScriptFunc("loadModel", "unknown", null, p("model"))); // same as 0001
+        putFuncWithIdx(0x0132, new ScriptFunc("setActorCollisionActive", "unknown", null, p("worker"), p("active", "bool")));
+        putFuncWithIdx(0x0133, new ScriptFunc("setActorCollisionActive2", "unknown", null, p("worker"), p("active", "bool"))); // same as 0132
+        putFuncWithIdx(0x0134, new ScriptFunc("loadModel2", "unknown", null, p("model"))); // same as 0001
         putFuncWithIdx(0x0135, new ScriptFunc("PlayerTotalGil", "int", null, false));
         putFuncWithIdx(0x0136, new ScriptFunc("obtainGil", "unknown", null, p("amount", "int")));
         putFuncWithIdx(0x0137, new ScriptFunc("payGilIfHavingEnough", "bool", null, p("amount", "int")));
@@ -508,7 +508,7 @@ public abstract class ScriptFuncLib {
         putUnknownFunc(0x1013, 1);
         putUnknownFunc(0x1015, 6);
         putFuncWithIdx(0x1019, new ScriptFunc("abs", "float", null, p("float")));
-        putUnknownFunc(0x101A, new ScriptFunc("distance", "float", null, p("x1", "float"), p("y1", "float"), p("x2", "float"), p("y2", "float")));
+        putFuncWithIdx(0x101A, new ScriptFunc("distance", "float", null, p("x1", "float"), p("y1", "float"), p("x2", "float"), p("y2", "float")));
         putUnknownFunc(0x101B, 6);
         putUnknownFunc(0x101C, 2);
         putUnknownFunc(0x4001, 1);

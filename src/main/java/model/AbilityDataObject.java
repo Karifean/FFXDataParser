@@ -124,11 +124,10 @@ public class AbilityDataObject implements Nameable {
 
     boolean usableOutsideCombat;
     boolean usableInCombat;
-    boolean byte1Cbit08SetOnCharAttacksAndSkillsAndValeforShivaAttack;
-    boolean byte1Cbit20SetOnControllableAeonNormalAttacks; // Maybe: Force using char Accuracy formula?
+    int hitCalcType;
+    boolean hitCalcUsesTable;
     boolean affectedByDarkness;
     public boolean displayMoveName;
-    boolean canMiss;
     boolean canBeReflected;
     boolean absorbDamage;
     boolean targetEnabled;
@@ -347,9 +346,8 @@ public class AbilityDataObject implements Nameable {
         usableOutsideCombat = (miscProperties1C & 0x01) > 0;
         usableInCombat = (miscProperties1C & 0x02) > 0;
         displayMoveName = (miscProperties1C & 0x04) > 0;
-        byte1Cbit08SetOnCharAttacksAndSkillsAndValeforShivaAttack = (miscProperties1C & 0x08) > 0;
-        canMiss = (miscProperties1C & 0x10) > 0;
-        byte1Cbit20SetOnControllableAeonNormalAttacks = (miscProperties1C & 0x20) > 0;
+        hitCalcType = (miscProperties1C / 0x08) % 8;
+        hitCalcUsesTable = (miscProperties1C & 0x08) > 0 || hitCalcType == 6;
         affectedByDarkness = (miscProperties1C & 0x40) > 0;
         canBeReflected = (miscProperties1C & 0x80) > 0;
         absorbDamage = (miscProperties1D & 0x01) > 0;
@@ -474,8 +472,7 @@ public class AbilityDataObject implements Nameable {
         list.add(ifNN(overdriveCharacter, "OD-User=", ""));
         list.add(ifG0(overdriveCategory, "OD-Choice=", ""));
         list.add(isPiercing ? "Piercing" : "");
-        list.add(canMiss ? "Can miss" : "");
-        list.add(ifG0(attackAccuracy, "Acc=", "%"));
+        list.add("Hit%=" + hitChance() + (hitCalcUsesTable ? " (uses Table)" : ""));
         list.add(affectedByDarkness ? "Darkable" : "");
         list.add(disableWhenSilenced ? "Silenceable" : "");
         list.add(canBeReflected ? "Reflectable" : "");
@@ -484,8 +481,6 @@ public class AbilityDataObject implements Nameable {
             String bonus = useGearCritBonus ? " (+% from gear)" : (attackCritBonus > 0 ? " (+" + attackCritBonus + "%)" : "");
             list.add("Can crit" + bonus);
         }
-        list.add(byte1Cbit08SetOnCharAttacksAndSkillsAndValeforShivaAttack ? "byte1Cbit08" : "");
-        list.add(byte1Cbit20SetOnControllableAeonNormalAttacks ? "byte1Cbit20" : "");
         list.add(elements());
         list.add(statuses());
         list.add(statBuffs());
@@ -511,8 +506,8 @@ public class AbilityDataObject implements Nameable {
     }
 
     private String damageKind() {
-        String damageType = damageTypePhysical ? "Physical" : (damageTypeMagical ? " Magical" : " Special");
-        if (damageClassHP || damageClassMP || damageClassCTB) {
+        String damageType = damageTypePhysical ? (damageTypeMagical ? "  Hybrid" : "Physical") : (damageTypeMagical ? " Magical" : " Special");
+        if (damageClass > 0) {
             String damageClassString = "";
             if (damageClassHP) {
                 damageClassString += "HP/";
@@ -632,6 +627,18 @@ public class AbilityDataObject implements Nameable {
             target += "/Dead";
         }
         return target;
+    }
+
+    private String hitChance() {
+        return switch (hitCalcType) {
+            case 0 -> "Always";
+            case 1, 2 -> attackAccuracy + "%";
+            case 3, 4 -> "ACC";
+            case 5 -> "ACC*2.5";
+            case 6 -> "ACC*1.5";
+            case 7 -> "ACC*0.5";
+            default -> "Unknown";
+        } + " [0" + hitCalcType + "h]";
     }
 
     private String statuses() {
