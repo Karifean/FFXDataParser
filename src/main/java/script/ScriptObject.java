@@ -13,11 +13,11 @@ public class ScriptObject {
     private static final int HEX_LINE_MINLENGTH = COLORS_USE_CONSOLE_CODES ? 58 : 48;
     private static final int JUMP_PLUS_HEX_LINE_MINLENGTH = JUMP_LINE_MINLENGTH + HEX_LINE_MINLENGTH + 1;
 
-    private static final boolean VERBOSE_HEADER_OUTPUT = true;
+    private static final boolean VERBOSE_HEADER_OUTPUT = false;
 
     protected final int[] bytes;
     protected final int absoluteOffset;
-    protected final int[] workerMappingBytes;
+    protected final int[] battleWorkerMappingBytes;
 
     protected int[] actualScriptCodeBytes;
     protected ScriptWorker[] workers;
@@ -71,14 +71,14 @@ public class ScriptObject {
     List<String> warnLines;
     List<ScriptInstruction> instructions = new ArrayList<>();
 
-    public ScriptObject(Chunk chunk, int[] workerMappingBytes) {
-        this(chunk.bytes, chunk.offset, workerMappingBytes);
+    public ScriptObject(Chunk chunk, int[] battleWorkerMappingBytes) {
+        this(chunk.bytes, chunk.offset, battleWorkerMappingBytes);
     }
 
-    public ScriptObject(int[] bytes, int absoluteOffset, int[] workerMappingBytes) {
+    public ScriptObject(int[] bytes, int absoluteOffset, int[] battleWorkerMappingBytes) {
         this.bytes = bytes;
         this.absoluteOffset = absoluteOffset;
-        this.workerMappingBytes = workerMappingBytes;
+        this.battleWorkerMappingBytes = battleWorkerMappingBytes;
         mapFields();
         parseWorkers();
     }
@@ -115,7 +115,7 @@ public class ScriptObject {
             workers[i] = scriptWorker;
         }
         parseVarIntFloatTables();
-        parseScriptPurposes();
+        parseBattleWorkerTypes();
     }
 
     public void parseScript(List<String> strings) {
@@ -194,33 +194,33 @@ public class ScriptObject {
         }
     }
 
-    private void parseScriptPurposes() {
-        if (workerMappingBytes == null || workerMappingBytes.length == 0) {
+    private void parseBattleWorkerTypes() {
+        if (battleWorkerMappingBytes == null || battleWorkerMappingBytes.length == 0) {
             return;
         }
-        int notActuallySectionCount = workerMappingBytes[0];
-        int preSectionLength = workerMappingBytes[1];
+        int notActuallySectionCount = battleWorkerMappingBytes[0];
+        int preSectionLength = battleWorkerMappingBytes[1];
         for (int i = 2; i < preSectionLength; i++) {
-            if (workerMappingBytes[i] != 0xFF) {
-                workers[workerMappingBytes[i]].setPurposeSlot(i);
+            if (battleWorkerMappingBytes[i] != 0xFF) {
+                workers[battleWorkerMappingBytes[i]].setPurposeSlot(i);
             }
         }
         int sectionsLineOffset = preSectionLength + (preSectionLength % 2 == 0 ? 2 : 3);
         Integer firstOffset = null;
         for (int i = 0; i < notActuallySectionCount; i++) {
             int offset = sectionsLineOffset + i * 4;
-            int header = workerMappingBytes[offset];
-            int scriptKind = workerMappingBytes[offset + 1];
-            int sectionOffset = workerMappingBytes[offset + 2] + workerMappingBytes[offset + 3] * 0x100;
+            int header = battleWorkerMappingBytes[offset];
+            int scriptKind = battleWorkerMappingBytes[offset + 1];
+            int sectionOffset = battleWorkerMappingBytes[offset + 2] + battleWorkerMappingBytes[offset + 3] * 0x100;
             if (i == 0) {
                 firstOffset = sectionOffset;
             } else if (offset >= firstOffset) {
                 System.err.println("WARNING - Offset number mismatch at index " + i + " expected " + notActuallySectionCount);
                 break;
             }
-            int sectionValueCount = workerMappingBytes[sectionOffset] + workerMappingBytes[sectionOffset + 1] * 0x100;
+            int sectionValueCount = battleWorkerMappingBytes[sectionOffset] + battleWorkerMappingBytes[sectionOffset + 1] * 0x100;
             int sectionPayloadOffset = sectionOffset + 2;
-            workers[header].setPurpose(scriptKind, sectionValueCount, Arrays.copyOfRange(workerMappingBytes, sectionPayloadOffset, sectionPayloadOffset + sectionValueCount * 2));
+            workers[header].setBattleWorkerTypes(scriptKind, sectionValueCount, Arrays.copyOfRange(battleWorkerMappingBytes, sectionPayloadOffset, sectionPayloadOffset + sectionValueCount * 2));
         }
     }
 
@@ -319,7 +319,7 @@ public class ScriptObject {
                     stack.clear();
                 }
                 textScriptLines.add(textScriptLine);
-                warnLines.add(" " + String.join("; ", warningsOnLine));
+                warnLines.add(warningsOnLine.isEmpty() ? null : (" " + String.join("; ", warningsOnLine)));
                 textScriptLine = "";
                 warningsOnLine = new ArrayList<>();
             }
@@ -461,12 +461,12 @@ public class ScriptObject {
             } else if (opcode == 0x38) { // REQEW / SIG_ONEND
                 cmd += "Sync";
             }
-            String i = p1.expression ? ""+p1 : ""+p1.value;
+            String level = p1.expression ? ""+p1 : ""+p1.value;
             boolean direct = !p2.expression && !p3.expression && isWeakType(p2.type) && isWeakType(p3.type) && p2.value < workers.length && p3.value < workers[p2.value].entryPoints.length;
             String s = p2.expression ? "(" + p2 + ")" : format2Or4Byte(p2.value);
             String e = p3.expression ? "(" + p3 + ")" : format2Or4Byte(p3.value);
             String scriptLabel = direct ? workers[p2.value].entryPoints[p3.value].getLabel() : ("w" + s + "e" + e);
-            String content = cmd + " " + scriptLabel + " (" + i + ")";
+            String content = cmd + " " + scriptLabel + " (Level " + level + ")";
             stack.push(new StackObject(this, ins, "worker", true, content, opcode));
         } else if (opcode == 0x39) { // PREQ
             String content = "PREQ(" + p1 + ", " + p2 + ", " + p3 + ")";
@@ -529,7 +529,7 @@ public class ScriptObject {
             // textScriptLine += "REQCHG(" + p1 + ", " + p2 + ", " + p3 + ");";
         } else if (opcode == 0x7A) { // Never used: ACTREQ / SET_EDGE_TRIGGER
         } else if (opcode == 0x9F) { // PUSHV / GET_DATUM
-            StackObject stackObject = new StackObject(this, ins, "var", true, ensureVariableValid(argv), argv);
+            StackObject stackObject = new StackObject(this, ins, "var", true, getVariableLabel(argv), argv);
             stackObject.referenceIndex = argv;
             stack.push(stackObject);
         } else if (opcode == 0xA0 || opcode == 0xA1) { // POPV(L) / SET_DATUM_(W/T)
@@ -545,7 +545,7 @@ public class ScriptObject {
                 textScriptLine += "(limit) ";
             }
             String val = typed(p1, varTypes.get(argv));
-            textScriptLine += ensureVariableValid(argv) + " = " + val + ";";
+            textScriptLine += getVariableLabel(argv) + " = " + val + ";";
         } else if (opcode == 0xA2) { // PUSHAR / GET_DATUM_INDEX
             StackObject stackObject = new StackObject(this, ins, "var", true, ensureVariableValidWithArray(argv, p1), argv);
             stackObject.referenceIndex = argv;
@@ -708,7 +708,7 @@ public class ScriptObject {
         }
     }
 
-    private String ensureVariableValid(int index) {
+    public String getVariableLabel(int index) {
         if (variableDeclarations != null && index < variableDeclarations.length) {
             return variableDeclarations[index].getLabel();
         }
@@ -718,7 +718,7 @@ public class ScriptObject {
     }
 
     private String ensureVariableValidWithArray(int index, StackObject p1) {
-        String varLabel = ensureVariableValid(index);
+        String varLabel = getVariableLabel(index);
         String indexType = p1.type;
         if (isWeakType(indexType) && (variableDeclarations != null && index < variableDeclarations.length)) {
             indexType = variableDeclarations[index].getArrayIndexType();
@@ -817,7 +817,8 @@ public class ScriptObject {
         String jl = consoleColorIfEnabled(ANSI_PURPLE) + String.format("%-" + JUMP_LINE_MINLENGTH + "s", jumpLines.get(line)) + ' ';
         String jhl = String.format("%-" + JUMP_PLUS_HEX_LINE_MINLENGTH + "s", jl + consoleColorIfEnabled(ANSI_BLUE) +  hexScriptLines.get(line)) + ' ';
         String tl = consoleColorIfEnabled(ANSI_RESET) + textScriptLines.get(line);
-        String wl = consoleColorIfEnabled(ANSI_RED) + warnLines.get(line);
+        String warnLine = warnLines.get(line);
+        String wl = warnLine == null || warnLine.isEmpty() ? "" : (consoleColorIfEnabled(ANSI_RED) + warnLine);
         return ol + jhl + tl + wl + consoleColorIfEnabled(ANSI_RESET);
     }
 
@@ -838,7 +839,7 @@ public class ScriptObject {
 
     public String headersString() {
         if (workers == null || workers.length == 0) {
-            return "No Scripts";
+            return "No Workers";
         }
         List<String> lines = new ArrayList<>();
         if (mainScriptIndex != 0xFFFF) {

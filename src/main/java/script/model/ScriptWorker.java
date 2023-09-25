@@ -11,7 +11,7 @@ public class ScriptWorker {
     public static final int LENGTH = 0x34;
 
     public final int workerIndex;
-    public final int workerType;
+    public final int eventWorkerType;
     public final int variablesCount;
     public final int refIntCount;
     public final int refFloatCount;
@@ -36,13 +36,13 @@ public class ScriptWorker {
     public List<ScriptVariable> privateVars;
     public List<ScriptVariable> sharedVars;
 
-    private Integer purpose;
+    public Integer battleWorkerType;
     private Integer purposeSlot;
     private int[] purposeBytes;
 
     public ScriptWorker(int workerIndex, int[] bytes) {
         this.workerIndex = workerIndex;
-        workerType = read2Bytes(bytes,0x00);
+        eventWorkerType = read2Bytes(bytes,0x00);
         variablesCount = read2Bytes(bytes,0x02);
         refIntCount = read2Bytes(bytes,0x04);
         refFloatCount = read2Bytes(bytes, 0x06);
@@ -70,9 +70,12 @@ public class ScriptWorker {
 
     public String getNonCommonString() {
         List<String> list = new ArrayList<>();
-        list.add("Type=" + scriptTypeToString(workerType) + " [" + String.format("%02X", workerType) + "h]");
-        if (purpose != null) {
-            list.add("Purpose=" + purposeToString(purpose) + " [" + String.format("%02X", purpose) + "h]");
+        if (battleWorkerType != null) {
+            list.add("Battle");
+            list.add("Type=" + battleWorkerTypeToString(battleWorkerType) + " [" + String.format("%02X", battleWorkerType) + "h]");
+        } else {
+            list.add("Event");
+            list.add("Type=" + eventWorkerTypeToString(eventWorkerType) + " [" + String.format("%02X", eventWorkerType) + "h]");
         }
         if (purposeSlot != null) {
             list.add("PurposeSlot=" + purposeSlotToString(purposeSlot) + " [" + String.format("%02X", purposeSlot) + "h]");
@@ -80,8 +83,6 @@ public class ScriptWorker {
         list.add("Entrypoints=" + entryPointCount);
         list.add("Jumps=" + jumpCount);
         list.add(privateValuesString());
-        /* list.add(privateDataOffset != 0 ? "privateDataOffset=" + String.format("%04X", privateDataOffset) : "");
-        list.add(privateDataLength != 0 ? "privateDataLength=" + String.format("%04X", privateDataLength) : ""); */
         list.add(alwaysZero1 != 0 ? "alwaysZero1=" + alwaysZero1 : "");
         list.add(alwaysZero2 != 0 ? "alwaysZero2=" + alwaysZero2 : "");
         String full = list.stream().filter(s -> s != null && !s.isBlank()).collect(Collectors.joining(", "));
@@ -123,8 +124,8 @@ public class ScriptWorker {
         sharedVars.forEach(s -> s.parseValues(script, bytes, sharedDataOffset));
     }
 
-    public void setPurpose(int purpose, int valueCount, int[] payload) {
-        this.purpose = purpose;
+    public void setBattleWorkerTypes(int battleWorkerType, int valueCount, int[] payload) {
+        this.battleWorkerType = battleWorkerType;
         this.purposeBytes = payload;
         for (int i = 0; i < valueCount; i++) {
             int val = read2Bytes(payload, i * 2);
@@ -135,7 +136,7 @@ public class ScriptWorker {
                 System.err.println("val out of bounds! val=" + val + " eps=" + entryPoints.length);
                 continue;
             }
-            entryPoints[val].setGenericPurpose(i, purpose);
+            entryPoints[val].setBattleWorkerEntryPointType(i);
         }
     }
 
@@ -150,24 +151,27 @@ public class ScriptWorker {
         return StackObject.enumToScriptField("playerChar", purposeSlot - 0x2B);
     }
 
-    public static String scriptTypeToString(int scriptType) {
-        return switch (scriptType) {
+    public static String eventWorkerTypeToString(int eventWorkerType) {
+        return switch (eventWorkerType) {
             case 0 -> "Subroutine";
             case 1 -> "FieldObject";
-            case 2 -> "BattleObject";
+            case 2 -> "PlayerEdge";
+            case 3 -> "PlayerZone";
             case 4 -> "Cutscene";
-            default -> "unknown?";
+            case 5 -> "Edge";
+            case 6 -> "Zone";
+            default -> "?" + String.format("%02X", eventWorkerType);
         };
     }
 
-    public static String purposeToString(int purpose) {
-        return switch (purpose) {
+    public static String battleWorkerTypeToString(int battleWorkerType) {
+        return switch (battleWorkerType) {
             case 0 -> "CameraHandler";
             case 1 -> "MotionHandler";
             case 2 -> "CombatHandler";
             case 4 -> "EncounterScripts";
             case 6 -> "StartEndHooks";
-            default -> "?" + String.format("%02X", purpose);
+            default -> "?" + String.format("%02X", battleWorkerType);
         };
     }
 

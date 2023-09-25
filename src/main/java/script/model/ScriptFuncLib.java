@@ -72,8 +72,8 @@ public abstract class ScriptFuncLib {
         putFuncWithIdx(0x0015, new ScriptFunc("setDestination", "unknown", null, p("x", "float"), p("y", "float"), p("z", "float")));
         putFuncWithIdx(0x0016, new ScriptFunc("setMotionSpeed", "unknown", null, p("speed", "float")));
         putUnknownFunc(0x0017, 1); // noclip: set motion threshold/radius, used for collision and checking if a destination is reached
-        putFuncWithIdx(0x0018, new ScriptFunc("startMotion", "unknown", null, p("activeBits", "int"), p("flags", "int"), p("targetWorkerIndex", "int")));
-        putFuncWithIdx(0x0019, new ScriptFunc("startRotation", "unknown", null, p("activeBits", "int"), p("flags", "int"), p("targetWorkerIndex", "int"))); // see noclip for flags
+        putFuncWithIdx(0x0018, new ScriptFunc("startMotion", "unknown", null, p("activeBits", "int"), p("flags", "bitfield"), p("targetWorker", "worker")));
+        putFuncWithIdx(0x0019, new ScriptFunc("startRotation", "unknown", null, p("activeBits", "int"), p("flags", "bitfield"), p("targetWorker", "worker"))); // see noclip for flags
         putFuncWithIdx(0x001A, new ScriptFunc("waitForMotion", "unknown", null));
         putFuncWithIdx(0x001B, new ScriptFunc("waitForRotation", "unknown", null));
         putFuncWithIdx(0x001C, new ScriptFunc("setMotionTiming", "unknown", null, p("currTime?", "float"), p("duration?", "int")));
@@ -303,7 +303,7 @@ public abstract class ScriptFuncLib {
         putUnknownFunc(0x013F, 2);
         putUnknownFunc(0x0140, 6);
         putUnknownFunc(0x0141, 3);
-        putUnknownFunc(0x0142, 2); // Corrected from 3, must be 2 due to bltz0200.ebp
+        putUnknownFunc(0x0142, 2);
         putUnknownFunc(0x0143, 1);
         putUnknownFunc(0x0144, 1);
         putUnknownFunc(0x0145, 2);
@@ -343,7 +343,7 @@ public abstract class ScriptFuncLib {
         putUnknownFunc(0x017A, 1);
         putUnknownFunc(0x017B, 1);
         putUnknownFunc(0x017C, 1);
-        putFuncWithIdx(0x017E, new ScriptFunc("playBgmInclBattle?", "unknown", null, p("bgm"), p(2)));
+        putFuncWithIdx(0x017E, new ScriptFunc("playBgmWithVol?", "unknown", null, p("bgm"), p(2)));
         putUnknownFunc(0x017F, 1);
         putUnknownFunc(0x0180, 2);
         putUnknownFunc(0x0181, 0);
@@ -1162,7 +1162,7 @@ public abstract class ScriptFuncLib {
         putUnknownFunc(0x8067, 4);
         putUnknownFunc(0x806A, 1); // set an image plane's map group
         putUnknownFunc(0x806B, 1); // totally empty?!
-        putFuncWithIdx(0xB000, new ScriptFunc("loadFMV", "unknown", null, p("fmv"), p("flags", "uint")));
+        putFuncWithIdx(0xB000, new ScriptFunc("loadFMV", "unknown", null, p("fmv"), p("flags", "bitfield")));
         putFuncWithIdx(0xB001, new ScriptFunc("?unloadFMV", "unknown", null, true));
         putUnknownFunc(0xB002, 0);
         putFuncWithIdx(0xB003, new ScriptFunc("CurrentPlaybackProgress", "int", null, false));

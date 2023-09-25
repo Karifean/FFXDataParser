@@ -139,11 +139,25 @@ public abstract class StringHelper {
             Character chr = byteToChar(idx);
             if (chr != null) {
                 out.append(chr);
+            } else if (idx == 0x01) {
+                out.append("{PAUSE}");
+            } else if (idx == 0x09) {
+                offset++;
+                int varIdx = table[offset] - 0x30;
+                out.append("{09:").append(String.format("%02X", varIdx)).append('}');
             } else if (idx == 0x0A) {
                 offset++;
                 int clr = table[offset];
                 out.append(getColorString(clr));
                 anyColorization = true;
+            } else if (idx == 0x10) {
+                offset++;
+                int choiceIdx = table[offset] - 0x30;
+                out.append("{CHOICE").append(String.format("%02X", choiceIdx)).append('}');
+            } else if (idx == 0x12) {
+                offset++;
+                int varIdx = table[offset] - 0x30;
+                out.append("{VAR").append(String.format("%02X", varIdx)).append('}');
             } else if (idx >= 0x13 && idx <= 0x22) {
                 int section = idx - 0x13;
                 offset++;

@@ -79,6 +79,9 @@ public class StackObject {
                     return "<w" + hex + ">";
                 }
             }
+            if ("var".equals(type)) {
+                return parentScript != null ? parentScript.getVariableLabel(value) : ("var" + hex);
+            }
             if ("encounter".equals(type)) {
                 int field = (value & 0xFFFF0000) >> 16;
                 int encIdx = value & 0x0000FFFF;
@@ -187,17 +190,6 @@ public class StackObject {
         field.idx = value;
         return field;
     }
-
-    /* public static String parseDefinedBitmask(String type, int value) {
-        Set<Map.Entry<Integer, ScriptField>> allBits = ScriptConstants.ENUMERATIONS.get(type).entrySet();
-        List<ScriptField> bits = new ArrayList<>();
-        for (Map.Entry<Integer, ScriptField> bit : allBits) {
-            if ((value & bit.getKey()) != 0) {
-                bits.add(bit.getValue());
-            }
-        }
-        return "[" + bits.stream().map(ScriptField::getLabel).collect(Collectors.joining(", ")) + "]";
-    } */
 
     public static String bitfieldToString(String type, int value) {
         Map<Integer, ScriptField> map = type != null ? ScriptConstants.ENUMERATIONS.getOrDefault(type, Collections.emptyMap()) : Collections.emptyMap();

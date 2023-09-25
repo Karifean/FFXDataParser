@@ -17,8 +17,7 @@ public class ScriptJump {
     public List<ScriptJump> reachableFrom;
 
     private String label;
-    private int purposeKind;
-    private int purposeSlot;
+    private int battleWorkerEntryPointType;
 
     public ScriptJump(ScriptWorker scriptWorker, int addr, int jumpIndex, boolean isEntryPoint) {
         this.scriptWorker = scriptWorker;
@@ -42,16 +41,13 @@ public class ScriptJump {
             } else if (jumpIndex == 1) {
                 return wPrefix + "main";
             } else {
-                if (scriptWorker.workerType == 1 && jumpIndex == 2) {
-                    return wPrefix + "talk";
-                } else if (scriptWorker.workerType == 1 && jumpIndex == 3) {
-                    return wPrefix + "scout";
-                } else if (scriptWorker.workerType == 1 && jumpIndex == 5) {
-                    return wPrefix + "touch";
+                if (scriptWorker.battleWorkerType != null) {
+                    String wePrefix = wPrefix + "e" + String.format("%02X", jumpIndex);
+                    return wePrefix + battleWorkerEntryPointToString(scriptWorker.battleWorkerType, battleWorkerEntryPointType);
+                } else {
+                    return wPrefix + eventWorkerEntryPointToString(scriptWorker.eventWorkerType, jumpIndex);
                 }
             }
-            String pSuffix = purposeSlot > 0 ? "p" + String.format("%02X", purposeSlot) : "";
-            return wPrefix + "e" + String.format("%02X", jumpIndex) + pSuffix;
         }
     }
 
@@ -65,29 +61,38 @@ public class ScriptJump {
         } */
     }
 
-    public void setGenericPurpose(int slot, int kind) {
-        purposeKind = kind;
-        purposeSlot = slot;
-        if (kind == 2) {
-            setCtbPurpose();
-        } else if (kind == 4) {
-            setEncScript();
-        } else if (kind == 6) {
-            label = startEndHookPurposeSlotToString(purposeSlot);
-        }
+    public void setBattleWorkerEntryPointType(int entryPointType) {
+        battleWorkerEntryPointType = entryPointType;
     }
 
-    private void setCtbPurpose() {
-        String purpose = ctbPurposeSlotToString(purposeSlot);
-        if (purpose != null) {
-            ScriptField chr = scriptWorker.purposeSlotToChar();
-            String sPrefix = chr != null ? chr.getName() + "." : ("w" + String.format("%02X", workerIndex));
-            label = sPrefix + purpose;
+    private static String battleWorkerEntryPointToString(int battleWorkerType, int battleWorkerEntryPointType) {
+        if (battleWorkerType == 2) {
+            return ctbPurposeSlotToString(battleWorkerEntryPointType);
+        } else if (battleWorkerType == 4) {
+            return "encScript" + battleWorkerEntryPointType;
+        } else if (battleWorkerType == 6) {
+            return startEndHookPurposeSlotToString(battleWorkerEntryPointType);
         }
+        return "t" + String.format("%02X", battleWorkerType) + "p" + String.format("%02X", battleWorkerEntryPointType);
     }
 
-    private void setEncScript() {
-        label = "encScript" + purposeSlot;
+    private static String eventWorkerEntryPointToString(int eventWorkerType, int eventWorkerEntryPoint) {
+        if (eventWorkerType == 1) {
+            String label = fieldObjectSlotToString(eventWorkerEntryPoint);
+            if (label != null) {
+                return label;
+            }
+        }
+        return "t" + String.format("%02X", eventWorkerType) + "e" + String.format("%02X", eventWorkerEntryPoint);
+    }
+
+    private static String fieldObjectSlotToString(int slot) {
+        return switch (slot) {
+            case 2 -> "talk";
+            case 3 -> "scout";
+            case 5 -> "touch";
+            default -> null;
+        };
     }
 
     private static String ctbPurposeSlotToString(int slot) {

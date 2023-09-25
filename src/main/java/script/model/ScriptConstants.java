@@ -494,7 +494,7 @@ public abstract class ScriptConstants {
         putEnum("damageFormula", 0x06, "Fixed x50", "calc_fix");
         putEnum("damageFormula", 0x07, "Healing", "calc_rc_magic");
         putEnum("damageFormula", 0x08, "Max/16");
-        putEnum("damageFormula", 0x09, "Fixed x42.5~57.5");
+        putEnum("damageFormula", 0x09, "Fixed x46~53");
         putEnum("damageFormula", 0x0D, "Ticks/16");
         putEnum("damageFormula", 0x0F, "Special MAG (ignore MDF)");
         putEnum("damageFormula", 0x10, "Fixed x User MaxHP / 10");
@@ -923,13 +923,13 @@ public abstract class ScriptConstants {
         putBattleActorProperty(0x012C, "APRewardOverkill", "int", "stat_get_over_ap");
         putBattleActorProperty(0x012D, "GilReward", "int", "stat_get_gill");
         putBattleActorProperty(0x012E, "BonusSTR", "int", "stat_str_up");
-        putBattleActorProperty(0x012F, "?BonusDEF", "int", "stat_vit_up");
-        putBattleActorProperty(0x0130, "?BonusMAG", "int", "stat_mag_up");
+        putBattleActorProperty(0x012F, "BonusDEF", "int", "stat_vit_up");
+        putBattleActorProperty(0x0130, "BonusMAG", "int", "stat_mag_up");
         putBattleActorProperty(0x0131, "BonusMDF", "int", "stat_spirit_up");
-        putBattleActorProperty(0x0132, "?BonusAGI", "int", "stat_dex_up");
-        putBattleActorProperty(0x0133, "?BonusLCK", "int", "stat_luck_up");
-        putBattleActorProperty(0x0134, "?BonusEVA", "int", "stat_avoid_up");
-        putBattleActorProperty(0x0135, "?BonusACC", "int", "stat_hit_up");
+        putBattleActorProperty(0x0132, "BonusAGI", "int", "stat_dex_up");
+        putBattleActorProperty(0x0133, "BonusLCK", "int", "stat_luck_up");
+        putBattleActorProperty(0x0134, "BonusEVA", "int", "stat_avoid_up");
+        putBattleActorProperty(0x0135, "BonusACC", "int", "stat_hit_up");
         putBattleActorProperty(0x0136, null, "unknown", "stat_use_mp");
         putBattleActorProperty(0x0137, null, "unknown", "stat_use_limit");
         putBattleActorProperty(0x0138, null, "unknown", "stat_use_limit_all");
@@ -959,6 +959,7 @@ public abstract class ScriptConstants {
         putBattleActorProperty(0x0150, null, "unknown", "stat_visible_out_on");
         putBattleActorProperty(0x0151, null, "unknown", "stat_regen_damage_flag");
         putBattleActorProperty(0x0152, null, "unknown", "stat_num_print_element");
+        putBattleActorProperty(0x0153, "?disableLowHealthSlump", "bool", null);
 
         putMoveProperty(0x0000, "damageFormula", "damageFormula");
         putMoveProperty(0x0001, "damageType", "damageType");
