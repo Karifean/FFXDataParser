@@ -323,6 +323,9 @@ public class DataReadingManager {
         int[] fullContentBytes = ChunkedFileHelper.fileToBytes(FileAccessorWithMods.resolveFile(contents, false));
         int[] contentBytes = fullContentBytes != null ? Arrays.copyOfRange(fullContentBytes, 0x8, fullContentBytes.length) : null;
         int[] layoutBytes = ChunkedFileHelper.fileToBytes(FileAccessorWithMods.resolveFile(layout, false));
+        if (layoutBytes == null || contentBytes == null) {
+            return null;
+        }
         SphereGridLayoutDataObject obj = new SphereGridLayoutDataObject(layoutBytes, contentBytes);
         if (print) {
             System.out.println(obj);

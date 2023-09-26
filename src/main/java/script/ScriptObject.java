@@ -495,7 +495,7 @@ public class ScriptObject {
             } else {
                 currentTempITypes.remove(tempIndex);
             }
-            String val = typed(p1, varTypes.get(argv));
+            String val = typed(p1, currentTempITypes.get(tempIndex));
             textScriptLine += "tempI" + tempIndex + " = " + val + ";";
         } else if (opcode >= 0x5D && opcode <= 0x66) { // POPF0..9 / SET_FLOAT
             int tempIndex = opcode - 0x5D;
@@ -700,7 +700,7 @@ public class ScriptObject {
             if ("tempI".equals(obj.type) && type != null && !"unknown".equals(type)) {
                 currentTempITypes.put(obj.value, type);
             }
-            if (obj.expression || "unknown".equals(type)) {
+            if (obj.expression || type == null || "unknown".equals(type)) {
                 return obj.toString();
             } else {
                 return new StackObject(type, obj).toString();
