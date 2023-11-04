@@ -12,7 +12,7 @@ public class FormationDataObject {
 
     private final int[] bytes;
 
-    int unknownByte00;
+    int commonVoiceLinesByte;
     int unknownByte01;
     int unknownByte02;
     int inWaterByte;
@@ -32,7 +32,7 @@ public class FormationDataObject {
     boolean byte02bit04;
     boolean byte02bit08;
     boolean byte02bit10;
-    boolean isRandomEncounter;
+    boolean commonVoiceLinesEnabled;
     boolean inWater;
 
     public FormationDataObject(int[] bytes) {
@@ -42,7 +42,7 @@ public class FormationDataObject {
     }
 
     private void mapBytes() {
-        unknownByte00 = bytes[0x00];
+        commonVoiceLinesByte = bytes[0x00];
         unknownByte01 = bytes[0x01];
         unknownByte02 = bytes[0x02];
         inWaterByte = bytes[0x03];
@@ -65,7 +65,7 @@ public class FormationDataObject {
     }
 
     private void mapFlags() {
-        isRandomEncounter = unknownByte00 > 0;
+        commonVoiceLinesEnabled = commonVoiceLinesByte > 0;
         byte01bit02 = (unknownByte01 & 0x02) > 0;
         byte02bit01 = (unknownByte02 & 0x01) > 0;
         byte02bit02 = (unknownByte02 & 0x02) > 0;
@@ -92,10 +92,8 @@ public class FormationDataObject {
                 list.add("Monster #" + (i+1) + ": " + writeMonster(monsterIndex));
             }
         }
-        /* list.add(isRandomEncounter ? "Byte00 YES" : "Byte00 NO");
-        if (unknownByte00 > 1) {
-            list.add("randomEncounterByte greater than 1!? = " + unknownByte00);
-        }
+        list.add("Voice lines " + (commonVoiceLinesEnabled ? "enabled" : "disabled"));
+        /*
         list.add(byte01bit02 ? "Byte01Bit02 YES" : "Byte01Bit02 NO");
         if (unknownByte01 != 0x00 && unknownByte01 != 0x02) {
             list.add("byte01 not 0 or 2!? = " + unknownByte01);

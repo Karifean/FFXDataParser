@@ -1,7 +1,6 @@
 package model;
 
 import main.DataAccess;
-import script.model.ScriptConstants;
 import script.model.StackObject;
 
 /**
@@ -35,7 +34,7 @@ public class GearDataObject {
     boolean armor;
     boolean flag1;
     boolean hiddenInMenu;
-    boolean unalterable;
+    boolean celestial;
     boolean brotherhood;
 
     public GearDataObject(int[] bytes) {
@@ -94,7 +93,7 @@ public class GearDataObject {
         armor = armorByte != 0;
         flag1 = (variousFlags & 0x01) > 0;
         hiddenInMenu = (variousFlags & 0x02) > 0;
-        unalterable = (variousFlags & 0x04) > 0;
+        celestial = (variousFlags & 0x04) > 0;
         brotherhood = (variousFlags & 0x08) > 0;
     }
 
@@ -116,9 +115,9 @@ public class GearDataObject {
                 ", Slots=" + slots + ' ' +
                 abilityString +
                 (flag1 ? ", Flag1" : "") +
-                (unalterable ? ", Uncustomizable/Unsellable?" : "") +
                 (hiddenInMenu ? ", Hidden in Menu" : "") +
-                (brotherhood ? ", Brotherhood?" : "") +
+                (celestial ? ", Celestial" : "") +
+                (brotherhood ? ", Brotherhood" : "") +
                 (alwaysZero1 != 0 ? ", 1 not Zero!=" + formatUnknownByte(alwaysZero1) : "") +
                 (alwaysZero2 != 0 ? ", 2 not Zero!=" + formatUnknownByte(alwaysZero2) : "") +
                 (alwaysZero3 != 0 ? ", 3 not Zero!=" + formatUnknownByte(alwaysZero3) : "") +

@@ -279,7 +279,7 @@ public abstract class ScriptConstants {
         addEnumsFromAllCsvsInFolder(new File(ENUM_CSV_ROOT));
         // addDeclaredCommonVars();
 
-        putSaveDataVariable(0x008D, "CalmLandsChocoboTrainingFlags", "int");
+        putSaveDataVariable(0x008D, "CalmLandsQuestProgressionFlags", "int");
         putSaveDataVariable(0x0092, "MushroomRockRoadTreasureFlags", "int");
         putSaveDataVariable(0x00A8, "WobblyChocoboRecordMinutes", "int");
         putSaveDataVariable(0x00A9, "WobblyChocoboRecordSeconds", "int");
@@ -398,7 +398,9 @@ public abstract class ScriptConstants {
         putEnum("effectType", 0x02, "RenderParameter");
         putEnum("effectType", 0x03, "Texture");
         putEnum("effectType", 0x05, "PositionAndRotation");
-        putEnum("effectType", 0xFFFF, "All");
+        putEnum("effectType", -1, "All");
+
+        putEnum("stdmotion", -1, null, "MOT_ALL");
 
         putEnum("field", 0x0000, "system");
         putEnum("field", 0x0002, "test00");
@@ -569,7 +571,7 @@ public abstract class ScriptConstants {
         putEnum("playerChar", 0x0011, "Mindy", "PC_MAGUS3");
         putEnum("playerChar", 0x0012, null, "PC_DUMMY");
         putEnum("playerChar", 0x0013, null, "PC_DUMMY2");
-        putEnum("playerChar", 0xFFFF, "Empty", null);
+        putEnum("playerChar", -1, "Empty", null); // 0xFFFF
 
         for (int i = 0; i <= 0x0013; i++) {
             getEnumMap("btlActor").put(i, getEnumMap("playerChar").get(i));
@@ -582,32 +584,32 @@ public abstract class ScriptConstants {
         for (int i = 0x1000; i <= 0x1200; i++) {
             putEnum("btlActor", i, "Actors:MonsterType=" + String.format("%04X", i - 0x1000));
         }
-        putEnum("btlActor", 0xFFE6, null, "CHR_OWN_TARGET0");
-        putEnum("btlActor", 0xFFE7, null, "CHR_ALL_PLY3");
-        putEnum("btlActor", 0xFFE8, null, "CHR_ALL_PLAYER2");
-        putEnum("btlActor", 0xFFE9, "AllCharsAndAeons", "CHR_ALL_PLAYER");
-        putEnum("btlActor", 0xFFEA, null, "CHR_PARENT");
-        putEnum("btlActor", 0xFFEB, "AllChars", "CHR_ALL2");
-        putEnum("btlActor", 0xFFEC, "AllAeons", "CHR_ALL_SUMMON");
-        putEnum("btlActor", 0xFFED, null, "CHR_ALL_PLY2");
-        putEnum("btlActor", 0xFFEE, null, "CHR_INPUT");
-        putEnum("btlActor", 0xFFEF, "LastAttacker", "CHR_REACTION");
-        putEnum("btlActor", 0xFFF0, "PredefinedGroup", "CHR_OWN_TARGET");
-        putEnum("btlActor", 0xFFF1, "AllMonsters", "CHR_ALL_MON");
-        putEnum("btlActor", 0xFFF2, "FrontlineChars", "CHR_ALL_PLY");
-        putEnum("btlActor", 0xFFF3, "Self", "CHR_OWN");
-        putEnum("btlActor", 0xFFF4, "CharacterReserve#4", "CHR_PARTY7");
-        putEnum("btlActor", 0xFFF5, "CharacterReserve#3", "CHR_PARTY6");
-        putEnum("btlActor", 0xFFF6, "CharacterReserve#2", "CHR_PARTY5");
-        putEnum("btlActor", 0xFFF7, "CharacterReserve#1", "CHR_PARTY4");
-        putEnum("btlActor", 0xFFF8, "Character#3", "CHR_PARTY3");
-        putEnum("btlActor", 0xFFF9, "Character#2", "CHR_PARTY2");
-        putEnum("btlActor", 0xFFFA, "Character#1", "CHR_PARTY1");
-        putEnum("btlActor", 0xFFFB, "AllActors", "CHR_ALL");
-        putEnum("btlActor", 0xFFFC, "?TargetActorsImmediate", "CHR_TARGET_NOW");
-        putEnum("btlActor", 0xFFFD, "TargetActors", "CHR_TARGET");
-        putEnum("btlActor", 0xFFFE, "ActiveActors", "CHR_ACTIVE");
-        putEnum("btlActor", 0xFFFF, "Actor:Null", "CHR_NOP");
+        putEnum("btlActor", -26, null, "CHR_OWN_TARGET0"); // 0xFFE6
+        putEnum("btlActor", -25, null, "CHR_ALL_PLY3"); // 0xFFE7
+        putEnum("btlActor", -24, null, "CHR_ALL_PLAYER2"); // 0xFFE8
+        putEnum("btlActor", -23, "AllCharsAndAeons", "CHR_ALL_PLAYER"); // 0xFFE9
+        putEnum("btlActor", -22, null, "CHR_PARENT"); // 0xFFEA
+        putEnum("btlActor", -21, "AllChars", "CHR_ALL2"); // 0xFFEB
+        putEnum("btlActor", -20, "AllAeons", "CHR_ALL_SUMMON"); // 0xFFEC
+        putEnum("btlActor", -19, null, "CHR_ALL_PLY2"); // 0xFFED
+        putEnum("btlActor", -18, null, "CHR_INPUT"); // 0xFFEE
+        putEnum("btlActor", -17, "LastAttacker", "CHR_REACTION"); // 0xFFEF
+        putEnum("btlActor", -16, "PredefinedGroup", "CHR_OWN_TARGET"); // 0xFFF0
+        putEnum("btlActor", -15, "AllMonsters", "CHR_ALL_MON"); // 0xFFF1
+        putEnum("btlActor", -14, "FrontlineChars", "CHR_ALL_PLY"); // 0xFFF2
+        putEnum("btlActor", -13, "Self", "CHR_OWN"); // 0xFFF3
+        putEnum("btlActor", -12, "CharacterReserve#4", "CHR_PARTY7"); // 0xFFF4
+        putEnum("btlActor", -11, "CharacterReserve#3", "CHR_PARTY6"); // 0xFFF5
+        putEnum("btlActor", -10, "CharacterReserve#2", "CHR_PARTY5"); // 0xFFF6
+        putEnum("btlActor", -9, "CharacterReserve#1", "CHR_PARTY4"); // 0xFFF7
+        putEnum("btlActor", -8, "Character#3", "CHR_PARTY3"); // 0xFFF8
+        putEnum("btlActor", -7, "Character#2", "CHR_PARTY2"); // 0xFFF9
+        putEnum("btlActor", -6, "Character#1", "CHR_PARTY1"); // 0xFFFA
+        putEnum("btlActor", -5, "AllActors", "CHR_ALL"); // 0xFFFB
+        putEnum("btlActor", -4, "?TargetActorsImmediate", "CHR_TARGET_NOW"); // 0xFFFC
+        putEnum("btlActor", -3, "TargetActors", "CHR_TARGET"); // 0xFFFD
+        putEnum("btlActor", -2, "ActiveActors", "CHR_ACTIVE"); // 0xFFFE
+        putEnum("btlActor", -1, "Actor:Null", "CHR_NOP"); // 0xFFFF
 
         putMotionProperty(0x00, null, "motion_attack_start_dist");
         putMotionProperty(0x01, null, "motion_attack_offset");
@@ -624,7 +626,7 @@ public abstract class ScriptConstants {
         putBattleActorProperty(0x0001, "MP", "int", "stat_mp");
         putBattleActorProperty(0x0002, "maxHP", "int", "stat_maxhp");
         putBattleActorProperty(0x0003, "maxMP", "int", "stat_maxmp");
-        putBattleActorProperty(0x0004, "isAlive/StatusDeath", "bool", "stat_alive");
+        putBattleActorProperty(0x0004, "isAlive", "bool", "stat_alive");
         putBattleActorProperty(0x0005, "StatusPoison", "bool", "stat_poison");
         putBattleActorProperty(0x0006, "StatusPetrify", "bool", "stat_stone");
         putBattleActorProperty(0x0007, "StatusZombie", "bool", "stat_zombie");
@@ -679,7 +681,7 @@ public abstract class ScriptConstants {
         putBattleActorProperty(0x0038, "StatusDurationHaste", "int", "stat_haste");
         putBattleActorProperty(0x0039, "StatusDurationSlow", "int", "stat_slow");
         putBattleActorProperty(0x003A, "?Sensor", "bool", "ability_see");
-        putBattleActorProperty(0x003B, "?FirstStrike", "bool", "ability_lead");
+        putBattleActorProperty(0x003B, "FirstStrike", "bool", "ability_lead");
         putBattleActorProperty(0x003C, "?Initiative", "bool", "ability_first");
         putBattleActorProperty(0x003D, "CounterAttack", "bool", "ability_counter");
         putBattleActorProperty(0x003E, "?EvadeAndCounter", "bool", "ability_counter2");
@@ -795,17 +797,17 @@ public abstract class ScriptConstants {
         putBattleActorProperty(0x00AC, null, "unknown", "stat_blow_exist_flag");
         putBattleActorProperty(0x00AD, null, "unknown", "stat_escape_flag");
         putBattleActorProperty(0x00AE, "?Visible", "bool", "stat_hide");
-        putBattleActorProperty(0x00AF, "?StatusResistanceDeath", "int", "stat_def_death");
-        putBattleActorProperty(0x00B0, "?StatusResistanceZombie", "int", "stat_def_zombie");
-        putBattleActorProperty(0x00B1, "?StatusResistancePetrify", "int", "stat_def_stone");
-        putBattleActorProperty(0x00B2, "?StatusResistancePoison", "int", "stat_def_poison");
-        putBattleActorProperty(0x00B3, "?StatusResistancePowerBreak", "int", "stat_def_power_break");
-        putBattleActorProperty(0x00B4, "?StatusResistanceMagicBreak", "int", "stat_def_magic_break");
-        putBattleActorProperty(0x00B5, "?StatusResistanceArmorBreak", "int", "stat_def_armor_break");
-        putBattleActorProperty(0x00B6, "?StatusResistanceMentalBreak", "int", "stat_def_mental_break");
-        putBattleActorProperty(0x00B7, "?StatusResistanceConfusion", "int", "stat_def_confuse");
-        putBattleActorProperty(0x00B8, "?StatusResistanceBerserk", "int", "stat_def_berserk");
-        putBattleActorProperty(0x00B9, "?StatusResistanceProvoke", "int", "stat_def_prov");
+        putBattleActorProperty(0x00AF, "StatusResistanceDeath", "int", "stat_def_death");
+        putBattleActorProperty(0x00B0, "StatusResistanceZombie", "int", "stat_def_zombie");
+        putBattleActorProperty(0x00B1, "StatusResistancePetrify", "int", "stat_def_stone");
+        putBattleActorProperty(0x00B2, "StatusResistancePoison", "int", "stat_def_poison");
+        putBattleActorProperty(0x00B3, "StatusResistancePowerBreak", "int", "stat_def_power_break");
+        putBattleActorProperty(0x00B4, "StatusResistanceMagicBreak", "int", "stat_def_magic_break");
+        putBattleActorProperty(0x00B5, "StatusResistanceArmorBreak", "int", "stat_def_armor_break");
+        putBattleActorProperty(0x00B6, "StatusResistanceMentalBreak", "int", "stat_def_mental_break");
+        putBattleActorProperty(0x00B7, "StatusResistanceConfusion", "int", "stat_def_confuse");
+        putBattleActorProperty(0x00B8, "StatusResistanceBerserk", "int", "stat_def_berserk");
+        putBattleActorProperty(0x00B9, "StatusResistanceProvoke", "int", "stat_def_prov");
         putBattleActorProperty(0x00BA, "StatusChanceThreaten", "int", "stat_def_threat");
         putBattleActorProperty(0x00BB, "StatusResistanceSleep", "int", "stat_def_sleep");
         putBattleActorProperty(0x00BC, "StatusResistanceSilence", "int", "stat_def_silence");
@@ -985,6 +987,12 @@ public abstract class ScriptConstants {
     private static void putEnum(String type, int idx, String name, String internalName) {
         ScriptField field = new ScriptField(name, type, internalName);
         field.idx = idx;
+        if (idx < 0) {
+            field.hexFormatter = (s) -> {
+                String raw = String.format("%04X", s);
+                return raw.startsWith("FFFF") && raw.length() == 8 ? raw.substring(4) : raw;
+            };
+        }
         getEnumMap(type).put(idx, field);
     }
 
@@ -1002,17 +1010,6 @@ public abstract class ScriptConstants {
     }
 
     private static void putSaveDataVariable(int idx, String name, String type) {
-        putSaveDataVariable(idx, name, type, "unknown");
-    }
-
-    private static void putCommonVariable(int idx, String name, String type, String indexType) {
-        ScriptField field = new ScriptField(name, type);
-        field.idx = idx;
-        field.indexType = indexType;
-        getEnumMap("commonVar").put(idx, field);
-    }
-
-    private static void putCommonVariable(int idx, String name, String type) {
         putSaveDataVariable(idx, name, type, "unknown");
     }
 

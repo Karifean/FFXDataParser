@@ -15,6 +15,7 @@ public class ScriptJump {
     public String rYType;
     public Map<Integer, String> tempITypes;
     public List<ScriptJump> reachableFrom;
+    public boolean hardMisaligned = false;
 
     private String label;
     private int battleWorkerEntryPointType;
@@ -27,8 +28,16 @@ public class ScriptJump {
         this.isEntryPoint = isEntryPoint;
     }
 
+    public void markAsHardMisaligned() {
+        this.hardMisaligned = true;
+    }
+
     public String getLabel() {
         return label != null ? label : getDefaultLabel();
+    }
+
+    public String getLabelWithAddr() {
+        return getLabel() + " (" + String.format("%04X", addr) + ")";
     }
 
     public String getDefaultLabel() {
@@ -67,11 +76,17 @@ public class ScriptJump {
 
     private static String battleWorkerEntryPointToString(int battleWorkerType, int battleWorkerEntryPointType) {
         if (battleWorkerType == 2) {
-            return ctbPurposeSlotToString(battleWorkerEntryPointType);
+            String s = ctbPurposeSlotToString(battleWorkerEntryPointType);
+            if (s != null) {
+                return s;
+            }
         } else if (battleWorkerType == 4) {
             return "encScript" + battleWorkerEntryPointType;
         } else if (battleWorkerType == 6) {
-            return startEndHookPurposeSlotToString(battleWorkerEntryPointType);
+            String s = startEndHookPurposeSlotToString(battleWorkerEntryPointType);
+            if (s != null) {
+                return s;
+            }
         }
         return "t" + String.format("%02X", battleWorkerType) + "p" + String.format("%02X", battleWorkerEntryPointType);
     }
@@ -106,6 +121,18 @@ public class ScriptJump {
             case 6 -> "postTurn"; // prePoison
             case 7 -> "postMove?";
             case 8 -> "postPoison?";
+            case 9 -> "YojiPay";
+            case 0xA -> "YojiDismiss";
+            case 0xB -> "YojiDeath";
+            case 0xC -> "MagusTurn";
+            case 0xD -> "MagusDoAsYouWill";
+            case 0xE -> "MagusOneMoreTime";
+            case 0xF -> "MagusFight";
+            case 0x10 -> "MagusGoGo";
+            case 0x11 -> "MagusHelpEachOther";
+            case 0x12 -> "MagusCombinePowers";
+            case 0x13 -> "MagusDefense";
+            case 0x14 -> "MagusAreYouAllRight";
             default -> null;
         };
     }

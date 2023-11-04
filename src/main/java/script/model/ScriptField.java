@@ -2,6 +2,8 @@ package script.model;
 
 import model.Nameable;
 
+import java.util.function.Function;
+
 public class ScriptField implements Nameable {
     protected static final boolean PRINT_WITH_HEX_SUFFIX = true;
 
@@ -9,7 +11,7 @@ public class ScriptField implements Nameable {
     public String internalName;
     public String type;
     public Integer idx;
-    public String hexFormat;
+    public Function<Integer, String> hexFormatter;
     public String indexType;
 
     public ScriptField(String typeAndName) {
@@ -53,7 +55,10 @@ public class ScriptField implements Nameable {
         if (idx == null) {
             return null;
         }
-        return String.format(hexFormat != null ? hexFormat : (idx >= 0x10000 ? "%08X" : (idx >= 0x100 ? "%04X" : "%02X")), idx);
+        if (hexFormatter != null) {
+            return hexFormatter.apply(idx);
+        }
+        return String.format(idx >= 0x10000 ? "%08X" : (idx >= 0x100 ? "%04X" : "%02X"), idx);
     }
 
     public String getHexSuffix() {

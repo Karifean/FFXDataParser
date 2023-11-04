@@ -54,22 +54,14 @@ public class StackObject {
             if ("bitfield".equals(type)) {
                 return bitfieldToString(null, value) + hexSuffix;
             }
-            if (type.startsWith("uint")) {
+            if (type.startsWith("uint") || type.startsWith("int")) {
+                if ("int16".equals(type) && ScriptField.PRINT_WITH_HEX_SUFFIX && hex.length() == 8 && hex.startsWith("FFFF")) {
+                    return value + " [" + hex.substring(4) + "h]";
+                }
                 return value + hexSuffix;
-            }
-            if ("int16".equals(type)) {
-                short signed = (short) value;
-                return signed + hexSuffix;
-            }
-            if (type.startsWith("int")) {
-                return value + hexSuffix;
-            }
-            Nameable object = DataAccess.getNameableObject(type, value);
-            if (object != null) {
-                return object.getName() + hexSuffix;
             }
             if ("worker".equals(type)) {
-                if (value == 0xFFFF) {
+                if (value == -1) {
                     return "<Self>";
                 }
                 ScriptWorker header = parentScript != null ? parentScript.getWorker(value) : null;
@@ -121,6 +113,10 @@ public class StackObject {
                 String nullSafeString = targetString != null ? targetString : "null";
                 String noLineBreakString = nullSafeString.replace("\n", "\\n");
                 return '"' + noLineBreakString + '"' + hexSuffix;
+            }
+            Nameable object = DataAccess.getNameableObject(type, value);
+            if (object != null) {
+                return object.getName() + hexSuffix;
             }
             if (ScriptConstants.ENUMERATIONS.containsKey(type)) {
                 if (type.endsWith("Bitfield")) {
