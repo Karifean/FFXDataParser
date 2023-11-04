@@ -152,7 +152,12 @@ public class ScriptObject {
                     int lb = read4Bytes(variableStructsTableOffset + i * 8);
                     int hb = read4Bytes(variableStructsTableOffset + i * 8 + 4);
                     ScriptVariable scriptVariable = new ScriptVariable(i, lb, hb);
-                    if (scriptVariable.location == 4) {
+                    if (scriptVariable.location == 0) {
+                        ScriptField entry = ScriptConstants.getEnumMap("saveData").get(scriptVariable.offset);
+                        if (entry != null) {
+                            varTypes.put(i, entry.type);
+                        }
+                    } else if (scriptVariable.location == 4) {
                         scriptVariable.parseValues(this, bytes, w.sharedDataOffset);
                     } else if (scriptVariable.location == 6) {
                         scriptVariable.parseValues(this, bytes, eventDataOffset);
@@ -589,11 +594,13 @@ public class ScriptObject {
             stackObject.referenceIndex = argv;
             stack.push(stackObject);
         } else if (opcode == 0xA3 || opcode == 0xA4) { // POPAR(L) / SET_DATUM_INDEX_(W/T)
+            addVarType(argv, resolveType(p2));
             textScriptLine += "Set ";
             if (opcode == 0xA4) {
                 textScriptLine += "(limit) ";
             }
-            textScriptLine += ensureVariableValidWithArray(argv, p1) + " = " + p2;
+            String val = typed(p2, varTypes.get(argv));
+            textScriptLine += ensureVariableValidWithArray(argv, p1) + " = " + val + ";";
         } else if (opcode == 0xA7) { // PUSHARP / GET_DATUM_DESC
             String arrayIndex = '[' + String.format("%04X", p1.value) + ']';
             StackObject stackObject = new StackObject(this, ins, "int16", true, "ArrayPointer:var" + argvsh + arrayIndex, argv);
