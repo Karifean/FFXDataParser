@@ -14,7 +14,6 @@ public class MonsterSpoilsDataObject {
     int gil;
     int apNormal;
     int apOverkill;
-    boolean hasRonsoRage;
     int ronsoRage;
     int dropChancePrimary;
     int dropChanceSecondary;
@@ -60,7 +59,6 @@ public class MonsterSpoilsDataObject {
         gil = read2Bytes(bytes, 0x00);
         apNormal = read2Bytes(bytes, 0x02);
         apOverkill = read2Bytes(bytes, 0x04);
-        hasRonsoRage = bytes[0x06] > 0 || bytes[0x07] > 0;
         ronsoRage = read2Bytes(bytes, 0x06);
         dropChancePrimary = bytes[0x08];
         dropChanceSecondary = bytes[0x09];
@@ -110,7 +108,7 @@ public class MonsterSpoilsDataObject {
         List<String> list = new ArrayList<>();
         list.add("Gil=" + gil);
         list.add("AP Normal=" + apNormal + " Overkill=" + apOverkill);
-        if (hasRonsoRage) {
+        if (ronsoRage > 0) {
             list.add("Ronso Rage=" + asMove(ronsoRage));
         } else {
             list.add("No Ronso Rage");

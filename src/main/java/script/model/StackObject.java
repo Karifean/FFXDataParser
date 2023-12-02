@@ -187,7 +187,7 @@ public class StackObject {
         return field;
     }
 
-    public static String bitfieldToString(String type, int value) {
+    public static List<ScriptField> bitfieldToList(String type, int value) {
         Map<Integer, ScriptField> map = type != null ? ScriptConstants.ENUMERATIONS.getOrDefault(type, Collections.emptyMap()) : Collections.emptyMap();
         List<ScriptField> bits = new ArrayList<>();
         String format = value >= 0x10000 ? "b%08X" : "b%04X";
@@ -197,6 +197,11 @@ public class StackObject {
                 bits.add(field);
             }
         }
+        return bits;
+    }
+
+    public static String bitfieldToString(String type, int value) {
+        List<ScriptField> bits = bitfieldToList(type, value);
         return "[" + bits.stream().map(ScriptField::getLabel).collect(Collectors.joining(", ")) + "]";
     }
 }

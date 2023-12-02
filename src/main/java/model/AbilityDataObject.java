@@ -142,7 +142,7 @@ public class AbilityDataObject implements Nameable {
     boolean opensSubMenu;
     boolean byte1Fbit01;
     boolean emptiesOverdriveBar;
-    boolean useCastAnimationMaybe;
+    boolean showSpellcastAura;
     boolean userRunsOffScreen;
     boolean canBeCopycatted;
     boolean byte1Fbit20;
@@ -368,7 +368,7 @@ public class AbilityDataObject implements Nameable {
         missIfAlive = (miscProperties1E & 0x80) > 0;
         byte1Fbit01 = (animationProperties1F & 0x01) > 0;
         emptiesOverdriveBar = (animationProperties1F & 0x02) > 0;
-        useCastAnimationMaybe = (animationProperties1F & 0x04) > 0;
+        showSpellcastAura = (animationProperties1F & 0x04) > 0;
         userRunsOffScreen = (animationProperties1F & 0x08) > 0;
         canBeCopycatted = (animationProperties1F & 0x10) > 0;
         byte1Fbit20 = (animationProperties1F & 0x20) > 0;
@@ -491,6 +491,7 @@ public class AbilityDataObject implements Nameable {
         list.add(inflictDelayWeak ? "Delay (Weak)" : "");
         list.add(inflictDelayStrong ? "Delay (Strong)" : "");
         list.add(ifG0(shatterChance, "Shatter=", "%"));
+        list.add(showSpellcastAura ? "Spellcast-Aura" : "");
         list.add("anim=" + casterAnimation + (useTier1CastAnimation ? "L" : "") + (useTier3CastAnimation ? "H" : "") +
                 "/" + String.format("%04X", anim1) +
                 "/" + String.format("%04X", anim2));
@@ -809,13 +810,13 @@ public class AbilityDataObject implements Nameable {
             submenus.put(6, "Items");
             submenus.put(7, "Weapon Change");
             submenus.put(8, "Escape");
-            submenus.put(10, "Switch Character");
-            submenus.put(14, "Special");
-            submenus.put(15, "Armor Change");
-            submenus.put(17, "Use");
-            submenus.put(20, "Mix");
-            submenus.put(21, "Gil (Bribe/SC)");
-            submenus.put(22, "Gil (Pay Yoji)");
+            submenus.put(0xA, "Switch Character");
+            submenus.put(0xE, "Special");
+            submenus.put(0xF, "Armor Change");
+            submenus.put(0x11, "Use");
+            submenus.put(0x14, "Mix");
+            submenus.put(0x15, "Gil (Bribe/SC)");
+            submenus.put(0x16, "Gil (Pay Yoji)");
         }
     }
 

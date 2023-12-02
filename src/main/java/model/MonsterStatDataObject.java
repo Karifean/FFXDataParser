@@ -80,6 +80,8 @@ public class MonsterStatDataObject {
     int extraStatusImmunities1;
     int extraStatusImmunities2;
 
+    int[] abilityList;
+
     int forcedAction;
     int monsterIdx;
     int modelIdx;
@@ -235,6 +237,24 @@ public class MonsterStatDataObject {
         extraStatusImmunities1 = bytes[0x4E];
         extraStatusImmunities2 = bytes[0x4F];
 
+        abilityList = new int[16];
+        abilityList[0] = read2Bytes(bytes, 0x50);
+        abilityList[1] = read2Bytes(bytes, 0x52);
+        abilityList[2] = read2Bytes(bytes, 0x54);
+        abilityList[3] = read2Bytes(bytes, 0x56);
+        abilityList[4] = read2Bytes(bytes, 0x58);
+        abilityList[5] = read2Bytes(bytes, 0x5A);
+        abilityList[6] = read2Bytes(bytes, 0x5C);
+        abilityList[7] = read2Bytes(bytes, 0x5E);
+        abilityList[8] = read2Bytes(bytes, 0x60);
+        abilityList[9] = read2Bytes(bytes, 0x62);
+        abilityList[10] = read2Bytes(bytes, 0x64);
+        abilityList[11] = read2Bytes(bytes, 0x66);
+        abilityList[12] = read2Bytes(bytes, 0x68);
+        abilityList[13] = read2Bytes(bytes, 0x6A);
+        abilityList[14] = read2Bytes(bytes, 0x6C);
+        abilityList[15] = read2Bytes(bytes, 0x6E);
+
         forcedAction = read2Bytes(bytes, 0x70);
         monsterIdx = read2Bytes(bytes, 0x72);
         modelIdx = read2Bytes(bytes, 0x74);
@@ -368,6 +388,15 @@ public class MonsterStatDataObject {
         list.add("Threaten Base Chance=" + statusChanceThreaten + "%" + (statusChanceThreaten == 0 ? " (Immune)" : ""));
         list.add("Poison Damage=" + poisonDamage + "%");
         list.add(autoBuffs());
+        List<String> abilities = new ArrayList<>();
+        for (int skill : abilityList) {
+            if (skill > 0) {
+                abilities.add(asMove(skill));
+            }
+        }
+        if (!abilities.isEmpty()) {
+            list.add("Ability List: " + String.join(", ", abilities));
+        }
         if (forcedAction > 0) {
             list.add("Forced Action: " + asMove(forcedAction));
         } else {
@@ -465,26 +494,7 @@ public class MonsterStatDataObject {
     }
 
     private String elements(int elementByte) {
-        StringBuilder elements = new StringBuilder("{");
-        if ((elementByte & 0x01) > 0) { elements.append(" Fire,"); }
-        if ((elementByte & 0x02) > 0) { elements.append(" Ice,"); }
-        if ((elementByte & 0x04) > 0) { elements.append(" Thunder,"); }
-        if ((elementByte & 0x08) > 0) { elements.append(" Water,"); }
-        if ((elementByte & 0x10) > 0) { elements.append(" Holy,"); }
-        if ((elementByte & 0x20) > 0) { elements.append(" 6,"); }
-        if ((elementByte & 0x40) > 0) { elements.append(" 7,"); }
-        if ((elementByte & 0x80) > 0) { elements.append(" 8,"); }
-        String conv = elements.toString();
-        if (conv.endsWith(",")) {
-            String withoutLastSemicolon = conv.substring(0, conv.length() - 1);
-            if (withoutLastSemicolon.indexOf(',') > 0) {
-                return withoutLastSemicolon + " }";
-            } else {
-                return withoutLastSemicolon.substring(2);
-            }
-        } else {
-            return null;
-        }
+        return elementByte > 0 ? StackObject.bitfieldToString("elementsBitfield", elementByte) : null;
     }
 
     private String statusResists() {

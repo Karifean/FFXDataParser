@@ -326,9 +326,6 @@ public class ScriptObject {
             if (instruction.opcode != 0x00) {
                 nonNullInstructionsOnLine.add(instruction);
             }
-            /* if (currentExecutionLines.stream().noneMatch(j -> j.isEntryPoint)) {
-                warningsOnLine.add("Unreachable code");
-            } */
             instruction.reachableFrom = currentExecutionLines;
             processInstruction(instruction);
             if (getLineEnd(instruction.opcode)) {
@@ -524,6 +521,7 @@ public class ScriptObject {
             resetRegisterTypes();
         } else if (opcode == 0x40) { // HALT / DYNAMIC
             textScriptLine += "halt";
+            resetRegisterTypes();
         } else if (opcode == 0x46) { // TREQ
             String content = "TREQ(" + p1 + ", " + p2 + ", " + p3 + ")";
             stack.push(new StackObject(this, ins, "unknown", true, content, 0x46));
@@ -622,12 +620,13 @@ public class ScriptObject {
             stack.push(stackObject);
         } else if (opcode == 0xB0) { // JMP / JUMP
             ScriptJump jump = referenceJump(argv);
-            textScriptLine += "Jump to " + (jump != null ? jump.getLabel() : ("j" + String.format("%02X", argv)));
+            textScriptLine += "Jump to " + (jump != null ? jump.getLabelWithAddr() : ("j" + String.format("%02X", argv)));
             resetRegisterTypes();
         } else if (opcode == 0xB1) { // Never used: CJMP / BNEZ
         } else if (opcode == 0xB2) { // Never used: NCJMP / BEZ
         } else if (opcode == 0xB3) { // JSR
-            textScriptLine += "Jump to subroutine w" + String.format("%02X", argv);
+            ScriptWorker worker = workers == null || workers.length <= argv ? null : workers[argv];
+            textScriptLine += "Jump to subroutine " + (worker != null ? worker.getIndexLabel() : ("w" + String.format("%02X", argv)));
         } else if (opcode == 0xB5) { // CALL / FUNC_RET
             List<StackObject> params = popParamsForFunc(argv);
             ScriptFunc func = getAndTypeFuncCall(argv, params);
@@ -636,10 +635,10 @@ public class ScriptObject {
             stack.push(stackObject);
         } else if (opcode == 0xD6) { // POPXCJMP / SET_BNEZ
             ScriptJump jump = referenceJump(argv);
-            textScriptLine += "(" + p1 + ") -> " + (jump != null ? jump.getLabel() : ("j" + String.format("%02X", argv)));
+            textScriptLine += "(" + p1 + ") -> " + (jump != null ? jump.getLabelWithAddr() : ("j" + String.format("%02X", argv)));
         } else if (opcode == 0xD7) { // POPXNCJMP / SET_BEZ
             ScriptJump jump = referenceJump(argv);
-            textScriptLine += "Check (" + p1 + ") else jump to " + (jump != null ? jump.getLabel() : ("j" + String.format("%02X", argv)));
+            textScriptLine += "Check (" + p1 + ") else jump to " + (jump != null ? jump.getLabelWithAddr() : ("j" + String.format("%02X", argv)));
         } else if (opcode == 0xD8) { // CALLPOPA / FUNC
             List<StackObject> params = popParamsForFunc(argv);
             ScriptFunc func = getAndTypeFuncCall(argv, params);
