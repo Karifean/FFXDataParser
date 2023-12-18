@@ -471,9 +471,9 @@ public class GearAbilityDataObject implements Nameable {
             list.add("Byte68=" + byte67usually14);
         }
         String full = list.stream().filter(s -> s != null && !s.isBlank()).collect(Collectors.joining(", "));
-        String dashStr = (dashOffset > 0 && !"-".equals(dash) ? "DH=" + dash + " / " : "");
-        String descriptionStr = (descriptionOffset > 0 && !"-".equals(description) ? description : "");
-        String soText = (otherTextOffset > 0 && !"-".equals(otherText) ? " / OT=" + otherText : "");
+        String dashStr = (dashOffset > 0 && StringHelper.PRINT_DASH_STRINGS_IF_NOT_DASHES && !"-".equals(dash) ? "DH=" + dash + " / " : "");
+        String descriptionStr = (descriptionOffset > 0 ? description : "");
+        String soText = (otherTextOffset > 0 && StringHelper.PRINT_DASH_STRINGS_IF_NOT_DASHES && !"-".equals(otherText) ? " / OT=" + otherText : "");
         return String.format("%-18s", getName()) + " { " + full + " } " + dashStr + descriptionStr + soText;
     }
 

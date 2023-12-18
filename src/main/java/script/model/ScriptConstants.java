@@ -298,6 +298,7 @@ public abstract class ScriptConstants {
         putSaveDataVariable(0x00D0, "BikanelTreasureFlags3", "int");
         putSaveDataVariable(0x0104, "EnergyBlastProgressionFlags", "int");
         putSaveDataVariable(0x0115, "BesaidVillageTreasureFlags", "int");
+        putSaveDataVariable(0x0193, "DebugSkipJechtIntroScenes", "bol");
         putSaveDataVariable(0x014B, "ControllableCharacterInLuca", "playerChar");
         putSaveDataVariable(0x01C0, "KilikaForestTreasureFlags", "int");
         putSaveDataVariable(0x01C5, "BesaidTreasureFlags", "int");
@@ -467,6 +468,7 @@ public abstract class ScriptConstants {
         putEnum("bgm", 0x002A, "Seymour Battle");
         putEnum("bgm", 0x0030, "Prelude");
         putEnum("bgm", 0x0031, "Otherworld (BFA)");
+        putEnum("bgm", 0x0032, "Decisive Battle");
         putEnum("bgm", 0x0082, "To Zanarkand");
         putEnum("bgm", 0x0091, "Challenge");
         putEnum("bgm", 0x00A5, "?Run!!");
@@ -702,7 +704,7 @@ public abstract class ScriptConstants {
         putBattleActorProperty(0x004D, null, "bool", "ability_mp_recover");
         putBattleActorProperty(0x004E, null, "bool", "ability_nonencount");
         putBattleActorProperty(0x004F, "DeathAnimation", "deathAnimation", "stat_death_pattern");
-        putBattleActorProperty(0x0050, null, "unknown", "stat_event_chr");
+        putBattleActorProperty(0x0050, null, "bool", "stat_event_chr");
         putBattleActorProperty(0x0051, "GetsTurns", "bool", "stat_action");
         putBattleActorProperty(0x0052, "Targetable", "bool", "stat_cursor");
         putBattleActorProperty(0x0053, "VisibleOnCTB", "bool", "stat_ctb_list");
@@ -831,7 +833,7 @@ public abstract class ScriptConstants {
         putBattleActorProperty(0x00CE, "?StatusImmunityShield", "bool", "stat_def_dodge");
         putBattleActorProperty(0x00CF, "?StatusImmunityBoost", "bool", "stat_def_defend");
         putBattleActorProperty(0x00D0, "?StatusImmunityAutoLife", "bool", "stat_def_relife");
-        putBattleActorProperty(0x00D1, "?StatusImmunityEject", "bool", "stat_def_blow");
+        putBattleActorProperty(0x00D1, "StatusImmunityEject", "bool", "stat_def_blow");
         putBattleActorProperty(0x00D2, "?StatusImmunityCurse", "bool", "stat_def_curse");
         putBattleActorProperty(0x00D3, "?StatusImmunityDefend", "bool", "stat_def_defense");
         putBattleActorProperty(0x00D4, "?StatusImmunityGuard", "bool", "stat_def_protect");
@@ -962,6 +964,7 @@ public abstract class ScriptConstants {
         putBattleActorProperty(0x0151, null, "unknown", "stat_regen_damage_flag");
         putBattleActorProperty(0x0152, null, "unknown", "stat_num_print_element");
         putBattleActorProperty(0x0153, "?disableLowHealthSlump", "bool", null);
+        putBattleActorProperty(0x0159, "?onlyTargetableBy", "move", null);
 
         putMoveProperty(0x0000, "damageFormula", "damageFormula");
         putMoveProperty(0x0001, "damageType", "damageType");

@@ -497,9 +497,9 @@ public class ScriptObject {
         } else if (opcode >= 0x36 && opcode <= 0x38) { // REQ / SIG_NOACK
             String cmd = "run";
             if (opcode == 0x37) { // REQSW / SIG_ONSTART
-                cmd += "Async";
+                cmd += "AndAwaitStart";
             } else if (opcode == 0x38) { // REQEW / SIG_ONEND
-                cmd += "Sync";
+                cmd += "AndAwaitEnd";
             }
             String level = p1.expression ? ""+p1 : ""+p1.value;
             boolean direct = !p2.expression && !p3.expression && isWeakType(p2.type) && isWeakType(p3.type) && p2.value < workers.length && p3.value < workers[p2.value].entryPoints.length;

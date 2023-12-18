@@ -1,5 +1,6 @@
 package script;
 
+import main.StringHelper;
 import model.Nameable;
 import reading.Chunk;
 import model.MonsterSpoilsDataObject;
@@ -73,12 +74,12 @@ public class MonsterFile implements Nameable {
             full.append("Name: ").append(monsterLocalizationData.monsterName).append('\n');
             full.append("- Sensor Text -").append('\n');
             full.append(monsterLocalizationData.monsterSensorText).append('\n');
-            if (!"-".equals(monsterLocalizationData.monsterSensorDash)) {
+            if (StringHelper.PRINT_DASH_STRINGS_IF_NOT_DASHES && !"-".equals(monsterLocalizationData.monsterSensorDash)) {
                 full.append("DH=").append(monsterLocalizationData.monsterSensorDash).append('\n');
             }
             full.append("- Scan Text -").append('\n');
             full.append(monsterLocalizationData.monsterScanText).append('\n');
-            if (!"-".equals(monsterLocalizationData.monsterScanDash)) {
+            if (StringHelper.PRINT_DASH_STRINGS_IF_NOT_DASHES && !"-".equals(monsterLocalizationData.monsterScanDash)) {
                 full.append("DH=").append(monsterLocalizationData.monsterScanDash).append('\n');
             }
         } else if (englishTextStatData != null) {
@@ -86,12 +87,12 @@ public class MonsterFile implements Nameable {
             full.append("Name: ").append(englishTextStatData.monsterName).append('\n');
             full.append("- Sensor Text -").append('\n');
             full.append(englishTextStatData.monsterSensorText).append('\n');
-            if (!"-".equals(englishTextStatData.monsterSensorDash)) {
+            if (StringHelper.PRINT_DASH_STRINGS_IF_NOT_DASHES && !"-".equals(englishTextStatData.monsterSensorDash)) {
                 full.append("DH=").append(englishTextStatData.monsterSensorDash).append('\n');
             }
             full.append("- Scan Text -").append('\n');
             full.append(englishTextStatData.monsterScanText).append('\n');
-            if (!"-".equals(englishTextStatData.monsterScanDash)) {
+            if (StringHelper.PRINT_DASH_STRINGS_IF_NOT_DASHES && !"-".equals(englishTextStatData.monsterScanDash)) {
                 full.append("DH=").append(englishTextStatData.monsterScanDash).append('\n');
             }
         }

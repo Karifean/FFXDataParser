@@ -54,7 +54,7 @@ public class ScriptJump {
                     String wePrefix = wPrefix + "e" + String.format("%02X", jumpIndex);
                     return wePrefix + battleWorkerEntryPointToString(scriptWorker.battleWorkerType, battleWorkerEntryPointType);
                 } else {
-                    return wPrefix + eventWorkerEntryPointToString(scriptWorker.eventWorkerType, jumpIndex);
+                    return wPrefix + eventWorkerEntryPointToStringWithFallback(scriptWorker.eventWorkerType, jumpIndex);
                 }
             }
         }
@@ -91,21 +91,55 @@ public class ScriptJump {
         return "t" + String.format("%02X", battleWorkerType) + "p" + String.format("%02X", battleWorkerEntryPointType);
     }
 
-    private static String eventWorkerEntryPointToString(int eventWorkerType, int eventWorkerEntryPoint) {
-        if (eventWorkerType == 1) {
-            String label = fieldObjectSlotToString(eventWorkerEntryPoint);
-            if (label != null) {
-                return label;
-            }
+    private static String eventWorkerEntryPointToStringWithFallback(int eventWorkerType, int eventWorkerEntryPoint) {
+        String label = eventWorkerEntryPointToString(eventWorkerType, eventWorkerEntryPoint);
+        if (label != null) {
+            return label;
         }
-        return "t" + String.format("%02X", eventWorkerType) + "e" + String.format("%02X", eventWorkerEntryPoint);
+        return "e" + String.format("%02X", eventWorkerEntryPoint);
     }
 
-    private static String fieldObjectSlotToString(int slot) {
-        return switch (slot) {
-            case 2 -> "talk";
-            case 3 -> "scout";
-            case 5 -> "touch";
+    private static String eventWorkerEntryPointToString(int eventWorkerType, int eventWorkerEntryPoint) {
+        return switch (eventWorkerType) {
+            case 1 -> // FieldObject
+                    switch (eventWorkerEntryPoint) {
+                        case 2 -> "talk";
+                        case 3 -> "scout";
+                        case 4 -> "fo?c";
+                        case 5 -> "touch";
+                        default -> null;
+                    };
+            case 2 -> // PlayerEdge
+                    switch (eventWorkerEntryPoint) {
+                        case 2 -> "pe?t";
+                        case 3 -> "pe?s";
+                        case 4 -> "cross";
+                        case 5 -> "touch";
+                        case 6 -> "pe?e";
+                        case 7 -> "pe?l";
+                        default -> null;
+                    };
+            case 3 -> // PlayerZone
+                    switch (eventWorkerEntryPoint) {
+                        case 2 -> "talk";
+                        case 3 -> "scout";
+                        case 4 -> "cross";
+                        case 5 -> "touch";
+                        case 6 -> "enter";
+                        case 7 -> "leave";
+                        default -> null;
+                    };
+            case 5 -> // Edge
+                    switch (eventWorkerEntryPoint) {
+                        case 2 -> "cross";
+                        default -> null;
+                    };
+            case 6 -> // Zone
+                    switch (eventWorkerEntryPoint) {
+                        case 2 -> "enter";
+                        case 3 -> "leave";
+                        default -> null;
+                    };
             default -> null;
         };
     }

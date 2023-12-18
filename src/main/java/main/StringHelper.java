@@ -17,6 +17,7 @@ public abstract class StringHelper {
     public static final String ANSI_CYAN = "\u001B[36m";
     public static final String ANSI_WHITE = "\u001B[37m";
 
+    public static final boolean PRINT_DASH_STRINGS_IF_NOT_DASHES = false;
     public static final boolean COLORS_USE_CONSOLE_CODES = true;
     public static final Map<Integer, Character> BIN_LOOKUP = new HashMap<>();
     public static final Map<Character, Integer> BIN_REV_LOOKUP = new HashMap<>();

@@ -43,9 +43,9 @@ public class Main {
             case MODE_GREP:
                 String joined = String.join(" ", realArgs);
                 writeGrep(joined);
-                for (String monstername : realArgs) {
-                    writeGrep(monstername);
-                }
+                /* for (String substr : realArgs) {
+                    writeGrep(substr);
+                } */
                 break;
             case MODE_TRANSLATE:
                 String concat = String.join("", realArgs);
@@ -135,15 +135,20 @@ public class Main {
     }
 
     private static void writeGrep(String str) {
-        final StringBuilder search = new StringBuilder("grep -r \"");
-        str.chars().map(StringHelper::charToByte).forEach(bc -> search.append("\\x").append(Integer.toHexString(bc)));
-        final StringBuilder regular = new StringBuilder();
-        str.chars().map(StringHelper::charToByte).forEach(bc -> regular.append(Integer.toHexString(bc)));
-        search.append("\" .");
+        final StringBuilder spaced = new StringBuilder();
+        final StringBuilder byteString = new StringBuilder();
+        final StringBuilder grep = new StringBuilder("grep -r \"");
+        str.chars().forEach(c -> {
+            int bc = StringHelper.charToByte(c);
+            spaced.append((char) c).append(' ');
+            byteString.append(Integer.toHexString(bc));
+            grep.append("\\x").append(Integer.toHexString(bc));
+        });
+        grep.append("\" .");
         System.out.println(str);
-        System.out.println(regular);
-        System.out.println(search);
-        System.out.println("");
+        System.out.println(spaced);
+        System.out.println(byteString);
+        System.out.println(grep);
     }
 
     private static void translate(String str) {
