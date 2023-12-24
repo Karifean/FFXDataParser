@@ -28,6 +28,7 @@ public class Main {
     private static final String MODE_PARSE_ENCOUNTER = "PARSE_ENCOUNTER";
     private static final String MODE_PARSE_EVENT = "PARSE_EVENT";
     private static final String MODE_PARSE_MONSTER = "PARSE_MONSTER";
+    private static final String MODE_READ_SPHERE_GRID_NODE_TYPES = "READ_SPHERE_GRID_NODE_TYPES";
     private static final String MODE_READ_SPHERE_GRID_LAYOUT = "READ_SPHERE_GRID_LAYOUT";
 
     public static void main(String[] args) {
@@ -120,6 +121,9 @@ public class Main {
                 break;
             case MODE_READ_GEAR_ABILITIES:
                 readGearAbilitiesFromFile(PATH_LOCALIZED_KERNEL + "a_ability.bin", true);
+                break;
+            case MODE_READ_SPHERE_GRID_NODE_TYPES:
+                readSphereGridNodeTypes(PATH_LOCALIZED_KERNEL + "panel.bin", true);
                 break;
             case MODE_READ_SPHERE_GRID_LAYOUT:
                 readSphereGridLayout(realArgs.get(0), realArgs.get(1), true);

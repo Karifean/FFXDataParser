@@ -2,6 +2,7 @@ package main;
 
 import model.*;
 import model.spheregrid.SphereGridLayoutDataObject;
+import model.spheregrid.SphereGridNodeTypeDataObject;
 import reading.Chunk;
 import reading.ChunkedFileHelper;
 import reading.DataFileReader;
@@ -56,6 +57,7 @@ public class DataReadingManager {
         DataAccess.TREASURES = readTreasures(PATH_ORIGINALS_KERNEL + "takara.bin", false);
         readMonsterFile(PATH_MONSTER_FOLDER, false);
         DataAccess.addMonsterLocalizations(readMonsterLocalizations(false));
+        DataAccess.SG_NODE_TYPES = readSphereGridNodeTypes(PATH_LOCALIZED_KERNEL + "panel.bin", false);
         DataAccess.OSG_LAYOUT = readSphereGridLayout(PATH_ABMAP + "dat01.dat", PATH_ABMAP + "dat09.dat", false);
         DataAccess.SSG_LAYOUT = readSphereGridLayout(PATH_ABMAP + "dat02.dat", PATH_ABMAP + "dat10.dat", false);
         DataAccess.ESG_LAYOUT = readSphereGridLayout(PATH_ABMAP + "dat03.dat", PATH_ABMAP + "dat11.dat", false);
@@ -317,6 +319,16 @@ public class DataReadingManager {
         } while (file.exists());
         MonsterStatDataObject[] array = new MonsterStatDataObject[fullList.size()];
         return fullList.toArray(array);
+    }
+
+    public static SphereGridNodeTypeDataObject[] readSphereGridNodeTypes(String filename, boolean print) {
+        DataFileReader<SphereGridNodeTypeDataObject> reader = new DataFileReader<>(SphereGridNodeTypeDataObject::new);
+        List<SphereGridNodeTypeDataObject> list = reader.readGenericDataFile(filename, print);
+        if (list == null) {
+            return null;
+        }
+        SphereGridNodeTypeDataObject[] array = new SphereGridNodeTypeDataObject[list.size()];
+        return list.toArray(array);
     }
 
     public static SphereGridLayoutDataObject readSphereGridLayout(String layout, String contents, boolean print) {

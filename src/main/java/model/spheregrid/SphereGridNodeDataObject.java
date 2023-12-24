@@ -1,5 +1,6 @@
 package model.spheregrid;
 
+import main.DataAccess;
 import model.Nameable;
 
 import java.util.ArrayList;
@@ -42,14 +43,14 @@ public class SphereGridNodeDataObject implements Nameable {
         list.add("Position=(" + posX + "/" + posY + ")");
         list.add("Cluster=C#" + cluster);
         if (hasContent() && content != redundantContent) {
-            list.add("Content-Mismatch - Original=" + SphereGridLayoutDataObject.byteToNodeContent(redundantContent));
+            list.add("Content-Mismatch - Original=" + getContentLabel(redundantContent));
         }
         list.add("U6=" + String.format("%04X", unknown6));
         if (unused3 != 0) {
             list.add("Unknown3=" + String.format("%04X", unused3));
         }
         String full = String.join(", ", list);
-        String prefix = hasContent() ? SphereGridLayoutDataObject.byteToNodeContent(content) : ("[" + SphereGridLayoutDataObject.byteToNodeContent(redundantContent) + "]");
+        String prefix = hasContent() ? getContentLabel(content) : ("[" + getContentLabel(redundantContent) + "]");
         return prefix + " { " + full + " }";
     }
 
@@ -64,6 +65,12 @@ public class SphereGridNodeDataObject implements Nameable {
 
     private boolean hasContent() {
         return content != null && content != 0xFF;
+    }
+
+    private String getContentLabel(int content) {
+        SphereGridNodeTypeDataObject nodeType = DataAccess.getSgNodeType(content);
+        String label = nodeType != null ? nodeType.getName() : "null";
+        return label + " [" + String.format("%04X", content) + "h]";
     }
 
     private int read2Bytes(int offset, boolean signed) {

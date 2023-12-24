@@ -16,7 +16,6 @@ import java.util.stream.Collectors;
  * item.bin
  */
 public class AbilityDataObject implements Nameable {
-    // TODO: Find flags "affectedByAlchemy", "affectedByMagicBooster", find the meaning of byte 0x20 bit 0x08
     static Map<Integer, String> submenus;
 
     private final boolean isCharacterAbility;

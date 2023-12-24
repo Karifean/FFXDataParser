@@ -2,6 +2,7 @@ package main;
 
 import model.*;
 import model.spheregrid.SphereGridLayoutDataObject;
+import model.spheregrid.SphereGridNodeTypeDataObject;
 import script.MonsterFile;
 
 public abstract class DataAccess {
@@ -14,6 +15,7 @@ public abstract class DataAccess {
     public static GearDataObject[] BUYABLE_GEAR;
     public static GearShopDataObject[] GEAR_SHOPS;
     public static ItemShopDataObject[] ITEM_SHOPS;
+    public static SphereGridNodeTypeDataObject[] SG_NODE_TYPES;
     public static SphereGridLayoutDataObject OSG_LAYOUT;
     public static SphereGridLayoutDataObject SSG_LAYOUT;
     public static SphereGridLayoutDataObject ESG_LAYOUT;
@@ -25,6 +27,7 @@ public abstract class DataAccess {
             case "monster" -> getMonster(idx);
             case "keyItem" -> getKeyItem(idx);
             case "treasure" -> getTreasure(idx);
+            case "sgNodeType" -> getSgNodeType(idx);
             default -> DUMMY_OBJECT;
         };
         if (object == DUMMY_OBJECT) {
@@ -53,6 +56,17 @@ public abstract class DataAccess {
         int actual = idx - 0x8000;
         if (actual >= 0 && actual < GEAR_ABILITIES.length) {
             return GEAR_ABILITIES[actual];
+        } else {
+            return null;
+        }
+    }
+
+    public static SphereGridNodeTypeDataObject getSgNodeType(int idx) {
+        if (SG_NODE_TYPES == null) {
+            throw new UnsupportedOperationException();
+        }
+        if (idx >= 0 && idx < SG_NODE_TYPES.length) {
+            return SG_NODE_TYPES[idx];
         } else {
             return null;
         }

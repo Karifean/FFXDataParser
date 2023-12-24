@@ -26,3 +26,15 @@ elementsBitfield,10,,Holy
 elementsBitfield,20,,6
 elementsBitfield,40,,7
 elementsBitfield,80,,8
+sgNodeEffectsBitfield,01,,STR+
+sgNodeEffectsBitfield,02,,DEF+
+sgNodeEffectsBitfield,04,,MAG+
+sgNodeEffectsBitfield,08,,MDF+
+sgNodeEffectsBitfield,10,,AGI+
+sgNodeEffectsBitfield,20,,LCK+
+sgNodeEffectsBitfield,40,,EVA+
+sgNodeEffectsBitfield,80,,ACC+
+sgNodeEffectsBitfield,100,,HP+
+sgNodeEffectsBitfield,200,,MP+
+sgNodeEffectsBitfield,400,,Ability
+sgNodeEffectsBitfield,8000,,Lock

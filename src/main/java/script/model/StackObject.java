@@ -200,8 +200,12 @@ public class StackObject {
         return bits;
     }
 
+    public static String bitsToString(List<ScriptField> bits) {
+        return "[" + bits.stream().map(ScriptField::getLabel).collect(Collectors.joining(", ")) + "]";
+    }
+
     public static String bitfieldToString(String type, int value) {
         List<ScriptField> bits = bitfieldToList(type, value);
-        return "[" + bits.stream().map(ScriptField::getLabel).collect(Collectors.joining(", ")) + "]";
+        return bitsToString(bits);
     }
 }
