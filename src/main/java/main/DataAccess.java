@@ -3,6 +3,7 @@ package main;
 import model.*;
 import model.spheregrid.SphereGridLayoutDataObject;
 import model.spheregrid.SphereGridNodeTypeDataObject;
+import model.spheregrid.SphereGridSphereTypeDataObject;
 import script.MonsterFile;
 
 public abstract class DataAccess {
@@ -16,6 +17,7 @@ public abstract class DataAccess {
     public static GearShopDataObject[] GEAR_SHOPS;
     public static ItemShopDataObject[] ITEM_SHOPS;
     public static SphereGridNodeTypeDataObject[] SG_NODE_TYPES;
+    public static SphereGridSphereTypeDataObject[] SG_SPHERE_TYPES;
     public static SphereGridLayoutDataObject OSG_LAYOUT;
     public static SphereGridLayoutDataObject SSG_LAYOUT;
     public static SphereGridLayoutDataObject ESG_LAYOUT;

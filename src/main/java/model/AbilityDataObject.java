@@ -1,6 +1,8 @@
 package model;
 
+import main.DataAccess;
 import main.StringHelper;
+import model.spheregrid.SphereGridSphereTypeDataObject;
 import script.model.StackObject;
 
 import java.util.ArrayList;
@@ -114,7 +116,7 @@ public class AbilityDataObject implements Nameable {
     int unknownByte7;
     int unknownByte0A;
     int orderingIndexInMenu;
-    int sphereGridUsageRole;
+    int sphereTypeForSphereGrid;
     int alwaysZero5E;
     int alwaysZero5F;
 
@@ -219,10 +221,12 @@ public class AbilityDataObject implements Nameable {
     boolean specialBuffOverdrive150;
     boolean specialBuffOverdrive200;
     boolean specialBuffUnused;
+    boolean considerSphereType;
 
-    public AbilityDataObject(int[] bytes, int[] stringBytes) {
+    public AbilityDataObject(int[] bytes, int[] stringBytes, int group) {
         this.bytes = bytes;
-        isCharacterAbility = (bytes.length == 96);
+        isCharacterAbility = group <= 3;
+        considerSphereType = group == 2;
         prepareMaps();
         mapBytes();
         mapFlags();
@@ -325,7 +329,7 @@ public class AbilityDataObject implements Nameable {
         alwaysZero5B = bytes[0x5B];
         if (isCharacterAbility) {
             orderingIndexInMenu = bytes[0x5C];
-            sphereGridUsageRole = bytes[0x5D];
+            sphereTypeForSphereGrid = bytes[0x5D];
             alwaysZero5E = bytes[0x5E];
             alwaysZero5F = bytes[0x5F];
         }
@@ -498,6 +502,10 @@ public class AbilityDataObject implements Nameable {
         list.add(ifG0(alwaysZero5B, "Byte5B=", ""));
         list.add(ifG0(alwaysZero5E, "Byte5E=", ""));
         list.add(ifG0(alwaysZero5F, "Byte5F=", ""));
+        if (considerSphereType && sphereTypeForSphereGrid != 0xFF) {
+            SphereGridSphereTypeDataObject sgSphereType = DataAccess.SG_SPHERE_TYPES[sphereTypeForSphereGrid];
+            list.add("SphereGridRole=" + sphereTypeForSphereGrid + " [" + String.format("%02X", sphereTypeForSphereGrid) + "h] " + (sgSphereType != null ? sgSphereType : "null"));
+        }
         String full = list.stream().filter(s -> s != null && !s.isBlank()).collect(Collectors.joining(", "));
         String dashStr = (dashOffset > 0 && StringHelper.PRINT_DASH_STRINGS_IF_NOT_DASHES && !"-".equals(dash) ? "DH=" + dash + " / " : "");
         String descriptionStr = (descriptionOffset > 0 ? description : "");
@@ -801,17 +809,17 @@ public class AbilityDataObject implements Nameable {
     private static void prepareMaps() {
         if (submenus == null) {
             submenus = new HashMap<>();
-            submenus.put(1, "Black Magic");
-            submenus.put(2, "White Magic");
-            submenus.put(3, "Skill");
-            submenus.put(4, "Overdrive");
-            submenus.put(5, "Summon");
-            submenus.put(6, "Items");
-            submenus.put(7, "Weapon Change");
-            submenus.put(8, "Escape");
-            submenus.put(0xA, "Switch Character");
-            submenus.put(0xE, "Special");
-            submenus.put(0xF, "Armor Change");
+            submenus.put(0x01, "Black Magic");
+            submenus.put(0x02, "White Magic");
+            submenus.put(0x03, "Skill");
+            submenus.put(0x04, "Overdrive");
+            submenus.put(0x05, "Summon");
+            submenus.put(0x06, "Items");
+            submenus.put(0x07, "Weapon Change");
+            submenus.put(0x08, "Escape");
+            submenus.put(0x0A, "Switch Character");
+            submenus.put(0x0E, "Special");
+            submenus.put(0x0F, "Armor Change");
             submenus.put(0x11, "Use");
             submenus.put(0x14, "Mix");
             submenus.put(0x15, "Gil (Bribe/SC)");

@@ -3,6 +3,7 @@ package main;
 import model.*;
 import model.spheregrid.SphereGridLayoutDataObject;
 import model.spheregrid.SphereGridNodeTypeDataObject;
+import model.spheregrid.SphereGridSphereTypeDataObject;
 import reading.Chunk;
 import reading.ChunkedFileHelper;
 import reading.DataFileReader;
@@ -47,6 +48,7 @@ public class DataReadingManager {
     }
 
     public static void readAndPrepareDataModel() {
+        DataAccess.SG_SPHERE_TYPES = readSphereGridSphereTypes(PATH_LOCALIZED_KERNEL + "sphere.bin", false);
         prepareAbilities();
         DataAccess.GEAR_ABILITIES = readGearAbilitiesFromFile(PATH_LOCALIZED_KERNEL + "a_ability.bin", false);
         DataAccess.BUYABLE_GEAR = readWeaponPickups(PATH_ORIGINALS_KERNEL + "shop_arms.bin", false);
@@ -80,7 +82,7 @@ public class DataReadingManager {
     }
 
     public static AbilityDataObject[] readAbilitiesFromFile(String filename, int group, boolean print) {
-        DataFileReader<AbilityDataObject> reader = new DataFileReader<>(AbilityDataObject::new) {
+        DataFileReader<AbilityDataObject> reader = new DataFileReader<>((bytes, stringBytes) -> new AbilityDataObject(bytes, stringBytes, group)) {
             @Override
             public String indexWriter(int idx) {
                 return String.format("%04X", idx + group * 0x1000);
@@ -319,6 +321,16 @@ public class DataReadingManager {
         } while (file.exists());
         MonsterStatDataObject[] array = new MonsterStatDataObject[fullList.size()];
         return fullList.toArray(array);
+    }
+
+    public static SphereGridSphereTypeDataObject[] readSphereGridSphereTypes(String filename, boolean print) {
+        DataFileReader<SphereGridSphereTypeDataObject> reader = new DataFileReader<>(SphereGridSphereTypeDataObject::new);
+        List<SphereGridSphereTypeDataObject> list = reader.readGenericDataFile(filename, print);
+        if (list == null) {
+            return null;
+        }
+        SphereGridSphereTypeDataObject[] array = new SphereGridSphereTypeDataObject[list.size()];
+        return list.toArray(array);
     }
 
     public static SphereGridNodeTypeDataObject[] readSphereGridNodeTypes(String filename, boolean print) {

@@ -76,9 +76,9 @@ public class SphereGridNodeTypeDataObject implements Nameable {
             list.add("Teaches Move: " + asMove(learnedMove));
         }
         if (increaseAmount > 0) {
-            list.add("Increase=" + increaseAmount);
+            list.add("Increase=" + increaseAmount + " [" + String.format("%04X", increaseAmount) + "h]");
         }
-        list.add("Appearance?=" + appearanceType);
+        list.add("Appearance?=" + appearanceType + " [" + String.format("%04X", appearanceType) + "h]");
         String full = list.stream().filter(s -> s != null && !s.isBlank()).collect(Collectors.joining(", "));
         String dashStr = (dashOffset > 0 && StringHelper.PRINT_DASH_STRINGS_IF_NOT_DASHES && !"-".equals(dash) ? "DH=" + dash + " / " : "");
         String descriptionStr = (descriptionOffset > 0 ? description : "");

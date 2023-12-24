@@ -123,6 +123,7 @@ public class Main {
                 readGearAbilitiesFromFile(PATH_LOCALIZED_KERNEL + "a_ability.bin", true);
                 break;
             case MODE_READ_SPHERE_GRID_NODE_TYPES:
+                readSphereGridSphereTypes(PATH_LOCALIZED_KERNEL + "sphere.bin", true);
                 readSphereGridNodeTypes(PATH_LOCALIZED_KERNEL + "panel.bin", true);
                 break;
             case MODE_READ_SPHERE_GRID_LAYOUT:
