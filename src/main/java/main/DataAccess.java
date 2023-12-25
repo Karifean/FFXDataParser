@@ -21,6 +21,8 @@ public abstract class DataAccess {
     public static SphereGridLayoutDataObject OSG_LAYOUT;
     public static SphereGridLayoutDataObject SSG_LAYOUT;
     public static SphereGridLayoutDataObject ESG_LAYOUT;
+    public static CustomizationDataObject[] GEAR_CUSTOMIZATIONS;
+    public static CustomizationDataObject[] AEON_CUSTOMIZATIONS;
     private final static Nameable DUMMY_OBJECT = () -> "null";
 
     public static Nameable getNameableObject(String type, int idx) {

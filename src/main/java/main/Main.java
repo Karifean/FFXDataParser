@@ -30,6 +30,7 @@ public class Main {
     private static final String MODE_PARSE_MONSTER = "PARSE_MONSTER";
     private static final String MODE_READ_SPHERE_GRID_NODE_TYPES = "READ_SPHERE_GRID_NODE_TYPES";
     private static final String MODE_READ_SPHERE_GRID_LAYOUT = "READ_SPHERE_GRID_LAYOUT";
+    private static final String MODE_READ_CUSTOMIZATIONS = "READ_CUSTOMIZATIONS";
 
     public static void main(String[] args) {
         String pathRoot = args[0];
@@ -128,6 +129,10 @@ public class Main {
                 break;
             case MODE_READ_SPHERE_GRID_LAYOUT:
                 readSphereGridLayout(realArgs.get(0), realArgs.get(1), true);
+                break;
+            case MODE_READ_CUSTOMIZATIONS:
+                readCustomizations(PATH_ORIGINALS_KERNEL + "kaizou.bin", true);
+                readCustomizations(PATH_ORIGINALS_KERNEL + "sum_grow.bin", true);
                 break;
             case MODE_READ_STRING_FILE:
                 for (String filename : realArgs) {

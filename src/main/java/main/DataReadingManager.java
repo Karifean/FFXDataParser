@@ -63,6 +63,8 @@ public class DataReadingManager {
         DataAccess.OSG_LAYOUT = readSphereGridLayout(PATH_ABMAP + "dat01.dat", PATH_ABMAP + "dat09.dat", false);
         DataAccess.SSG_LAYOUT = readSphereGridLayout(PATH_ABMAP + "dat02.dat", PATH_ABMAP + "dat10.dat", false);
         DataAccess.ESG_LAYOUT = readSphereGridLayout(PATH_ABMAP + "dat03.dat", PATH_ABMAP + "dat11.dat", false);
+        DataAccess.GEAR_CUSTOMIZATIONS = readCustomizations(PATH_ORIGINALS_KERNEL + "kaizou.bin", false);
+        DataAccess.AEON_CUSTOMIZATIONS = readCustomizations(PATH_ORIGINALS_KERNEL + "sum_grow.bin", false);
     }
 
     public static void prepareAbilities() {
@@ -296,6 +298,16 @@ public class DataReadingManager {
             return null;
         }
         ItemShopDataObject[] array = new ItemShopDataObject[list.size()];
+        return list.toArray(array);
+    }
+
+    public static CustomizationDataObject[] readCustomizations(String filename, boolean print) {
+        DataFileReader<CustomizationDataObject> reader = new DataFileReader<>(CustomizationDataObject::new);
+        List<CustomizationDataObject> list = reader.readGenericDataFile(filename, print);
+        if (list == null) {
+            return null;
+        }
+        CustomizationDataObject[] array = new CustomizationDataObject[list.size()];
         return list.toArray(array);
     }
 
