@@ -306,6 +306,10 @@ public abstract class ScriptConstants {
         putSaveDataVariable(0x01D2, "OmegaRuinsProgressionFlags", "int");
         putSaveDataVariable(0x01D4, "HomeProgressionFlags", "int");
         putSaveDataVariable(0x0205, "ThunderPlainsProgressionFlags", "int");
+        putSaveDataVariable(0x0208, "LightningDodgingRewardsToPickUpFlags", "int");
+        putSaveDataVariable(0x0210, "LightningDodgingTotalBolts", "int");
+        putSaveDataVariable(0x0212, "LightningDodgingTotalDodges", "int");
+        putSaveDataVariable(0x0214, "LightningDodgingHighestConsecutiveDodges", "int"); // 440
         putSaveDataVariable(0x024C, "BlitzballWakkaPowerProgress", "int");
         putSaveDataVariable(0x0A00, "GameMoment", "int");
         putSaveDataVariable(0x0A34, "GilLentToOAka", "int");
@@ -591,7 +595,7 @@ public abstract class ScriptConstants {
         putEnum("btlActor", -24, null, "CHR_ALL_PLAYER2"); // 0xFFE8
         putEnum("btlActor", -23, "AllCharsAndAeons", "CHR_ALL_PLAYER"); // 0xFFE9
         putEnum("btlActor", -22, null, "CHR_PARENT"); // 0xFFEA
-        putEnum("btlActor", -21, "AllChars", "CHR_ALL2"); // 0xFFEB
+        putEnum("btlActor", -21, "AllActors?", "CHR_ALL2"); // 0xFFEB
         putEnum("btlActor", -20, "AllAeons", "CHR_ALL_SUMMON"); // 0xFFEC
         putEnum("btlActor", -19, null, "CHR_ALL_PLY2"); // 0xFFED
         putEnum("btlActor", -18, null, "CHR_INPUT"); // 0xFFEE

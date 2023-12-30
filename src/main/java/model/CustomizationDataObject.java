@@ -38,7 +38,8 @@ public class CustomizationDataObject implements Nameable {
         if (customizedAbility >= 0x1000) {
             GearAbilityDataObject gearAbility = DataAccess.getGearAbility(customizedAbility);
             AbilityDataObject move = DataAccess.getMove(customizedAbility);
-            String result = gearAbility != null ? gearAbility.getName() : move != null ? move.getName() : "null";
+            Nameable relevantNameable = gearAbility != null ? gearAbility : move != null ? move : () -> "null";
+            String result = relevantNameable.getName() + " [" + String.format("%04X", customizedAbility) + "h]";
             String costString = requiredItemQuantity + "x " + asMove(requiredItemType);
             return customizeTarget + " - " + result + ": " + costString;
         } else {

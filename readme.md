@@ -37,6 +37,9 @@ You can then run the parser with the following command:
 | `READ_MONSTER_LOCALIZATIONS`     | | Prints localized strings for monsters (from `monster1/2/3.bin`) |
 | `READ_WEAPON_FILE`           | `<file1> [<file2>] ...` | Reads weapons from a dedicated weapon file (known valid target files are `weapon.bin`, `buki_get.bin`, `shop_arms.bin`) |
 | `READ_STRING_FILE`              | `<file1> [<file2>] ...` | Reads all strings (indexed) from a dedicated string file                                                           |
+| `READ_SPHERE_GRID_NODE_TYPES`              | | Reads types of spheres and nodes on the sphere grid (from `sphere.bin` and `panel.bin`) |
+| `READ_SPHERE_GRID_LAYOUT`              | `<layoutFile, ex: dat02.dat> <nodeContentsFile, ex: dat10.dat>` | Reads out a sphere grid's layout including its actual node contents. |
+| `READ_CUSTOMIZATIONS`              | | Reads customizations for gear and aeons. (from `kaizou.bin` and `sum_grow.bin`) |
 | `PARSE_SCRIPT_FILE`     | `<file/folder1> [<file/folder2>] ...` | Reads the script from a file and prints it to the console. If given a folder, recurses through all script files within. |
 | `PARSE_MONSTER`            | `<mIndex1, ex: 234> [<mIndex2, ex: 235>] ...` | Reads the monster files with the given decimal index and prints their information. |
 | `PARSE_ENCOUNTER`          | `<btlIndex1, ex: sins04_07> [<btlIndex2, ex: zzzz03_33>] ...` | Reads the encounter files with the given name and prints their information. | 
