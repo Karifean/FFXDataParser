@@ -3,6 +3,7 @@ package script.model;
 import script.ScriptObject;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -19,7 +20,22 @@ public class ScriptVariable {
     public final int unknownTopBytes;
     public final List<StackObject> values = new ArrayList<>();
 
-    public ScriptVariable(int index, int lb, int hb) {
+    public ScriptWorker parentWorker;
+
+    public static int[] byteStructFromDescriptor(ScriptWorker parentWorker, int value, int length) {
+        if (parentWorker == null || parentWorker.parentScript == null) {
+            return null;
+        }
+        ScriptVariable scriptVariable = new ScriptVariable(parentWorker, 0, value, 1);
+        int offset = scriptVariable.getDataOffset();
+        if (offset < 0) {
+            return null;
+        }
+        return Arrays.copyOfRange(parentWorker.parentScript.getBytes(), offset, offset + length);
+    }
+
+    public ScriptVariable(ScriptWorker parentWorker, int index, int lb, int hb) {
+        this.parentWorker = parentWorker;
         this.index = index;
         this.lb = lb;
         this.hb = hb;
@@ -32,6 +48,7 @@ public class ScriptVariable {
     }
 
     public ScriptVariable(ScriptVariable vr) {
+        this.parentWorker = vr.parentWorker;
         this.index = vr.index;
         this.lb = vr.lb;
         this.hb = vr.hb;
@@ -47,11 +64,24 @@ public class ScriptVariable {
         return format < 2 ? 1 : (format < 4 ? 2 : 4);
     }
 
-    public void parseValues(ScriptObject script, int[] bytes, int outerOffset) {
-        if (location != 3 && location != 4) {
+    public int getDataOffset() {
+        if (location == 3) {
+            return parentWorker.privateDataOffset;
+        } else if (location == 4) {
+            return parentWorker.sharedDataOffset;
+        } else if (location == 6) {
+            return parentWorker.parentScript.eventDataOffset;
+        }
+        return -1;
+    }
+
+    public void parseValues() {
+        if (location != 3 && location != 4 && location != 6) {
             return;
         }
-        int valueLocation = outerOffset + offset;
+        int dataOffset = getDataOffset();
+        int[] bytes = parentWorker.parentScript.getBytes();
+        int valueLocation = dataOffset + offset;
         int length = getLength();
         if (bytes.length < valueLocation + length) {
             return;
@@ -59,7 +89,7 @@ public class ScriptVariable {
         for (int i = 0; i < elementCount; i++) {
             String type = formatToType();
             int value = 0;
-            if (outerOffset > 0) {
+            if (dataOffset > 0) {
                 value += bytes[valueLocation + i * length];
                 if (length > 1) {
                     value += bytes[valueLocation + 1 + i * length] * 0x100;
@@ -68,7 +98,8 @@ public class ScriptVariable {
                     }
                 }
             }
-            StackObject obj = new StackObject(script, null, type, false, null, value);
+            String content = value + " [" + String.format("%04X", value) + "h]";
+            StackObject obj = new StackObject(parentWorker, null, type, false, content, value);
             values.add(obj);
         }
     }
@@ -203,7 +234,7 @@ public class ScriptVariable {
             case 4 -> "uint32";
             case 5 -> "int32";
             case 6 -> "float";
-            default -> "unknown:" + format;
+            default -> "unknown";
         };
     }
 }

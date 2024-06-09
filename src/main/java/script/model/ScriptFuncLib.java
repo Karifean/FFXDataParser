@@ -270,20 +270,22 @@ public abstract class ScriptFuncLib {
         putUnknownFunc(0x0116, 1);
         putUnknownFunc(0x0117, 1);
         putUnknownFunc(0x0119, 1);
-        putUnknownFunc(0x011A, 3);
-        putUnknownFunc(0x011B, 2);
-        putUnknownFunc(0x011C, 1);
-        putUnknownFunc(0x011D, 2);
-        putUnknownFunc(0x011F, 3);
-        putUnknownFunc(0x0120, 3);
+        putFuncWithIdx(0x011A, new ScriptFunc(p("p1", "sprite"), p(2), p("p3", "sprite")));
+        putFuncWithIdx(0x011B, new ScriptFunc("setSplashSprite", "unknown", null, p("splashIndex", "int"), p("sprite")));
+        putFuncWithIdx(0x011C, new ScriptFunc("hide?Splash", "unknown", null, p("splashIndex", "int")));
+        putFuncWithIdx(0x011D, new ScriptFunc("?setSplashAlpha", "unknown", null, p("splashIndex", "int"), p("alpha", "int")));
+        // 011E sets a brightness value of splash
+        putFuncWithIdx(0x011F, new ScriptFunc("?setSplashPosition", "unknown", null, p("splashIndex", "int"), p("x?", "int"), p("y?", "int")));
+        putFuncWithIdx(0x0120, new ScriptFunc("scale?Splash", "unknown", null, p("splashIndex", "int"), p("scaleX?", "float"), p("scaleY?", "float")));
         putFuncWithIdx(0x0121, new ScriptFunc("movementStickTilt?", "int", null, p("axis", "int")));
         putUnknownFunc(0x0122, 1);
         putFuncWithIdx(0x0126, new ScriptFunc("warpToPoint", "float", null, p("x", "float"), p("y", "float"), p("z", "float")));
         putUnknownFunc(0x0127, 1);
         putUnknownFunc(0x0128, 2);
-        putUnknownFunc(0x0129, 4);
+        putFuncWithIdx(0x0129, new ScriptFunc("?setSplashColor", "unknown", null, p("splashIndex", "int"), p("r?", "int"), p("g?", "int"), p("b?", "int")));
         putUnknownFunc(0x012A, 2);
-        putFuncWithIdx(0x012B, new ScriptFunc("workerWithinRadius", "bool", null, p("worker"), p("radius", "int")));
+        putUnknownFunc(0x012B, 1);
+        // putFuncWithIdx(0x012B, new ScriptFunc("workerWithinRadius", "bool", null, p("worker"), p("radius", "int"))); // Not sure how this happened, but this seems to be wrong. It's a 1 argument function for sure.
         putFuncWithIdx(0x012D, new ScriptFunc("GetAffectionValue", "int", null, p("char")));
         putFuncWithIdx(0x012E, new ScriptFunc("IncreaseAffectionValue", "unknown", null, p("char"), p("amount", "int")));
         putFuncWithIdx(0x012F, new ScriptFunc("DecreaseAffectionValue", "unknown", null, p("char"), p("amount", "int"))); // Never used, will set to 0 if it would go negative
@@ -605,7 +607,7 @@ public abstract class ScriptFuncLib {
         putUnknownFunc(0x503F, 1);
         putFuncWithIdx(0x5040, new ScriptFunc(p("motion")));
         putFuncWithIdx(0x5042, new ScriptFunc(p("motion"), p(2), p(3), p(4), p(5)));
-        putUnknownFunc(0x5044, 6);
+        putFuncWithIdx(0x5044, new ScriptFunc(p(1), p("motion"), p(3), p(4), p(5), p(6)));
         putUnknownFunc(0x5046, 6);
         putUnknownFunc(0x5047, 2);
         putUnknownFunc(0x5048, 2);
@@ -813,7 +815,7 @@ public abstract class ScriptFuncLib {
         putUnknownFunc(0x7006, "btlDirBasic", 2);
         putFuncWithIdx(0x7007, new ScriptFunc("startMotion?", "unknown", "btlSetMotion", p("stdmotion")));
         putFuncWithIdx(0x7008, new ScriptFunc("awaitMotion?", "unknown", "btlWaitMotion", true));
-        putFuncWithIdx(0x7009, new ScriptFunc("setGravity?", "unknown", "btlSetGravity", p("bool")));
+        putFuncWithIdx(0x7009, new ScriptFuncAccessor("setSelfGravity", null, "btlSetGravity", "=", p("AffectedByGravity", "bool")));
         putFuncWithIdx(0x700A, new ScriptFunc("setHeight?", "unknown", "btlSetHeight", p("int"), p("float")));
         putFuncWithIdx(0x700B, new ScriptFunc("performMove", "bool", "btlSetDirectCommand", p("target", "btlActor"), p("move")));
         putUnknownFunc(0x700C, "btlMove", 8);
@@ -911,7 +913,7 @@ public abstract class ScriptFuncLib {
         putUnknownFunc(0x7068, "btlVoiceSync", 0);
         putUnknownFunc(0x7069, "btlSearchChrCamera", 4);
         putUnknownFunc(0x706A, "btlCheckTargetOwn", 1);
-        putUnknownFunc(0x706B, "btlSetModelHide", 3);
+        putFuncWithIdx(0x706B, new ScriptFunc(null, "unknown", "btlSetModelHide", p("btlActor"), p("part", "int"), p("show?", "bool")));
         putUnknownFunc(0x706C, "btlSoundEffectNormal", 2);
         putUnknownFunc(0x706D, "btlSoundStreamNormal", 2);
         putUnknownFunc(0x706E, "btlReqVoice", 2);
@@ -949,7 +951,7 @@ public abstract class ScriptFuncLib {
         putUnknownFunc(0x708E, "btlCheckBtlPos2", 0);
         putUnknownFunc(0x708F, "btlDirPosBasic", 1);
         putUnknownFunc(0x7090, "btlSetCriticalEffect", 1);
-        putUnknownFunc(0x7091, "btlChangeChrName", 2);
+        putFuncWithIdx(0x7091, new ScriptFunc("changeActorNameToCharName", "unknown", "btlChangeChrName", p("btlActor"), p("playerChar")));
         putUnknownFunc(0x7092, "btlGetGroundDist", 1);
         putUnknownFunc(0x7093, "btlCheckDirFlag", 0);
         putUnknownFunc(0x7094, "btlSetTransVisible", 3);
@@ -972,7 +974,7 @@ public abstract class ScriptFuncLib {
         putUnknownFunc(0x70A5, "btlSetMapCenter", 3);
         putUnknownFunc(0x70A6, "btlSetEscape", 1);
         putUnknownFunc(0x70A7, "btlGetMotionData", "float", 2);
-        putUnknownFunc(0x70A8, "btlSetMotionData", 3);
+        putFuncWithIdx(0x70A8, new ScriptFuncAccessor("setMotionValue", "btlActor", "btlSetMotionData", "=", "motionProperty"));
         putUnknownFunc(0x70A9, "btlmeswait_voice", 1);
         putFuncWithIdx(0x70AA, new ScriptFuncAccessor("readBattleActorProperty2", null, "btlGetStat2", null, "btlActorProperty"));
         putFuncWithIdx(0x70AB, new ScriptFuncAccessor("setBattleActorProperty2", null, "btlSetStat2", "=", "btlActorProperty"));
@@ -1057,13 +1059,13 @@ public abstract class ScriptFuncLib {
         putUnknownFunc(0x70FA, "btlSetMegasRandomCommand", 1);
         putFuncWithIdx(0x70FB, new ScriptFunc(null, "btlActor", "btlGetCommandTargetSearch", p("move"), p(2), p(3), p(4), p(5)));
         putUnknownFunc(0x70FC, "btlGetMegasRandomCommand", 0);
-        putUnknownFunc(0x70FD, "btlSetUpLimit", 2);
-        putUnknownFunc(0x70FE, "btlSetUpLimit2", 4);
+        putFuncWithIdx(0x70FD, new ScriptFunc("increaseMagusMotivationAndOverdrive", "unknown", "btlSetUpLimit", p("overdrive", "int"), p("motivation", "int")));
+        putFuncWithIdx(0x70FE, new ScriptFunc(null, "unknown", "btlSetUpLimit2", p(1), p(2), p("overdrive", "int"), p("motivation", "int")));
         putUnknownFunc(0x70FF, "btlSetDeltaTarget", 0);
         putUnknownFunc(0x7100, "btlCheckReqMotion", 1);
         putUnknownFunc(0x7101, "btlGetFullCommand", 0);
         putFuncWithIdx(0x7102, new ScriptFunc("makeActorHeadFaceActor?", "unknown", "btlFaseTarget", p("btlActor"), p("target","btlActor")));
-        putUnknownFunc(0x7103, "btlFaseTargetXYZ", 4);
+        putFuncWithIdx(0x7103, new ScriptFunc("makeActorHeadFacePoint?", "unknown", "btlFaseTargetXYZ", p("btlActor"), p("x", "float"), p("y", "float"), p("z", "float")));
         putUnknownFunc(0x7104, "btlSetCommandEffect", 3);
         putFuncWithIdx(0x7104, new ScriptFunc("changeMoveAnimation", "unknown", "btlSetCommandEffect", p("move"), p("anim1", "int"), p("anim2", "int")));
         putUnknownFunc(0x7105, "btlWaitStone", 0);

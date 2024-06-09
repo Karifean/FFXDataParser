@@ -40,7 +40,10 @@ public class ScriptWorker {
     private Integer purposeSlot;
     private int[] purposeBytes;
 
-    public ScriptWorker(int workerIndex, int[] bytes) {
+    public ScriptObject parentScript;
+
+    public ScriptWorker(ScriptObject parentScript, int workerIndex, int[] bytes) {
+        this.parentScript = parentScript;
         this.workerIndex = workerIndex;
         eventWorkerType = read2Bytes(bytes,0x00);
         variablesCount = read2Bytes(bytes,0x02);
@@ -103,7 +106,7 @@ public class ScriptWorker {
         return Arrays.stream(jumps).map(j -> "j" + String.format("%02X", j.jumpIndex) + "=" + String.format("%04X", j.addr)).collect(Collectors.joining(" "));
     }
 
-    public void setVariableInitialValues(ScriptObject script, int[] bytes) {
+    public void setVariableInitialValues() {
         if (variableDeclarations == null || variableDeclarations.length == 0) {
             return;
         }
@@ -120,8 +123,8 @@ public class ScriptWorker {
                 sharedVars.add(new ScriptVariable(vr));
             }
         }
-        privateVars.forEach(p -> p.parseValues(script, bytes, privateDataOffset));
-        sharedVars.forEach(s -> s.parseValues(script, bytes, sharedDataOffset));
+        privateVars.forEach(p -> p.parseValues());
+        sharedVars.forEach(s -> s.parseValues());
     }
 
     public void setBattleWorkerTypes(int battleWorkerType, int valueCount, int[] payload) {

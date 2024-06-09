@@ -119,7 +119,7 @@ public class GearAbilityDataObject implements Nameable {
     int byte67usually14;
     public int groupIndex;
     public int groupLevel;
-    int internationalBonusIndex;
+    int internationalBonusIndex; // 1/2/3/4 on Distil Pw/Mn/Sp/Ab, 255 on Ribbon, 254 on everything superceded by Ribbon
 
     boolean sosFlag;
     boolean autoDeath;
@@ -466,7 +466,7 @@ public class GearAbilityDataObject implements Nameable {
         list.add(statIncrease());
         list.add(autoBuffs());
         list.add(grouping());
-        list.add(ifG0(internationalBonusIndex, "Duration?=", ""));
+        list.add(ifG0(internationalBonusIndex, "InternationalBonus?=", ""));
         if (byte67usually14 != 0x14) {
             list.add("Byte68=" + byte67usually14);
         }

@@ -140,8 +140,8 @@ public class MonsterSpoilsDataObject {
             String gearGeneral = " Formula=" + gearDamageFormula +
                     ", Power=" + gearAttackPower +
                     ", Crit=" + gearCritBonus +
-                    "%, Slots=" + getRandomCountString(gearSlotCountByte, false) +
-                    ", Ability Rolls=" + getRandomCountString(gearAbilityCountByte, true);
+                    "%, Slots=" + getRandomCountString(gearSlotCountByte, true) +
+                    ", Ability Rolls=" + getRandomCountString(gearAbilityCountByte, false);
             list.add(gearGeneral);
             if (gearAbilityCountByte > 0) {
                 list.add(gearAbilityString());
@@ -152,15 +152,15 @@ public class MonsterSpoilsDataObject {
         return full;
     }
 
-    private static String getRandomCountString(int countByte, boolean isAbilityRoll) {
-        double multiplier = isAbilityRoll ? 0.125 : 0.25;
+    private static String getRandomCountString(int countByte, boolean isSlotCountRoll) {
+        double multiplier = isSlotCountRoll ? 0.25 : 0.125;
         double min = (countByte - 4) * multiplier;
         double max = (countByte + 3) * multiplier;
-        if (min >= 4) {
+        if (isSlotCountRoll && min >= 4) {
             return "4";
         }
         if (max < 2) {
-            if (!isAbilityRoll) {
+            if (isSlotCountRoll) {
                 return "1";
             } else if (max < 1) {
                 return "0";

@@ -11,6 +11,7 @@ import java.util.stream.Collectors;
 
 public class StackObject {
     public ScriptObject parentScript;
+    public ScriptWorker parentWorker;
     public ScriptInstruction parentInstruction;
     public String type;
     public boolean expression;
@@ -19,8 +20,9 @@ public class StackObject {
     public boolean maybeBracketize = false;
     public Integer referenceIndex;
 
-    public StackObject(ScriptObject script, ScriptInstruction instruction, String type, boolean expression, String content, int value) {
-        this.parentScript = script;
+    public StackObject(ScriptWorker worker, ScriptInstruction instruction, String type, boolean expression, String content, int value) {
+        this.parentWorker = worker;
+        this.parentScript = worker.parentScript;
         this.parentInstruction = instruction;
         this.type = type;
         this.expression = expression;
@@ -29,6 +31,7 @@ public class StackObject {
     }
 
     public StackObject(String type, StackObject obj) {
+        this.parentWorker = obj.parentWorker;
         this.parentScript = obj.parentScript;
         this.parentInstruction = obj.parentInstruction;
         // direct values should never be type-cast to float as the format will just be wrong.
@@ -73,6 +76,10 @@ public class StackObject {
             }
             if ("var".equals(type)) {
                 return parentScript != null ? parentScript.getVariableLabel(value) : ("var" + hex);
+            }
+            if ("varDescriptor".equals(type)) {
+                ScriptVariable scriptVariable = new ScriptVariable(parentWorker, 0, value, 1);
+                return scriptVariable.getDereference();
             }
             if ("encounter".equals(type)) {
                 int field = (value & 0xFFFF0000) >> 16;

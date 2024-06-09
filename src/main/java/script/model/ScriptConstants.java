@@ -14,7 +14,7 @@ public abstract class ScriptConstants {
     public static List<Integer> OPCODE_ENDLINE;
     public static final Map<String, Map<Integer, ScriptField>> ENUMERATIONS = new HashMap<>();
     public static final Map<Integer, ScriptField> COMP_OPERATORS = new HashMap<>();
-    public static final List<String> INDEX_ENUMS_ONLY = List.of("saveData", "commonVar");
+    public static final List<String> INDEX_ENUMS_ONLY = List.of("var", "saveData", "commonVar");
 
     private static boolean initialized = false;
 
@@ -316,6 +316,7 @@ public abstract class ScriptConstants {
         putSaveDataVariable(0x0A38, "MacalaniaPricesChosenForOAka", "int");
         putSaveDataVariable(0x0A4A, "SaveSphereInstructionsSeen", "int");
         putSaveDataVariable(0x0A60, "AlBhedPrimersCollectedCount", "int");
+        putSaveDataVariable(0x0A83, "isRedButterflyEncounter", "bool");
         putSaveDataVariable(0x0A88, "BlitzballTeamPlayerCount", "int", "blitzballTeam");
         putSaveDataVariable(0x0A93, "JechtSpheresCollectedCount", "int");
         putSaveDataVariable(0x0A95, "AirshipDestinationUnlocks", "int");
@@ -381,6 +382,29 @@ public abstract class ScriptConstants {
         putEnum("blitzballPlayer", 0x04, "Jassu");
         putEnum("blitzballPlayer", 0x05, "Botta");
         putEnum("blitzballPlayer", 0x06, "Keepa");
+        putEnum("blitzballPlayer", 0x25, "Rin");
+        putEnum("blitzballPlayer", 0x26, "Tatts");
+        putEnum("blitzballPlayer", 0x27, "Kyou");
+        putEnum("blitzballPlayer", 0x28, "Shuu");
+        putEnum("blitzballPlayer", 0x29, "Nedus");
+        putEnum("blitzballPlayer", 0x2A, "Biggs");
+        putEnum("blitzballPlayer", 0x2B, "Wedge");
+        putEnum("blitzballPlayer", 0x2C, "Ropp");
+        putEnum("blitzballPlayer", 0x2D, "Linna");
+        putEnum("blitzballPlayer", 0x2E, "Mep");
+        putEnum("blitzballPlayer", 0x2F, "Zalitz");
+        putEnum("blitzballPlayer", 0x30, "Naida");
+        putEnum("blitzballPlayer", 0x31, "Durren");
+        putEnum("blitzballPlayer", 0x32, "Jumal");
+        putEnum("blitzballPlayer", 0x33, "Svanda");
+        putEnum("blitzballPlayer", 0x34, "Vilucha");
+        putEnum("blitzballPlayer", 0x35, "Shaami");
+        putEnum("blitzballPlayer", 0x36, "Zev Ronso");
+        putEnum("blitzballPlayer", 0x37, "Yuma Guado");
+        putEnum("blitzballPlayer", 0x38, "Kiyuri");
+        putEnum("blitzballPlayer", 0x39, "Brother");
+        putEnum("blitzballPlayer", 0x3A, "Mifurey");
+        putEnum("blitzballPlayer", 0x3B, "Miyu");
         putEnum("blitzballPlayer", 0x3C, "<Empty>");
 
         putEnum("blitzballTeam", 0x00, "Luca Goers");
