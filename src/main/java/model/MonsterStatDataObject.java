@@ -85,7 +85,7 @@ public class MonsterStatDataObject {
     int forcedAction;
     int monsterIdx;
     int modelIdx;
-    int ctbIconTypeMaybe;
+    int ctbIconType;
     int doomCounter;
     int monsterArenaIdx;
     int modelIdxOther;
@@ -258,7 +258,7 @@ public class MonsterStatDataObject {
         forcedAction = read2Bytes(bytes, 0x70);
         monsterIdx = read2Bytes(bytes, 0x72);
         modelIdx = read2Bytes(bytes, 0x74);
-        ctbIconTypeMaybe = bytes[0x76];
+        ctbIconType = bytes[0x76];
         doomCounter = bytes[0x77];
         monsterArenaIdx = read2Bytes(bytes, 0x78);
         modelIdxOther = read2Bytes(bytes, 0x7A);
@@ -403,7 +403,7 @@ public class MonsterStatDataObject {
             list.add("Forced Action: Skip Turn");
         }
         list.add("Doom Counter=" + doomCounter);
-        list.add("CTB Icon Type?=" + ctbIconTypeMaybe + " [" + String.format("%02X", ctbIconTypeMaybe) + "h]");
+        list.add("CTB Icon Type=" + StackObject.enumToString("ctbIconType", ctbIconType));
         if (monsterArenaIdx != 0xFF) {
             list.add("Captured Monster Index=" + monsterArenaIdx + " [" + String.format("%02X", monsterArenaIdx) + "h]");
         } else {

@@ -141,7 +141,7 @@ public class AbilityDataObject implements Nameable {
     boolean targetFlagLongRange;
     boolean onTopLevelInMenu;
     boolean opensSubMenu;
-    boolean byte1Fbit01;
+    boolean canChargeOverdriveViaWarriorOrHealerProbably;
     boolean emptiesOverdriveBar;
     boolean showSpellcastAura;
     boolean userRunsOffScreen;
@@ -369,7 +369,7 @@ public class AbilityDataObject implements Nameable {
         useTier3CastAnimation = (miscProperties1E & 0x20) > 0;
         destroyCaster = (miscProperties1E & 0x40) > 0;
         missIfAlive = (miscProperties1E & 0x80) > 0;
-        byte1Fbit01 = (animationProperties1F & 0x01) > 0;
+        canChargeOverdriveViaWarriorOrHealerProbably = (animationProperties1F & 0x01) > 0;
         emptiesOverdriveBar = (animationProperties1F & 0x02) > 0;
         showSpellcastAura = (animationProperties1F & 0x04) > 0;
         userRunsOffScreen = (animationProperties1F & 0x08) > 0;
@@ -474,8 +474,11 @@ public class AbilityDataObject implements Nameable {
         list.add(ifG0(costOD, "Overdrive (", "p)"));
         list.add(ifNN(overdriveCharacter, "OD-User=", ""));
         list.add(ifG0(overdriveCategory, "OD-Choice=", ""));
+        list.add(emptiesOverdriveBar ? "Empties OD gauge" : "");
+        list.add(canChargeOverdriveViaWarriorOrHealerProbably ? "Charges OD (Warrior/Healer)" : "");
         list.add(isPiercing ? "Piercing" : "");
         list.add("Hit%=" + hitChance() + (hitCalcUsesTable ? " (uses Table)" : ""));
+        list.add(missIfAlive ? "Only hits Dead" : "");
         list.add(affectedByDarkness ? "Darkable" : "");
         list.add(disableWhenSilenced ? "Silenceable" : "");
         list.add(canBeReflected ? "Reflectable" : "");

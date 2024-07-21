@@ -641,6 +641,19 @@ public abstract class ScriptConstants {
         putEnum("btlActor", -2, "ActiveActors", "CHR_ACTIVE"); // 0xFFFE
         putEnum("btlActor", -1, "Actor:Null", "CHR_NOP"); // 0xFFFF
 
+        for (int i = 0; i <= 0x0013; i++) {
+            getEnumMap("ctbIconType").put(i, getEnumMap("playerChar").get(i));
+        }
+        putEnum("ctbIconType", 0x14, "Monster");
+        putEnum("ctbIconType", 0x15, "Boss (not numbered)");
+        putEnum("ctbIconType", 0x16, "Boss (numbered)");
+        putEnum("ctbIconType", 0x17, "Cid");
+
+        putEnum("invisWallState", 0x00, "Intangible");
+        putEnum("invisWallState", 0x01, "Block All");
+        putEnum("invisWallState", 0x02, "Block NPC Only");
+        putEnum("invisWallState", 0x0E, "Block Player Only");
+
         putMotionProperty(0x00, null, "motion_attack_start_dist");
         putMotionProperty(0x01, null, "motion_attack_offset");
         putMotionProperty(0x02, null, "motion_move_backjump_dist");

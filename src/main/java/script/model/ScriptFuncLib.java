@@ -531,7 +531,7 @@ public abstract class ScriptFuncLib {
         putUnknownFunc(0x4014, 1);
         putUnknownFunc(0x4015, 2);
         putUnknownFunc(0x4016, 2);
-        putUnknownFunc(0x4017, 2);
+        putFuncWithIdx(0x4017, new ScriptFunc("setInvisibleWallState", "unknown", null, p("polygonGroup", "int"), p("state", "invisWallState")));
         putUnknownFunc(0x4019, 1);
         putFuncWithIdx(0x401A, new ScriptFunc("cameraCrossFade", "unknown", null, p("frames", "int"), p("alpha", "int")));
         putUnknownFunc(0x401B, 1);
