@@ -17,6 +17,15 @@ public abstract class ChunkedFileHelper {
         return null;
     }
 
+    public static List<Chunk> readGenericChunkedFile(String filename, boolean print, List<Integer> knownLengths, int chunkCount) {
+        File file = FileAccessorWithMods.resolveFile(filename, print);
+        if (!file.isDirectory()) {
+            int[] bytes = fileToBytes(file);
+            return bytesToChunks(bytes, chunkCount, 0, knownLengths);
+        }
+        return null;
+    }
+
     private static int read4Bytes(int[] bytes, int offset) {
         if (bytes == null) {
             return 0;

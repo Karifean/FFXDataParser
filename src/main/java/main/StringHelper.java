@@ -21,6 +21,7 @@ public abstract class StringHelper {
     public static final boolean COLORS_USE_CONSOLE_CODES = true;
     public static final Map<Integer, Character> BIN_LOOKUP = new HashMap<>();
     public static final Map<Character, Integer> BIN_REV_LOOKUP = new HashMap<>();
+    public static final Map<Integer, String> MACRO_LOOKUP = new HashMap<>();
 
     public static Integer charToByte(char chr) {
         return BIN_REV_LOOKUP.get(chr);
@@ -40,6 +41,10 @@ public abstract class StringHelper {
         } else {
             return "{CLR:" + byteToColor(hex) + '}';
         }
+    }
+
+    public static void putMacro(int index, String value) {
+        MACRO_LOOKUP.put(index, value);
     }
 
     public static String byteToColor(int hex) {
@@ -91,16 +96,21 @@ public abstract class StringHelper {
             return null;
         }
         int first = bytes[0x00] + bytes[0x01] * 0x100;
-        int second = bytes[0x04] + bytes[0x05] * 0x100;
-        boolean clones = first == second;
-        int count = first / (clones ? 0x08 : 0x04);
+        int length = 0x04;
+        boolean hasOptions = true;
+        if (first == bytes[0x02] + bytes[0x03] * 0x100) {
+            hasOptions = false;
+        } else if (first == bytes[0x04] + bytes[0x05] * 0x100) {
+            length = 0x08;
+        }
+        int count = first / length;
         List<String> strings = new ArrayList<>(count);
         try {
             for (int i = 0; i < count; i++) {
-                int addr = i * (clones ? 0x08 : 0x04);
+                int addr = i * length;
                 int offset = bytes[addr] + bytes[addr + 0x01] * 0x100;
                 int somethingElse = bytes[addr + 0x02];
-                int options = bytes[addr + 0x03];
+                int options = hasOptions ? bytes[addr + 0x03] : 0;
                 if (print) {
                     String choosable = options > 0 ? " (" + options + " selectable)" : "";
                     System.out.print("String #" + i + " [" + String.format("%04X", offset) + "h]" + choosable + ":");
@@ -110,7 +120,7 @@ public abstract class StringHelper {
                     System.out.println(out);
                 }
                 strings.add(out);
-                if (clones) {
+                if (length == 0x08) {
                     int clonedOffset = bytes[addr + 0x04] + bytes[addr + 0x05] * 0x100;
                     int clonedSomethingElse = bytes[addr + 0x06];
                     int clonedChoosableOptions = bytes[addr + 0x07];
@@ -162,8 +172,18 @@ public abstract class StringHelper {
             } else if (idx >= 0x13 && idx <= 0x22) {
                 int section = idx - 0x13;
                 offset++;
-                int line = table[offset];
-                out.append("{MCR:s").append(String.format("%02X", section)).append('l').append(String.format("%02X", line)).append('}');
+                int line = table[offset] - 0x30;
+                out.append("{MCR:s").append(String.format("%02X", section)).append('l').append(String.format("%02X", line));
+                if (!MACRO_LOOKUP.isEmpty()) {
+                    out.append(':');
+                    int index = section * 0x100 + line;
+                    if (MACRO_LOOKUP.containsKey(index)) {
+                        out.append('"').append(MACRO_LOOKUP.get(index)).append('"');
+                    } else {
+                        out.append("<Missing>");
+                    }
+                }
+                out.append('}');
             } else {
                 out.append('?');
             }

@@ -48,6 +48,7 @@ public class DataReadingManager {
     }
 
     public static void readAndPrepareDataModel() {
+        prepareStringMacros(false);
         DataAccess.SG_SPHERE_TYPES = readSphereGridSphereTypes(PATH_LOCALIZED_KERNEL + "sphere.bin", false);
         prepareAbilities();
         DataAccess.GEAR_ABILITIES = readGearAbilitiesFromFile(PATH_LOCALIZED_KERNEL + "a_ability.bin", false);
@@ -65,6 +66,18 @@ public class DataReadingManager {
         DataAccess.ESG_LAYOUT = readSphereGridLayout(PATH_ABMAP + "dat03.dat", PATH_ABMAP + "dat11.dat", false);
         DataAccess.GEAR_CUSTOMIZATIONS = readCustomizations(PATH_ORIGINALS_KERNEL + "kaizou.bin", false);
         DataAccess.AEON_CUSTOMIZATIONS = readCustomizations(PATH_ORIGINALS_KERNEL + "sum_grow.bin", false);
+    }
+
+    public static void prepareStringMacros(boolean print) {
+        List<Chunk> chunks = ChunkedFileHelper.readGenericChunkedFile(PATH_LOCALIZED_ROOT + "menu/macrodic.dcp", false, null, 16);
+        if (chunks == null) {
+            return;
+        }
+        MacroDictionaryFile macroDictionaryFile = new MacroDictionaryFile(chunks);
+        macroDictionaryFile.publishStrings();
+        if (print) {
+            System.out.println(macroDictionaryFile);
+        }
     }
 
     public static void prepareAbilities() {

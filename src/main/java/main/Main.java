@@ -31,6 +31,7 @@ public class Main {
     private static final String MODE_READ_SPHERE_GRID_NODE_TYPES = "READ_SPHERE_GRID_NODE_TYPES";
     private static final String MODE_READ_SPHERE_GRID_LAYOUT = "READ_SPHERE_GRID_LAYOUT";
     private static final String MODE_READ_CUSTOMIZATIONS = "READ_CUSTOMIZATIONS";
+    private static final String MODE_READ_MACROS = "READ_MACROS";
 
     public static void main(String[] args) {
         String pathRoot = args[0];
@@ -138,6 +139,9 @@ public class Main {
                 for (String filename : realArgs) {
                     StringHelper.readStringFile(filename, true);
                 }
+                break;
+            case MODE_READ_MACROS:
+                prepareStringMacros(true);
                 break;
             default:
                 break;

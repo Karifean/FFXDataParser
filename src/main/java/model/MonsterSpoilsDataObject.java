@@ -157,19 +157,18 @@ public class MonsterSpoilsDataObject {
         double min = (countByte - 4) * multiplier;
         double max = (countByte + 3) * multiplier;
         if (isSlotCountRoll && min >= 4) {
-            return "4";
-        }
-        if (max < 2) {
+            min = max = 4;
+        } else if (max < 2) {
             if (isSlotCountRoll) {
-                return "1";
+                min = max = 1;
             } else if (max < 1) {
-                return "0";
+                min = max = 0;
             }
         }
         if ((int) min == (int) max) {
-            return String.format("%s", (int) min);
+            return String.format("%s [%02Xh]", (int) min, countByte);
         }
-        return String.format("%s-%s", min, max);
+        return String.format("%s-%s [%02Xh]", min, max, countByte);
     }
 
     private String gearAbilityString() {
