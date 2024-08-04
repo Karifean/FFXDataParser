@@ -1,5 +1,6 @@
 package main;
 
+import model.KeyItemDataObject;
 import reading.ChunkedFileHelper;
 import reading.FileAccessorWithMods;
 
@@ -155,12 +156,16 @@ public abstract class StringHelper {
             } else if (idx == 0x09) {
                 offset++;
                 int varIdx = table[offset] - 0x30;
-                out.append("{09:").append(String.format("%02X", varIdx)).append('}');
+                out.append("{BOX:").append(String.format("%02X", varIdx)).append('}');
             } else if (idx == 0x0A) {
                 offset++;
                 int clr = table[offset];
                 out.append(getColorString(clr));
                 anyColorization = true;
+            } else if (idx == 0x0B) {
+                offset++;
+                int varIdx = table[offset] - 0x30;
+                out.append("{CTRL:").append(String.format("%02X", varIdx)).append('}');
             } else if (idx == 0x10) {
                 offset++;
                 int choiceIdx = table[offset] - 0x30;
@@ -182,6 +187,15 @@ public abstract class StringHelper {
                     } else {
                         out.append("<Missing>");
                     }
+                }
+                out.append('}');
+            } else if (idx == 0x23) {
+                offset++;
+                int varIdx = table[offset] - 0x30;
+                out.append("{KEY:").append(String.format("%02X", varIdx));
+                KeyItemDataObject keyItem = DataAccess.getKeyItem(varIdx + 0xA000);
+                if (keyItem != null) {
+                    out.append(':').append('"').append(keyItem.getName()).append('"');
                 }
                 out.append('}');
             } else {

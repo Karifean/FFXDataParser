@@ -406,7 +406,7 @@ public abstract class ScriptFuncLib {
         putUnknownFunc(0x01D1, 1);
         putFuncWithIdx(0x01D2, new ScriptFunc("enteredAirshipPasswordEquals", "bool", null, p("string")));
         putUnknownFunc(0x01D4, 2);
-        putUnknownFunc(0x01D9, 0);
+        putFuncWithIdx(0x01D9, new ScriptFunc("?insertRikkuName", "unknown", null, true));
         putUnknownFunc(0x01DA, 4);
         putUnknownFunc(0x01DC, 0);
         putUnknownFunc(0x01DE, 0);

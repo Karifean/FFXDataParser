@@ -9,6 +9,7 @@ import script.MonsterFile;
 public abstract class DataAccess {
     public static AbilityDataObject[] MOVES = new AbilityDataObject[0x10000];
     public static MonsterFile[] MONSTERS = new MonsterFile[0x1000];
+    public static PlayerCharStatDataObject[] PLAYER_CHAR_STATS;
     public static GearAbilityDataObject[] GEAR_ABILITIES;
     public static KeyItemDataObject[] KEY_ITEMS;
     public static TreasureDataObject[] TREASURES;

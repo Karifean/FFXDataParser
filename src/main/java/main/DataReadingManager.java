@@ -51,6 +51,7 @@ public class DataReadingManager {
         prepareStringMacros(false);
         DataAccess.SG_SPHERE_TYPES = readSphereGridSphereTypes(PATH_LOCALIZED_KERNEL + "sphere.bin", false);
         prepareAbilities();
+        DataAccess.PLAYER_CHAR_STATS = readPlayerCharStats(PATH_LOCALIZED_KERNEL + "ply_save.bin", false);
         DataAccess.GEAR_ABILITIES = readGearAbilitiesFromFile(PATH_LOCALIZED_KERNEL + "a_ability.bin", false);
         DataAccess.BUYABLE_GEAR = readWeaponPickups(PATH_ORIGINALS_KERNEL + "shop_arms.bin", false);
         DataAccess.WEAPON_PICKUPS = readWeaponPickups(PATH_ORIGINALS_KERNEL + "buki_get.bin", false);
@@ -124,6 +125,20 @@ public class DataReadingManager {
         }
         KeyItemDataObject[] array = new KeyItemDataObject[list.size()];
         return list.toArray(array);
+    }
+
+    public static PlayerCharStatDataObject[] readPlayerCharStats(String filename, boolean print) {
+        DataFileReader<PlayerCharStatDataObject> reader = new DataFileReader<>(PlayerCharStatDataObject::new);
+        List<PlayerCharStatDataObject> list = reader.readGenericDataFile(filename, print);
+        if (list == null) {
+            return null;
+        }
+        PlayerCharStatDataObject[] array = new PlayerCharStatDataObject[list.size()];
+        list.toArray(array);
+        for (int i = 0; i < array.length; i++) {
+            StringHelper.MACRO_LOOKUP.put(i, array[i].getName());
+        }
+        return array;
     }
 
     public static GearAbilityDataObject[] readGearAbilitiesFromFile(String filename, boolean print) {
