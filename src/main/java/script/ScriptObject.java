@@ -206,9 +206,11 @@ public class ScriptObject {
         }
         int notActuallySectionCount = battleWorkerMappingBytes[0];
         int preSectionLength = battleWorkerMappingBytes[1];
-        for (int i = 2; i < preSectionLength; i++) {
+        // map from section index to purpose slot
+        HashMap<Integer,Integer> slotMap = new HashMap();
+        for (int i = 2; i < preSectionLength+2; i++) {
             if (battleWorkerMappingBytes[i] != 0xFF) {
-                workers[battleWorkerMappingBytes[i]].setPurposeSlot(i - 2);
+                slotMap.put(battleWorkerMappingBytes[i], i-2);
             }
         }
         int sectionsLineOffset = preSectionLength + (preSectionLength % 2 == 0 ? 2 : 3);
@@ -226,6 +228,9 @@ public class ScriptObject {
             }
             int sectionValueCount = battleWorkerMappingBytes[sectionOffset] + battleWorkerMappingBytes[sectionOffset + 1] * 0x100;
             int sectionPayloadOffset = sectionOffset + 2;
+            if (slotMap.containsKey(i)) {
+                workers[header].setPurposeSlot(slotMap.get(i));
+            }
             workers[header].setBattleWorkerTypes(scriptKind, sectionValueCount, Arrays.copyOfRange(battleWorkerMappingBytes, sectionPayloadOffset, sectionPayloadOffset + sectionValueCount * 2));
         }
     }
