@@ -37,7 +37,7 @@ public class ScriptWorker {
     public List<ScriptVariable> sharedVars;
 
     public Integer battleWorkerType;
-    private Integer purposeSlot;
+    public Integer purposeSlot;
     private int[] purposeBytes;
 
     public ScriptObject parentScript;
@@ -75,10 +75,10 @@ public class ScriptWorker {
         List<String> list = new ArrayList<>();
         if (battleWorkerType != null) {
             list.add("Battle");
-            list.add("Type=" + battleWorkerTypeToString(battleWorkerType) + " [" + String.format("%02X", battleWorkerType) + "h]");
+            list.add("Type=" + StackObject.enumToString("battleWorkerType", battleWorkerType));
         } else {
             list.add("Event");
-            list.add("Type=" + eventWorkerTypeToString(eventWorkerType) + " [" + String.format("%02X", eventWorkerType) + "h]");
+            list.add("Type=" + StackObject.enumToString("eventWorkerType", eventWorkerType));
         }
         if (purposeSlot != null) {
             list.add("PurposeSlot=" + purposeSlotToString(purposeSlot) + " [" + String.format("%02X", purposeSlot) + "h]");
@@ -152,30 +152,6 @@ public class ScriptWorker {
             return null;
         }
         return StackObject.enumToScriptField("playerChar", purposeSlot - 0x2B);
-    }
-
-    public static String eventWorkerTypeToString(int eventWorkerType) {
-        return switch (eventWorkerType) {
-            case 0 -> "Subroutine";
-            case 1 -> "FieldObject";
-            case 2 -> "PlayerEdge";
-            case 3 -> "PlayerZone";
-            case 4 -> "Cutscene";
-            case 5 -> "Edge";
-            case 6 -> "Zone";
-            default -> "?" + String.format("%02X", eventWorkerType);
-        };
-    }
-
-    public static String battleWorkerTypeToString(int battleWorkerType) {
-        return switch (battleWorkerType) {
-            case 0 -> "CameraHandler";
-            case 1 -> "MotionHandler";
-            case 2 -> "CombatHandler";
-            case 4 -> "EncounterScripts";
-            case 6 -> "StartEndHooks";
-            default -> "?" + String.format("%02X", battleWorkerType);
-        };
     }
 
     public static String purposeSlotToString(int purposeSlot) {

@@ -1,5 +1,6 @@
 package script.model;
 
+import main.StringHelper;
 import reading.FileAccessorWithMods;
 
 import java.io.*;
@@ -314,6 +315,7 @@ public abstract class ScriptConstants {
         putSaveDataVariable(0x0A00, "GameMoment", "int");
         putSaveDataVariable(0x0A34, "GilLentToOAka", "int");
         putSaveDataVariable(0x0A38, "MacalaniaPricesChosenForOAka", "int");
+        putSaveDataVariable(0x0A3C, "JechtShotMinigameCleared", "bool");
         putSaveDataVariable(0x0A4A, "SaveSphereInstructionsSeen", "int");
         putSaveDataVariable(0x0A60, "AlBhedPrimersCollectedCount", "int");
         putSaveDataVariable(0x0A83, "isRedButterflyEncounter", "bool");
@@ -332,14 +334,23 @@ public abstract class ScriptConstants {
         putSaveDataVariable(0x0AA3, "DarkAnimaCompletionFlags", "int");
         putSaveDataVariable(0x0AA4, "DarkMagusSistersCompletionFlags", "int");
         putSaveDataVariable(0x0AA5, "PenanceUnlockState", "int");
+        putSaveDataVariable(0x1000, "?BlitzballPlayerLearnedTechsPage1", "blitzTechsP1Bitfield", "blitzballPlayer");
+        putSaveDataVariable(0x10F0, "?BlitzballPlayerLearnedTechsPage2", "blitzTechsP2Bitfield", "blitzballPlayer");
+        putSaveDataVariable(0x1266, "BlitzballPlayerEquippedTechs", "blitzTech"); // index = blitzballPlayer * 5 + 0..4
+        putSaveDataVariable(0x1392, "?BlitzballPlayerUnlockedTechSlots", "int", "blitzballPlayer");
+        putSaveDataVariable(0x13CE, "BlitzballPlayerCurrentLevel", "int", "blitzballPlayer");
+        putSaveDataVariable(0x1568, "BlitzballPlayerCurrentEXP", "int", "blitzballPlayer");
         putSaveDataVariable(0x141A, "BlitzballTeamPlayers", "blitzballPlayer");
         putSaveDataVariable(0x1465, "BlitzballEnemyTeam", "blitzballTeam");
         putSaveDataVariable(0x152A, "BlitzballPlayerContractDurations", "int", "blitzballPlayer");
+        putSaveDataVariable(0x1566, "BlitzballTotalGamesWon", "int");
         putSaveDataVariable(0x1798, "BlitzballPlayerCostPerGame", "int", "blitzballPlayer");
         putSaveDataVariable(0x1810, "BlitzballLeaguePrizeIndex", "int");
         putSaveDataVariable(0x1816, "BlitzballTournamentPrizeIndex", "int");
         putSaveDataVariable(0x181C, "BlitzballLeagueTopScorerPrizeIndex", "int");
         putSaveDataVariable(0x181E, "BlitzballTournamentTopScorerPrizeIndex", "int");
+        putSaveDataVariable(0x1820, "?BlitzballPlayerUncoveredTechsPage1", "blitzTechsP1Bitfield", "blitzballPlayer");
+        putSaveDataVariable(0x1910, "?BlitzballPlayerUncoveredTechsPage2", "blitzTechsP2Bitfield", "blitzballPlayer");
 
         putEnum("deathAnimation", 0x00, "Character (Body remains and targetable)", "death_normal");
         putEnum("deathAnimation", 0x01, "Boss (Body remains but untargetable)", "death_nop");
@@ -354,10 +365,10 @@ public abstract class ScriptConstants {
         putEnum("selector", 0x02, "Lowest");
         putEnum("selector", 0x80, "Not");
 
-        putEnum("ambushState", 0x00, "Randomized", "first_attack_normal");
+        putEnum("ambushState", 0x00, "Normal (00)", "first_attack_normal");
         putEnum("ambushState", 0x01, "Preemptive", "first_attack_player");
         putEnum("ambushState", 0x02, "Ambushed", "first_attack_monster");
-        putEnum("ambushState", 0x03, "Neither", "first_attack_random_off");
+        putEnum("ambushState", 0x03, "Normal (03)", "first_attack_random_off");
 
         putEnum("yojimboReaction", 0x00, "NullReaction");
         putEnum("yojimboReaction", 0x01, "Regular", "youjinbou_consent_pay");
@@ -369,11 +380,48 @@ public abstract class ScriptConstants {
         putEnum("targetType", 0x02, "AllActors?", "target_type_all");
         putEnum("targetType", 0x03, "Self?", "target_type_own");
 
+        putEnum("eventWorkerType", 0x00, "Subroutine");
+        putEnum("eventWorkerType", 0x01, "FieldObject");
+        putEnum("eventWorkerType", 0x02, "PlayerEdge");
+        putEnum("eventWorkerType", 0x03, "PlayerZone");
+        putEnum("eventWorkerType", 0x04, "Cutscene");
+        putEnum("eventWorkerType", 0x05, "Edge");
+        putEnum("eventWorkerType", 0x06, "Zone");
+
+        putEnum("battleWorkerType", 0x00, "CameraHandler");
+        putEnum("battleWorkerType", 0x01, "MotionHandler");
+        putEnum("battleWorkerType", 0x02, "CombatHandler");
+        putEnum("battleWorkerType", 0x04, "EncounterScripts");
+        putEnum("battleWorkerType", 0x06, "StartEndHooks");
+
         putEnum("controllerButton", 0x05, "X (Confirm)");
         putEnum("controllerButton", 0x12, "?Up");
         putEnum("controllerButton", 0x13, "?Right");
         putEnum("controllerButton", 0x14, "?Down");
         putEnum("controllerButton", 0x15, "?Left");
+
+        putEnum("stringVarType", 0x00, "?Resolved String");
+        putEnum("stringVarType", 0x01, "Immediate Integer");
+        for (int i = 0; i < 16; i++) {
+            putEnum("stringVarType", 0x13 + i, "MacroDict#" + i);
+        }
+        putEnum("stringVarType", 0x2B, "Immediate Integer (1 Digit?)");
+        putEnum("stringVarType", 0x2C, "Immediate Integer (2 Digits?)");
+        putEnum("stringVarType", 0x2D, "Immediate Integer (3 Digits?)");
+        putEnum("stringVarType", 0x2E, "Immediate Integer (4 Digits?)");
+        putEnum("stringVarType", 0x37, "Treasure Label");
+
+        for (int i = 0; i <= 60; i++) {
+            String name = StringHelper.MACRO_LOOKUP.get(0x800 + i);
+            putEnum("blitzTech", i, name);
+            if (i > 0) {
+                if (i < 31) {
+                    putEnum("blitzTechsP1Bitfield", 1 << i, name);
+                } else {
+                    putEnum("blitzTechsP2Bitfield", 1 << (i - 30), name);
+                }
+            }
+        }
 
         putEnum("blitzballPlayer", 0x00, "Tidus");
         putEnum("blitzballPlayer", 0x01, "Wakka");
@@ -564,6 +612,11 @@ public abstract class ScriptConstants {
         putEnum("sphereGrid", 0x01, "Standard Sphere Grid");
         putEnum("sphereGrid", 0x02, "Expert Sphere Grid");
 
+        putEnum("weakState", 0x00, "Normal");
+        putEnum("weakState", 0x01, "Slightly Weak");
+        putEnum("weakState", 0x02, "Very Weak");
+        putEnum("weakState", 0x03, "Dead");
+
         putEnum("achievement", 0x00, "Completion of FFX", "ACH_COMPLETION_OF_FFX");
         putEnum("achievement", 0x02, "Teamwork!", "ACH_TEAMWORK_OF_FFX");
         putEnum("achievement", 0x07, "Show Off!", "ACH_SHOW_OFF");
@@ -612,7 +665,7 @@ public abstract class ScriptConstants {
         putEnum("btlActor", 0x00FF, "Actor:None");
 
         for (int i = 0x1000; i <= 0x1200; i++) {
-            putEnum("btlActor", i, "Actors:MonsterType=" + String.format("%04X", i - 0x1000));
+            putEnum("btlActor", i, "Actors:MonsterType=m" + String.format("%03d", i - 0x1000));
         }
         putEnum("btlActor", -26, null, "CHR_OWN_TARGET0"); // 0xFFE6
         putEnum("btlActor", -25, null, "CHR_ALL_PLY3"); // 0xFFE7
@@ -673,7 +726,7 @@ public abstract class ScriptConstants {
         putBattleActorProperty(0x0005, "StatusPoison", "bool", "stat_poison");
         putBattleActorProperty(0x0006, "StatusPetrify", "bool", "stat_stone");
         putBattleActorProperty(0x0007, "StatusZombie", "bool", "stat_zombie");
-        putBattleActorProperty(0x0008, "?StatusYellowHP", "bool", "stat_weak");
+        putBattleActorProperty(0x0008, "WeakState", "weakState", "stat_weak");
         putBattleActorProperty(0x0009, "STR", "int", "stat_str");
         putBattleActorProperty(0x000A, "DEF", "int", "stat_vit");
         putBattleActorProperty(0x000B, "MAG", "int", "stat_mag");

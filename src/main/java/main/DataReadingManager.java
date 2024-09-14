@@ -43,12 +43,12 @@ public class DataReadingManager {
 
     public static void initializeInternals() {
         StringHelper.initialize();
+        prepareStringMacros(PATH_LOCALIZED_ROOT + "menu/macrodic.dcp", false);
         ScriptConstants.initialize();
         ScriptFuncLib.initialize();
     }
 
     public static void readAndPrepareDataModel() {
-        prepareStringMacros(false);
         DataAccess.SG_SPHERE_TYPES = readSphereGridSphereTypes(PATH_LOCALIZED_KERNEL + "sphere.bin", false);
         prepareAbilities();
         DataAccess.PLAYER_CHAR_STATS = readPlayerCharStats(PATH_LOCALIZED_KERNEL + "ply_save.bin", false);
@@ -69,8 +69,8 @@ public class DataReadingManager {
         DataAccess.AEON_CUSTOMIZATIONS = readCustomizations(PATH_ORIGINALS_KERNEL + "sum_grow.bin", false);
     }
 
-    public static void prepareStringMacros(boolean print) {
-        List<Chunk> chunks = ChunkedFileHelper.readGenericChunkedFile(PATH_LOCALIZED_ROOT + "menu/macrodic.dcp", false, null, 16);
+    public static void prepareStringMacros(String filename, boolean print) {
+        List<Chunk> chunks = ChunkedFileHelper.readGenericChunkedFile(filename, false, null, 16);
         if (chunks == null) {
             return;
         }

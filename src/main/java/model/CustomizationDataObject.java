@@ -3,7 +3,8 @@ package model;
 import main.DataAccess;
 
 /**
- * takara.bin
+ * kaizou.bin
+ * sum_grow.bin
  */
 public class CustomizationDataObject implements Nameable {
     public static final int LENGTH = 0x08;

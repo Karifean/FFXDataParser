@@ -141,7 +141,7 @@ public class Main {
                 }
                 break;
             case MODE_READ_MACROS:
-                prepareStringMacros(true);
+                prepareStringMacros(PATH_LOCALIZED_ROOT + "menu/macrodic.dcp", true);
                 break;
             default:
                 break;
@@ -175,29 +175,5 @@ public class Main {
             }
         }
         System.out.println(out);
-    }
-
-    private static void parseFileText(String filename) {
-        System.out.println("--- " + filename + " ---");
-        File file = FileAccessorWithMods.getRealFile(filename);
-        if (file.isDirectory()) {
-            String[] contents = file.list();
-            if (contents != null) {
-                Arrays.stream(contents).sorted().forEach(subfile -> parseFileText(filename + '/' + subfile));
-            }
-        } else {
-            StringBuilder out = new StringBuilder();
-            try {
-                DataInputStream inputStream = FileAccessorWithMods.readFile(filename);
-                while (inputStream.available() > 0) {
-                    int idx = inputStream.readUnsignedByte();
-                    Character chr = StringHelper.byteToChar(idx);
-                    if (chr != null) {
-                        out.append(chr);
-                    }
-                }
-            } catch (IOException e) {}
-            System.out.println(out.toString().trim());
-        }
     }
 }

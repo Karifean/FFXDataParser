@@ -128,7 +128,8 @@ public class FormationDataObject {
 
     private static String writeMonster(int monsterIndex) {
         MonsterFile monster = DataAccess.getMonster(monsterIndex);
-        String monsterName = monster == null ? "null" : monster.getName();
+        String monsterIdxString = "m" + String.format("%03d", monsterIndex - 0x1000);
+        String monsterName = monsterIdxString + (monster != null ? " - " + monster.getName() : "");
         String hexSuffix = " [" + String.format("%04X", monsterIndex) + "h]";
         return monsterName + hexSuffix;
     }

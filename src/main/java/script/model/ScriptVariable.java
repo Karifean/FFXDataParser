@@ -1,7 +1,5 @@
 package script.model;
 
-import script.ScriptObject;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -10,14 +8,14 @@ import java.util.stream.Collectors;
 
 public class ScriptVariable {
     public final int index;
-    public final long struct;
+    public final long fullBytes;
     public final int lb;
     public final int hb;
     public final int offset;
     public final int format;
     public final int location;
     public final int elementCount;
-    public final int unknownTopBytes;
+    public final int elementSize;
     public final List<StackObject> values = new ArrayList<>();
 
     public ScriptWorker parentWorker;
@@ -39,12 +37,12 @@ public class ScriptVariable {
         this.index = index;
         this.lb = lb;
         this.hb = hb;
-        this.struct = hb * 0x100000000L + lb;
+        this.fullBytes = hb * 0x100000000L + lb;
         this.offset = lb & 0xFFFFFF;
         this.format = (lb & 0xF0000000) >> 28;
         this.location = (lb & 0x0F000000) >> 25;
         this.elementCount = hb & 0xFFFF;
-        this.unknownTopBytes = (hb & 0xFFFF0000) >> 16;
+        this.elementSize = (hb & 0xFFFF0000) >> 16;
     }
 
     public ScriptVariable(ScriptVariable vr) {
@@ -52,12 +50,12 @@ public class ScriptVariable {
         this.index = vr.index;
         this.lb = vr.lb;
         this.hb = vr.hb;
-        this.struct = vr.struct;
+        this.fullBytes = vr.fullBytes;
         this.offset = vr.offset;
         this.format = vr.format;
         this.location = vr.location;
         this.elementCount = vr.elementCount;
-        this.unknownTopBytes = vr.unknownTopBytes;
+        this.elementSize = vr.elementSize;
     }
 
     public int getLength() {
@@ -110,7 +108,7 @@ public class ScriptVariable {
                 fullStoreLocation() +
                 ", type=" + fullTypeString() +
                 (!values.isEmpty() ? ", values=" + valuesString() : "") +
-                (unknownTopBytes > 0 ? ", utb=" + unknownTopBytes + " [" + String.format("%04X", unknownTopBytes) + "h]" : "") +
+                (elementSize > 0 ? ", elementSize=" + elementSize : "") +
                 " }";
     }
 

@@ -14,6 +14,8 @@ public class ScriptObject {
     private static final int JUMP_PLUS_HEX_LINE_MINLENGTH = JUMP_LINE_MINLENGTH + HEX_LINE_MINLENGTH + 1;
 
     private static final boolean VERBOSE_HEADER_OUTPUT = false;
+    private static final boolean PRINT_REF_INTS_FLOATS = false;
+    private static final boolean PRINT_JUMP_TABLE = false;
 
     protected final int[] bytes;
     protected final int absoluteOffset;
@@ -34,8 +36,8 @@ public class ScriptObject {
     protected int amountOfType2or3Scripts;
     protected int amountOfType4Scripts;
     protected int amountOfType5Scripts;
-    protected int zoneBytes;
-    protected int area_offset;
+    protected int areaNameBytes;
+    protected int areaNameIndexesOffset;
     protected int other_offset;
     protected int mainScriptIndex;
     protected int unknown1A;
@@ -47,7 +49,7 @@ public class ScriptObject {
     protected int numberOfScripts;
     protected int numberOfScriptsWithoutSubroutines;
     public List<String> strings;
-    private int splashGfxOffset = 0;
+    public List<Integer> areaNameIndexes;
     Stack<StackObject> stack = new Stack<>();
     Map<Integer, String> currentTempITypes = new HashMap<>();
     Map<Integer, String> varTypes = new HashMap<>();
@@ -95,14 +97,26 @@ public class ScriptObject {
         mainScriptIndex = read2Bytes(0x18);
         unknown1A = read2Bytes(0x1A);
         amountOfType5Scripts = read2Bytes(0x1C);
-        zoneBytes = read2Bytes(0x1E);
+        areaNameBytes = read2Bytes(0x1E);
         eventDataOffset = read4Bytes(0x20);
         unknown24 = read4Bytes(0x24);
-        area_offset = read4Bytes(0x28);
+        areaNameIndexesOffset = read4Bytes(0x28);
         other_offset = read4Bytes(0x2C);
         scriptCodeStartAddress = read4Bytes(0x30);
         numberOfScripts = read2Bytes(0x34);
         numberOfScriptsWithoutSubroutines = read2Bytes(0x36);
+
+        if (areaNameBytes > 0 && areaNameIndexesOffset > 0) {
+            areaNameIndexes = new ArrayList<>();
+            if ((areaNameBytes & 0x8000) > 0) {
+                int count = areaNameBytes & 0x7FFF;
+                for (int i = 0; i < count; i++) {
+                    areaNameIndexes.add(read2Bytes(areaNameIndexesOffset + 2 * i));
+                }
+            } else {
+                areaNameIndexes.add(areaNameBytes);
+            }
+        }
     }
 
     private void parseWorkers() {
@@ -910,9 +924,11 @@ public class ScriptObject {
             lines.add("map_start = " + String.format("%04X", map_start));
             lines.add("unk1 = " + String.format("%04X", unknown1A));
             lines.add("unk2 = " + String.format("%04X", unknown24));
-            lines.add("zoneBytes = " + String.format("%04X", zoneBytes));
-            lines.add("area_offset = " + String.format("%06X", area_offset));
             lines.add("other_offset = " + String.format("%06X", other_offset));
+        }
+        if (areaNameIndexes != null) {
+            lines.add("Area Names");
+            areaNameIndexes.forEach(i -> lines.add(MACRO_LOOKUP.get(0xB00 + i)));
         }
         lines.add(numberOfScripts + " Workers Total");
         for (int i = 0; i < numberOfScripts; i++) {
@@ -922,32 +938,36 @@ public class ScriptObject {
         if (variableDeclarations.length > 0) {
             List<String> refsStrings = new ArrayList<>();
             for (int i = 0; i < variableDeclarations.length; i++) {
-                refsStrings.add("var" + String.format("%02X", i) + ": " + variableDeclarations[i] + " [" + String.format("%016X", variableDeclarations[i].struct) + "h] - Inferred " + varTypes.get(i));
+                refsStrings.add("var" + String.format("%02X", i) + ": " + variableDeclarations[i] + " [" + String.format("%016X", variableDeclarations[i].fullBytes) + "h] - Inferred " + varTypes.get(i));
             }
             lines.add(String.join("\n", refsStrings));
         }
-        lines.add("Integers (" + refInts.length + " at offset " + String.format("%04X", intTableOffset) + ")");
-        if (refInts.length > 0) {
-            List<String> intStrings = new ArrayList<>();
-            for (int i = 0; i < refInts.length; i++) {
-                intStrings.add("refI" + String.format("%02X", i) + ": " + refInts[i] + " [" + String.format("%08X", refInts[i]) + "h]");
+        if (PRINT_REF_INTS_FLOATS) {
+            lines.add("Integers (" + refInts.length + " at offset " + String.format("%04X", intTableOffset) + ")");
+            if (refInts.length > 0) {
+                List<String> intStrings = new ArrayList<>();
+                for (int i = 0; i < refInts.length; i++) {
+                    intStrings.add("refI" + String.format("%02X", i) + ": " + refInts[i] + " [" + String.format("%08X", refInts[i]) + "h]");
+                }
+                lines.add(String.join(", ", intStrings));
             }
-            lines.add(String.join(", ", intStrings));
-        }
-        lines.add("Floats (" + refFloats.length + " at offset " + String.format("%04X", floatTableOffset) + ")");
-        if (refFloats.length > 0) {
-            List<String> floatStrings = new ArrayList<>();
-            for (int i = 0; i < refFloats.length; i++) {
-                floatStrings.add("refF" + String.format("%02X", i) + ": " + Float.intBitsToFloat(refFloats[i]) + " [" + String.format("%08X", refFloats[i]) + "h]");
+            lines.add("Floats (" + refFloats.length + " at offset " + String.format("%04X", floatTableOffset) + ")");
+            if (refFloats.length > 0) {
+                List<String> floatStrings = new ArrayList<>();
+                for (int i = 0; i < refFloats.length; i++) {
+                    floatStrings.add("refF" + String.format("%02X", i) + ": " + Float.intBitsToFloat(refFloats[i]) + " [" + String.format("%08X", refFloats[i]) + "h]");
+                }
+                lines.add(String.join(", ", floatStrings));
             }
-            lines.add(String.join(", ", floatStrings));
         }
-        lines.add("- Jump Table -");
-        for (int i = 0; i < numberOfScripts; i++) {
-            lines.add("w" + String.format("%02X", i));
-            ScriptWorker h = workers[i];
-            lines.add(h.getEntryPointsLine());
-            lines.add(h.getJumpsLine());
+        if (PRINT_JUMP_TABLE) {
+            lines.add("- Jump Table -");
+            for (int i = 0; i < numberOfScripts; i++) {
+                lines.add("w" + String.format("%02X", i));
+                ScriptWorker h = workers[i];
+                lines.add(h.getEntryPointsLine());
+                lines.add(h.getJumpsLine());
+            }
         }
         return lines.stream().filter(s -> s != null && !s.isEmpty()).collect(Collectors.joining("\n"));
     }

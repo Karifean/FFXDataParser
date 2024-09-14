@@ -1,6 +1,7 @@
 package script.model;
 
 import main.DataAccess;
+import main.StringHelper;
 import model.AbilityDataObject;
 import model.Nameable;
 import script.MonsterFile;
@@ -77,9 +78,9 @@ public class StackObject {
             if ("var".equals(type)) {
                 return parentScript != null ? parentScript.getVariableLabel(value) : ("var" + hex);
             }
-            if ("varDescriptor".equals(type)) {
+            if ("pointer".equals(type)) {
                 ScriptVariable scriptVariable = new ScriptVariable(parentWorker, 0, value, 1);
-                return scriptVariable.getDereference();
+                return "*" + scriptVariable.getDereference() + hexSuffix;
             }
             if ("encounter".equals(type)) {
                 int field = (value & 0xFFFF0000) >> 16;
@@ -111,9 +112,12 @@ public class StackObject {
                 try {
                     MonsterFile monster = DataAccess.getMonster(value);
                     if (monster != null) {
-                        return "Actors:MonsterType=" + monster.getName() + hexSuffix;
+                        return "Actors:MonsterType=m" + String.format("%03d", value - 0x1000) + " (" + monster.getName() + ")" + hexSuffix;
                     }
                 } catch (UnsupportedOperationException ignored) {}
+            }
+            if ("macroString".equals(type)) {
+                return StringHelper.MACRO_LOOKUP.getOrDefault(value, "<Missing>");
             }
             if ("string".equals(type) && parentScript != null && parentScript.strings != null && parentScript.strings.size() > value) {
                 String targetString = parentScript.strings.get(value);
@@ -195,10 +199,13 @@ public class StackObject {
     }
 
     public static List<ScriptField> bitfieldToList(String type, int value) {
-        Map<Integer, ScriptField> map = type != null ? ScriptConstants.ENUMERATIONS.getOrDefault(type, Collections.emptyMap()) : Collections.emptyMap();
         List<ScriptField> bits = new ArrayList<>();
+        if (value <= 0) {
+            return bits;
+        }
+        Map<Integer, ScriptField> map = type != null ? ScriptConstants.ENUMERATIONS.getOrDefault(type, Collections.emptyMap()) : Collections.emptyMap();
         String format = value >= 0x10000 ? "b%08X" : "b%04X";
-        for (int bit = 0x01; bit <= value; bit = bit << 1) {
+        for (int bit = 0x01; bit <= value && bit > 0; bit = bit << 1) {
             if ((value & bit) != 0) {
                 ScriptField field = map.getOrDefault(bit, new ScriptField(String.format(format, bit), type).withIdx(value));
                 bits.add(field);

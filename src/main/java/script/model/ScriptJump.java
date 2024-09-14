@@ -44,7 +44,7 @@ public class ScriptJump {
         if (!isEntryPoint) {
             return "j" + String.format("%02X", jumpIndex);
         } else {
-            String wPrefix = "w" + String.format("%02X", workerIndex);
+            String wPrefix = "w" + String.format("%02X", scriptWorker.workerIndex);
             if (jumpIndex == 0) {
                 return wPrefix + "init";
             } else if (jumpIndex == 1) {
@@ -52,7 +52,7 @@ public class ScriptJump {
             } else {
                 if (scriptWorker.battleWorkerType != null) {
                     String wePrefix = wPrefix + "e" + String.format("%02X", jumpIndex);
-                    return wePrefix + battleWorkerEntryPointToString(scriptWorker.battleWorkerType, battleWorkerEntryPointType);
+                    return wePrefix + battleWorkerEntryPointToString();
                 } else {
                     return wPrefix + eventWorkerEntryPointToStringWithFallback(scriptWorker.eventWorkerType, jumpIndex);
                 }
@@ -74,7 +74,8 @@ public class ScriptJump {
         battleWorkerEntryPointType = entryPointType;
     }
 
-    private static String battleWorkerEntryPointToString(int battleWorkerType, int battleWorkerEntryPointType) {
+    private String battleWorkerEntryPointToString() {
+        int battleWorkerType = scriptWorker.battleWorkerType;
         if (battleWorkerType == 2) {
             String s = ctbPurposeSlotToString(battleWorkerEntryPointType);
             if (s != null) {
@@ -88,7 +89,10 @@ public class ScriptJump {
                 return s;
             }
         }
-        return "t" + String.format("%02X", battleWorkerType) + "p" + String.format("%02X", battleWorkerEntryPointType);
+        String strBattleWorkerType = "t" + String.format("%02X", battleWorkerType);
+        String strBattleWorkerEntryPointType = "p" + String.format("%02X", battleWorkerEntryPointType);
+        String strWorkerPurposeSlot = "s" + String.format("%02X", scriptWorker.purposeSlot);
+        return strWorkerPurposeSlot + strBattleWorkerType + strBattleWorkerEntryPointType;
     }
 
     private static String eventWorkerEntryPointToStringWithFallback(int eventWorkerType, int eventWorkerEntryPoint) {

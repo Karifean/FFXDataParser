@@ -1,15 +1,18 @@
 package script;
 
 import main.StringHelper;
+import model.Nameable;
 import reading.Chunk;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import static main.StringHelper.MACRO_LOOKUP;
+
 /**
  * jppc/event/.../.ebp
  */
-public class EventFile {
+public class EventFile implements Nameable {
     public ScriptObject eventScript;
     Chunk scriptChunk;
     int[] textBytes;
@@ -56,6 +59,7 @@ public class EventFile {
     @Override
     public String toString() {
         StringBuilder full = new StringBuilder();
+        full.append(getName()).append('\n');
         if (eventScript != null) {
             full.append("- Script Code -").append('\n');
             full.append(eventScript.allLinesString());
@@ -65,5 +69,12 @@ public class EventFile {
             full.append("Event Script missing");
         }
         return full.toString();
+    }
+
+    public String getName() {
+        if (eventScript == null || eventScript.areaNameIndexes == null || eventScript.areaNameIndexes.isEmpty()) {
+            return null;
+        }
+        return MACRO_LOOKUP.get(0xB00 + eventScript.areaNameIndexes.get(0));
     }
 }

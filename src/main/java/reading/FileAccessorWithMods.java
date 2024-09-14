@@ -32,10 +32,6 @@ public class FileAccessorWithMods {
         return file;
     }
 
-    public static DataInputStream readFile(String path) throws FileNotFoundException {
-        return readFile(resolveFile(path, false));
-    }
-
     public static DataInputStream readFile(File file) throws FileNotFoundException {
         return new DataInputStream(new BufferedInputStream(new FileInputStream(file)));
     }
