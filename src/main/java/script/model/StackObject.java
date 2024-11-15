@@ -58,6 +58,9 @@ public class StackObject {
             if ("bitfield".equals(type)) {
                 return bitfieldToString(null, value) + hexSuffix;
             }
+            if ("bitfieldNegated".equals(type)) {
+                return negatedBitfieldToString(null, value) + hexSuffix;
+            }
             if (type.startsWith("uint") || type.startsWith("int")) {
                 if ("int16".equals(type) && ScriptField.PRINT_WITH_HEX_SUFFIX && hex.length() == 8 && hex.startsWith("FFFF")) {
                     return value + " [" + hex.substring(4) + "h]";
@@ -129,10 +132,12 @@ public class StackObject {
             if (object != null) {
                 return object.getName() + hexSuffix;
             }
+            if (type.endsWith("Bitfield")) {
+                return bitfieldToString(type, value) + hexSuffix;
+            } else if (type.endsWith("BitfieldNegated")) {
+                return negatedBitfieldToString(type.substring(0, type.length() - 7), value) + hexSuffix;
+            }
             if (ScriptConstants.ENUMERATIONS.containsKey(type)) {
-                if (type.endsWith("Bitfield")) {
-                    return bitfieldToString(type, value) + hexSuffix;
-                }
                 return enumToString(type, value);
             }
         }
@@ -221,5 +226,40 @@ public class StackObject {
     public static String bitfieldToString(String type, int value) {
         List<ScriptField> bits = bitfieldToList(type, value);
         return bitsToString(bits);
+    }
+
+    public static List<ScriptField> negatedBitfieldToList(String type, int value) {
+        List<ScriptField> bits = new ArrayList<>();
+        if (value <= 0) {
+            return bits;
+        }
+        Map<Integer, ScriptField> map = type != null ? ScriptConstants.ENUMERATIONS.getOrDefault(type, Collections.emptyMap()) : Collections.emptyMap();
+        String format = value >= 0x10000 ? "b%08X" : "b%04X";
+        int max = value >= 0x10000 ? 0x80000000 : 0x8000;
+        for (int bit = 0x01; true; bit = bit << 1) {
+            if ((value & bit) == 0) {
+                ScriptField field = map.getOrDefault(bit, new ScriptField(String.format(format, bit), type).withIdx(value));
+                bits.add(field);
+            }
+            if (bit == max) {
+                break;
+            }
+        }
+        return bits;
+    }
+
+    public static String negatedBitsToString(List<ScriptField> bits) {
+        if (bits.isEmpty()) {
+            return "~[]";
+        } else if (bits.size() == 1) {
+            return "~" + bits.get(0).getLabel();
+        } else {
+            return "~[" + bits.stream().map(ScriptField::getLabel).collect(Collectors.joining(", ")) + "]";
+        }
+    }
+
+    public static String negatedBitfieldToString(String type, int value) {
+        List<ScriptField> bits = negatedBitfieldToList(type, value);
+        return negatedBitsToString(bits);
     }
 }

@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * takara.bin
+ * arms_shop.bin
  */
 public class GearShopDataObject implements Nameable {
     public static final int LENGTH = 0x22;

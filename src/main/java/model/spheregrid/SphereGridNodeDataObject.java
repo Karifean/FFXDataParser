@@ -45,7 +45,7 @@ public class SphereGridNodeDataObject implements Nameable {
         if (hasContent() && content != redundantContent) {
             list.add("Content-Mismatch - Original=" + getContentLabel(redundantContent));
         }
-        list.add("U6=" + String.format("%04X", unknown6));
+        list.add("U6=" + String.format("%04X", unknown6) + "=" + unknown6);
         if (unused3 != 0) {
             list.add("Unknown3=" + String.format("%04X", unused3));
         }
@@ -70,7 +70,7 @@ public class SphereGridNodeDataObject implements Nameable {
     private String getContentLabel(int content) {
         SphereGridNodeTypeDataObject nodeType = DataAccess.getSgNodeType(content);
         String label = nodeType != null ? nodeType.getName() : "null";
-        return label + " [" + String.format("%04X", content) + "h]";
+        return label + " [" + String.format(content >= 0x100 ? "%04X" : "%02X", content) + "h]";
     }
 
     private int read2Bytes(int offset, boolean signed) {

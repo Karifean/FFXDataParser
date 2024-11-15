@@ -194,7 +194,8 @@ model,10FE,VALFARE_01
 model,10FF,NULL
 model,1101,,Mimic Parts
 model,1158,ANGEL_B,Penance
-model,1159,ANGEL_R,Penance's Arm
+model,1159,ANGEL_R,Penance's Arm (Right)
+model,115A,ANGEL_L,Penance's Arm (Left)
 model,2001,ZANA_HAN001
 model,2002,ZANA_HAN002
 model,2003,ZANA_HAN003

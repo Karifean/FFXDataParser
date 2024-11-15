@@ -312,16 +312,21 @@ public abstract class ScriptConstants {
         putSaveDataVariable(0x0212, "LightningDodgingTotalDodges", "int");
         putSaveDataVariable(0x0214, "LightningDodgingHighestConsecutiveDodges", "int"); // 440
         putSaveDataVariable(0x024C, "BlitzballWakkaPowerProgress", "int");
+        putSaveDataVariable(0x0254, "BlitzballMovementType", "blitzballMovementType");
         putSaveDataVariable(0x0A00, "GameMoment", "int");
         putSaveDataVariable(0x0A34, "GilLentToOAka", "int");
         putSaveDataVariable(0x0A38, "MacalaniaPricesChosenForOAka", "int");
         putSaveDataVariable(0x0A3C, "JechtShotMinigameCleared", "bool");
         putSaveDataVariable(0x0A4A, "SaveSphereInstructionsSeen", "int");
         putSaveDataVariable(0x0A60, "AlBhedPrimersCollectedCount", "int");
+        putSaveDataVariable(0x0A68, "BlitzballMenuReturnMap", "int");
+        putSaveDataVariable(0x0A6C, "BlitzballMenuReturnEntrance", "int");
+        putSaveDataVariable(0x0A70, "AnimaSealsUnlocked", "int");
         putSaveDataVariable(0x0A83, "isRedButterflyEncounter", "bool");
         putSaveDataVariable(0x0A88, "BlitzballTeamPlayerCount", "int", "blitzballTeam");
         putSaveDataVariable(0x0A93, "JechtSpheresCollectedCount", "int");
         putSaveDataVariable(0x0A95, "AirshipDestinationUnlocks", "int");
+        putSaveDataVariable(0x0A98, "IsBetweenDjoseFaythTalkAndAirshipBoarding", "bool");
         putSaveDataVariable(0x0A99, "CactuarGuardiansBeaten", "int");
         putSaveDataVariable(0x0A9A, "AlBhedPrimersInstructionsSeen", "bool");
         putSaveDataVariable(0x0A9B, "RemiemRaceTreasureFlags", "int");
@@ -334,14 +339,26 @@ public abstract class ScriptConstants {
         putSaveDataVariable(0x0AA3, "DarkAnimaCompletionFlags", "int");
         putSaveDataVariable(0x0AA4, "DarkMagusSistersCompletionFlags", "int");
         putSaveDataVariable(0x0AA5, "PenanceUnlockState", "int");
-        putSaveDataVariable(0x1000, "?BlitzballPlayerLearnedTechsPage1", "blitzTechsP1Bitfield", "blitzballPlayer");
-        putSaveDataVariable(0x10F0, "?BlitzballPlayerLearnedTechsPage2", "blitzTechsP2Bitfield", "blitzballPlayer");
+        putSaveDataVariable(0x1000, "BlitzballPlayerLearnedTechsPage1", "blitzTechsP1Bitfield", "blitzballPlayer");
+        putSaveDataVariable(0x10F0, "BlitzballPlayerLearnedTechsPage2", "blitzTechsP2Bitfield", "blitzballPlayer");
         putSaveDataVariable(0x1266, "BlitzballPlayerEquippedTechs", "blitzTech"); // index = blitzballPlayer * 5 + 0..4
-        putSaveDataVariable(0x1392, "?BlitzballPlayerUnlockedTechSlots", "int", "blitzballPlayer");
+        putSaveDataVariable(0x1392, "BlitzballPlayerUnlockedTechSlots", "int", "blitzballPlayer");
         putSaveDataVariable(0x13CE, "BlitzballPlayerCurrentLevel", "int", "blitzballPlayer");
         putSaveDataVariable(0x1568, "BlitzballPlayerCurrentEXP", "int", "blitzballPlayer");
         putSaveDataVariable(0x141A, "BlitzballTeamPlayers", "blitzballPlayer");
+        putSaveDataVariable(0x1452, "BlitzballMatchPlayerScore", "int");
+        putSaveDataVariable(0x1453, "BlitzballMatchOpponentScore", "int");
+        putSaveDataVariable(0x1455, "BlitzballMarkedPlayerIndex?", "int", "int");
         putSaveDataVariable(0x1465, "BlitzballEnemyTeam", "blitzballTeam");
+        putSaveDataVariable(0x1466, "BlitzballCurrentLeagueTeamSeedings", "blitzballTeam", "int");
+        putSaveDataVariable(0x146C, "BlitzballCurrentTournamentTeamSlot", "blitzballTeam", "int");
+        putSaveDataVariable(0x147A, "BlitzballCurrentLeagueTeamWins", "int", "blitzballTeam");
+        putSaveDataVariable(0x1480, "BlitzballCurrentLeagueTeamLosses", "int", "blitzballTeam");
+        putSaveDataVariable(0x1486, "BlitzballCurrentLeagueRound", "int");
+        putSaveDataVariable(0x1487, "BlitzballCurrentLeagueMatchTeamSlot", "blitzballTeam", "int");
+        putSaveDataVariable(0x148E, "BlitzballGameMode", "blitzballGameMode");
+        putSaveDataVariable(0x14B3, "BlitzballCurrentTournamentState", "int");
+        putSaveDataVariable(0x14B4, null, "int");
         putSaveDataVariable(0x152A, "BlitzballPlayerContractDurations", "int", "blitzballPlayer");
         putSaveDataVariable(0x1566, "BlitzballTotalGamesWon", "int");
         putSaveDataVariable(0x1798, "BlitzballPlayerCostPerGame", "int", "blitzballPlayer");
@@ -430,6 +447,36 @@ public abstract class ScriptConstants {
         putEnum("blitzballPlayer", 0x04, "Jassu");
         putEnum("blitzballPlayer", 0x05, "Botta");
         putEnum("blitzballPlayer", 0x06, "Keepa");
+        putEnum("blitzballPlayer", 0x07, "Bickson");
+        putEnum("blitzballPlayer", 0x08, "Abus");
+        putEnum("blitzballPlayer", 0x09, "Graav");
+        putEnum("blitzballPlayer", 0x0A, "?Doram");
+        putEnum("blitzballPlayer", 0x0B, "?Balgerda");
+        putEnum("blitzballPlayer", 0x0C, "?Raudy");
+        putEnum("blitzballPlayer", 0x0D, "?Larbeight");
+        putEnum("blitzballPlayer", 0x0E, "?Isken");
+        putEnum("blitzballPlayer", 0x0F, "?Vuroja");
+        putEnum("blitzballPlayer", 0x10, "?Kulukan");
+        putEnum("blitzballPlayer", 0x11, "?Deim");
+        putEnum("blitzballPlayer", 0x12, "?Nizarut");
+        putEnum("blitzballPlayer", 0x13, "?Eigaar");
+        putEnum("blitzballPlayer", 0x14, "?Blappa");
+        putEnum("blitzballPlayer", 0x15, "?Berrik");
+        putEnum("blitzballPlayer", 0x16, "?Judda");
+        putEnum("blitzballPlayer", 0x17, "?Lakkam");
+        putEnum("blitzballPlayer", 0x18, "?Nimrook");
+        putEnum("blitzballPlayer", 0x19, "Basik Ronso");
+        putEnum("blitzballPlayer", 0x1A, "Argai Ronso");
+        putEnum("blitzballPlayer", 0x1B, "Gazna Ronso");
+        putEnum("blitzballPlayer", 0x1C, "?Nuvy Ronso");
+        putEnum("blitzballPlayer", 0x1D, "?Irga Ronso");
+        putEnum("blitzballPlayer", 0x1E, "?Zamzi Ronso");
+        putEnum("blitzballPlayer", 0x1F, "?Giera Guado");
+        putEnum("blitzballPlayer", 0x20, "?Zazi Guado");
+        putEnum("blitzballPlayer", 0x21, "?Navara Guado");
+        putEnum("blitzballPlayer", 0x22, "?Auda Guado");
+        putEnum("blitzballPlayer", 0x23, "?Pah Guado");
+        putEnum("blitzballPlayer", 0x24, "?Noy Guado");
         putEnum("blitzballPlayer", 0x25, "Rin");
         putEnum("blitzballPlayer", 0x26, "Tatts");
         putEnum("blitzballPlayer", 0x27, "Kyou");
@@ -461,6 +508,18 @@ public abstract class ScriptConstants {
         putEnum("blitzballTeam", 0x03, "Ronso Fangs");
         putEnum("blitzballTeam", 0x04, "Guado Glories");
         putEnum("blitzballTeam", 0x05, "Besaid Aurochs");
+
+        putEnum("blitzballMovementType", 0x00, "Auto");
+        putEnum("blitzballMovementType", 0x01, "Manual A");
+        putEnum("blitzballMovementType", 0x02, "Manual B");
+
+        putEnum("blitzballGameMode", 0x00, "League");
+        putEnum("blitzballGameMode", 0x01, "Tournament");
+        putEnum("blitzballGameMode", 0x02, "Exhibition");
+        putEnum("blitzballGameMode", 0x03, "Tutorial");
+        putEnum("blitzballGameMode", 0x04, "Team Data");
+        putEnum("blitzballGameMode", 0x05, "Cancel");
+        putEnum("blitzballGameMode", 0x06, "Reset Data");
 
         putEnum("battleDebugFlag", 0x07, "?NeverCrit");
 
@@ -542,12 +601,14 @@ public abstract class ScriptConstants {
         putEnum("bgm", 0x0025, "People of the North Pole");
         putEnum("bgm", 0x0029, "Truth Revealed");
         putEnum("bgm", 0x002A, "Seymour Battle");
+        putEnum("bgm", 0x002B, "Pursuit");
         putEnum("bgm", 0x0030, "Prelude");
         putEnum("bgm", 0x0031, "Otherworld (BFA)");
         putEnum("bgm", 0x0032, "Decisive Battle");
         putEnum("bgm", 0x0082, "To Zanarkand");
+        putEnum("bgm", 0x0088, "?Yuna's Theme");
         putEnum("bgm", 0x0091, "Challenge");
-        putEnum("bgm", 0x00A5, "?Run!!");
+        putEnum("bgm", 0x00A5, "Run!!");
         putEnum("bgm", 0x00AB, "Lulu's Theme");
         putEnum("bgm", 0x00B0, "A Contest of Aeons");
 

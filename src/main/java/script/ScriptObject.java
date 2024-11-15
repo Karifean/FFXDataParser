@@ -46,8 +46,8 @@ public class ScriptObject {
     protected int scriptCodeLength;
     protected int scriptCodeStartAddress;
     protected int scriptCodeEndAddress;
-    protected int numberOfScripts;
-    protected int numberOfScriptsWithoutSubroutines;
+    protected int namespaceCount;  // Total number of workers
+    protected int actorCount; // Total number of workers except subroutines
     public List<String> strings;
     public List<Integer> areaNameIndexes;
     Stack<StackObject> stack = new Stack<>();
@@ -103,8 +103,8 @@ public class ScriptObject {
         areaNameIndexesOffset = read4Bytes(0x28);
         other_offset = read4Bytes(0x2C);
         scriptCodeStartAddress = read4Bytes(0x30);
-        numberOfScripts = read2Bytes(0x34);
-        numberOfScriptsWithoutSubroutines = read2Bytes(0x36);
+        namespaceCount = read2Bytes(0x34);
+        actorCount = read2Bytes(0x36);
 
         if (areaNameBytes > 0 && areaNameIndexesOffset > 0) {
             areaNameIndexes = new ArrayList<>();
@@ -122,8 +122,8 @@ public class ScriptObject {
     private void parseWorkers() {
         scriptJumps = new ArrayList<>();
         scriptJumpsByDestination = new HashMap<>();
-        workers = new ScriptWorker[numberOfScripts];
-        for (int i = 0; i < numberOfScripts; i++) {
+        workers = new ScriptWorker[namespaceCount];
+        for (int i = 0; i < namespaceCount; i++) {
             int offset = read4Bytes(0x38 + i * 4);
             ScriptWorker scriptWorker = parseScriptWorker(offset, i);
             parseScriptJumps(scriptWorker);
@@ -454,15 +454,23 @@ public class ScriptObject {
             String p1s = p1.toString();
             String p2s = p2.toString();
 
-            if (opcode == 0x06 || opcode == 0x07) {
+            if (opcode == 0x03 || opcode == 0x05 || opcode == 0x06 || opcode == 0x07) {
                 String p1t = resolveType(p1);
                 String p2t = resolveType(p2);
-                boolean p1w = isWeakType(p1t);
-                boolean p2w = isWeakType(p2t);
+                boolean p1w = !p1.expression && isWeakType(p1t);
+                boolean p2w = !p2.expression && isWeakType(p2t);
                 if (p1w && !p2w) {
-                    p1s = typed(p1, p2t);
+                    if (opcode == 0x05 && ("bitfield".equals(p2t) || p2t.endsWith("Bitfield")) && inferIsNegationValue(p1)) {
+                        p1s = typed(p1, p2t + "Negated");
+                    } else {
+                        p1s = typed(p1, p2t);
+                    }
                 } else if (p2w && !p1w) {
-                    p2s = typed(p2, p1t);
+                    if (opcode == 0x05 && ("bitfield".equals(p1t) || p1t.endsWith("Bitfield")) && inferIsNegationValue(p2)) {
+                        p2s = typed(p2, p1t + "Negated");
+                    } else {
+                        p2s = typed(p2, p1t);
+                    }
                 }
             }
             if (p1.maybeBracketize) {
@@ -585,8 +593,11 @@ public class ScriptObject {
             boolean direct = !p2.expression && !p3.expression && isWeakType(p2.type) && isWeakType(p3.type) && oldIdx < entryPoints.length && newIdx < entryPoints.length;
             String oldScriptLabel = direct ? entryPoints[oldIdx].getLabel() : ("e" + (p2.expression ? "(" + p2 + ")" : format2Or4Byte(oldIdx)));
             String newScriptLabel = direct ? entryPoints[newIdx].getLabel() : ("e" + (p3.expression ? "(" + p3 + ")" : format2Or4Byte(newIdx)));
-            String i = p1.expression ? ""+p1 : ""+p1.value;
-            textScriptLine += "Replace script " + oldScriptLabel + " with " + newScriptLabel + " (" + i + ")";;
+            String tableHolder = p1.expression ? ""+p1 : ""+p1.value;
+            if (p1.parentInstruction.opcode == 0xA7) {
+                addVarType(p1.value, "workerEventTable");
+            }
+            textScriptLine += "Replace script " + oldScriptLabel + " with " + newScriptLabel + " (store table at " + tableHolder + ")";;
             // textScriptLine += "REQCHG(" + p1 + ", " + p2 + ", " + p3 + ");";
         } else if (opcode == 0x7A) { // Never used: ACTREQ / SET_EDGE_TRIGGER
         } else if (opcode == 0x9F) { // PUSHV / GET_DATUM
@@ -620,14 +631,13 @@ public class ScriptObject {
             String val = typed(p2, varTypes.get(argv));
             textScriptLine += ensureVariableValidWithArray(argv, p1) + " = " + val + ";";
         } else if (opcode == 0xA7) { // PUSHARP / GET_DATUM_DESC
-            String arrayIndex = '[' + String.format("%04X", p1.value) + ']';
-            StackObject stackObject = new StackObject(workers[currentWorkerIndex], ins, "int16", true, "ArrayPointer:var" + argvsh + arrayIndex, argv);
+            StackObject stackObject = new StackObject(workers[currentWorkerIndex], ins, "pointer", true, "&" + ensureVariableValidWithArray(argv, p1), argv);
             stackObject.referenceIndex = argv;
             stack.push(stackObject);
         } else if (opcode == 0xAD) { // PUSHI / CONST_INT
             int refInt = refInts[argv];
             String content = "rI[" + argvsh + "]:" + refInt + " [" + String.format("%08X", refInt) + "h]";
-            StackObject stackObject = new StackObject(workers[currentWorkerIndex], ins, "uint32", false, content, refInt);
+            StackObject stackObject = new StackObject(workers[currentWorkerIndex], ins, "int32", false, content, refInt);
             stackObject.referenceIndex = argv;
             stack.push(stackObject);
         } else if (opcode == 0xAE) { // PUSHII / IMM
@@ -749,11 +759,11 @@ public class ScriptObject {
     }
 
     protected String resolveType(StackObject obj) {
-        if (obj == null) {
+        if (obj == null || obj.type == null) {
             return "unknown";
         }
         if ("var".equals(obj.type)) {
-            return varTypes.get(obj.value);
+            return varTypes.getOrDefault(obj.value, "unknown");
         }
         if ("tmpI".equals(obj.type)) {
             return currentTempITypes.getOrDefault(obj.value, "unknown");
@@ -800,6 +810,15 @@ public class ScriptObject {
         }
         String arrayIndex = !p1.expression && isWeakType(indexType) ? String.format("%04X", p1.value) : typed(p1, indexType);
         return varLabel + '[' + arrayIndex + ']';
+    }
+
+    private boolean inferIsNegationValue(StackObject obj) {
+        int inactiveBits = StackObject.negatedBitfieldToList(obj.type, obj.value).size();
+        if (inactiveBits == 1) {
+            return true;
+        }
+        int activeBits = StackObject.bitfieldToList(obj.type, obj.value).size();
+        return inactiveBits < activeBits;
     }
 
     protected static boolean hasArgs(int opcode) {
@@ -930,8 +949,8 @@ public class ScriptObject {
             lines.add("Area Names");
             areaNameIndexes.forEach(i -> lines.add(MACRO_LOOKUP.get(0xB00 + i)));
         }
-        lines.add(numberOfScripts + " Workers Total");
-        for (int i = 0; i < numberOfScripts; i++) {
+        lines.add(namespaceCount + " Workers Total");
+        for (int i = 0; i < namespaceCount; i++) {
             lines.add("w" + String.format("%02X", i) + ": " + workers[i].getNonCommonString());
         }
         lines.add("Variables (" + variableDeclarations.length + " at offset " + String.format("%04X", variableStructsTableOffset) + ")");
@@ -962,7 +981,7 @@ public class ScriptObject {
         }
         if (PRINT_JUMP_TABLE) {
             lines.add("- Jump Table -");
-            for (int i = 0; i < numberOfScripts; i++) {
+            for (int i = 0; i < namespaceCount; i++) {
                 lines.add("w" + String.format("%02X", i));
                 ScriptWorker h = workers[i];
                 lines.add(h.getEntryPointsLine());

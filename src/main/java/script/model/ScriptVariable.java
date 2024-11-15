@@ -108,7 +108,6 @@ public class ScriptVariable {
                 fullStoreLocation() +
                 ", type=" + fullTypeString() +
                 (!values.isEmpty() ? ", values=" + valuesString() : "") +
-                (elementSize > 0 ? ", elementSize=" + elementSize : "") +
                 " }";
     }
 
@@ -129,7 +128,8 @@ public class ScriptVariable {
         if (elementCount <= 1) {
             return valueFormat;
         }
-        String arrayIndex = "[" + elementCount + "]";
+        String elements = elementSize > 1 ? elementCount + "=" + (elementCount / elementSize) + "*" + elementSize + "bytes" : ""+elementCount;
+        String arrayIndex = "[" + elements + "]";
         return valueFormat + arrayIndex;
     }
 

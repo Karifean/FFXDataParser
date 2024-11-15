@@ -12,7 +12,7 @@ public class SphereGridClusterDataObject implements Nameable {
     private int posX;
     private int posY;
     private int unused3;
-    private int maybeType;
+    private int radiusType;
     private int unused5;
     private int unused6;
     private int unused7;
@@ -32,7 +32,7 @@ public class SphereGridClusterDataObject implements Nameable {
         posX = read2Bytes(0x00, true);
         posY = read2Bytes(0x02, true);
         unused3 = read2Bytes(0x04, false);
-        maybeType = read2Bytes(0x06, false);
+        radiusType = read2Bytes(0x06, false);
         unused5 = read2Bytes(0x08, false);
         unused6 = read2Bytes(0x0A, false);
         unused7 = read2Bytes(0x0C, false);
@@ -43,7 +43,7 @@ public class SphereGridClusterDataObject implements Nameable {
     public String toString() {
         List<String> list = new ArrayList<>();
         list.add("Position=(" + posX + "/" + posY + ")");
-        list.add("Type?=" + String.format("%04X", maybeType));
+        list.add("Radius/Type=" + radiusType);
         if (unused3 != 0) {
             list.add("Unknown3=" + String.format("%04X", unused3));
         }
@@ -71,7 +71,7 @@ public class SphereGridClusterDataObject implements Nameable {
     private int read2Bytes(int offset, boolean signed) {
         int raw = bytes[offset] + bytes[offset+1] * 0x100;
         if (signed && (raw & 0x8000) != 0) {
-            return 0x10000 - raw;
+            return raw - 0x10000;
         } else {
             return raw;
         }

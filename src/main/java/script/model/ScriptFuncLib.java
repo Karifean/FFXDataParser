@@ -129,10 +129,10 @@ public abstract class ScriptFuncLib {
         putUnknownFunc(0x0063, 1); // noclip: collision detection
         putFuncWithIdx(0x0064, new ScriptFunc("displayFieldString", "unknown", null, p("boxIndex", "int"), p("string")));
         putFuncWithIdx(0x0065, new ScriptFunc("positionText", "unknown", null, p("boxIndex", "int"), p("x?", "int"), p("y?", "int"), p("align", "textAlignment")));
-        putUnknownFunc(0x0066, 2);
-        putUnknownFunc(0x0069, 3);
-        putUnknownFunc(0x006A, 2);
-        putUnknownFunc(0x006B, 1);
+        putFuncWithIdx(0x0066, new ScriptFunc(p("boxIndex", "int"), p(2)));
+        putFuncWithIdx(0x0069, new ScriptFunc(p("boxIndex", "int"), p(2), p(3)));
+        putFuncWithIdx(0x006A, new ScriptFunc(p("boxIndex", "int"), p(2)));
+        putFuncWithIdx(0x006B, new ScriptFunc(p("boxIndex", "int")));
         putUnknownFunc(0x006C, 1);
         putUnknownFunc(0x006D, 1);
         putUnknownFunc(0x006E, 1);
@@ -145,7 +145,7 @@ public abstract class ScriptFuncLib {
         putFuncWithIdx(0x0078, new ScriptFunc("stopWorkerRotation", "unknown", null, p("worker")));
         putUnknownFunc(0x007A, 2); // noclip: collision detection
         putFuncWithIdx(0x007C, new ScriptFunc("waitForText", "unknown", null, p("boxIndex", "int"))); // equivalent to 0x0084 with second param 0
-        putUnknownFunc(0x007D, 1);
+        putFuncWithIdx(0x007D, new ScriptFunc("?awaitPlayerDialogueChoice", "int", null, p("boxIndex", "int")));
         putUnknownFunc(0x007F, 1);
         putUnknownFunc(0x0080, 0); // noclip: getMapPointPosition1()
         putUnknownFunc(0x0081, 0); // noclip: getMapPointPosition2()
@@ -154,7 +154,7 @@ public abstract class ScriptFuncLib {
         putFuncWithIdx(0x0084, new ScriptFunc("waitForText", "unknown", null, p("boxIndex", "int"), p(2)));
         putUnknownFunc(0x0085, 1); // noclip: setCollisionRadius()
         putUnknownFunc(0x0086, 0);
-        putUnknownFunc(0x0087, 0);
+        putFuncWithIdx(0x0087, new ScriptFunc("?CurrentMap", "int", null, false));
         putUnknownFunc(0x0088, 0);
         putUnknownFunc(0x0089, 0);
         putUnknownFunc(0x008B, 0); // noclip: checking line crossing
@@ -172,7 +172,7 @@ public abstract class ScriptFuncLib {
         putUnknownFunc(0x0098, 2);
         putUnknownFunc(0x009A, 1);
         putUnknownFunc(0x009B, 2);
-        putUnknownFunc(0x009D, 2);
+        putFuncWithIdx(0x009D, new ScriptFunc(p("boxIndex", "int"), p(2)));
         putFuncWithIdx(0x009E, new ScriptFunc("prepareStringIntVariable", "unknown", null, p("boxIndex", "int"), p("varIndex", "int"), p("stringVarType"), p("value", "int")));
         putUnknownFunc(0x00A2, 5);
         putFuncWithIdx(0x00A3, new ScriptFunc("getWorkerPosition", "unknown", null, p("worker"), p("xDest", "pointer"), p("yDest", "pointer"), p("zDest", "pointer")));
@@ -244,7 +244,7 @@ public abstract class ScriptFuncLib {
         putUnknownFunc(0x00F8, 3);
         putUnknownFunc(0x00F9, 0);
         putUnknownFunc(0x00FA, 1);
-        putUnknownFunc(0x00FB, 1);
+        putFuncWithIdx(0x00FB, new ScriptFunc("getCurrentHoveredDialogueChoice", "int", null, p("boxIndex", "int")));
         putUnknownFunc(0x00FD, 3);
         putUnknownFunc(0x00FE, 2);
         putUnknownFunc(0x0100, 3);
@@ -299,7 +299,7 @@ public abstract class ScriptFuncLib {
         putUnknownFunc(0x0138, 1);
         putUnknownFunc(0x0139, 8);
         putFuncWithIdx(0x0139, new ScriptFunc("requestNumericInput?", "int", null, p(1), p(2), p(3), p(4), p(5), p("x?", "int"), p("y?", "int"), p("align", "textAlignment")));
-        putFuncWithIdx(0x013B, new ScriptFunc("displayFieldChoice", "int", null, p("boxIndex?", "int"), p("string"), p(3), p(4), p("x?", "int"), p("y?", "int"), p("align", "textAlignment")));
+        putFuncWithIdx(0x013B, new ScriptFunc("displayFieldChoice", "int", null, p("boxIndex", "int"), p("string"), p(3), p(4), p("x?", "int"), p("y?", "int"), p("align", "textAlignment")));
         putUnknownFunc(0x013D, 1);
         putUnknownFunc(0x013E, 1);
         putFuncWithIdx(0x013F, new ScriptFunc("resolveStringMacro", "macroString", null, p("section", "stringVarType"), p("entryIndex", "int")));
@@ -331,8 +331,8 @@ public abstract class ScriptFuncLib {
         putUnknownFunc(0x0161, 1);
         putUnknownFunc(0x0166, 1);
         putUnknownFunc(0x0167, 0);
-        putUnknownFunc(0x016A, 2); // maca0200.ebp
-        putUnknownFunc(0x016B, 3);
+        putFuncWithIdx(0x016A, new ScriptFunc(p("bgm"), p(2)));
+        putFuncWithIdx(0x016B, new ScriptFunc(p("bgm"), p(2), p(3)));
         putUnknownFunc(0x016C, 0);
         putFuncWithIdx(0x016D, new ScriptFunc(p("bgm")));
         putUnknownFunc(0x016E, 2);
@@ -382,8 +382,8 @@ public abstract class ScriptFuncLib {
         putUnknownFunc(0x01B1, 0);
         putFuncWithIdx(0x01B2, new ScriptFunc("getItemCount", "int", null, p("item", "move")));
         putUnknownFunc(0x01B5, 0);
-        putUnknownFunc(0x01B6, 0);
-        putUnknownFunc(0x01B7, 1);
+        putFuncWithIdx(0x01B6, new ScriptFunc("?isBrotherhoodUnpowered", "bool", null, true));
+        putFuncWithIdx(0x01B7, new ScriptFunc("applyBrotherhoodPowerup", "unknown", null, p("treasure")));
         putUnknownFunc(0x01B8, 0);
         putUnknownFunc(0x01BA, 2);
         putUnknownFunc(0x01BB, 0);
@@ -557,7 +557,7 @@ public abstract class ScriptFuncLib {
         putUnknownFunc(0x4044, 3);
         putUnknownFunc(0x4045, 1);
         putUnknownFunc(0x4046, 1);
-        putUnknownFunc(0x5000, 1); // Why was this 0?
+        putFuncWithIdx(0x5000, new ScriptFunc(p("motion"))); // Why was this 0?
         putUnknownFunc(0x5001, 1); // noclip: load motion group
         putUnknownFunc(0x5003, 0);
         putUnknownFunc(0x5005, 0);
@@ -890,7 +890,7 @@ public abstract class ScriptFuncLib {
         putUnknownFunc(0x7051, "btlWaitNormalEffect", 0);
         putFuncWithIdx(0x7052, new ScriptFunc("attachActor", "unknown", "btlChrLink", p( "btlActor"), p( "host","btlActor"), p( "attachmentPoint","int")));
         putUnknownFunc(0x7053, "btlMoveJump", 9);
-        putUnknownFunc(0x7054, "btlSetChrPosElem", 3);
+        putFuncWithIdx(0x7054, new ScriptFunc(null, "unknown", "btlSetChrPosElem", p("btlActor"), p(2), p(3)));
         putUnknownFunc(0x7055, "btlSetBodyHit", 1);
         putUnknownFunc(0x7056, "btlSetSpecialBattle", 1);
         putUnknownFunc(0x7057, "btlDirMove", 4);
@@ -915,7 +915,7 @@ public abstract class ScriptFuncLib {
         putUnknownFunc(0x706A, "btlCheckTargetOwn", 1);
         putFuncWithIdx(0x706B, new ScriptFunc(null, "unknown", "btlSetModelHide", p("btlActor"), p("part", "int"), p("show?", "bool")));
         putUnknownFunc(0x706C, "btlSoundEffectNormal", 2);
-        putUnknownFunc(0x706D, "btlSoundStreamNormal", 2);
+        putFuncWithIdx(0x706D, new ScriptFunc(null, "unknown", "btlSoundStreamNormal", p("btlActor"), p(2)));
         putFuncWithIdx(0x706E, new ScriptFunc(null, "unknown", "btlReqVoice", p("btlActor"), p(2)));
         putUnknownFunc(0x706F, "btlSetMotion2", 1);
         putUnknownFunc(0x7070, "btlStatusOn", 0);
@@ -933,7 +933,7 @@ public abstract class ScriptFuncLib {
         putUnknownFunc(0x707C, "btlWaitSound", 0);
         putFuncWithIdx(0x707D, new ScriptFunc("setDebugFlag?", "unknown", "btlSetDebug", p("battleDebugFlag"), p("active", "bool")));
         putUnknownFunc(0x707E, "btlGetDebug", 1);
-        putUnknownFunc(0x707F, "btlSetBtlPos", 1);
+        putFuncWithIdx(0x707F, new ScriptFunc(null, "unknown", "btlSetBtlPos", p("btlActor")));
         putUnknownFunc(0x7080, "btlChangeAuron", 1);
         putUnknownFunc(0x7081, "btlWaitExe", 0);
         putUnknownFunc(0x7082, "btlSetFreeEffect", 2);
@@ -941,8 +941,8 @@ public abstract class ScriptFuncLib {
         putUnknownFunc(0x7084, "btlResetAfterImage", 0);
         putUnknownFunc(0x7085, "btlMoveAttack", 8);
         putUnknownFunc(0x7086, "btlUseChrMpLimit", 0);
-        putUnknownFunc(0x7087, "btlSoundEffectFade", 3);
-        putUnknownFunc(0x7088, "btlRegSoundEffect", 2);
+        putFuncWithIdx(0x7087, new ScriptFunc(null, "unknown", "btlSoundEffectFade", p("btlActor"), p(2), p(3)));
+        putFuncWithIdx(0x7088, new ScriptFunc(null, "unknown", "btlRegSoundEffect", p("btlActor"), p(2)));
         putUnknownFunc(0x7089, "btlRegSoundEffectFade", 3);
         putFuncWithIdx(0x708A, new ScriptFunc(null, "unknown", "btlInitEncount", p("encounter")));
         putFuncWithIdx(0x708B, new ScriptFunc(null, "unknown", "btlGetEncount", p("encounter")));
@@ -1015,7 +1015,7 @@ public abstract class ScriptFuncLib {
         putFuncWithIdx(0x70CE, new ScriptFunc("removeFromPredefinedGroup", "unknown", "btlSubOwnTarget", p("btlActor")));
         putUnknownFunc(0x70CF, "btlGetReverbe", 0);
         putUnknownFunc(0x70D0, "btlSetCameraSelectMode", 1);
-        putUnknownFunc(0x70D1, "btlGetNomEff", 1);
+        putFuncWithIdx(0x70D1, new ScriptFunc(null, "unknown", "btlGetNomEff", p("btlActor")));
         putUnknownFunc(0x70D2, "btlGetHitEff", 1);
         putUnknownFunc(0x70D3, "btlSetNomEff", 3);
         putUnknownFunc(0x70D4, "btlSetHitEff", 3);
@@ -1036,16 +1036,16 @@ public abstract class ScriptFuncLib {
         putUnknownFunc(0x70E3, "btlGetEffectMemory", 1);
         putUnknownFunc(0x70E4, "btlGetCalcResultLimit", 2);
         putUnknownFunc(0x70E5, "btlSetNomEffReg", 3);
-        putUnknownFunc(0x70E6, "btlSetHitEffReg", 3);
+        putFuncWithIdx(0x70E6, new ScriptFunc(null, "unknown", "btlSetHitEffReg", p("btlActor"), p(2), p(3)));
         putUnknownFunc(0x70E7, "btlSetRandomTarget", 1);
         putFuncWithIdx(0x70E8, new ScriptFunc("PlayerTotalGil", "int", "btlGetGold", false));
         putFuncWithIdx(0x70E9, new ScriptFunc("YojimboHireAnswer", "int", "btlGetYoujinboType", false));
-        putUnknownFunc(0x70EA, "btlSetYoujinboType", 1);
+        putFuncWithIdx(0x70EA, new ScriptFunc("setYojimboHireAnswer", "unknown", "btlSetYoujinboType", p("int")));
         putUnknownFunc(0x70EB, "btlGetYoujinboRandom", 0);
         putUnknownFunc(0x70EC, "btlGetItemNum", 1);
         putFuncWithIdx(0x70ED, new ScriptFunc("giveItem", "unknown", "btlGetItem", p("item", "move"), p("quantity", "int")));
         putFuncWithIdx(0x70EE, new ScriptFunc("RollYojimboMove", "move", "btlGetYoujinboCommand", p("motivation", "int"), p("unknown")));
-        putUnknownFunc(0x70EF, "btlSetEffSignal", 2);
+        putFuncWithIdx(0x70EF, new ScriptFunc(null, "unknown", "btlSetEffSignal", p("btlActor"), p(2)));
         putUnknownFunc(0x70F0, "btlGetCameraCount", "float", 0);
         putFuncWithIdx(0x70F1, new ScriptFunc("clearOwnMoves?", "unknown", "btlCommandClear", true));
         putFuncWithIdx(0x70F2, new ScriptFunc("addMoveToSelf?", "unknown", "btlCommandSet", p("move")));
@@ -1071,7 +1071,7 @@ public abstract class ScriptFuncLib {
         putFuncWithIdx(0x7106, new ScriptFunc("doesActorKnowMove", "bool", "btlCheckGetCommand", p("btlActor"), p("move")));
         putUnknownFunc(0x7107, "btlDirPosBasic2", 1);
         putUnknownFunc(0x7108, "btlDirBasic2", 2);
-        putUnknownFunc(0x7109, "btlSetAppear", 3);
+        putFuncWithIdx(0x7109, new ScriptFunc(null, "unknown", "btlSetAppear", p("btlActor"), p(2), p(3)));
         putUnknownFunc(0x710A, "btlSetSummonTiming", 0);
         putUnknownFunc(0x710B, "btlWaitSummonTiming", 0);
         putUnknownFunc(0x710C, "btlTerminateStone", 0);
