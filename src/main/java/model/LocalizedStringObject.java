@@ -1,20 +1,26 @@
 package model;
 
-import main.DataAccess;
 import main.DataReadingManager;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import static main.DataReadingManager.DEFAULT_LOCALIZATION;
+
 /**
  * ply_save.bin
  */
 public class LocalizedStringObject {
     public static final String MISSING_STRING = "<Unset>";
-    public static final String DEFAULT_LOCALIZATION = "us";
 
     private final Map<String, String> contents = new HashMap<>();
+
+    public LocalizedStringObject() {}
+
+    public LocalizedStringObject(String localization, String content) {
+        setLocalizedContent(localization, content);
+    }
 
     public void setLocalizedContent(String localization, String content) {
         contents.put(localization, content);

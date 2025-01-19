@@ -47,7 +47,7 @@ public class MonsterFile implements Nameable {
 
     public void parseScript() {
         if (monsterAi != null) {
-            monsterAi.parseScript(null);
+            monsterAi.parseScript();
         }
     }
 

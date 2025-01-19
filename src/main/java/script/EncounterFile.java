@@ -2,10 +2,13 @@ package script;
 
 import main.StringHelper;
 import model.FormationDataObject;
+import model.LocalizedStringObject;
 import reading.Chunk;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
+
+import static main.DataReadingManager.DEFAULT_LOCALIZATION;
 
 /**
  * jppc/battle/btl/.../.bin
@@ -17,7 +20,7 @@ public class EncounterFile {
     int[] workerMappingBytes;
     int[] formationBytes;
     int[] textBytes;
-    List<String> originalStrings;
+    public List<LocalizedStringObject> strings;
 
     public EncounterFile(List<Chunk> chunks) {
         mapChunks(chunks);
@@ -29,7 +32,11 @@ public class EncounterFile {
         scriptChunk = chunks.get(0);
         workerMappingBytes = chunks.get(1).bytes;
         formationBytes = chunks.get(2).bytes;
-        textBytes = chunks.size() > 6 ? chunks.get(6).bytes : null;
+        if (chunks.size() > 6 && chunks.get(6).offset != 0) {
+            textBytes = chunks.get(6).bytes;
+        } else if (chunks.size() > 4 && chunks.get(4).offset != 0) {
+            textBytes = chunks.get(4).bytes;
+        }
     }
 
     private void mapObjects(int chunkCount) {
@@ -40,25 +47,34 @@ public class EncounterFile {
     }
 
     private void mapStrings() {
-        originalStrings = StringHelper.readStringData(textBytes, false);
+        List<String> rawStrings = StringHelper.readStringData(textBytes, false);
+        if (rawStrings != null) {
+            strings = rawStrings.stream().map(str -> new LocalizedStringObject(DEFAULT_LOCALIZATION, str)).collect(Collectors.toList());
+        }
     }
 
-    public void parseScript(List<String> strings) {
-        if (encounterScript != null) {
-            List<String> combinedStrings = originalStrings != null ? new ArrayList<>(originalStrings) : new ArrayList<>();
-            if (strings != null && !strings.isEmpty()) {
-                for (int i = 0; i < strings.size(); i++) {
-                    String str = strings.get(i);
-                    if (str != null && !str.isBlank()) {
-                        if (i < combinedStrings.size()) {
-                            combinedStrings.set(i, str);
-                        } else {
-                            combinedStrings.add(str);
-                        }
-                    }
+    public void addLocalizations(List<LocalizedStringObject> strings) {
+        if (this.strings == null) {
+            this.strings = strings;
+            return;
+        }
+        for (int i = 0; i < strings.size(); i++) {
+            LocalizedStringObject localizationStringObject = strings.get(i);
+            if (i < this.strings.size()) {
+                LocalizedStringObject stringObject = this.strings.get(i);
+                if (stringObject != null && localizationStringObject != null) {
+                    localizationStringObject.copyInto(stringObject);
                 }
+            } else {
+                this.strings.add(localizationStringObject);
             }
-            encounterScript.parseScript(combinedStrings);
+        }
+    }
+
+    public void parseScript() {
+        if (encounterScript != null) {
+            encounterScript.setStrings(strings);
+            encounterScript.parseScript();
         }
     }
 

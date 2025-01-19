@@ -1,8 +1,10 @@
 package model.spheregrid;
 
 import main.DataAccess;
+import main.DataReadingManager;
 import main.StringHelper;
 import model.AbilityDataObject;
+import model.LocalizedStringObject;
 import model.Nameable;
 import script.model.StackObject;
 
@@ -18,54 +20,61 @@ public class SphereGridNodeTypeDataObject implements Nameable {
     public static final int LENGTH = 0x18;
     private final int[] bytes;
 
-    public String name;
-    public String dash;
-    public String description;
-    public String otherText;
+    public LocalizedStringObject name = new LocalizedStringObject();
+    public LocalizedStringObject unusedString0405 = new LocalizedStringObject();
+    public LocalizedStringObject description = new LocalizedStringObject();
+    public LocalizedStringObject unusedString0C0D = new LocalizedStringObject();
 
     private int nameOffset;
-    private int unknownBytes0203;
-    private int dashOffset;
-    private int unknownBytes0607;
+    private int nameKey;
+    private int unusedString0405Offset;
+    private int unusedString0405Key;
     private int descriptionOffset;
-    private int unknownBytes0A0B;
-    private int otherTextOffset;
-    private int unknownBytes0E0F;
+    private int descriptionKey;
+    private int unusedString0C0DOffset;
+    private int unusedString0C0DKey;
     private int nodeEffectBitfield; // 0080 = Lock
     private int learnedMove;
     private int increaseAmount;
     private int appearanceType;
 
-    public SphereGridNodeTypeDataObject(int[] bytes, int[] stringBytes) {
+    public SphereGridNodeTypeDataObject(int[] bytes, int[] stringBytes, String localization) {
         this.bytes = bytes;
         mapBytes();
-        mapStrings(stringBytes);
+        mapStrings(stringBytes, localization);
     }
 
     public SphereGridNodeTypeDataObject(int[] bytes) {
-        this(bytes, null);
+        this(bytes, null, DataReadingManager.DEFAULT_LOCALIZATION);
     }
 
     private void mapBytes() {
         nameOffset = read2Bytes(0x00);
-        unknownBytes0203 = read2Bytes(0x02);
-        dashOffset = read2Bytes(0x04);
-        unknownBytes0607 = read2Bytes(0x06);
+        nameKey = read2Bytes(0x02);
+        unusedString0405Offset = read2Bytes(0x04);
+        unusedString0405Key = read2Bytes(0x06);
         descriptionOffset = read2Bytes(0x08);
-        unknownBytes0A0B = read2Bytes(0x0A);
-        otherTextOffset = read2Bytes(0x0C);
-        unknownBytes0E0F = read2Bytes(0x0E);
+        descriptionKey = read2Bytes(0x0A);
+        unusedString0C0DOffset = read2Bytes(0x0C);
+        unusedString0C0DKey = read2Bytes(0x0E);
         nodeEffectBitfield = read2Bytes(0x10);
         learnedMove = read2Bytes(0x12);
         increaseAmount = read2Bytes(0x14);
         appearanceType = read2Bytes(0x16);
     }
 
-    private void mapStrings(int[] stringBytes) {
-        name = StringHelper.getStringAtLookupOffset(stringBytes, nameOffset);
-        dash = StringHelper.getStringAtLookupOffset(stringBytes, dashOffset);
-        description = StringHelper.getStringAtLookupOffset(stringBytes, descriptionOffset);
-        otherText = StringHelper.getStringAtLookupOffset(stringBytes, otherTextOffset);
+    private void mapStrings(int[] stringBytes, String localization) {
+        name.setLocalizedContent(localization, StringHelper.getStringAtLookupOffset(stringBytes, nameOffset));
+        unusedString0405.setLocalizedContent(localization, StringHelper.getStringAtLookupOffset(stringBytes, unusedString0405Offset));
+        description.setLocalizedContent(localization, StringHelper.getStringAtLookupOffset(stringBytes, descriptionOffset));
+        unusedString0C0D.setLocalizedContent(localization, StringHelper.getStringAtLookupOffset(stringBytes, unusedString0C0DOffset));
+    }
+
+    public void setLocalizations(SphereGridNodeTypeDataObject localizationObject) {
+        localizationObject.name.copyInto(name);
+        localizationObject.unusedString0405.copyInto(unusedString0405);
+        localizationObject.description.copyInto(description);
+        localizationObject.unusedString0C0D.copyInto(unusedString0C0D);
     }
 
     @Override
@@ -80,15 +89,13 @@ public class SphereGridNodeTypeDataObject implements Nameable {
         }
         list.add("Appearance?=" + appearanceType + " [" + String.format("%04X", appearanceType) + "h]");
         String full = list.stream().filter(s -> s != null && !s.isBlank()).collect(Collectors.joining(", "));
-        String dashStr = (dashOffset > 0 && StringHelper.PRINT_DASH_STRINGS_IF_NOT_DASHES && !"-".equals(dash) ? "DH=" + dash + " / " : "");
-        String descriptionStr = (descriptionOffset > 0 ? description : "");
-        String soText = (otherTextOffset > 0 && StringHelper.PRINT_DASH_STRINGS_IF_NOT_DASHES && !"-".equals(otherText) ? " / OT=" + otherText : "");
-        return String.format("%-20s", getName()) + " { " + full + " } " + dashStr + descriptionStr + soText;
+        String descriptionStr = (descriptionOffset > 0 ? description.getDefaultContent() : "");
+        return String.format("%-20s", getName()) + " { " + full + " } " + descriptionStr;
     }
 
     @Override
     public String getName(String localization) {
-        return name;
+        return name.getLocalizedContent(localization);
     }
 
     private int read2Bytes(int offset) {

@@ -1,5 +1,6 @@
 package script;
 
+import model.LocalizedStringObject;
 import reading.Chunk;
 import script.model.*;
 
@@ -48,7 +49,7 @@ public class ScriptObject {
     protected int scriptCodeEndAddress;
     protected int namespaceCount;  // Total number of workers
     protected int actorCount; // Total number of workers except subroutines
-    public List<String> strings;
+    public List<LocalizedStringObject> strings;
     public List<Integer> areaNameIndexes;
     Stack<StackObject> stack = new Stack<>();
     Map<Integer, String> currentTempITypes = new HashMap<>();
@@ -133,8 +134,11 @@ public class ScriptObject {
         parseBattleWorkerTypes();
     }
 
-    public void parseScript(List<String> strings) {
+    public void setStrings(List<LocalizedStringObject> strings) {
         this.strings = strings;
+    }
+
+    public void parseScript() {
         scriptCodeEndAddress = scriptCodeStartAddress + scriptCodeLength;
         actualScriptCodeBytes = Arrays.copyOfRange(bytes, scriptCodeStartAddress, scriptCodeEndAddress);
         syntacticParseScriptCode();
@@ -947,7 +951,7 @@ public class ScriptObject {
         }
         if (areaNameIndexes != null) {
             lines.add("Area Names");
-            areaNameIndexes.forEach(i -> lines.add(MACRO_LOOKUP.get(0xB00 + i)));
+            areaNameIndexes.forEach(i -> lines.add(MACRO_LOOKUP.get(0xB00 + i).getDefaultContent()));
         }
         lines.add(namespaceCount + " Workers Total");
         for (int i = 0; i < namespaceCount; i++) {

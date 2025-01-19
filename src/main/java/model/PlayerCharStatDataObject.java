@@ -18,8 +18,9 @@ public class PlayerCharStatDataObject implements Nameable {
 
     private final int[] bytes;
 
+    public LocalizedStringObject characterName = new LocalizedStringObject();
     int nameOffset;
-    public String characterName;
+    private int nameKey;
 
     int baseHp;
     int baseMp;
@@ -75,15 +76,16 @@ public class PlayerCharStatDataObject implements Nameable {
     int encounterCount;
     int killCount;
 
-    public PlayerCharStatDataObject(int[] bytes, int[] stringBytes) {
+    public PlayerCharStatDataObject(int[] bytes, int[] stringBytes, String localization) {
         this.bytes = bytes;
         mapBytes();
         mapFlags();
-        mapStrings(stringBytes);
+        mapStrings(stringBytes, localization);
     }
 
     private void mapBytes() {
         nameOffset = read2Bytes(bytes, 0x00);
+        nameKey = read2Bytes(bytes, 0x02);
         baseHp = read4Bytes(bytes, 0x04);
         baseMp = read4Bytes(bytes, 0x08);
         baseStr = bytes[0x0C];
@@ -145,16 +147,21 @@ public class PlayerCharStatDataObject implements Nameable {
         // TODO
     }
 
-    private void mapStrings(int[] stringBytes) {
+    private void mapStrings(int[] stringBytes, String localization) {
         if (stringBytes == null || stringBytes.length == 0) {
             return;
         }
-        characterName = StringHelper.getStringAtLookupOffset(stringBytes, nameOffset);
+        characterName.setLocalizedContent(localization, StringHelper.getStringAtLookupOffset(stringBytes, nameOffset));
+    }
+
+    public void setLocalizations(PlayerCharStatDataObject localizationObject) {
+        localizationObject.characterName.copyInto(characterName);
     }
 
     public String getStrings() {
         List<String> list = new ArrayList<>();
-        list.add("Name: " + characterName + " (Offset " + String.format("%04X", nameOffset) + ")");
+        list.add("Name at Offset " + String.format("%04X", nameOffset) + ":");
+        list.add(characterName.getAllContent());
         // TODO
         String full = list.stream().filter(s -> s != null && !s.isBlank()).collect(Collectors.joining("\n"));
         return full;
@@ -186,6 +193,6 @@ public class PlayerCharStatDataObject implements Nameable {
 
     @Override
     public String getName(String localization) {
-        return characterName;
+        return characterName.getLocalizedContent(localization);
     }
 }

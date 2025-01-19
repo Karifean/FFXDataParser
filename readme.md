@@ -43,7 +43,9 @@ You can then run the parser with the following command:
 | `PARSE_SCRIPT_FILE`     | `<file/folder1> [<file/folder2>] ...` | Reads the script from a file and prints it to the console. If given a folder, recurses through all script files within. |
 | `PARSE_MONSTER`            | `<mIndex1, ex: 234> [<mIndex2, ex: 235>] ...` | Reads the monster files with the given decimal index and prints their information. |
 | `PARSE_ENCOUNTER`          | `<btlIndex1, ex: sins04_07> [<btlIndex2, ex: zzzz03_33>] ...` | Reads the encounter files with the given name and prints their information. | 
+| `PARSE_ALL_ENCOUNTERS`          | | Reads all encounter files and prints their information. | 
 | `PARSE_EVENT`              | `<evIndex1, ex: lmyt0000> [<evIndex2, ex: kami0300>] ...` | Reads the event files with the given name and prints their information. |
+| `PARSE_ALL_EVENTS`              | | Reads all event files (except blitzball events) and prints their information. |
 
 
 #### Example usages:

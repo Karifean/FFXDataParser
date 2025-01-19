@@ -1,12 +1,14 @@
 package script;
 
 import main.StringHelper;
+import model.LocalizedStringObject;
 import model.Nameable;
 import reading.Chunk;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
+import static main.DataReadingManager.DEFAULT_LOCALIZATION;
 import static main.StringHelper.MACRO_LOOKUP;
 
 /**
@@ -16,7 +18,7 @@ public class EventFile implements Nameable {
     public ScriptObject eventScript;
     Chunk scriptChunk;
     int[] textBytes;
-    List<String> originalStrings;
+    List<LocalizedStringObject> strings;
 
     public EventFile(List<Chunk> chunks) {
         mapChunks(chunks);
@@ -34,25 +36,34 @@ public class EventFile implements Nameable {
     }
 
     private void mapStrings() {
-        originalStrings = StringHelper.readStringData(textBytes, false);
+        List<String> rawStrings = StringHelper.readStringData(textBytes, false);
+        if (rawStrings != null) {
+            this.strings = rawStrings.stream().map(str -> new LocalizedStringObject(DEFAULT_LOCALIZATION, str)).collect(Collectors.toList());
+        }
     }
 
-    public void parseScript(List<String> strings) {
-        if (eventScript != null) {
-            List<String> combinedStrings = originalStrings != null ? new ArrayList<>(originalStrings) : new ArrayList<>();
-            if (strings != null && !strings.isEmpty()) {
-                for (int i = 0; i < strings.size(); i++) {
-                    String str = strings.get(i);
-                    if (str != null && !str.isBlank()) {
-                        if (i < combinedStrings.size()) {
-                            combinedStrings.set(i, str);
-                        } else {
-                            combinedStrings.add(str);
-                        }
-                    }
+    public void addLocalizations(List<LocalizedStringObject> strings) {
+        if (this.strings == null) {
+            this.strings = strings;
+            return;
+        }
+        for (int i = 0; i < strings.size(); i++) {
+            LocalizedStringObject localizationStringObject = strings.get(i);
+            if (i < this.strings.size()) {
+                LocalizedStringObject stringObject = this.strings.get(i);
+                if (stringObject != null && localizationStringObject != null) {
+                    localizationStringObject.copyInto(stringObject);
                 }
+            } else {
+                this.strings.add(localizationStringObject);
             }
-            eventScript.parseScript(combinedStrings);
+        }
+    }
+
+    public void parseScript() {
+        if (eventScript != null) {
+            eventScript.setStrings(strings);
+            eventScript.parseScript();
         }
     }
 
@@ -75,6 +86,6 @@ public class EventFile implements Nameable {
         if (eventScript == null || eventScript.areaNameIndexes == null || eventScript.areaNameIndexes.isEmpty()) {
             return null;
         }
-        return MACRO_LOOKUP.get(0xB00 + eventScript.areaNameIndexes.get(0));
+        return MACRO_LOOKUP.get(0xB00 + eventScript.areaNameIndexes.get(0)).getLocalizedContent(localization);
     }
 }

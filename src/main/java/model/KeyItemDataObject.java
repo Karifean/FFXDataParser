@@ -12,53 +12,45 @@ import java.util.stream.Collectors;
 public class KeyItemDataObject implements Nameable {
     private final int[] bytes;
 
-    public String name;
-    public String dash;
-    public String description;
-    public String otherText;
+    public LocalizedStringObject name = new LocalizedStringObject();
+    public LocalizedStringObject unusedString0405 = new LocalizedStringObject();
+    public LocalizedStringObject description = new LocalizedStringObject();
+    public LocalizedStringObject unusedString0C0D = new LocalizedStringObject();
 
     private int nameOffset;
-    int unknownByte2;
-    int unknownByte3;
-    private int dashOffset;
-    int unknownByte6;
-    int unknownByte7;
+    private int nameKey;
+    private int unusedString0405Offset;
+    private int unusedString0405Key;
     private int descriptionOffset;
-    int unknownByte0A;
-    int unknownByte0B;
-    private int otherTextOffset;
-    int unknownByte0E;
-    int unknownByte0F;
+    private int descriptionKey;
+    private int unusedString0C0DOffset;
+    private int unusedString0C0DKey;
 
     int isAlBhedPrimer;
     int alwaysZero;
     int unknownByte12;
     int ordering;
 
-    public KeyItemDataObject(int[] bytes, int[] stringBytes) {
+    public KeyItemDataObject(int[] bytes, int[] stringBytes, String localization) {
         this.bytes = bytes;
         mapBytes();
         mapFlags();
-        mapStrings(stringBytes);
+        mapStrings(stringBytes, localization);
     }
 
     public String getName(String localization) {
-        return name;
+        return name.getLocalizedContent(localization);
     }
 
     private void mapBytes() {
         nameOffset = read2Bytes(0x00);
-        unknownByte2 = bytes[0x02];
-        unknownByte3 = bytes[0x03];
-        dashOffset = read2Bytes(0x04);
-        unknownByte6 = bytes[0x06];
-        unknownByte7 = bytes[0x07];
+        nameKey = read2Bytes(0x02);
+        unusedString0405Offset = read2Bytes(0x04);
+        unusedString0405Key = read2Bytes(0x06);
         descriptionOffset = read2Bytes(0x08);
-        unknownByte0A = bytes[0x0A];
-        unknownByte0B = bytes[0x0B];
-        otherTextOffset = read2Bytes(0x0C);
-        unknownByte0E = bytes[0x0E];
-        unknownByte0F = bytes[0x0F];
+        descriptionKey = read2Bytes(0x0A);
+        unusedString0C0DOffset = read2Bytes(0x0C);
+        unusedString0C0DKey = read2Bytes(0x0E);
         isAlBhedPrimer = bytes[0x10];
         alwaysZero = bytes[0x11];
         unknownByte12 = bytes[0x12];
@@ -68,11 +60,18 @@ public class KeyItemDataObject implements Nameable {
     private void mapFlags() {
     }
 
-    private void mapStrings(int[] stringBytes) {
-        name = StringHelper.getStringAtLookupOffset(stringBytes, nameOffset);
-        dash = StringHelper.getStringAtLookupOffset(stringBytes, dashOffset);
-        description = StringHelper.getStringAtLookupOffset(stringBytes, descriptionOffset);
-        otherText = StringHelper.getStringAtLookupOffset(stringBytes, otherTextOffset);
+    private void mapStrings(int[] stringBytes, String localization) {
+        name.setLocalizedContent(localization, StringHelper.getStringAtLookupOffset(stringBytes, nameOffset));
+        unusedString0405.setLocalizedContent(localization, StringHelper.getStringAtLookupOffset(stringBytes, unusedString0405Offset));
+        description.setLocalizedContent(localization, StringHelper.getStringAtLookupOffset(stringBytes, descriptionOffset));
+        unusedString0C0D.setLocalizedContent(localization, StringHelper.getStringAtLookupOffset(stringBytes, unusedString0C0DOffset));
+    }
+
+    public void setLocalizations(KeyItemDataObject localizationObject) {
+        localizationObject.name.copyInto(name);
+        localizationObject.unusedString0405.copyInto(unusedString0405);
+        localizationObject.description.copyInto(description);
+        localizationObject.unusedString0C0D.copyInto(unusedString0C0D);
     }
 
     @Override
@@ -83,10 +82,8 @@ public class KeyItemDataObject implements Nameable {
         list.add(ifG0(alwaysZero, "byte11 not Zero!=", ""));
         list.add("Ordering: " + ordering + " [" + String.format("%02X", ordering) + "h]");
         String full = list.stream().filter(s -> s != null && !s.isBlank()).collect(Collectors.joining(", "));
-        String dashStr = (dashOffset > 0 && StringHelper.PRINT_DASH_STRINGS_IF_NOT_DASHES && !"-".equals(dash) ? "DH=" + dash + " / " : "");
-        String descriptionStr = (descriptionOffset > 0 ? description : "");
-        String soText = (otherTextOffset > 0 && StringHelper.PRINT_DASH_STRINGS_IF_NOT_DASHES && !"-".equals(otherText) ? " / OT=" + otherText : "");
-        return String.format("%-20s", getName()) + " { " + full + " } " + dashStr + descriptionStr + soText;
+        String descriptionStr = (descriptionOffset > 0 ? description.getDefaultContent() : "");
+        return String.format("%-20s", getName()) + " { " + full + " } " + descriptionStr;
     }
 
     private int read2Bytes(int offset) {

@@ -12,7 +12,10 @@ import java.util.List;
 public class MacroDictionaryFile {
     List<List<String>> allStrings = new ArrayList<>();
 
-    public MacroDictionaryFile(List<Chunk> chunks) {
+    private String localization;
+
+    public MacroDictionaryFile(List<Chunk> chunks, String localization) {
+        this.localization = localization;
         for (Chunk chunk : chunks) {
             allStrings.add(mapStringsForChunk(chunk));
         }
@@ -36,7 +39,7 @@ public class MacroDictionaryFile {
         List<String> list = allStrings.get(i);
         int stringCount = list.size();
         for (int j = 0; j < stringCount; j++) {
-            StringHelper.MACRO_LOOKUP.put(i * 0x100 + j, list.get(j));
+            StringHelper.MACRO_LOOKUP.computeIfAbsent(i * 0x100 + j, k -> new LocalizedStringObject()).setLocalizedContent(localization, list.get(j));
         }
     }
 

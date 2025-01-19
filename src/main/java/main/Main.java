@@ -3,10 +3,15 @@ package main;
 import model.AbilityDataObject;
 import model.GearAbilityDataObject;
 import reading.FileAccessorWithMods;
+import script.EncounterFile;
+import script.EventFile;
 import script.MonsterFile;
 
+import java.io.File;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 import static main.DataReadingManager.*;
 
@@ -25,12 +30,17 @@ public class Main {
     private static final String MODE_READ_STRING_FILE = "READ_STRING_FILE";
     private static final String MODE_PARSE_SCRIPT_FILE = "PARSE_SCRIPT_FILE";
     private static final String MODE_PARSE_ENCOUNTER = "PARSE_ENCOUNTER";
+    private static final String MODE_PARSE_ALL_ENCOUNTERS = "PARSE_ALL_ENCOUNTERS";
     private static final String MODE_PARSE_EVENT = "PARSE_EVENT";
+    private static final String MODE_PARSE_ALL_EVENTS = "PARSE_ALL_EVENTS";
     private static final String MODE_PARSE_MONSTER = "PARSE_MONSTER";
     private static final String MODE_READ_SPHERE_GRID_NODE_TYPES = "READ_SPHERE_GRID_NODE_TYPES";
     private static final String MODE_READ_SPHERE_GRID_LAYOUT = "READ_SPHERE_GRID_LAYOUT";
     private static final String MODE_READ_CUSTOMIZATIONS = "READ_CUSTOMIZATIONS";
     private static final String MODE_READ_MACROS = "READ_MACROS";
+    private static final String MODE_CUSTOM = "CUSTOM";
+
+    private static final boolean SKIP_BLITZBALL_EVENTS_FOLDER = true;
 
     public static void main(String[] args) {
         String pathRoot = args[0];
@@ -106,9 +116,46 @@ public class Main {
                     readEncounterFull(filename, true);
                 }
                 break;
+            case MODE_PARSE_ALL_ENCOUNTERS:
+                File encountersFolder = FileAccessorWithMods.getRealFile(PATH_ORIGINALS_ENCOUNTER);
+                if (encountersFolder.isDirectory()) {
+                    String[] contents = encountersFolder.list();
+                    if (contents != null) {
+                        System.out.println("Found encounters: " + String.join(", ", contents));
+                        Arrays.stream(contents).filter(sf -> !sf.startsWith(".")).sorted().forEach(sf -> readEncounterFull(sf, true));
+                    } else {
+                        System.out.println("Cannot list encounters");
+                    }
+                } else {
+                    System.out.println("Cannot locate encounters");
+                }
+                break;
             case MODE_PARSE_EVENT:
                 for (String filename : realArgs) {
                     readEventFull(filename, true);
+                }
+                break;
+            case MODE_PARSE_ALL_EVENTS:
+                File eventsFolder = FileAccessorWithMods.getRealFile(PATH_ORIGINALS_EVENT);
+                if (eventsFolder.isDirectory()) {
+                    String[] contents = eventsFolder.list();
+                    if (contents != null) {
+                        System.out.println("Found folders: " + String.join(", ", contents));
+                        List<String> eventFiles = Arrays.stream(contents)
+                                .filter(sf -> !sf.startsWith(".") && (!SKIP_BLITZBALL_EVENTS_FOLDER || !sf.equals("bl")))
+                                .sorted()
+                                .map(path -> FileAccessorWithMods.getRealFile(PATH_ORIGINALS_EVENT + path))
+                                .filter(f -> f.isDirectory())
+                                .flatMap(f -> Arrays.stream(Objects.requireNonNull(f.list())))
+                                .filter(sf -> !sf.startsWith("."))
+                                .collect(Collectors.toList());
+                        System.out.println("Found events: " + String.join(", ", eventFiles));
+                        eventFiles.forEach(ev -> readEventFull(ev, true));
+                    } else {
+                        System.out.println("Cannot list events");
+                    }
+                } else {
+                    System.out.println("Cannot locate events");
                 }
                 break;
             case MODE_PARSE_SCRIPT_FILE:
@@ -118,13 +165,24 @@ public class Main {
                         readMonsterFile(filename, true);
                     } else if (filename.contains("battle/btl")) {
                         System.out.println("Encounter file: " + filename);
-                        readEncounterFile(filename, true, null);
+                        EncounterFile encounterFile = readEncounterFile(filename, true);
+                        if (encounterFile != null) {
+                            encounterFile.parseScript();
+                            System.out.println(encounterFile);
+                        } else {
+                            System.out.println("Null");
+                        }
                     } else if (filename.contains("event/obj")) {
                         System.out.println("Event file: " + filename);
-                        readEventFile(filename, true, null);
+                        EventFile eventFile = readEventFile(filename, true);
+                        if (eventFile != null) {
+                            eventFile.parseScript();
+                            System.out.println(eventFile);
+                        } else {
+                            System.out.println("Null");
+                        }
                     } else {
                         System.out.println("Failed to identify file: " + filename);
-                        readEncounterFile(filename, true, null);
                     }
                 }
                 break;
@@ -159,7 +217,7 @@ public class Main {
                 }
                 break;
             case MODE_READ_KEY_ITEMS:
-                readKeyItemsFromFile(PATH_LOCALIZED_KERNEL + "important.bin", true);
+                readKeyItems("battle/kernel/important.bin", true);
                 break;
             case MODE_READ_GEAR_ABILITIES:
                 // readGearAbilitiesFromFile(PATH_LOCALIZED_KERNEL + "a_ability.bin", "us", true);
@@ -168,8 +226,8 @@ public class Main {
                 }
                 break;
             case MODE_READ_SPHERE_GRID_NODE_TYPES:
-                readSphereGridSphereTypes(PATH_LOCALIZED_KERNEL + "sphere.bin", true);
-                readSphereGridNodeTypes(PATH_LOCALIZED_KERNEL + "panel.bin", true);
+                readSphereGridSphereTypes("battle/kernel/sphere.bin", true);
+                readSphereGridNodeTypes("battle/kernel/panel.bin", true);
                 break;
             case MODE_READ_SPHERE_GRID_LAYOUT:
                 readSphereGridLayout(realArgs.get(0), realArgs.get(1), true);
@@ -184,7 +242,10 @@ public class Main {
                 }
                 break;
             case MODE_READ_MACROS:
-                prepareStringMacros(PATH_LOCALIZED_ROOT + "menu/macrodic.dcp", true);
+                prepareStringMacros(PATH_FFX_ROOT + "new_uspc/menu/macrodic.dcp", "us", true);
+                break;
+            case MODE_CUSTOM:
+                readX2AbilitiesFromFile("ffx_ps2/ffx2/master/new_uspc/battle/kernel/command.bin", "us", true);
                 break;
             default:
                 break;

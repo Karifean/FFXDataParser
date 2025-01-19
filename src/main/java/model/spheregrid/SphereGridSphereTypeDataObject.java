@@ -1,8 +1,10 @@
 package model.spheregrid;
 
 import main.DataAccess;
+import main.DataReadingManager;
 import main.StringHelper;
 import model.AbilityDataObject;
+import model.LocalizedStringObject;
 import model.Nameable;
 import script.model.StackObject;
 
@@ -18,13 +20,13 @@ public class SphereGridSphereTypeDataObject implements Nameable {
     public static final int LENGTH = 0x10;
     private final int[] bytes;
 
-    public String description;
-    public String dash;
+    public LocalizedStringObject description = new LocalizedStringObject();
+    public LocalizedStringObject unusedString0405 = new LocalizedStringObject();
 
     private int descriptionOffset;
-    private int unknownBytes0203;
-    private int dashOffset;
-    private int unknownBytes0607;
+    private int descriptionKey;
+    private int unusedString0405Offset;
+    private int unusedString0405Key;
     private int actionByte;
     private int activationBitfield;
     private int rangeByte;
@@ -34,22 +36,22 @@ public class SphereGridSphereTypeDataObject implements Nameable {
     private boolean isActivator;
     private boolean isShortRange;
 
-    public SphereGridSphereTypeDataObject(int[] bytes, int[] stringBytes) {
+    public SphereGridSphereTypeDataObject(int[] bytes, int[] stringBytes, String localization) {
         this.bytes = bytes;
         mapBytes();
         mapFlags();
-        mapStrings(stringBytes);
+        mapStrings(stringBytes, localization);
     }
 
     public SphereGridSphereTypeDataObject(int[] bytes) {
-        this(bytes, null);
+        this(bytes, null, DataReadingManager.DEFAULT_LOCALIZATION);
     }
 
     private void mapBytes() {
         descriptionOffset = read2Bytes(0x00);
-        unknownBytes0203 = read2Bytes(0x02);
-        dashOffset = read2Bytes(0x04);
-        unknownBytes0607 = read2Bytes(0x06);
+        descriptionKey = read2Bytes(0x02);
+        unusedString0405Offset = read2Bytes(0x04);
+        unusedString0405Key = read2Bytes(0x06);
         actionByte = read2Bytes(0x08);
         activationBitfield = read2Bytes(0x0A);
         rangeByte = bytes[0x0C];
@@ -62,39 +64,43 @@ public class SphereGridSphereTypeDataObject implements Nameable {
         isShortRange = rangeByte == 0x01;
     }
 
-    private void mapStrings(int[] stringBytes) {
-        description = StringHelper.getStringAtLookupOffset(stringBytes, descriptionOffset);
-        dash = StringHelper.getStringAtLookupOffset(stringBytes, dashOffset);
+    private void mapStrings(int[] stringBytes, String localization) {
+        description.setLocalizedContent(localization, StringHelper.getStringAtLookupOffset(stringBytes, descriptionOffset));
+        unusedString0405.setLocalizedContent(localization, StringHelper.getStringAtLookupOffset(stringBytes, unusedString0405Offset));
+    }
+
+    public void setLocalizations(SphereGridSphereTypeDataObject localizationObject) {
+        localizationObject.description.copyInto(description);
+        localizationObject.unusedString0405.copyInto(unusedString0405);
     }
 
     @Override
     public String toString() {
         List<String> list = new ArrayList<>();
         if (actionByte == 0x01) {
-            list.add("Activator" + " [" + String.format("%02X", actionByte) + "h]");
+            list.add("Activator" + StringHelper.hex2Suffix(actionByte));
         } else if (actionByte == 0x02) {
-            list.add("Mutator" + " [" + String.format("%02X", actionByte) + "h]");
+            list.add("Mutator" + StringHelper.hex2Suffix(actionByte));
         } else {
-            list.add("Unknown Action" + " [" + String.format("%02X", actionByte) + "h]");
+            list.add("Unknown Action" + StringHelper.hex2Suffix(actionByte));
         }
         if (activationBitfield > 0) {
-            list.add("Activates=" + StackObject.bitfieldToString("sgNodeEffectsBitfield", activationBitfield) + " [" + String.format("%04X", activationBitfield) + "h]");
+            list.add("Activates=" + StackObject.bitfieldToString("sgNodeEffectsBitfield", activationBitfield) + StringHelper.hex4Suffix(activationBitfield));
         }
         if (rangeByte == 0x01) {
-            list.add("Short Range" + " [" + String.format("%02X", rangeByte) + "h]");
+            list.add("Short Range" + StringHelper.hex2Suffix(rangeByte));
         } else if (rangeByte == 0x20) {
-            list.add("Long Range" + " [" + String.format("%02X", rangeByte) + "h]");
+            list.add("Long Range" + StringHelper.hex2Suffix(rangeByte));
         } else {
-            list.add("Unknown Range" + " [" + String.format("%02X", rangeByte) + "h]");
+            list.add("Unknown Range" + StringHelper.hex2Suffix(rangeByte));
         }
-        list.add("SpecialRole=" + specialRole + " [" + String.format("%02X", specialRole) + "h]");
+        list.add("SpecialRole=" + specialRole + StringHelper.hex2Suffix(specialRole));
         if (alwaysZero > 0) {
             list.add("Not Zero !? " + alwaysZero);
         }
         String full = list.stream().filter(s -> s != null && !s.isBlank()).collect(Collectors.joining(", "));
-        String dashStr = (dashOffset > 0 && StringHelper.PRINT_DASH_STRINGS_IF_NOT_DASHES && !"-".equals(dash) ? "DH=" + dash + " / " : "");
-        String descriptionStr = (descriptionOffset > 0 ? description : "");
-        return "{ " + full + " } " + dashStr + descriptionStr;
+        String descriptionStr = (descriptionOffset > 0 ? description.getDefaultContent() : "");
+        return "{ " + full + " } " + descriptionStr;
     }
 
     @Override
@@ -110,7 +116,7 @@ public class SphereGridSphereTypeDataObject implements Nameable {
 
     private static String asMove(int idx) {
         AbilityDataObject move = DataAccess.getMove(idx);
-        return (move != null ? move.name : "null") + " [" + String.format("%04X", idx) + "h]";
+        return (move != null ? move.name : "null") + StringHelper.hex4Suffix(idx);
     }
 
     private static String formatUnknownByte(int bt) {

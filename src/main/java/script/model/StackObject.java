@@ -3,6 +3,7 @@ package script.model;
 import main.DataAccess;
 import main.StringHelper;
 import model.AbilityDataObject;
+import model.LocalizedStringObject;
 import model.Nameable;
 import script.MonsterFile;
 import script.ScriptObject;
@@ -120,10 +121,10 @@ public class StackObject {
                 } catch (UnsupportedOperationException ignored) {}
             }
             if ("macroString".equals(type)) {
-                return StringHelper.MACRO_LOOKUP.getOrDefault(value, "<Missing>");
+                return StringHelper.MACRO_LOOKUP.computeIfAbsent(value, k -> new LocalizedStringObject()).getDefaultContent();
             }
             if ("localString".equals(type) && parentScript != null && parentScript.strings != null && parentScript.strings.size() > value) {
-                String targetString = parentScript.strings.get(value);
+                String targetString = parentScript.strings.get(value).getDefaultContent();
                 String nullSafeString = targetString != null ? targetString : "null";
                 String noLineBreakString = nullSafeString.replace("\n", "\\n");
                 return '"' + noLineBreakString + '"' + hexSuffix;

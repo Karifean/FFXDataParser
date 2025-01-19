@@ -25,17 +25,17 @@ public class AbilityDataObject implements Nameable {
     private final int[] bytes;
 
     public LocalizedStringObject name = new LocalizedStringObject();
-    public LocalizedStringObject dash = new LocalizedStringObject();
+    public LocalizedStringObject unusedString0405 = new LocalizedStringObject();
     public LocalizedStringObject description = new LocalizedStringObject();
-    public LocalizedStringObject otherText = new LocalizedStringObject();
+    public LocalizedStringObject unusedString0C0D = new LocalizedStringObject();
     public int nameOffset;
-    public int dashOffset;
+    public int unusedString0405Offset;
     public int descriptionOffset;
-    public int otherTextOffset;
-    int nameStringKey;
-    int dashStringKey;
-    int descriptionStringKey;
-    int otherTextStringKey;
+    public int unusedString0C0DOffset;
+    int nameKey;
+    int unusedString0405Key;
+    int descriptionKey;
+    int unusedString0C0DKey;
     int anim1;
     int anim2;
     int icon;
@@ -239,13 +239,13 @@ public class AbilityDataObject implements Nameable {
 
     private void mapBytes() {
         nameOffset = read2Bytes(0x00);
-        nameStringKey = read2Bytes(0x02);
-        dashOffset = read2Bytes(0x04);
-        dashStringKey = read2Bytes(0x06);
+        nameKey = read2Bytes(0x02);
+        unusedString0405Offset = read2Bytes(0x04);
+        unusedString0405Key = read2Bytes(0x06);
         descriptionOffset = read2Bytes(0x08);
-        descriptionStringKey = read2Bytes(0x0A);
-        otherTextOffset = read2Bytes(0x0C);
-        otherTextStringKey = read2Bytes(0x0E);
+        descriptionKey = read2Bytes(0x0A);
+        unusedString0C0DOffset = read2Bytes(0x0C);
+        unusedString0C0DKey = read2Bytes(0x0E);
         anim1 = read2Bytes(0x10);
         anim2 = read2Bytes(0x12);
         icon = bytes[0x14];
@@ -435,16 +435,16 @@ public class AbilityDataObject implements Nameable {
 
     private void mapStrings(int[] stringBytes, String localization) {
         name.setLocalizedContent(localization, StringHelper.getStringAtLookupOffset(stringBytes, nameOffset));
-        dash.setLocalizedContent(localization, StringHelper.getStringAtLookupOffset(stringBytes, dashOffset));
+        unusedString0405.setLocalizedContent(localization, StringHelper.getStringAtLookupOffset(stringBytes, unusedString0405Offset));
         description.setLocalizedContent(localization, StringHelper.getStringAtLookupOffset(stringBytes, descriptionOffset));
-        otherText.setLocalizedContent(localization, StringHelper.getStringAtLookupOffset(stringBytes, otherTextOffset));
+        unusedString0C0D.setLocalizedContent(localization, StringHelper.getStringAtLookupOffset(stringBytes, unusedString0C0DOffset));
     }
 
     public void setLocalizations(AbilityDataObject localizationObject) {
         localizationObject.name.copyInto(name);
-        localizationObject.dash.copyInto(dash);
+        localizationObject.unusedString0405.copyInto(unusedString0405);
         localizationObject.description.copyInto(description);
-        localizationObject.otherText.copyInto(otherText);
+        localizationObject.unusedString0C0D.copyInto(unusedString0C0D);
     }
 
     @Override

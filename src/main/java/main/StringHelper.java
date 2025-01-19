@@ -1,11 +1,16 @@
 package main;
 
 import model.KeyItemDataObject;
+import model.LocalizedStringObject;
 import reading.ChunkedFileHelper;
 import reading.FileAccessorWithMods;
 
 import java.io.File;
 import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
+import static main.DataReadingManager.*;
 
 public abstract class StringHelper {
     public static final String ANSI_RESET = "\u001B[0m";
@@ -18,11 +23,27 @@ public abstract class StringHelper {
     public static final String ANSI_CYAN = "\u001B[36m";
     public static final String ANSI_WHITE = "\u001B[37m";
 
-    public static final boolean PRINT_DASH_STRINGS_IF_NOT_DASHES = false;
     public static final boolean COLORS_USE_CONSOLE_CODES = true;
     public static final Map<Integer, Character> BIN_LOOKUP = new HashMap<>();
     public static final Map<Character, Integer> BIN_REV_LOOKUP = new HashMap<>();
-    public static final Map<Integer, String> MACRO_LOOKUP = new HashMap<>();
+    public static final Map<Integer, LocalizedStringObject> MACRO_LOOKUP = new HashMap<>();
+    public static final List<String> LOCALIZATION_ROOTS = List.of("jp", "us", "in", "new_jp", "new_us", "new_ch", "new_de", "new_fr", "new_it", "new_kr", "new_sp");
+
+    public static String formatHex2(int twoByteValue) {
+        return String.format("%02X", twoByteValue);
+    }
+
+    public static String formatHex4(int fourByteValue) {
+        return String.format("%04X", fourByteValue);
+    }
+
+    public static String hex2Suffix(int twoByteValue) {
+        return " [" + formatHex2(twoByteValue) + "h]";
+    }
+
+    public static String hex4Suffix(int fourByteValue) {
+        return " [" + formatHex4(fourByteValue) + "h]";
+    }
 
     public static Integer charToByte(char chr) {
         return BIN_REV_LOOKUP.get(chr);
@@ -42,10 +63,6 @@ public abstract class StringHelper {
         } else {
             return "{CLR:" + byteToColor(hex) + '}';
         }
-    }
-
-    public static void putMacro(int index, String value) {
-        MACRO_LOOKUP.put(index, value);
     }
 
     public static String byteToColor(int hex) {
@@ -75,8 +92,50 @@ public abstract class StringHelper {
         };
     }
 
+    public static String getPlayerChar(int pc) {
+        return switch (pc) {
+            case 0x00 -> "TIDUS";
+            case 0x01 -> "YUNA";
+            case 0x02 -> "AURON";
+            case 0x03 -> "KIMAHRI";
+            case 0x04 -> "WAKKA";
+            case 0x05 -> "LULU";
+            case 0x06 -> "RIKKU";
+            case 0x07 -> "SEYMOUR";
+            case 0x08 -> "VALEFOR";
+            case 0x09 -> "IFRIT";
+            case 0x0A -> "IXION";
+            case 0x0B -> "SHIVA";
+            case 0x0C -> "BAHAMUT";
+            case 0x0D -> "ANIMA";
+            case 0x0E -> "YOJIMBO";
+            case 0x0F -> "CINDY";
+            case 0x10 -> "SANDY";
+            case 0x11 -> "MINDY";
+            default -> "?";
+        };
+    }
+
     public static String consoleColorIfEnabled(String ansiColor) {
         return COLORS_USE_CONSOLE_CODES ? ansiColor : "";
+    }
+
+    public static List<LocalizedStringObject> readLocalizedStringFiles(String path) {
+        List<LocalizedStringObject> localized = new ArrayList<>();
+        LOCALIZATIONS.forEach((key, value) -> {
+            List<String> localizedStrings = readStringFile(getLocalizationRoot(key) + path, false);
+            if (localizedStrings != null) {
+                for (int i = 0; i < localizedStrings.size(); i++) {
+                    if (i >= localized.size()) {
+                        localized.add(new LocalizedStringObject());
+                    }
+                    if (!localizedStrings.get(i).isEmpty()) {
+                        localized.get(i).setLocalizedContent(key, localizedStrings.get(i));
+                    }
+                }
+            }
+        });
+        return localized;
     }
 
     public static List<String> readStringFile(String filename, boolean print) {
@@ -174,6 +233,10 @@ public abstract class StringHelper {
                 offset++;
                 int varIdx = table[offset] - 0x30;
                 out.append("{VAR").append(String.format("%02X", varIdx)).append('}');
+            } else if (idx == 0x13 && table[offset+1] <= 0x41) {
+                offset++;
+                int pcIdx = table[offset] - 0x30;
+                out.append("{PC").append(String.format("%02X", pcIdx)).append(':').append(getPlayerChar(pcIdx)).append('}');
             } else if (idx >= 0x13 && idx <= 0x22) {
                 int section = idx - 0x13;
                 offset++;
@@ -183,7 +246,7 @@ public abstract class StringHelper {
                     out.append(':');
                     int index = section * 0x100 + line;
                     if (MACRO_LOOKUP.containsKey(index)) {
-                        out.append('"').append(MACRO_LOOKUP.get(index)).append('"');
+                        out.append('"').append(MACRO_LOOKUP.get(index).getDefaultContent()).append('"');
                     } else {
                         out.append("<Missing>");
                     }
@@ -413,5 +476,17 @@ public abstract class StringHelper {
         BIN_LOOKUP.put(0xfc, '\t');  // Wide space or tab, not sure which; all the remaining characters up to 0xff appears this way when typed so probably not valid
 
         BIN_LOOKUP.forEach((i, c) -> BIN_REV_LOOKUP.put(c, i));
+    }
+
+    private static String localizationRootToLocalization(String root) {
+        if (root == null) {
+            return null;
+        } else if ("in".equals(root)) {
+            return "us";
+        } else if (root.startsWith("new_")) {
+            return root.substring(4);
+        } else {
+            return root;
+        }
     }
 }

@@ -430,7 +430,7 @@ public abstract class ScriptConstants {
         putEnum("stringVarType", 0x37, "Treasure Label");
 
         for (int i = 0; i <= 60; i++) {
-            String name = StringHelper.MACRO_LOOKUP.get(0x800 + i);
+            String name = StringHelper.MACRO_LOOKUP.get(0x800 + i).getDefaultContent();
             putEnum("blitzTech", i, name);
             if (i > 0) {
                 if (i < 31) {
