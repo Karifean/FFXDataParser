@@ -9,9 +9,9 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * dat01.dat
- * dat02.dat
- * dat03.dat
+ * dat01.dat (Original Sphere Grid)
+ * dat02.dat (Standard Sphere Grid)
+ * dat03.dat (Expert Sphere Grid)
  */
 public class SphereGridLayoutDataObject implements Nameable {
     private final int[] bytes;
@@ -101,7 +101,7 @@ public class SphereGridLayoutDataObject implements Nameable {
     }
 
     @Override
-    public String getName() {
+    public String getName(String localization) {
         return this.toString();
     }
 

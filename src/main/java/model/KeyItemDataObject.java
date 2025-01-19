@@ -42,7 +42,7 @@ public class KeyItemDataObject implements Nameable {
         mapStrings(stringBytes);
     }
 
-    public String getName() {
+    public String getName(String localization) {
         return name;
     }
 

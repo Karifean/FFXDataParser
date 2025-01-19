@@ -12,12 +12,13 @@ import java.util.stream.Collectors;
  * a_ability.bin
  */
 public class GearAbilityDataObject implements Nameable {
+    public static final int LENGTH = 0x6C;
     private final int[] bytes;
 
-    public String name;
-    public String dash;
-    public String description;
-    public String otherText;
+    public LocalizedStringObject name = new LocalizedStringObject();
+    public LocalizedStringObject dash = new LocalizedStringObject();
+    public LocalizedStringObject description = new LocalizedStringObject();
+    public LocalizedStringObject otherText = new LocalizedStringObject();
     public int nameOffset;
     public int dashOffset;
     public int descriptionOffset;
@@ -231,15 +232,15 @@ public class GearAbilityDataObject implements Nameable {
     private boolean byte66bit40;
     private boolean byte66bit80;
 
-    public GearAbilityDataObject(int[] bytes, int[] stringBytes) {
+    public GearAbilityDataObject(int[] bytes, int[] stringBytes, String localization) {
         this.bytes = bytes;
         mapBytes();
         mapFlags();
-        mapStrings(stringBytes);
+        mapStrings(stringBytes, localization);
     }
 
-    public String getName() {
-        return name;
+    public String getName(String localization) {
+        return name.getLocalizedContent(localization);
     }
 
     private void mapBytes() {
@@ -449,11 +450,18 @@ public class GearAbilityDataObject implements Nameable {
         byte66bit80 = (abilityFlags66 & 0x80) > 0;
     }
 
-    private void mapStrings(int[] stringBytes) {
-        name = StringHelper.getStringAtLookupOffset(stringBytes, nameOffset);
-        dash = StringHelper.getStringAtLookupOffset(stringBytes, dashOffset);
-        description = StringHelper.getStringAtLookupOffset(stringBytes, descriptionOffset);
-        otherText = StringHelper.getStringAtLookupOffset(stringBytes, otherTextOffset);
+    private void mapStrings(int[] stringBytes, String localization) {
+        name.setLocalizedContent(localization, StringHelper.getStringAtLookupOffset(stringBytes, nameOffset));
+        dash.setLocalizedContent(localization, StringHelper.getStringAtLookupOffset(stringBytes, dashOffset));
+        description.setLocalizedContent(localization, StringHelper.getStringAtLookupOffset(stringBytes, descriptionOffset));
+        otherText.setLocalizedContent(localization, StringHelper.getStringAtLookupOffset(stringBytes, otherTextOffset));
+    }
+
+    public void setLocalizations(GearAbilityDataObject localizationObject) {
+        localizationObject.name.copyInto(name);
+        localizationObject.dash.copyInto(dash);
+        localizationObject.description.copyInto(description);
+        localizationObject.otherText.copyInto(otherText);
     }
 
     @Override
@@ -471,10 +479,8 @@ public class GearAbilityDataObject implements Nameable {
             list.add("Byte68=" + byte67usually14);
         }
         String full = list.stream().filter(s -> s != null && !s.isBlank()).collect(Collectors.joining(", "));
-        String dashStr = (dashOffset > 0 && StringHelper.PRINT_DASH_STRINGS_IF_NOT_DASHES && !"-".equals(dash) ? "DH=" + dash + " / " : "");
-        String descriptionStr = (descriptionOffset > 0 ? description : "");
-        String soText = (otherTextOffset > 0 && StringHelper.PRINT_DASH_STRINGS_IF_NOT_DASHES && !"-".equals(otherText) ? " / OT=" + otherText : "");
-        return String.format("%-18s", getName()) + " { " + full + " } " + dashStr + descriptionStr + soText;
+        String descriptionStr = (descriptionOffset > 0 ? description.getDefaultContent() : "");
+        return String.format("%-18s", getName()) + " { " + full + " } " + descriptionStr;
     }
 
     private static String ifG0(int value, String prefix, String postfix) {

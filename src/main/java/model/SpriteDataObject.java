@@ -54,7 +54,7 @@ public class SpriteDataObject implements Nameable {
     }
 
     @Override
-    public String getName() {
+    public String getName(String localization) {
         return this.toString();
     }
 

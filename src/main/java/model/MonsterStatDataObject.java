@@ -1,6 +1,7 @@
 package model;
 
 import main.DataAccess;
+import main.DataReadingManager;
 import main.StringHelper;
 import script.model.StackObject;
 
@@ -10,6 +11,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+/**
+ * Part of MonsterFile
+ * monster1.bin (only uses Name/Sensor/Scan text strings)
+ * monster2.bin (only uses Name/Sensor/Scan text strings)
+ * monster3.bin (only uses Name/Sensor/Scan text strings)
+ */
 public class MonsterStatDataObject {
     public static final int LENGTH = 0x80;
 
@@ -20,12 +27,11 @@ public class MonsterStatDataObject {
     int sensorDashOffset;
     int scanOffset;
     int scanDashOffset;
-    public String monsterName;
-    public String monsterSensorText;
-    public String monsterSensorDash;
-    public String monsterScanText;
-    public String monsterScanDash;
-    public boolean isLocalizationData = false;
+    public LocalizedStringObject monsterName = new LocalizedStringObject();
+    public LocalizedStringObject monsterSensorText = new LocalizedStringObject();
+    public LocalizedStringObject monsterSensorDash = new LocalizedStringObject();
+    public LocalizedStringObject monsterScanText = new LocalizedStringObject();
+    public LocalizedStringObject monsterScanDash = new LocalizedStringObject();
 
     int hp;
     int mp;
@@ -171,11 +177,11 @@ public class MonsterStatDataObject {
     boolean resistDoom;
     boolean resistUnused2;
 
-    public MonsterStatDataObject(int[] bytes, int[] stringBytes) {
+    public MonsterStatDataObject(int[] bytes, int[] stringBytes, String localization) {
         this.bytes = bytes;
         mapBytes();
         mapFlags();
-        mapStrings(stringBytes);
+        mapStrings(stringBytes, localization);
     }
 
     private void mapBytes() {
@@ -345,33 +351,38 @@ public class MonsterStatDataObject {
         resistUnused2 = (extraStatusImmunities2 & 0x80) > 0;
     }
 
-    private void mapStrings(int[] stringBytes) {
+    private void mapStrings(int[] stringBytes, String localization) {
         if (stringBytes == null || stringBytes.length == 0) {
             return;
         }
-        monsterName = StringHelper.getStringAtLookupOffset(stringBytes, nameOffset);
-        monsterSensorText = StringHelper.getStringAtLookupOffset(stringBytes, sensorOffset);
-        monsterSensorDash = StringHelper.getStringAtLookupOffset(stringBytes, sensorDashOffset);
-        monsterScanText = StringHelper.getStringAtLookupOffset(stringBytes, scanOffset);
-        monsterScanDash = StringHelper.getStringAtLookupOffset(stringBytes, scanDashOffset);
+        monsterName.setLocalizedContent(localization, StringHelper.getStringAtLookupOffset(stringBytes, nameOffset));
+        monsterSensorText.setLocalizedContent(localization, StringHelper.getStringAtLookupOffset(stringBytes, sensorOffset));
+        monsterSensorDash.setLocalizedContent(localization, StringHelper.getStringAtLookupOffset(stringBytes, sensorDashOffset));
+        monsterScanText.setLocalizedContent(localization, StringHelper.getStringAtLookupOffset(stringBytes, scanOffset));
+        monsterScanDash.setLocalizedContent(localization, StringHelper.getStringAtLookupOffset(stringBytes, scanDashOffset));
     }
 
-    public String getStrings() {
+    public void setLocalizations(MonsterStatDataObject localizationObject) {
+        localizationObject.monsterName.copyInto(monsterName);
+        localizationObject.monsterSensorText.copyInto(monsterSensorText);
+        localizationObject.monsterSensorDash.copyInto(monsterSensorDash);
+        localizationObject.monsterScanText.copyInto(monsterScanText);
+        localizationObject.monsterScanDash.copyInto(monsterScanDash);
+    }
+
+    public String getStrings(String localization) {
         List<String> list = new ArrayList<>();
-        list.add("Name: " + monsterName + " (Offset " + String.format("%04X", nameOffset) + ")");
+        list.add("Name: " + monsterName.getLocalizedContent(localization) + " (Offset " + String.format("%04X", nameOffset) + ")");
         list.add("- Sensor Text - (Offset " + String.format("%04X", sensorOffset) + ")");
-        list.add(monsterSensorText);
+        list.add(monsterSensorText.getLocalizedContent(localization));
         list.add("- Scan Text - (Offset " + String.format("%04X", scanOffset) + ")");
-        list.add(monsterScanText);
+        list.add(monsterScanText.getLocalizedContent(localization));
         String full = list.stream().filter(s -> s != null && !s.isBlank()).collect(Collectors.joining("\n"));
         return full;
     }
 
     @Override
     public String toString() {
-        if (isLocalizationData) {
-            return getStrings();
-        }
         List<String> list = new ArrayList<>();
         list.add("HP=" + hp + " MP=" + mp + " Overkill=" + overkillThreshold);
         list.add("STR=" + str + " DEF=" + def + " MAG=" + mag + " MDF=" + mdf);

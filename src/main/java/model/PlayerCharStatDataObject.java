@@ -10,6 +10,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+/**
+ * ply_save.bin
+ */
 public class PlayerCharStatDataObject implements Nameable {
     public static final int LENGTH = 0x9C;
 
@@ -182,7 +185,7 @@ public class PlayerCharStatDataObject implements Nameable {
     }
 
     @Override
-    public String getName() {
+    public String getName(String localization) {
         return characterName;
     }
 }

@@ -37,7 +37,7 @@ public class ScriptField implements Nameable {
     }
 
     @Override
-    public String getName() {
+    public String getName(String localization) {
         return name;
     }
 

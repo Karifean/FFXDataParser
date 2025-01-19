@@ -122,7 +122,7 @@ public class StackObject {
             if ("macroString".equals(type)) {
                 return StringHelper.MACRO_LOOKUP.getOrDefault(value, "<Missing>");
             }
-            if ("string".equals(type) && parentScript != null && parentScript.strings != null && parentScript.strings.size() > value) {
+            if ("localString".equals(type) && parentScript != null && parentScript.strings != null && parentScript.strings.size() > value) {
                 String targetString = parentScript.strings.get(value);
                 String nullSafeString = targetString != null ? targetString : "null";
                 String noLineBreakString = nullSafeString.replace("\n", "\\n");
@@ -168,7 +168,7 @@ public class StackObject {
             if (b4 == 0x20) {
                 index = "AirshipPassword";
             } else if (b4 <= 0x11) {
-                index = ScriptConstants.getEnumMap("btlActor").get(b4).name;
+                index = ScriptConstants.getEnumMap("playerChar").get(b4).name;
             } else {
                 index = "?" + b4;
             }

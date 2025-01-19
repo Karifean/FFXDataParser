@@ -1,6 +1,7 @@
 package model;
 
 import main.DataAccess;
+import main.DataReadingManager;
 import main.StringHelper;
 import model.spheregrid.SphereGridSphereTypeDataObject;
 import script.model.StackObject;
@@ -23,15 +24,18 @@ public class AbilityDataObject implements Nameable {
     private final boolean isCharacterAbility;
     private final int[] bytes;
 
-    public String name;
-    public String dash;
-    public String description;
-    public String otherText;
+    public LocalizedStringObject name = new LocalizedStringObject();
+    public LocalizedStringObject dash = new LocalizedStringObject();
+    public LocalizedStringObject description = new LocalizedStringObject();
+    public LocalizedStringObject otherText = new LocalizedStringObject();
     public int nameOffset;
-    int unknownByte0B;
+    public int dashOffset;
+    public int descriptionOffset;
     public int otherTextOffset;
-    int unknownByte0E;
-    int unknownByte0F;
+    int nameStringKey;
+    int dashStringKey;
+    int descriptionStringKey;
+    int otherTextStringKey;
     int anim1;
     int anim2;
     int icon;
@@ -102,19 +106,12 @@ public class AbilityDataObject implements Nameable {
     int statusDurationNTide;
     int extraStatusFlags1;
     int extraStatusFlags2;
-    int statBuffFlags;
-    int alwaysZero57;
+    int statBuffFlags1;
+    int statBuffFlags2Unused;
     int overdriveCategorizationByte;
     int statBuffValue;
-    int specialBuffFlags;
-    int alwaysZero5B;
-    int unknownByte2;
-    int unknownByte3;
-    public int dashOffset;
-    public int descriptionOffset;
-    int unknownByte6;
-    int unknownByte7;
-    int unknownByte0A;
+    int specialBuffFlags1;
+    int specialBuffFlags2Unused;
     int orderingIndexInMenu;
     int sphereTypeForSphereGrid;
     int alwaysZero5E;
@@ -223,36 +220,32 @@ public class AbilityDataObject implements Nameable {
     boolean specialBuffUnused;
     boolean considerSphereType;
 
-    public AbilityDataObject(int[] bytes, int[] stringBytes, int group) {
+    public AbilityDataObject(int[] bytes, int[] stringBytes, String localization, int group) {
         this.bytes = bytes;
         isCharacterAbility = group <= 3;
         considerSphereType = group == 2;
         prepareMaps();
         mapBytes();
         mapFlags();
-        mapStrings(stringBytes);
+        mapStrings(stringBytes, localization);
     }
 
-    public String getName() {
+    public String getName(String localization) {
         if (!displayMoveName) {
-            return "[" + name + "]";
+            return "[" + name.getLocalizedContent(localization) + "]";
         }
-        return name;
+        return name.getLocalizedContent(localization);
     }
 
     private void mapBytes() {
         nameOffset = read2Bytes(0x00);
-        unknownByte2 = bytes[0x02];
-        unknownByte3 = bytes[0x03];
+        nameStringKey = read2Bytes(0x02);
         dashOffset = read2Bytes(0x04);
-        unknownByte6 = bytes[0x06];
-        unknownByte7 = bytes[0x07];
+        dashStringKey = read2Bytes(0x06);
         descriptionOffset = read2Bytes(0x08);
-        unknownByte0A = bytes[0x0A];
-        unknownByte0B = bytes[0x0B];
+        descriptionStringKey = read2Bytes(0x0A);
         otherTextOffset = read2Bytes(0x0C);
-        unknownByte0E = bytes[0x0E];
-        unknownByte0F = bytes[0x0F];
+        otherTextStringKey = read2Bytes(0x0E);
         anim1 = read2Bytes(0x10);
         anim2 = read2Bytes(0x12);
         icon = bytes[0x14];
@@ -321,12 +314,12 @@ public class AbilityDataObject implements Nameable {
         statusDurationSlow = bytes[0x53];
         extraStatusFlags1 = bytes[0x54];
         extraStatusFlags2 = bytes[0x55];
-        statBuffFlags = bytes[0x56];
-        alwaysZero57 = bytes[0x57];
+        statBuffFlags1 = bytes[0x56];
+        statBuffFlags2Unused = bytes[0x57];
         overdriveCategorizationByte = bytes[0x58];
         statBuffValue = bytes[0x59];
-        specialBuffFlags = bytes[0x5A];
-        alwaysZero5B = bytes[0x5B];
+        specialBuffFlags1 = bytes[0x5A];
+        specialBuffFlags2Unused = bytes[0x5B];
         if (isCharacterAbility) {
             orderingIndexInMenu = bytes[0x5C];
             sphereTypeForSphereGrid = bytes[0x5D];
@@ -418,37 +411,48 @@ public class AbilityDataObject implements Nameable {
         inflictSentinel = (extraStatusFlags2 & 0x20) > 0;
         inflictDoom = (extraStatusFlags2 & 0x40) > 0;
         inflictUnused2 = (extraStatusFlags2 & 0x80) > 0;
-        statBuffCheer = (statBuffFlags & 0x01) > 0;
-        statBuffAim = (statBuffFlags & 0x02) > 0;
-        statBuffFocus = (statBuffFlags & 0x04) > 0;
-        statBuffReflex = (statBuffFlags & 0x08) > 0;
-        statBuffLuck = (statBuffFlags & 0x10) > 0;
-        statBuffJinx = (statBuffFlags & 0x20) > 0;
-        statBuffUnused1 = (statBuffFlags & 0x40) > 0;
-        statBuffUnused2 = (statBuffFlags & 0x80) > 0;
-        specialBuffDoubleHP = (specialBuffFlags & 0x01) > 0;
-        specialBuffDoubleMP = (specialBuffFlags & 0x02) > 0;
-        specialBuffMPCost0 = (specialBuffFlags & 0x04) > 0;
-        specialBuffQuartet = (specialBuffFlags & 0x08) > 0;
-        specialBuffAlwaysCrit = (specialBuffFlags & 0x10) > 0;
-        specialBuffOverdrive150 = (specialBuffFlags & 0x20) > 0;
-        specialBuffOverdrive200 = (specialBuffFlags & 0x40) > 0;
-        specialBuffUnused = (specialBuffFlags & 0x80) > 0;
+        statBuffCheer = (statBuffFlags1 & 0x01) > 0;
+        statBuffAim = (statBuffFlags1 & 0x02) > 0;
+        statBuffFocus = (statBuffFlags1 & 0x04) > 0;
+        statBuffReflex = (statBuffFlags1 & 0x08) > 0;
+        statBuffLuck = (statBuffFlags1 & 0x10) > 0;
+        statBuffJinx = (statBuffFlags1 & 0x20) > 0;
+        statBuffUnused1 = (statBuffFlags1 & 0x40) > 0;
+        statBuffUnused2 = (statBuffFlags1 & 0x80) > 0;
+        specialBuffDoubleHP = (specialBuffFlags1 & 0x01) > 0;
+        specialBuffDoubleMP = (specialBuffFlags1 & 0x02) > 0;
+        specialBuffMPCost0 = (specialBuffFlags1 & 0x04) > 0;
+        specialBuffQuartet = (specialBuffFlags1 & 0x08) > 0;
+        specialBuffAlwaysCrit = (specialBuffFlags1 & 0x10) > 0;
+        specialBuffOverdrive150 = (specialBuffFlags1 & 0x20) > 0;
+        specialBuffOverdrive200 = (specialBuffFlags1 & 0x40) > 0;
+        specialBuffUnused = (specialBuffFlags1 & 0x80) > 0;
         if (overdriveCategorizationByte > 0) {
             overdriveCharacter = StackObject.enumToScriptField("playerChar", overdriveCategorizationByte & 0x0F).name;
             overdriveCategory = overdriveCategorizationByte >> 4;
         }
     }
 
-    private void mapStrings(int[] stringBytes) {
-        name = StringHelper.getStringAtLookupOffset(stringBytes, nameOffset);
-        dash = StringHelper.getStringAtLookupOffset(stringBytes, dashOffset);
-        description = StringHelper.getStringAtLookupOffset(stringBytes, descriptionOffset);
-        otherText = StringHelper.getStringAtLookupOffset(stringBytes, otherTextOffset);
+    private void mapStrings(int[] stringBytes, String localization) {
+        name.setLocalizedContent(localization, StringHelper.getStringAtLookupOffset(stringBytes, nameOffset));
+        dash.setLocalizedContent(localization, StringHelper.getStringAtLookupOffset(stringBytes, dashOffset));
+        description.setLocalizedContent(localization, StringHelper.getStringAtLookupOffset(stringBytes, descriptionOffset));
+        otherText.setLocalizedContent(localization, StringHelper.getStringAtLookupOffset(stringBytes, otherTextOffset));
+    }
+
+    public void setLocalizations(AbilityDataObject localizationObject) {
+        localizationObject.name.copyInto(name);
+        localizationObject.dash.copyInto(dash);
+        localizationObject.description.copyInto(description);
+        localizationObject.otherText.copyInto(otherText);
     }
 
     @Override
     public String toString() {
+        return toString(DataReadingManager.DEFAULT_LOCALIZATION);
+    }
+
+    public String toString(String localization) {
         List<String> list = new ArrayList<>();
         list.add(!usableInCombat ? "Unusable" : "");
         list.add(damageKind());
@@ -501,8 +505,6 @@ public class AbilityDataObject implements Nameable {
         list.add("anim=" + casterAnimation + (useTier1CastAnimation ? "L" : "") + (useTier3CastAnimation ? "H" : "") +
                 "/" + String.format("%04X", anim1) +
                 "/" + String.format("%04X", anim2));
-        list.add(ifG0(alwaysZero57, "Byte57=", ""));
-        list.add(ifG0(alwaysZero5B, "Byte5B=", ""));
         list.add(ifG0(alwaysZero5E, "Byte5E=", ""));
         list.add(ifG0(alwaysZero5F, "Byte5F=", ""));
         if (considerSphereType && sphereTypeForSphereGrid != 0xFF) {
@@ -510,10 +512,8 @@ public class AbilityDataObject implements Nameable {
             list.add("SphereGridRole=" + sphereTypeForSphereGrid + " [" + String.format("%02X", sphereTypeForSphereGrid) + "h] " + (sgSphereType != null ? sgSphereType : "null"));
         }
         String full = list.stream().filter(s -> s != null && !s.isBlank()).collect(Collectors.joining(", "));
-        String dashStr = (dashOffset > 0 && StringHelper.PRINT_DASH_STRINGS_IF_NOT_DASHES && !"-".equals(dash) ? "DH=" + dash + " / " : "");
-        String descriptionStr = (descriptionOffset > 0 ? description : "");
-        String soText = (otherTextOffset > 0 && StringHelper.PRINT_DASH_STRINGS_IF_NOT_DASHES && !"-".equals(otherText) ? " / OT=" + otherText : "");
-        return String.format("%-20s", getName()) + " { " + full + " } " + dashStr + descriptionStr + soText;
+        String descriptionStr = descriptionOffset > 0 ? description.getLocalizedContent(localization) : "";
+        return String.format("%-22s", getName()) + " { " + full + " } " + descriptionStr;
     }
 
     private String damageKind() {
@@ -552,7 +552,7 @@ public class AbilityDataObject implements Nameable {
     }
 
     private String statBuffs() {
-        if (statBuffValue <= 0 && statBuffFlags <= 0) {
+        if (statBuffValue <= 0 && statBuffFlags1 <= 0) {
             return "";
         }
         String statBuffTypes = "";
@@ -580,6 +580,9 @@ public class AbilityDataObject implements Nameable {
         if (statBuffUnused2) {
             statBuffTypes += "UnusedBuff-80/";
         }
+        if (statBuffFlags2Unused > 0) {
+            statBuffTypes += "UnusedBuffsByte-" + String.format("%02X", statBuffFlags2Unused) + "/";
+        }
         if (statBuffTypes.isEmpty()) {
             statBuffTypes = "NullBuff";
         } else {
@@ -589,6 +592,7 @@ public class AbilityDataObject implements Nameable {
     }
 
     private String elements() {
+        // return elementFlags > 0 ? StackObject.bitfieldToString("elementsBitfield", elementFlags) : null;
         StringBuilder elements = new StringBuilder("Multi-Element {");
         if (elementFire) { elements.append(" Fire;"); }
         if (elementIce) { elements.append(" Ice;"); }
@@ -730,6 +734,9 @@ public class AbilityDataObject implements Nameable {
         if (specialBuffOverdrive150) { buffs.append(" Overdrive x1.5;"); }
         if (specialBuffOverdrive200) { buffs.append(" Overdrive x2;"); }
         if (specialBuffUnused) { buffs.append(" Unused;"); }
+        if (specialBuffFlags2Unused > 0) {
+            buffs.append(" SecondByte=").append(String.format("%02X", specialBuffFlags2Unused)).append(";");
+        }
         String conv = buffs.toString();
         if (conv.endsWith(";")) {
             String withoutLastSemicolon = conv.substring(0, conv.length() - 1);

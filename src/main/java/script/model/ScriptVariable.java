@@ -96,6 +96,12 @@ public class ScriptVariable {
                     }
                 }
             }
+            if ("int16".equals(type) && value >= 0x8000 && value <= 0xFFFF) {
+                value -= 0x10000;
+            }
+            if ("int8".equals(type) && value >= 0x80 && value <= 0xFF) {
+                value -= 0x100;
+            }
             String content = value + " [" + String.format("%04X", value) + "h]";
             StackObject obj = new StackObject(parentWorker, null, type, false, content, value);
             values.add(obj);

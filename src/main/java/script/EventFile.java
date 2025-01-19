@@ -71,7 +71,7 @@ public class EventFile implements Nameable {
         return full.toString();
     }
 
-    public String getName() {
+    public String getName(String localization) {
         if (eventScript == null || eventScript.areaNameIndexes == null || eventScript.areaNameIndexes.isEmpty()) {
             return null;
         }

@@ -24,7 +24,7 @@ public abstract class DataAccess {
     public static SphereGridLayoutDataObject ESG_LAYOUT;
     public static CustomizationDataObject[] GEAR_CUSTOMIZATIONS;
     public static CustomizationDataObject[] AEON_CUSTOMIZATIONS;
-    private final static Nameable DUMMY_OBJECT = () -> "null";
+    private final static Nameable DUMMY_OBJECT = (l) -> "null";
 
     public static Nameable getNameableObject(String type, int idx) {
         Nameable object = switch (type) {
@@ -96,13 +96,13 @@ public abstract class DataAccess {
         return TREASURES[idx];
     }
 
-    public static void addMonsterLocalizations(MonsterStatDataObject[] localizations) {
+    public static void addMonsterLocalizations(MonsterLocalizationDataObject[] localizations) {
         if (localizations == null) {
             return;
         }
         for (int i = 0; i < localizations.length && i < MONSTERS.length; i++) {
             if (MONSTERS[i] != null) {
-                MONSTERS[i].monsterLocalizationData = localizations[i];
+                MONSTERS[i].monsterStatData.setLocalizations(localizations[i]);
             }
         }
     }

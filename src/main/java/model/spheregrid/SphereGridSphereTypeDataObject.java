@@ -98,7 +98,7 @@ public class SphereGridSphereTypeDataObject implements Nameable {
     }
 
     @Override
-    public String getName() {
+    public String getName(String localization) {
         return this.toString();
     }
 

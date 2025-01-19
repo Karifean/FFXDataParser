@@ -317,6 +317,7 @@ public abstract class ScriptConstants {
         putSaveDataVariable(0x0A34, "GilLentToOAka", "int");
         putSaveDataVariable(0x0A38, "MacalaniaPricesChosenForOAka", "int");
         putSaveDataVariable(0x0A3C, "JechtShotMinigameCleared", "bool");
+        putSaveDataVariable(0x0A49, "WorldChampionPrerequisitesCleared", "bool");
         putSaveDataVariable(0x0A4A, "SaveSphereInstructionsSeen", "int");
         putSaveDataVariable(0x0A60, "AlBhedPrimersCollectedCount", "int");
         putSaveDataVariable(0x0A68, "BlitzballMenuReturnMap", "int");
@@ -733,12 +734,12 @@ public abstract class ScriptConstants {
         putEnum("btlActor", -24, null, "CHR_ALL_PLAYER2"); // 0xFFE8
         putEnum("btlActor", -23, "AllCharsAndAeons", "CHR_ALL_PLAYER"); // 0xFFE9
         putEnum("btlActor", -22, null, "CHR_PARENT"); // 0xFFEA
-        putEnum("btlActor", -21, "AllActors?", "CHR_ALL2"); // 0xFFEB
+        putEnum("btlActor", -21, "AllChrs?", "CHR_ALL2"); // 0xFFEB
         putEnum("btlActor", -20, "AllAeons", "CHR_ALL_SUMMON"); // 0xFFEC
         putEnum("btlActor", -19, null, "CHR_ALL_PLY2"); // 0xFFED
         putEnum("btlActor", -18, null, "CHR_INPUT"); // 0xFFEE
         putEnum("btlActor", -17, "LastAttacker", "CHR_REACTION"); // 0xFFEF
-        putEnum("btlActor", -16, "PredefinedGroup", "CHR_OWN_TARGET"); // 0xFFF0
+        putEnum("btlActor", -16, "MatchingGroup", "CHR_OWN_TARGET"); // 0xFFF0
         putEnum("btlActor", -15, "AllMonsters", "CHR_ALL_MON"); // 0xFFF1
         putEnum("btlActor", -14, "FrontlineChars", "CHR_ALL_PLY"); // 0xFFF2
         putEnum("btlActor", -13, "Self", "CHR_OWN"); // 0xFFF3
@@ -750,9 +751,9 @@ public abstract class ScriptConstants {
         putEnum("btlActor", -7, "Character#2", "CHR_PARTY2"); // 0xFFF9
         putEnum("btlActor", -6, "Character#1", "CHR_PARTY1"); // 0xFFFA
         putEnum("btlActor", -5, "AllActors", "CHR_ALL"); // 0xFFFB
-        putEnum("btlActor", -4, "?TargetActorsImmediate", "CHR_TARGET_NOW"); // 0xFFFC
-        putEnum("btlActor", -3, "TargetActors", "CHR_TARGET"); // 0xFFFD
-        putEnum("btlActor", -2, "ActiveActors", "CHR_ACTIVE"); // 0xFFFE
+        putEnum("btlActor", -4, "?TargetChrsImmediate", "CHR_TARGET_NOW"); // 0xFFFC
+        putEnum("btlActor", -3, "TargetChrs", "CHR_TARGET"); // 0xFFFD
+        putEnum("btlActor", -2, "ActiveChrs", "CHR_ACTIVE"); // 0xFFFE
         putEnum("btlActor", -1, "Actor:Null", "CHR_NOP"); // 0xFFFF
 
         for (int i = 0; i <= 0x0013; i++) {
@@ -1119,6 +1120,7 @@ public abstract class ScriptConstants {
         putBattleActorProperty(0x0151, null, "unknown", "stat_regen_damage_flag");
         putBattleActorProperty(0x0152, null, "unknown", "stat_num_print_element");
         putBattleActorProperty(0x0153, "?disableLowHealthSlump", "bool", null);
+        putBattleActorProperty(0x0156, "?wasCaptured", "bool", null);
         putBattleActorProperty(0x0159, "?onlyTargetableBy", "move", null);
 
         putMoveProperty(0x0000, "damageFormula", "damageFormula");

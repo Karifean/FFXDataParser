@@ -6,7 +6,10 @@ import script.model.StackObject;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class MonsterSpoilsDataObject {
+/**
+ * Part of MonsterFile
+ */
+public class MonsterLootDataObject {
     public static final int LENGTH = 0x11C;
 
     private final int[] bytes;
@@ -49,13 +52,14 @@ public class MonsterSpoilsDataObject {
     int[][] gearAbilitiesOnWeaponsByChar = new int[7][8];
     int[][] gearAbilitiesOnArmorsByChar = new int[7][8];
     int zanmatoLevelByte;
+    int gilStealByte;
 
-    public MonsterSpoilsDataObject(int[] bytes) {
+    public MonsterLootDataObject(int[] bytes) {
         this.bytes = bytes;
-        mapSpoilsBytes();
+        mapBytes();
     }
 
-    private void mapSpoilsBytes() {
+    private void mapBytes() {
         gil = read2Bytes(bytes, 0x00);
         apNormal = read2Bytes(bytes, 0x02);
         apOverkill = read2Bytes(bytes, 0x04);
@@ -101,6 +105,7 @@ public class MonsterSpoilsDataObject {
             }
         }
         zanmatoLevelByte = bytes[0x112];
+        gilStealByte = bytes[0x113];
     }
 
     @Override
@@ -148,6 +153,11 @@ public class MonsterSpoilsDataObject {
             }
         }
         list.add("Zanmato Level: " + (zanmatoLevelByte + 1));
+        if (gilStealByte > 0) {
+            list.add("Stolen Gil: Up to " + (gilStealByte * 100));
+        } else {
+            list.add("No Gil to steal");
+        }
         String full = list.stream().filter(s -> s != null && !s.isBlank()).collect(Collectors.joining("\n"));
         return full;
     }

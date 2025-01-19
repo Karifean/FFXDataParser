@@ -3,7 +3,7 @@ package script;
 import main.StringHelper;
 import model.Nameable;
 import reading.Chunk;
-import model.MonsterSpoilsDataObject;
+import model.MonsterLootDataObject;
 import model.MonsterStatDataObject;
 
 import java.util.Arrays;
@@ -15,14 +15,12 @@ import java.util.List;
 public class MonsterFile implements Nameable {
     public ScriptObject monsterAi;
     public MonsterStatDataObject monsterStatData;
-    public MonsterSpoilsDataObject monsterSpoilsData;
-    public MonsterStatDataObject englishTextStatData;
-    public MonsterStatDataObject monsterLocalizationData;
+    public MonsterLootDataObject monsterLootData;
     Chunk scriptChunk;
     Chunk audioChunkApparently;
     int[] workerMappingBytes;
     int[] statBytes;
-    int[] spoilsBytes;
+    int[] lootBytes;
     int[] englishTextBytes;
 
     public MonsterFile(List<Chunk> chunks) {
@@ -34,17 +32,17 @@ public class MonsterFile implements Nameable {
         scriptChunk = chunks.get(0);
         workerMappingBytes = chunks.get(1).bytes;
         statBytes = chunks.get(2).bytes;
-        spoilsBytes = chunks.get(4).bytes;
+        lootBytes = chunks.get(4).bytes;
         audioChunkApparently = chunks.get(5);
         englishTextBytes = chunks.get(6).bytes;
     }
 
     private void mapObjects() {
         monsterAi = new ScriptObject(scriptChunk, workerMappingBytes);
-        monsterStatData = new MonsterStatDataObject(statBytes, Arrays.copyOfRange(statBytes, MonsterStatDataObject.LENGTH, statBytes.length));
-        monsterSpoilsData = new MonsterSpoilsDataObject(spoilsBytes);
-        englishTextStatData = new MonsterStatDataObject(englishTextBytes, Arrays.copyOfRange(englishTextBytes, MonsterStatDataObject.LENGTH, englishTextBytes.length));
-        // englishTextStatData = monsterStatData; For PS2
+        monsterStatData = new MonsterStatDataObject(statBytes, Arrays.copyOfRange(statBytes, MonsterStatDataObject.LENGTH, statBytes.length), "us");
+        monsterLootData = new MonsterLootDataObject(lootBytes);
+        MonsterStatDataObject englishTextStatData = new MonsterStatDataObject(englishTextBytes, Arrays.copyOfRange(englishTextBytes, MonsterStatDataObject.LENGTH, englishTextBytes.length), "us");
+        monsterStatData.setLocalizations(englishTextStatData);
     }
 
     public void parseScript() {
@@ -67,39 +65,20 @@ public class MonsterFile implements Nameable {
         }
         full.append("- Monster Stats -").append('\n');
         full.append(monsterStatData).append('\n');
-        full.append("- Monster Spoils -").append('\n');
-        full.append(monsterSpoilsData).append('\n');
-        if (monsterLocalizationData != null) {
+        full.append("- Monster Loot -").append('\n');
+        full.append(monsterLootData).append('\n');
+        if (monsterStatData != null) {
             full.append("- Localized Strings -").append('\n');
-            full.append("Name: ").append(monsterLocalizationData.monsterName).append('\n');
-            full.append("- Sensor Text -").append('\n');
-            full.append(monsterLocalizationData.monsterSensorText).append('\n');
-            if (StringHelper.PRINT_DASH_STRINGS_IF_NOT_DASHES && !"-".equals(monsterLocalizationData.monsterSensorDash)) {
-                full.append("DH=").append(monsterLocalizationData.monsterSensorDash).append('\n');
-            }
+            full.append("Name: ").append(monsterStatData.monsterName.getDefaultContent()).append('\n');
+            full.append("- Sensor Text -\n");
+            full.append(monsterStatData.monsterSensorText.getDefaultContent()).append('\n');
             full.append("- Scan Text -").append('\n');
-            full.append(monsterLocalizationData.monsterScanText).append('\n');
-            if (StringHelper.PRINT_DASH_STRINGS_IF_NOT_DASHES && !"-".equals(monsterLocalizationData.monsterScanDash)) {
-                full.append("DH=").append(monsterLocalizationData.monsterScanDash).append('\n');
-            }
-        } else if (englishTextStatData != null) {
-            full.append("- Unlocalized Strings -").append('\n');
-            full.append("Name: ").append(englishTextStatData.monsterName).append('\n');
-            full.append("- Sensor Text -").append('\n');
-            full.append(englishTextStatData.monsterSensorText).append('\n');
-            if (StringHelper.PRINT_DASH_STRINGS_IF_NOT_DASHES && !"-".equals(englishTextStatData.monsterSensorDash)) {
-                full.append("DH=").append(englishTextStatData.monsterSensorDash).append('\n');
-            }
-            full.append("- Scan Text -").append('\n');
-            full.append(englishTextStatData.monsterScanText).append('\n');
-            if (StringHelper.PRINT_DASH_STRINGS_IF_NOT_DASHES && !"-".equals(englishTextStatData.monsterScanDash)) {
-                full.append("DH=").append(englishTextStatData.monsterScanDash).append('\n');
-            }
+            full.append(monsterStatData.monsterScanText.getDefaultContent()).append('\n');
         }
         return full.toString();
     }
 
-    public String getName() {
-        return englishTextStatData != null ? englishTextStatData.monsterName : null;
+    public String getName(String localization) {
+        return monsterStatData != null ? monsterStatData.monsterName.getLocalizedContent(localization) : null;
     }
 }

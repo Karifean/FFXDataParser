@@ -5,6 +5,9 @@ import model.Nameable;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Part of SphereGridLayoutDataObject
+ */
 public class SphereGridLinkDataObject implements Nameable {
     public static final int LENGTH = 0x8;
     private final int[] bytes;
@@ -48,7 +51,7 @@ public class SphereGridLinkDataObject implements Nameable {
     }
 
     @Override
-    public String getName() {
+    public String getName(String localization) {
         return this.toString();
     }
 

@@ -1,11 +1,10 @@
 package main;
 
+import model.AbilityDataObject;
+import model.GearAbilityDataObject;
 import reading.FileAccessorWithMods;
 import script.MonsterFile;
 
-import java.io.DataInputStream;
-import java.io.File;
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
@@ -55,10 +54,38 @@ public class Main {
                 translate(concat);
                 break;
             case MODE_READ_ALL_ABILITIES:
-                readAbilitiesFromFile(PATH_SKILL_TABLE_3, 3, true);
-                readAbilitiesFromFile(PATH_SKILL_TABLE_4, 4, true);
-                readAbilitiesFromFile(PATH_SKILL_TABLE_6, 6, true);
-                readAbilitiesFromFile(PATH_SKILL_TABLE_2, 2, true);
+                System.out.println("--- command.bin ---");
+                for (int i = 0x3000; i < 0x3200; i++) {
+                    AbilityDataObject move = DataAccess.getMove(i);
+                    if (move != null) {
+                        int offset = 0x14 + (i - 0x3000) * 0x60;
+                        System.out.println(String.format("%04X (Offset %04X) - ", i, offset) + move);
+                    }
+                }
+                System.out.println("--- monmagic1.bin ---");
+                for (int i = 0x4000; i < 0x4200; i++) {
+                    AbilityDataObject move = DataAccess.getMove(i);
+                    if (move != null) {
+                        int offset = 0x14 + (i - 0x4000) * 0x5C;
+                        System.out.println(String.format("%04X (Offset %04X) - ", i, offset) + move);
+                    }
+                }
+                System.out.println("--- monmagic2.bin ---");
+                for (int i = 0x6000; i < 0x6200; i++) {
+                    AbilityDataObject move = DataAccess.getMove(i);
+                    if (move != null) {
+                        int offset = 0x14 + (i - 0x6000) * 0x5C;
+                        System.out.println(String.format("%04X (Offset %04X) - ", i, offset) + move);
+                    }
+                }
+                System.out.println("--- item.bin ---");
+                for (int i = 0x2000; i < 0x2200; i++) {
+                    AbilityDataObject move = DataAccess.getMove(i);
+                    if (move != null) {
+                        int offset = 0x14 + (i - 0x2000) * 0x60;
+                        System.out.println(String.format("%04X (Offset %04X) - ", i, offset) + move);
+                    }
+                }
                 break;
             case MODE_PARSE_MONSTER:
                 for (String arg : realArgs) {
@@ -111,7 +138,20 @@ public class Main {
                 readItemShops(PATH_ORIGINALS_KERNEL + "item_shop.bin", true);
                 break;
             case MODE_READ_MONSTER_LOCALIZATIONS:
-                readMonsterLocalizations(true);
+                readMonsterLocalizations(realArgs.size() > 0 ? realArgs.get(0) : DEFAULT_LOCALIZATION, true);
+                /*
+                for (int i = 0; i < DataAccess.MONSTERS.length; i++) {
+                    MonsterFile monster = DataAccess.MONSTERS[i];
+                    if (monster != null) {
+                        System.out.println("--- Name ---");
+                        System.out.println(monster.monsterStatData.monsterName.getAllContent());
+                        System.out.println("--- Sensor Text ---");
+                        System.out.println(monster.monsterStatData.monsterSensorText.getAllContent());
+                        System.out.println("--- Scan Text ---");
+                        System.out.println(monster.monsterStatData.monsterScanText.getAllContent());
+                    }
+                }
+                 */
                 break;
             case MODE_READ_WEAPON_FILE:
                 for (String filename : realArgs) {
@@ -122,7 +162,10 @@ public class Main {
                 readKeyItemsFromFile(PATH_LOCALIZED_KERNEL + "important.bin", true);
                 break;
             case MODE_READ_GEAR_ABILITIES:
-                readGearAbilitiesFromFile(PATH_LOCALIZED_KERNEL + "a_ability.bin", true);
+                // readGearAbilitiesFromFile(PATH_LOCALIZED_KERNEL + "a_ability.bin", "us", true);
+                for (int i = 0; i < DataAccess.GEAR_ABILITIES.length; i++) {
+                    System.out.println(String.format("%04X (Offset %04X) - ", 0x8000 + i, 0x14 + i * GearAbilityDataObject.LENGTH) + DataAccess.GEAR_ABILITIES[i].toString());
+                }
                 break;
             case MODE_READ_SPHERE_GRID_NODE_TYPES:
                 readSphereGridSphereTypes(PATH_LOCALIZED_KERNEL + "sphere.bin", true);

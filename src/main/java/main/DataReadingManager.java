@@ -16,6 +16,7 @@ import script.model.ScriptFuncLib;
 
 import java.io.File;
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class DataReadingManager {
@@ -38,8 +39,28 @@ public class DataReadingManager {
     public static final String PATH_SKILL_TABLE_6 = PATH_LOCALIZED_KERNEL + "monmagic2.bin"; // "FILE07741.dat"; // "monmagic2.bin"; //
     public static final String PATH_SKILL_TABLE_2 = PATH_LOCALIZED_KERNEL + "item.bin"; // "FILE07734.dat"; // "item.bin"; //
 
+    public static final String DEFAULT_LOCALIZATION = "us";
+    public static final Map<String, String> LOCALIZATIONS = Map.of(
+            "ch", "Chinese",
+            "de", "German",
+            "fr", "French",
+            "it", "Italian",
+            "jp", "Japanese",
+            "kr", "Korean",
+            "sp", "Spanish",
+            "us", "English"
+    );
+
     private static final boolean SKIP_BLITZBALL_EVENTS_FOLDER = true;
     private static final boolean ALLOW_DAT_FILES = true;
+
+    public static String getDefaultLocalization() {
+        return DEFAULT_LOCALIZATION;
+    }
+
+    public static String getLocalizationRoot(String localization) {
+        return PATH_FFX_ROOT + "new_" + localization + "pc/";
+    }
 
     public static void initializeInternals() {
         StringHelper.initialize();
@@ -52,7 +73,7 @@ public class DataReadingManager {
         DataAccess.SG_SPHERE_TYPES = readSphereGridSphereTypes(PATH_LOCALIZED_KERNEL + "sphere.bin", false);
         prepareAbilities();
         DataAccess.PLAYER_CHAR_STATS = readPlayerCharStats(PATH_LOCALIZED_KERNEL + "ply_save.bin", false);
-        DataAccess.GEAR_ABILITIES = readGearAbilitiesFromFile(PATH_LOCALIZED_KERNEL + "a_ability.bin", false);
+        DataAccess.GEAR_ABILITIES = readGearAbilities("battle/kernel/a_ability.bin", false);
         DataAccess.BUYABLE_GEAR = readWeaponPickups(PATH_ORIGINALS_KERNEL + "shop_arms.bin", false);
         DataAccess.WEAPON_PICKUPS = readWeaponPickups(PATH_ORIGINALS_KERNEL + "buki_get.bin", false);
         DataAccess.KEY_ITEMS = readKeyItemsFromFile(PATH_LOCALIZED_KERNEL + "important.bin", false);
@@ -60,7 +81,7 @@ public class DataReadingManager {
         DataAccess.ITEM_SHOPS = readItemShops(PATH_ORIGINALS_KERNEL + "item_shop.bin", false);
         DataAccess.TREASURES = readTreasures(PATH_ORIGINALS_KERNEL + "takara.bin", false);
         readMonsterFile(PATH_MONSTER_FOLDER, false);
-        DataAccess.addMonsterLocalizations(readMonsterLocalizations(false));
+        LOCALIZATIONS.forEach((key, name) -> DataAccess.addMonsterLocalizations(readMonsterLocalizations(key,false)));
         DataAccess.SG_NODE_TYPES = readSphereGridNodeTypes(PATH_LOCALIZED_KERNEL + "panel.bin", false);
         DataAccess.OSG_LAYOUT = readSphereGridLayout(PATH_ABMAP + "dat01.dat", PATH_ABMAP + "dat09.dat", false);
         DataAccess.SSG_LAYOUT = readSphereGridLayout(PATH_ABMAP + "dat02.dat", PATH_ABMAP + "dat10.dat", false);
@@ -82,23 +103,33 @@ public class DataReadingManager {
     }
 
     public static void prepareAbilities() {
-        prepareAbilitiesFromFile(PATH_SKILL_TABLE_3, 3);
-        prepareAbilitiesFromFile(PATH_SKILL_TABLE_4, 4);
-        prepareAbilitiesFromFile(PATH_SKILL_TABLE_6, 6);
-        prepareAbilitiesFromFile(PATH_SKILL_TABLE_2, 2);
+        prepareAbilitiesFromFile("battle/kernel/command.bin", 3);
+        prepareAbilitiesFromFile("battle/kernel/monmagic1.bin", 4);
+        prepareAbilitiesFromFile("battle/kernel/monmagic2.bin", 6);
+        prepareAbilitiesFromFile("battle/kernel/item.bin", 2);
     }
 
-    private static void prepareAbilitiesFromFile(String filename, int group) {
-        AbilityDataObject[] abilities = readAbilitiesFromFile(filename, group, false);
+    private static void prepareAbilitiesFromFile(String path, int group) {
+        AbilityDataObject[] abilities = readAbilitiesFromFile(getLocalizationRoot(getDefaultLocalization()) + path, group, getDefaultLocalization(), false);
         if (abilities == null) {
-            System.err.println("Failed to load abilities from " + filename + " (group " + group + ')');
+            System.err.println("Failed to load abilities from " + path + " (group " + group + ')');
             return;
         }
+        LOCALIZATIONS.forEach((key, name) -> {
+            AbilityDataObject[] localizations = readAbilitiesFromFile(getLocalizationRoot(key) + path, group, key, false);
+            if (localizations != null) {
+                for (int i = 0; i < localizations.length && i < abilities.length; i++) {
+                    if (abilities[i] != null && localizations[i] != null) {
+                        abilities[i].setLocalizations(localizations[i]);
+                    }
+                }
+            }
+        });
         System.arraycopy(abilities, 0, DataAccess.MOVES, 0x1000 * group, abilities.length);
     }
 
-    public static AbilityDataObject[] readAbilitiesFromFile(String filename, int group, boolean print) {
-        DataFileReader<AbilityDataObject> reader = new DataFileReader<>((bytes, stringBytes) -> new AbilityDataObject(bytes, stringBytes, group)) {
+    public static AbilityDataObject[] readAbilitiesFromFile(String filename, int group, String localization, boolean print) {
+        DataFileReader<AbilityDataObject> reader = new DataFileReader<>((bytes, stringBytes) -> new AbilityDataObject(bytes, stringBytes, localization, group)) {
             @Override
             public String indexWriter(int idx) {
                 return String.format("%04X", idx + group * 0x1000);
@@ -141,8 +172,26 @@ public class DataReadingManager {
         return array;
     }
 
-    public static GearAbilityDataObject[] readGearAbilitiesFromFile(String filename, boolean print) {
-        DataFileReader<GearAbilityDataObject> reader = new DataFileReader<>(GearAbilityDataObject::new) {
+    public static GearAbilityDataObject[] readGearAbilities(String path, boolean print) {
+        GearAbilityDataObject[] abilities = readGearAbilitiesFromFile(getLocalizationRoot(getDefaultLocalization()) + path, getDefaultLocalization(), print);
+        if (abilities == null) {
+            return null;
+        }
+        LOCALIZATIONS.forEach((key, name) -> {
+            GearAbilityDataObject[] localizations = readGearAbilitiesFromFile(getLocalizationRoot(key) + path, key, false);
+            if (localizations != null) {
+                for (int i = 0; i < localizations.length && i < abilities.length; i++) {
+                    if (abilities[i] != null && localizations[i] != null) {
+                        abilities[i].setLocalizations(localizations[i]);
+                    }
+                }
+            }
+        });
+        return abilities;
+    }
+
+    public static GearAbilityDataObject[] readGearAbilitiesFromFile(String filename, String localization, boolean print) {
+        DataFileReader<GearAbilityDataObject> reader = new DataFileReader<>((int[] bytes, int[] stringBytes) -> new GearAbilityDataObject(bytes, stringBytes, localization)) {
             @Override
             public String indexWriter(int idx) {
                 return "80" + String.format("%02X", idx);
@@ -339,27 +388,23 @@ public class DataReadingManager {
         return list.toArray(array);
     }
 
-    public static MonsterStatDataObject[] readMonsterLocalizations(boolean print) {
-        DataFileReader<MonsterStatDataObject> reader = new DataFileReader<>((b, sb) -> {
-            MonsterStatDataObject statDataObject = new MonsterStatDataObject(b, sb);
-            statDataObject.isLocalizationData = true;
-            return statDataObject;
-        });
+    public static MonsterLocalizationDataObject[] readMonsterLocalizations(String localization, boolean print) {
+        DataFileReader<MonsterLocalizationDataObject> reader = new DataFileReader<>((b, sb) -> new MonsterLocalizationDataObject(b, sb, localization));
         int fileIndex = 0;
         File file;
-        List<MonsterStatDataObject> fullList = new ArrayList<>();
+        List<MonsterLocalizationDataObject> fullList = new ArrayList<>();
         do {
             fileIndex++;
-            String path = PATH_LOCALIZED_KERNEL + "monster" + fileIndex + ".bin";
+            String path = getLocalizationRoot(localization) + "battle/kernel/monster" + fileIndex + ".bin";
             file = FileAccessorWithMods.resolveFile(path, false);
             if (file.exists()) {
-                List<MonsterStatDataObject> list = reader.readGenericDataFile(path, print);
+                List<MonsterLocalizationDataObject> list = reader.readGenericDataFile(path, print);
                 if (list != null) {
                     fullList.addAll(list);
                 }
             }
         } while (file.exists());
-        MonsterStatDataObject[] array = new MonsterStatDataObject[fullList.size()];
+        MonsterLocalizationDataObject[] array = new MonsterLocalizationDataObject[fullList.size()];
         return fullList.toArray(array);
     }
 

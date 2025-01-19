@@ -7,6 +7,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * Part of EncounterFile
+ */
 public class FormationDataObject {
     public static final int LENGTH = 0x1C;
 
