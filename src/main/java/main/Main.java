@@ -14,6 +14,7 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 import static main.DataReadingManager.*;
+import static reading.FileAccessorWithMods.GAME_FILES_ROOT;
 
 public class Main {
 
@@ -45,7 +46,7 @@ public class Main {
     public static void main(String[] args) {
         String pathRoot = args[0];
         if (!".".equals(pathRoot)) {
-            FileAccessorWithMods.GAME_FILES_ROOT = pathRoot;
+            GAME_FILES_ROOT = pathRoot;
         }
         String mode = args[1];
         List<String> realArgs = Arrays.asList(args).subList(2, args.length);
@@ -245,7 +246,19 @@ public class Main {
                 prepareStringMacros(PATH_FFX_ROOT + "new_uspc/menu/macrodic.dcp", "us", true);
                 break;
             case MODE_CUSTOM:
-                readX2AbilitiesFromFile("ffx_ps2/ffx2/master/new_uspc/battle/kernel/command.bin", "us", true);
+                // readX2AbilitiesFromFile("ffx_ps2/ffx2/master/new_uspc/battle/kernel/command.bin", "us", true);
+                System.out.println("--- command.bin ---");
+                AbilityDataObject[] commands = Arrays.copyOfRange(DataAccess.MOVES, 0x3000, 0x3140);
+                DataWritingManager.writeDataObjectsInAllLocalizations("battle/kernel/command.bin", commands, 0x60);
+                System.out.println("--- monmagic1.bin ---");
+                AbilityDataObject[] monmagics1 = Arrays.copyOfRange(DataAccess.MOVES, 0x4000, 0x412C);
+                DataWritingManager.writeDataObjectsInAllLocalizations("battle/kernel/monmagic1.bin", monmagics1, 0x5C);
+                System.out.println("--- monmagic2.bin ---");
+                AbilityDataObject[] monmagics2 = Arrays.copyOfRange(DataAccess.MOVES, 0x6000, 0x60F7);
+                DataWritingManager.writeDataObjectsInAllLocalizations("battle/kernel/monmagic2.bin", monmagics2, 0x5C);
+                System.out.println("--- item.bin ---");
+                AbilityDataObject[] items = Arrays.copyOfRange(DataAccess.MOVES, 0x2000, 0x2070);
+                DataWritingManager.writeDataObjectsInAllLocalizations("battle/kernel/item.bin", items, 0x60);
                 break;
             default:
                 break;

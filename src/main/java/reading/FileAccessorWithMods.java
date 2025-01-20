@@ -6,7 +6,7 @@ public class FileAccessorWithMods {
     public static final String RESOURCES_ROOT = "src/main/resources/";
     public static String GAME_FILES_ROOT = RESOURCES_ROOT;
     public static final String MODS_FOLDER = "mods/";
-    private static final boolean DISABLE_MODS = true;
+    private static final boolean DISABLE_MODS = false;
 
     public static File getRealFile(String path) {
         return new File(GAME_FILES_ROOT + path);

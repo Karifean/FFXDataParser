@@ -11,6 +11,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * command.bin
@@ -18,7 +19,7 @@ import java.util.stream.Collectors;
  * monmagic2.bin
  * item.bin
  */
-public class AbilityDataObject implements Nameable {
+public class AbilityDataObject implements Nameable, Writable {
     static Map<Integer, String> submenus;
 
     private final boolean isCharacterAbility;
@@ -839,5 +840,113 @@ public class AbilityDataObject implements Nameable {
 
     private int read2Bytes(int offset) {
         return bytes[offset] + bytes[offset+1] * 0x100;
+    }
+
+    public int[] toBytes(String localization, Map<String, Integer> stringMap) {
+        int[] array = new int[isCharacterAbility ? 0x60 : 0x5C];
+        write2Bytes(array, 0x00, stringMap.get(name.getLocalizedContent(localization)));
+        write2Bytes(array, 0x02, nameKey);
+        write2Bytes(array, 0x04, stringMap.get(unusedString0405.getLocalizedContent(localization)));
+        write2Bytes(array, 0x06, unusedString0405Key);
+        write2Bytes(array, 0x08, stringMap.get(description.getLocalizedContent(localization)));
+        write2Bytes(array, 0x0A, descriptionKey);
+        write2Bytes(array, 0x0C, stringMap.get(unusedString0C0D.getLocalizedContent(localization)));
+        write2Bytes(array, 0x0E, unusedString0C0DKey);
+        write2Bytes(array, 0x10, anim1);
+        write2Bytes(array, 0x12, anim2);
+        array[0x14] = icon;
+        array[0x15] = casterAnimation;
+        array[0x16] = menuProperties16;
+        array[0x17] = subsubMenuCategorization;
+        array[0x18] = subMenuCategorization;
+        array[0x19] = characterUser;
+        array[0x1A] = targetingFlags;
+        array[0x1B] = targetsAllowedApparently;
+        array[0x1C] = miscProperties1C;
+        array[0x1D] = miscProperties1D;
+        array[0x1E] = miscProperties1E;
+        array[0x1F] = animationProperties1F;
+        array[0x20] = damageProperties20;
+        array[0x21] = stealGil ? 1 : 0;
+        array[0x22] = partyPreviewByte;
+        array[0x23] = damageClass;
+        array[0x24] = moveRank;
+        array[0x25] = costMP;
+        array[0x26] = costOD;
+        array[0x27] = attackCritBonus;
+        array[0x28] = damageFormula;
+        array[0x29] = attackAccuracy;
+        array[0x2A] = attackPower;
+        array[0x2B] = hitCount;
+        array[0x2C] = shatterChance;
+        array[0x2D] = elementFlags;
+        array[0x2E] = statusChanceDeath;
+        array[0x2F] = statusChanceZombie;
+        array[0x30] = statusChancePetrify;
+        array[0x31] = statusChancePoison;
+        array[0x32] = statusChancePowerBreak;
+        array[0x33] = statusChanceMagicBreak;
+        array[0x34] = statusChanceArmorBreak;
+        array[0x35] = statusChanceMentalBreak;
+        array[0x36] = statusChanceConfuse;
+        array[0x37] = statusChanceBerserk;
+        array[0x38] = statusChanceProvoke;
+        array[0x39] = statusChanceThreaten;
+        array[0x3A] = statusChanceSleep;
+        array[0x3B] = statusChanceSilence;
+        array[0x3C] = statusChanceDarkness;
+        array[0x3D] = statusChanceShell;
+        array[0x3E] = statusChanceProtect;
+        array[0x3F] = statusChanceReflect;
+        array[0x40] = statusChanceNTide;
+        array[0x41] = statusChanceNBlaze;
+        array[0x42] = statusChanceNShock;
+        array[0x43] = statusChanceNFrost;
+        array[0x44] = statusChanceRegen;
+        array[0x45] = statusChanceHaste;
+        array[0x46] = statusChanceSlow;
+        array[0x47] = statusDurationSleep;
+        array[0x48] = statusDurationSilence;
+        array[0x49] = statusDurationDarkness;
+        array[0x4A] = statusDurationShell;
+        array[0x4B] = statusDurationProtect;
+        array[0x4C] = statusDurationReflect;
+        array[0x4D] = statusDurationNTide;
+        array[0x4E] = statusDurationNBlaze;
+        array[0x4F] = statusDurationNShock;
+        array[0x50] = statusDurationNFrost;
+        array[0x51] = statusDurationRegen;
+        array[0x52] = statusDurationHaste;
+        array[0x53] = statusDurationSlow;
+        array[0x54] = extraStatusFlags1;
+        array[0x55] = extraStatusFlags2;
+        array[0x56] = statBuffFlags1;
+        array[0x57] = statBuffFlags2Unused;
+        array[0x58] = overdriveCategorizationByte;
+        array[0x59] = statBuffValue;
+        array[0x5A] = specialBuffFlags1;
+        array[0x5B] = specialBuffFlags2Unused;
+        if (isCharacterAbility) {
+            array[0x5C] = orderingIndexInMenu;
+            array[0x5D] = sphereTypeForSphereGrid;
+            array[0x5E] = alwaysZero5E;
+            array[0x5F] = alwaysZero5F;
+        }
+        return array;
+    }
+
+    private void write2Bytes(int[] array, int offset, int value) {
+        array[offset]     =  value & 0x00FF;
+        array[offset + 1] = (value & 0xFF00) / 0x100;
+    }
+
+    @Override
+    public Stream<String> getStrings(String localization) {
+        return Stream.of(
+                name.getLocalizedContent(localization),
+                unusedString0405.getLocalizedContent(localization),
+                description.getLocalizedContent(localization),
+                unusedString0C0D.getLocalizedContent(localization)
+        );
     }
 }

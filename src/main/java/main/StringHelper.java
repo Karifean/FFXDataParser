@@ -2,15 +2,15 @@ package main;
 
 import model.KeyItemDataObject;
 import model.LocalizedStringObject;
+import model.StringStruct;
 import reading.ChunkedFileHelper;
 import reading.FileAccessorWithMods;
 
 import java.io.File;
 import java.util.*;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
-import static main.DataReadingManager.*;
+import static main.DataReadingManager.LOCALIZATIONS;
+import static main.DataReadingManager.getLocalizationRoot;
 
 public abstract class StringHelper {
     public static final String ANSI_RESET = "\u001B[0m";
@@ -23,7 +23,7 @@ public abstract class StringHelper {
     public static final String ANSI_CYAN = "\u001B[36m";
     public static final String ANSI_WHITE = "\u001B[37m";
 
-    public static final boolean COLORS_USE_CONSOLE_CODES = true;
+    public static final boolean COLORS_USE_CONSOLE_CODES = false;
     public static final Map<Integer, Character> BIN_LOOKUP = new HashMap<>();
     public static final Map<Character, Integer> BIN_REV_LOOKUP = new HashMap<>();
     public static final Map<Integer, LocalizedStringObject> MACRO_LOOKUP = new HashMap<>();
@@ -76,6 +76,20 @@ public abstract class StringHelper {
             case 0xA1 -> "OL_PURPLE";
             case 0xB1 -> "OL_CYAN";
             default -> String.format("%02X", hex);
+        };
+    }
+
+    public static int colorToByte(String color) {
+        return switch (color) {
+            case "WHITE" -> 0x41;
+            case "YELLOW" -> 0x43;
+            case "GREY" -> 0x52;
+            case "BLUE" -> 0x88;
+            case "RED" -> 0x94;
+            case "PINK" -> 0x97;
+            case "OL_PURPLE" -> 0xA1;
+            case "OL_CYAN" -> 0xB1;
+            default -> Integer.parseInt(color, 16);
         };
     }
 
@@ -276,8 +290,77 @@ public abstract class StringHelper {
         return out.toString();
     }
 
+    public static StringStruct createStringMap(final List<String> strings) {
+        final Map<String, Integer> map = new HashMap<>();
+        map.put("", 0);
+        final List<Integer> byteList = new ArrayList<>();
+        byteList.add(0);
+        strings.stream().sorted(Comparator.comparingInt(String::length).reversed()).forEach((s) -> {
+            if (map.containsKey(s)) {
+                return;
+            }
+            int offset = byteList.size();
+            for (int i = 0; i < s.length(); i++) {
+                char chr = s.charAt(i);
+                map.put(s.substring(i), offset + i);
+                List<Integer> cmdBytes = chr == '{' ? parseCommand(s, i) : null;
+                if (cmdBytes == null) {
+                    byteList.add(BIN_REV_LOOKUP.getOrDefault(chr, 0x4F));
+                } else {
+                    byteList.addAll(cmdBytes);
+                    int endIndex = s.substring(i).indexOf('}');
+                    i += endIndex;
+                }
+            }
+            byteList.add(0x00);
+        });
+        final int[] stringBytes = new int[byteList.size()];
+        for (int i = 0; i < byteList.size(); i++) {
+            stringBytes[i] = byteList.get(i);
+        }
+        return new StringStruct(map, stringBytes);
+    }
+
+    public static List<Integer> parseCommand(String string, int startIndex) {
+        String substring = string.substring(startIndex);
+        int endIndex = substring.indexOf('}');
+        if (endIndex < 0) {
+            return null;
+        }
+        String cmd = substring.substring(1, endIndex);
+        if (cmd.equals("PAUSE")) {
+            return List.of(0x01);
+        } else if (cmd.startsWith("BOX:")) {
+            int boxType = Integer.parseInt(cmd.substring(4), 16) + 0x30;
+            return List.of(0x09, boxType);
+        } else if (cmd.startsWith("CLR:")) {
+            return List.of(0x0A, colorToByte(cmd.substring(4)));
+        } else if (cmd.startsWith("CTRL:")) {
+            int ctrlIdx = Integer.parseInt(cmd.substring(5), 16) + 0x30;
+            return List.of(0x0B, ctrlIdx);
+        } else if (cmd.startsWith("CHOICE")) {
+            int choiceIdx = Integer.parseInt(cmd.substring(6), 16) + 0x30;
+            return List.of(0x10, choiceIdx);
+        } else if (cmd.startsWith("VAR")) {
+            int varIdx = Integer.parseInt(cmd.substring(3), 16) + 0x30;
+            return List.of(0x12, varIdx);
+        } else if (cmd.startsWith("PC")) {
+            int pc = Integer.parseInt(cmd.substring(2, 4), 16) + 0x30;
+            return List.of(0x13, pc);
+        } else if (cmd.startsWith("MCR")) {
+            int section = Integer.parseInt(cmd.substring(5, 7), 16) + 0x13;
+            int line = Integer.parseInt(cmd.substring(8, 10), 16) + 0x30;
+            return List.of(section, line);
+        } else if (cmd.startsWith("KEY")) {
+            int keyItemIdx = Integer.parseInt(cmd.substring(4, 6), 16) + 0x30;
+            return List.of(0x23, keyItemIdx);
+        } else {
+            return null;
+        }
+    }
+
     public static void initialize() {
-        BIN_LOOKUP.put(0x00, '\n');
+        BIN_LOOKUP.put(0x00, '\r');
         BIN_LOOKUP.put(0x03, '\n');
         BIN_LOOKUP.put(0x30, '0');
         BIN_LOOKUP.put(0x31, '1');
@@ -476,17 +559,5 @@ public abstract class StringHelper {
         BIN_LOOKUP.put(0xfc, '\t');  // Wide space or tab, not sure which; all the remaining characters up to 0xff appears this way when typed so probably not valid
 
         BIN_LOOKUP.forEach((i, c) -> BIN_REV_LOOKUP.put(c, i));
-    }
-
-    private static String localizationRootToLocalization(String root) {
-        if (root == null) {
-            return null;
-        } else if ("in".equals(root)) {
-            return "us";
-        } else if (root.startsWith("new_")) {
-            return root.substring(4);
-        } else {
-            return root;
-        }
     }
 }
