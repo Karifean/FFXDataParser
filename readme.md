@@ -40,7 +40,7 @@ You can then run the parser with the following command:
 | `READ_SPHERE_GRID_NODE_TYPES`              | | Reads types of spheres and nodes on the sphere grid (from `sphere.bin` and `panel.bin`) |
 | `READ_SPHERE_GRID_LAYOUT`              | `<layoutFile, ex: dat02.dat> <nodeContentsFile, ex: dat10.dat>` | Reads out a sphere grid's layout including its actual node contents. |
 | `READ_CUSTOMIZATIONS`              | | Reads customizations for gear and aeons. (from `kaizou.bin` and `sum_grow.bin`) |
-| `PARSE_SCRIPT_FILE`     | `<file/folder1> [<file/folder2>] ...` | Reads the script from a file and prints it to the console. If given a folder, recurses through all script files within. |
+| `PARSE_ATEL_FILE`     | `<file/folder1> [<file/folder2>] ...` | Reads the ATEL script from a file (event, encounter or monster) and prints it to the console. If given a folder, recurses through all atel files within. |
 | `PARSE_MONSTER`            | `<mIndex1, ex: 234> [<mIndex2, ex: 235>] ...` | Reads the monster files with the given decimal index and prints their information. |
 | `PARSE_ENCOUNTER`          | `<btlIndex1, ex: sins04_07> [<btlIndex2, ex: zzzz03_33>] ...` | Reads the encounter files with the given name and prints their information. | 
 | `PARSE_ALL_ENCOUNTERS`          | | Reads all encounter files and prints their information. | 
@@ -54,6 +54,6 @@ You can then run the parser with the following command:
 
 `java -jar target/FFXDataParser-1.0-SNAPSHOT.jar . READ_ALL_ABILITIES`
 
-`java -jar target/FFXDataParser-1.0-SNAPSHOT.jar . PARSE_SCRIPT_FILE ffx_ps2/ffx/master/jppc/event/obj/do/dome0600/dome0600.ebp`
+`java -jar target/FFXDataParser-1.0-SNAPSHOT.jar . PARSE_ATEL_FILE ffx_ps2/ffx/master/jppc/event/obj/do/dome0600/dome0600.ebp`
 
 `java -jar target/FFXDataParser-1.0-SNAPSHOT.jar . PARSE_MONSTER 105`

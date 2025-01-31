@@ -1,9 +1,8 @@
 package model;
 
 import main.DataAccess;
-import main.DataReadingManager;
 import main.StringHelper;
-import script.model.StackObject;
+import atel.model.StackObject;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -76,15 +75,11 @@ public class MonsterStatDataObject {
     int statusResistChanceNTide;
     int statusResistChanceHaste;
     int statusResistChanceSlow;
-    int autoStatuses1;
-    int autoStatuses2;
-    int autoStatuses3;
-    int autoStatuses4;
-    int autoStatuses5;
-    int autoStatuses6;
+    int autoStatusesPermanent;
+    int autoStatusesTemporal;
+    int autoStatusesExtra;
 
-    int extraStatusImmunities1;
-    int extraStatusImmunities2;
+    int extraStatusImmunities;
 
     int[] abilityList;
 
@@ -128,10 +123,6 @@ public class MonsterStatDataObject {
     boolean autoSleep;
     boolean autoSilence;
     boolean autoDarkness;
-    boolean autoUnknown280;
-    boolean autoUnknown301;
-    boolean autoUnknown302;
-    boolean autoUnknown304;
     boolean autoShell;
     boolean autoProtect;
     boolean autoReflect;
@@ -142,7 +133,6 @@ public class MonsterStatDataObject {
     boolean autoRegen;
     boolean autoHaste;
     boolean autoSlow;
-    boolean autoUnknown4;
     boolean autoScan;
     boolean autoShield;
     boolean autoBoost;
@@ -233,15 +223,10 @@ public class MonsterStatDataObject {
         statusResistChanceRegen = bytes[0x45];
         statusResistChanceHaste = bytes[0x46];
         statusResistChanceSlow = bytes[0x47];
-        autoStatuses1 = bytes[0x48];
-        autoStatuses2 = bytes[0x49];
-        autoStatuses3 = bytes[0x4A];
-        autoStatuses4 = bytes[0x4B];
-        autoStatuses5 = bytes[0x4C];
-        autoStatuses6 = bytes[0x4D];
-
-        extraStatusImmunities1 = bytes[0x4E];
-        extraStatusImmunities2 = bytes[0x4F];
+        autoStatusesPermanent = read2Bytes(bytes, 0x48);
+        autoStatusesTemporal = read2Bytes(bytes, 0x4A);
+        autoStatusesExtra = read2Bytes(bytes, 0x4C);
+        extraStatusImmunities = read2Bytes(bytes, 0x4E);
 
         abilityList = new int[16];
         abilityList[0] = read2Bytes(bytes, 0x50);
@@ -287,68 +272,63 @@ public class MonsterStatDataObject {
         immunitySliceProbably = (miscProperties29 & 0x02) > 0;
         immunityBribeProbably = (miscProperties29 & 0x04) > 0;
 
-        autoDeath = (autoStatuses1 & 0x01) > 0;
-        autoZombie = (autoStatuses1 & 0x02) > 0;
-        autoPetrify = (autoStatuses1 & 0x04) > 0;
-        autoPoison = (autoStatuses1 & 0x08) > 0;
-        autoPowerBreak = (autoStatuses1 & 0x10) > 0;
-        autoMagicBreak = (autoStatuses1 & 0x20) > 0;
-        autoArmorBreak = (autoStatuses1 & 0x40) > 0;
-        autoMentalBreak = (autoStatuses1 & 0x80) > 0;
-        autoConfuse = (autoStatuses2 & 0x01) > 0;
-        autoBerserk = (autoStatuses2 & 0x02) > 0;
-        autoProvoke = (autoStatuses2 & 0x04) > 0;
-        autoThreaten = (autoStatuses2 & 0x08) > 0;
-        autoSleep = (autoStatuses2 & 0x10) > 0;
-        autoSilence = (autoStatuses2 & 0x20) > 0;
-        autoDarkness = (autoStatuses2 & 0x40) > 0;
-        autoUnknown280 = (autoStatuses2 & 0x80) > 0;
-        autoUnknown301 = (autoStatuses3 & 0x01) > 0;
-        autoUnknown302 = (autoStatuses3 & 0x02) > 0;
-        autoUnknown304 = (autoStatuses3 & 0x04) > 0;
-        autoShell = (autoStatuses3 & 0x08) > 0;
-        autoProtect = (autoStatuses3 & 0x10) > 0;
-        autoReflect = (autoStatuses3 & 0x20) > 0;
-        autoNTide = (autoStatuses3 & 0x40) > 0;
-        autoNBlaze = (autoStatuses3 & 0x80) > 0;
-        autoNShock = (autoStatuses4 & 0x01) > 0;
-        autoNFrost = (autoStatuses4 & 0x02) > 0;
-        autoRegen = (autoStatuses4 & 0x04) > 0;
-        autoHaste = (autoStatuses4 & 0x08) > 0;
-        autoSlow = (autoStatuses4 & 0x10) > 0;
-        autoUnknown4 = autoStatuses4 >= 0x20;
-        autoScan = (autoStatuses5 & 0x01) > 0;
-        autoDistillPower = (autoStatuses5 & 0x02) > 0;
-        autoDistillMana = (autoStatuses5 & 0x04) > 0;
-        autoDistillSpeed = (autoStatuses5 & 0x08) > 0;
-        autoUnused1 = (autoStatuses5 & 0x10) > 0;
-        autoDistillAbility = (autoStatuses5 & 0x20) > 0;
-        autoShield = (autoStatuses5 & 0x40) > 0;
-        autoBoost = (autoStatuses5 & 0x80) > 0;
-        autoEject = (autoStatuses6 & 0x01) > 0;
-        autoAutoLife = (autoStatuses6 & 0x02) > 0;
-        autoCurse = (autoStatuses6 & 0x04) > 0;
-        autoDefend = (autoStatuses6 & 0x08) > 0;
-        autoGuard = (autoStatuses6 & 0x10) > 0;
-        autoSentinel = (autoStatuses6 & 0x20) > 0;
-        autoDoom = (autoStatuses6 & 0x40) > 0;
-        autoUnused2 = (autoStatuses6 & 0x80) > 0;
-        resistScan = (extraStatusImmunities1 & 0x01) > 0;
-        resistDistillPower = (extraStatusImmunities1 & 0x02) > 0;
-        resistDistillMana = (extraStatusImmunities1 & 0x04) > 0;
-        resistDistillSpeed = (extraStatusImmunities1 & 0x08) > 0;
-        resistUnused1 = (extraStatusImmunities1 & 0x10) > 0;
-        resistDistillAbility = (extraStatusImmunities1 & 0x20) > 0;
-        resistShield = (extraStatusImmunities1 & 0x40) > 0;
-        resistBoost = (extraStatusImmunities1 & 0x80) > 0;
-        resistEject = (extraStatusImmunities2 & 0x01) > 0;
-        resistAutoLife = (extraStatusImmunities2 & 0x02) > 0;
-        resistCurse = (extraStatusImmunities2 & 0x04) > 0;
-        resistDefend = (extraStatusImmunities2 & 0x08) > 0;
-        resistGuard = (extraStatusImmunities2 & 0x10) > 0;
-        resistSentinel = (extraStatusImmunities2 & 0x20) > 0;
-        resistDoom = (extraStatusImmunities2 & 0x40) > 0;
-        resistUnused2 = (extraStatusImmunities2 & 0x80) > 0;
+        autoDeath = (autoStatusesPermanent & 0x0001) > 0;
+        autoZombie = (autoStatusesPermanent & 0x0002) > 0;
+        autoPetrify = (autoStatusesPermanent & 0x0004) > 0;
+        autoPoison = (autoStatusesPermanent & 0x0008) > 0;
+        autoPowerBreak = (autoStatusesPermanent & 0x0010) > 0;
+        autoMagicBreak = (autoStatusesPermanent & 0x0020) > 0;
+        autoArmorBreak = (autoStatusesPermanent & 0x0040) > 0;
+        autoMentalBreak = (autoStatusesPermanent & 0x0080) > 0;
+        autoConfuse = (autoStatusesPermanent & 0x0100) > 0;
+        autoBerserk = (autoStatusesPermanent & 0x0200) > 0;
+        autoProvoke = (autoStatusesPermanent & 0x0400) > 0;
+        autoThreaten = (autoStatusesPermanent & 0x0800) > 0;
+        autoSleep = (autoStatusesTemporal & 0x0001) > 0;
+        autoSilence = (autoStatusesTemporal & 0x0002) > 0;
+        autoDarkness = (autoStatusesTemporal & 0x0004) > 0;
+        autoShell = (autoStatusesTemporal & 0x0008) > 0;
+        autoProtect = (autoStatusesTemporal & 0x0010) > 0;
+        autoReflect = (autoStatusesTemporal & 0x0020) > 0;
+        autoNTide = (autoStatusesTemporal & 0x0040) > 0;
+        autoNBlaze = (autoStatusesTemporal & 0x0080) > 0;
+        autoNShock = (autoStatusesTemporal & 0x0100) > 0;
+        autoNFrost = (autoStatusesTemporal & 0x0200) > 0;
+        autoRegen = (autoStatusesTemporal & 0x0400) > 0;
+        autoHaste = (autoStatusesTemporal & 0x0800) > 0;
+        autoSlow = (autoStatusesTemporal & 0x1000) > 0;
+        autoScan = (autoStatusesExtra & 0x0001) > 0;
+        autoDistillPower = (autoStatusesExtra & 0x0002) > 0;
+        autoDistillMana = (autoStatusesExtra & 0x0004) > 0;
+        autoDistillSpeed = (autoStatusesExtra & 0x0008) > 0;
+        autoUnused1 = (autoStatusesExtra & 0x0010) > 0;
+        autoDistillAbility = (autoStatusesExtra & 0x0020) > 0;
+        autoShield = (autoStatusesExtra & 0x0040) > 0;
+        autoBoost = (autoStatusesExtra & 0x0080) > 0;
+        autoEject = (autoStatusesExtra & 0x0100) > 0;
+        autoAutoLife = (autoStatusesExtra & 0x0200) > 0;
+        autoCurse = (autoStatusesExtra & 0x0400) > 0;
+        autoDefend = (autoStatusesExtra & 0x0800) > 0;
+        autoGuard = (autoStatusesExtra & 0x1000) > 0;
+        autoSentinel = (autoStatusesExtra & 0x2000) > 0;
+        autoDoom = (autoStatusesExtra & 0x4000) > 0;
+        autoUnused2 = (autoStatusesExtra & 0x8000) > 0;
+        resistScan = (extraStatusImmunities & 0x0001) > 0;
+        resistDistillPower = (extraStatusImmunities & 0x0002) > 0;
+        resistDistillMana = (extraStatusImmunities & 0x0004) > 0;
+        resistDistillSpeed = (extraStatusImmunities & 0x0008) > 0;
+        resistUnused1 = (extraStatusImmunities & 0x0010) > 0;
+        resistDistillAbility = (extraStatusImmunities & 0x0020) > 0;
+        resistShield = (extraStatusImmunities & 0x0040) > 0;
+        resistBoost = (extraStatusImmunities & 0x0080) > 0;
+        resistEject = (extraStatusImmunities & 0x0100) > 0;
+        resistAutoLife = (extraStatusImmunities & 0x0200) > 0;
+        resistCurse = (extraStatusImmunities & 0x0400) > 0;
+        resistDefend = (extraStatusImmunities & 0x0800) > 0;
+        resistGuard = (extraStatusImmunities & 0x1000) > 0;
+        resistSentinel = (extraStatusImmunities & 0x2000) > 0;
+        resistDoom = (extraStatusImmunities & 0x4000) > 0;
+        resistUnused2 = (extraStatusImmunities & 0x8000) > 0;
     }
 
     private void mapStrings(int[] stringBytes, String localization) {
@@ -590,7 +570,7 @@ public class MonsterStatDataObject {
 
     private String autoBuffs() {
         StringBuilder buffs = new StringBuilder("Auto");
-        if (autoStatuses1 == 0 && autoStatuses2 == 0 && autoStatuses3 == 0 && autoStatuses4 == 0 && autoStatuses5 == 0 && autoStatuses6 == 0) {
+        if (autoStatusesPermanent == 0 && autoStatusesTemporal == 0 && autoStatusesExtra == 0) {
             return "";
         }
         if (autoDeath) {
@@ -642,18 +622,6 @@ public class MonsterStatDataObject {
         if (autoDarkness) {
             buffs.append("-Darkness");
         }
-        if (autoUnknown280) {
-            buffs.append("-uk280");
-        }
-        if (autoUnknown301) {
-            buffs.append("-uk301");
-        }
-        if (autoUnknown302) {
-            buffs.append("-uk302");
-        }
-        if (autoUnknown304) {
-            buffs.append("-uk304");
-        }
         if (autoShell) {
             buffs.append("-Shell");
         }
@@ -687,9 +655,6 @@ public class MonsterStatDataObject {
         }
         if (autoSlow) {
             buffs.append("-Slow");
-        }
-        if (autoUnknown4) {
-            buffs.append("-uk4");
         }
         if (autoScan) {
             buffs.append("-Scan");

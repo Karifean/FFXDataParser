@@ -1,15 +1,15 @@
-package script;
+package atel;
 
 import model.LocalizedStringObject;
 import reading.Chunk;
-import script.model.*;
+import atel.model.*;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
 import static main.StringHelper.*;
 
-public class ScriptObject {
+public class AtelScriptObject {
     private static final int JUMP_LINE_MINLENGTH = 16;
     private static final int HEX_LINE_MINLENGTH = COLORS_USE_CONSOLE_CODES ? 58 : 48;
     private static final int JUMP_PLUS_HEX_LINE_MINLENGTH = JUMP_LINE_MINLENGTH + HEX_LINE_MINLENGTH + 1;
@@ -75,11 +75,11 @@ public class ScriptObject {
     List<String> warnLines;
     List<ScriptInstruction> instructions = new ArrayList<>();
 
-    public ScriptObject(Chunk chunk, int[] battleWorkerMappingBytes) {
+    public AtelScriptObject(Chunk chunk, int[] battleWorkerMappingBytes) {
         this(chunk.bytes, chunk.offset, battleWorkerMappingBytes);
     }
 
-    public ScriptObject(int[] bytes, int absoluteOffset, int[] battleWorkerMappingBytes) {
+    public AtelScriptObject(int[] bytes, int absoluteOffset, int[] battleWorkerMappingBytes) {
         this.bytes = bytes;
         this.absoluteOffset = absoluteOffset;
         this.battleWorkerMappingBytes = battleWorkerMappingBytes;

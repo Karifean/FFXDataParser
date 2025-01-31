@@ -1,18 +1,18 @@
-package script.model;
+package atel.model;
 
 import main.DataAccess;
 import main.StringHelper;
 import model.AbilityDataObject;
 import model.LocalizedStringObject;
 import model.Nameable;
-import script.MonsterFile;
-import script.ScriptObject;
+import atel.MonsterFile;
+import atel.AtelScriptObject;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
 public class StackObject {
-    public ScriptObject parentScript;
+    public AtelScriptObject parentScript;
     public ScriptWorker parentWorker;
     public ScriptInstruction parentInstruction;
     public String type;
@@ -33,6 +33,10 @@ public class StackObject {
     }
 
     public StackObject(String type, StackObject obj) {
+        this(type, obj, obj.value);
+    }
+
+    public StackObject(String type, StackObject obj, int value) {
         this.parentWorker = obj.parentWorker;
         this.parentScript = obj.parentScript;
         this.parentInstruction = obj.parentInstruction;
@@ -40,7 +44,7 @@ public class StackObject {
         this.type = (type == null || "unknown".equals(type) || ("float".equals(type) && !obj.expression)) ? obj.type : type;
         this.expression = obj.expression;
         this.content = obj.content;
-        this.value = obj.value;
+        this.value = value;
         this.maybeBracketize = obj.maybeBracketize;
         this.referenceIndex = obj.referenceIndex;
     }
@@ -97,7 +101,10 @@ public class StackObject {
                 }
             }
             if ("menu".equals(type)) {
-                return interpretMenu() + hexSuffix;
+                return interpretMenu(value) + hexSuffix;
+            }
+            if ("sphereGridNodeState".equals(type)) {
+                return compositeUint16ToString("sgNodeActivationBitfield", "sgNodeType", "(Activation: %s, Content: %s)") + hexSuffix;
             }
             if ("move".equals(type)) {
                 if (value == 0) {
@@ -145,7 +152,13 @@ public class StackObject {
         return content;
     }
 
-    private String interpretMenu() {
+    public String compositeUint16ToString(String hbType, String lbType, String format) {
+        StackObject hbObj = new StackObject(hbType, this, (value & 0xFF00) >> 8);
+        StackObject lbObj = new StackObject(lbType, this, value & 0x00FF);
+        return String.format(format, hbObj, lbObj);
+    }
+
+    private static String interpretMenu(int value) {
         int b1 = (value & 0xFF000000) >> 24;
         int b2 = (value & 0x00FF0000) >> 16;
         int b3 = (value & 0x0000FF00) >> 8;

@@ -2,16 +2,12 @@ package main;
 
 import model.AbilityDataObject;
 import model.GearAbilityDataObject;
-import reading.FileAccessorWithMods;
-import script.EncounterFile;
-import script.EventFile;
-import script.MonsterFile;
+import atel.EncounterFile;
+import atel.EventFile;
+import atel.MonsterFile;
 
-import java.io.File;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Objects;
-import java.util.stream.Collectors;
 
 import static main.DataReadingManager.*;
 import static reading.FileAccessorWithMods.GAME_FILES_ROOT;
@@ -29,7 +25,7 @@ public class Main {
     private static final String MODE_READ_MONSTER_LOCALIZATIONS = "READ_MONSTER_LOCALIZATIONS";
     private static final String MODE_READ_WEAPON_FILE = "READ_WEAPON_FILE";
     private static final String MODE_READ_STRING_FILE = "READ_STRING_FILE";
-    private static final String MODE_PARSE_SCRIPT_FILE = "PARSE_SCRIPT_FILE";
+    private static final String MODE_PARSE_ATEL_FILE = "PARSE_ATEL_FILE";
     private static final String MODE_PARSE_ENCOUNTER = "PARSE_ENCOUNTER";
     private static final String MODE_PARSE_ALL_ENCOUNTERS = "PARSE_ALL_ENCOUNTERS";
     private static final String MODE_PARSE_EVENT = "PARSE_EVENT";
@@ -118,18 +114,7 @@ public class Main {
                 }
                 break;
             case MODE_PARSE_ALL_ENCOUNTERS:
-                File encountersFolder = FileAccessorWithMods.getRealFile(PATH_ORIGINALS_ENCOUNTER);
-                if (encountersFolder.isDirectory()) {
-                    String[] contents = encountersFolder.list();
-                    if (contents != null) {
-                        System.out.println("Found encounters: " + String.join(", ", contents));
-                        Arrays.stream(contents).filter(sf -> !sf.startsWith(".")).sorted().forEach(sf -> readEncounterFull(sf, true));
-                    } else {
-                        System.out.println("Cannot list encounters");
-                    }
-                } else {
-                    System.out.println("Cannot locate encounters");
-                }
+                readAllEncounters(true);
                 break;
             case MODE_PARSE_EVENT:
                 for (String filename : realArgs) {
@@ -137,29 +122,9 @@ public class Main {
                 }
                 break;
             case MODE_PARSE_ALL_EVENTS:
-                File eventsFolder = FileAccessorWithMods.getRealFile(PATH_ORIGINALS_EVENT);
-                if (eventsFolder.isDirectory()) {
-                    String[] contents = eventsFolder.list();
-                    if (contents != null) {
-                        System.out.println("Found folders: " + String.join(", ", contents));
-                        List<String> eventFiles = Arrays.stream(contents)
-                                .filter(sf -> !sf.startsWith(".") && (!SKIP_BLITZBALL_EVENTS_FOLDER || !sf.equals("bl")))
-                                .sorted()
-                                .map(path -> FileAccessorWithMods.getRealFile(PATH_ORIGINALS_EVENT + path))
-                                .filter(f -> f.isDirectory())
-                                .flatMap(f -> Arrays.stream(Objects.requireNonNull(f.list())))
-                                .filter(sf -> !sf.startsWith("."))
-                                .collect(Collectors.toList());
-                        System.out.println("Found events: " + String.join(", ", eventFiles));
-                        eventFiles.forEach(ev -> readEventFull(ev, true));
-                    } else {
-                        System.out.println("Cannot list events");
-                    }
-                } else {
-                    System.out.println("Cannot locate events");
-                }
+                readAllEvents(SKIP_BLITZBALL_EVENTS_FOLDER, true);
                 break;
-            case MODE_PARSE_SCRIPT_FILE:
+            case MODE_PARSE_ATEL_FILE:
                 for (String filename : realArgs) {
                     if (filename.contains("battle/mon")) {
                         System.out.println("Monster file: " + filename);
@@ -249,16 +214,16 @@ public class Main {
                 // readX2AbilitiesFromFile("ffx_ps2/ffx2/master/new_uspc/battle/kernel/command.bin", "us", true);
                 System.out.println("--- command.bin ---");
                 AbilityDataObject[] commands = Arrays.copyOfRange(DataAccess.MOVES, 0x3000, 0x3140);
-                DataWritingManager.writeDataObjectsInAllLocalizations("battle/kernel/command.bin", commands, 0x60);
+                DataWritingManager.writeDataObjectsInAllLocalizations("battle/kernel/command.bin", commands, 0x60, true);
                 System.out.println("--- monmagic1.bin ---");
                 AbilityDataObject[] monmagics1 = Arrays.copyOfRange(DataAccess.MOVES, 0x4000, 0x412C);
-                DataWritingManager.writeDataObjectsInAllLocalizations("battle/kernel/monmagic1.bin", monmagics1, 0x5C);
+                DataWritingManager.writeDataObjectsInAllLocalizations("battle/kernel/monmagic1.bin", monmagics1, 0x5C, true);
                 System.out.println("--- monmagic2.bin ---");
                 AbilityDataObject[] monmagics2 = Arrays.copyOfRange(DataAccess.MOVES, 0x6000, 0x60F7);
-                DataWritingManager.writeDataObjectsInAllLocalizations("battle/kernel/monmagic2.bin", monmagics2, 0x5C);
+                DataWritingManager.writeDataObjectsInAllLocalizations("battle/kernel/monmagic2.bin", monmagics2, 0x5C, true);
                 System.out.println("--- item.bin ---");
                 AbilityDataObject[] items = Arrays.copyOfRange(DataAccess.MOVES, 0x2000, 0x2070);
-                DataWritingManager.writeDataObjectsInAllLocalizations("battle/kernel/item.bin", items, 0x60);
+                DataWritingManager.writeDataObjectsInAllLocalizations("battle/kernel/item.bin", items, 0x60, true);
                 break;
             default:
                 break;
@@ -283,14 +248,11 @@ public class Main {
     }
 
     private static void translate(String str) {
-        StringBuilder out = new StringBuilder();
+        int[] bytes = new int[str.length() / 2 + 1];
         for (int i = 0; i < str.length(); i += 2) {
             int idx = Integer.parseInt(str.substring(i, i+2), 16);
-            Character chr = StringHelper.byteToChar(idx);
-            if (chr != null) {
-                out.append(chr);
-            }
+            bytes[i / 2] = idx;
         }
-        System.out.println(out);
+        System.out.println(StringHelper.bytesToString(bytes));
     }
 }

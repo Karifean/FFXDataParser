@@ -1,4 +1,4 @@
-package script;
+package atel;
 
 import main.StringHelper;
 import model.LocalizedStringObject;
@@ -15,7 +15,7 @@ import static main.StringHelper.MACRO_LOOKUP;
  * jppc/event/.../.ebp
  */
 public class EventFile implements Nameable {
-    public ScriptObject eventScript;
+    public AtelScriptObject eventScript;
     Chunk scriptChunk;
     int[] textBytes;
     List<LocalizedStringObject> strings;
@@ -32,7 +32,7 @@ public class EventFile implements Nameable {
     }
 
     private void mapObjects() {
-        eventScript = new ScriptObject(scriptChunk, null);
+        eventScript = new AtelScriptObject(scriptChunk, null);
     }
 
     private void mapStrings() {

@@ -1,4 +1,4 @@
-package script.model;
+package atel.model;
 
 import model.Nameable;
 

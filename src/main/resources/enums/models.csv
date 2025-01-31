@@ -1,25 +1,25 @@
 model,0000,No Model
-model,0001,TIDU,Tidus
-model,0002,YUNA,Yuna
-model,0003,AURO,Auron
-model,0004,KIMA,Kimahri
-model,0005,WAKK,Wakka
-model,0006,LULU,Lulu
-model,0007,RIKK,Rikku
-model,0008,SEYM,Seymour
+model,0001,TIDU,Tidus (Lo-Res)
+model,0002,YUNA,Yuna (Lo-Res)
+model,0003,AURO,Auron (Lo-Res)
+model,0004,KIMA,Kimahri (Lo-Res)
+model,0005,WAKK,Wakka (Lo-Res)
+model,0006,LULU,Lulu (Lo-Res)
+model,0007,RIKK,Rikku (Lo-Res)
+model,0008,SEYM,Seymour (Lo-Res)
 model,0029,RIKK_A,
 model,002B,YUNA_B,
 model,002C,SEYM_B,
 model,002D,AURO_Y,
 model,0033,RIKK_LA,
-model,0065,TIDU_H,Tidus (Hi-Res?)
-model,0066,YUNA_H,Yuna (Hi-Res?)
-model,0067,AURO_H,Auron (Hi-Res?)
-model,0068,KIMA_H,Kimahri (Hi-Res?)
-model,0069,WAKK_H,Wakka (Hi-Res?)
-model,006A,LULU_H,Lulu (Hi-Res?)
-model,006B,RIKK_H,Rikku (Hi-Res?)
-model,006C,SEYM_H,Seymour (Hi-Res?)
+model,0065,TIDU_H,Tidus (Hi-Res)
+model,0066,YUNA_H,Yuna (Hi-Res)
+model,0067,AURO_H,Auron (Hi-Res)
+model,0068,KIMA_H,Kimahri (Hi-Res)
+model,0069,WAKK_H,Wakka (Hi-Res)
+model,006A,LULU_H,Lulu (Hi-Res)
+model,006B,RIKK_H,Rikku (Hi-Res)
+model,006C,SEYM_H,Seymour (Hi-Res)
 model,0079,YUNA_HB,
 model,007A,SEYM_HB,
 model,03E7,,C999

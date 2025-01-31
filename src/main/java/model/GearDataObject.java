@@ -1,7 +1,7 @@
 package model;
 
 import main.DataAccess;
-import script.model.StackObject;
+import atel.model.StackObject;
 
 /**
  * weapon.bin

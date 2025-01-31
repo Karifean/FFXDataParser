@@ -1,4 +1,4 @@
-package script;
+package atel;
 
 import main.StringHelper;
 import model.FormationDataObject;
@@ -14,7 +14,7 @@ import static main.DataReadingManager.DEFAULT_LOCALIZATION;
  * jppc/battle/btl/.../.bin
  */
 public class EncounterFile {
-    public ScriptObject encounterScript;
+    public AtelScriptObject encounterScript;
     public FormationDataObject formation;
     Chunk scriptChunk;
     int[] workerMappingBytes;
@@ -40,7 +40,7 @@ public class EncounterFile {
     }
 
     private void mapObjects(int chunkCount) {
-        encounterScript = new ScriptObject(scriptChunk, workerMappingBytes);
+        encounterScript = new AtelScriptObject(scriptChunk, workerMappingBytes);
         if (formationBytes != null && formationBytes.length > 0) {
             formation = new FormationDataObject(formationBytes);
         }

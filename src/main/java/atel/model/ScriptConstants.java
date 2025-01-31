@@ -1,4 +1,4 @@
-package script.model;
+package atel.model;
 
 import main.StringHelper;
 import reading.FileAccessorWithMods;
@@ -369,6 +369,7 @@ public abstract class ScriptConstants {
         putSaveDataVariable(0x181E, "BlitzballTournamentTopScorerPrizeIndex", "int");
         putSaveDataVariable(0x1820, "?BlitzballPlayerUncoveredTechsPage1", "blitzTechsP1Bitfield", "blitzballPlayer");
         putSaveDataVariable(0x1910, "?BlitzballPlayerUncoveredTechsPage2", "blitzTechsP2Bitfield", "blitzballPlayer");
+        putSaveDataVariable(0x2000, "SphereGridNodeState", "sphereGridNodeState", "int");
 
         putEnum("deathAnimation", 0x00, "Character (Body remains and targetable)", "death_normal");
         putEnum("deathAnimation", 0x01, "Boss (Body remains but untargetable)", "death_nop");
@@ -764,10 +765,24 @@ public abstract class ScriptConstants {
         putEnum("ctbIconType", 0x16, "Boss (numbered)");
         putEnum("ctbIconType", 0x17, "Cid");
 
+        putEnum("magusTarget", 0x00, "AllMonsters");
+        putEnum("magusTarget", 0x01, "FrontlineChars");
+        putEnum("magusTarget", 0x101, "FrontlineChars except self");
+        for (int i = 0x0F; i <= 0x11; i++) {
+            getEnumMap("magusTarget").put(i + 0x0200, getEnumMap("playerChar").get(i));
+        }
+
         putEnum("invisWallState", 0x00, "Intangible");
         putEnum("invisWallState", 0x01, "Block All");
         putEnum("invisWallState", 0x02, "Block NPC Only");
         putEnum("invisWallState", 0x0E, "Block Player Only");
+
+        putEnum("gravityMode", 0x00, "None");
+        putEnum("gravityMode", 0x01, "Grounded");
+        putEnum("gravityMode", 0x02, "Swimming");
+
+        putEnum("motionType", 0x00, "Grounded");
+        putEnum("motionType", 0x02, "Swimming");
 
         putMotionProperty(0x00, null, "motion_attack_start_dist");
         putMotionProperty(0x01, null, "motion_attack_offset");

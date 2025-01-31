@@ -1,15 +1,6 @@
 package model;
 
-import main.DataAccess;
 import main.DataReadingManager;
-import main.StringHelper;
-import script.model.StackObject;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 /**
  * monster1.bin (only uses Name/Sensor/Scan text strings)

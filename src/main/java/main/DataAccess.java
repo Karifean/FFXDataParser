@@ -4,10 +4,17 @@ import model.*;
 import model.spheregrid.SphereGridLayoutDataObject;
 import model.spheregrid.SphereGridNodeTypeDataObject;
 import model.spheregrid.SphereGridSphereTypeDataObject;
-import script.MonsterFile;
+import atel.EncounterFile;
+import atel.EventFile;
+import atel.MonsterFile;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public abstract class DataAccess {
     public static AbilityDataObject[] MOVES = new AbilityDataObject[0x10000];
+    public static Map<String, EventFile> EVENTS = new HashMap<>();
+    public static Map<String, EncounterFile> ENCOUNTERS = new HashMap<>();
     public static MonsterFile[] MONSTERS = new MonsterFile[0x1000];
     public static PlayerCharStatDataObject[] PLAYER_CHAR_STATS;
     public static GearAbilityDataObject[] GEAR_ABILITIES;
@@ -42,6 +49,14 @@ public abstract class DataAccess {
             return DUMMY_OBJECT;
         }
         return object;
+    }
+
+    public static EventFile getEvent(String id) {
+        return EVENTS.get(id);
+    }
+
+    public static EncounterFile getEncounter(String id) {
+        return ENCOUNTERS.get(id);
     }
 
     public static AbilityDataObject getMove(int idx) {

@@ -37,9 +37,9 @@ public class DataWritingManager {
         }
     }
 
-    public static int[] dataObjectsToBytes(Writable[] objects, int length, String localization) {
+    public static int[] dataObjectsToBytes(Writable[] objects, int length, String localization, final boolean optimizeStrings) {
         List<String> strings = Arrays.stream(objects).flatMap(ab -> ab.getStrings(localization)).collect(Collectors.toList());
-        StringStruct stringStruct = StringHelper.createStringMap(strings);
+        StringStruct stringStruct = StringHelper.createStringMap(strings, optimizeStrings);
         List<Integer> bytes = new ArrayList<>(List.of(1, 0, 0, 0, 0, 0, 0, 0, 0, 0));
         add2Bytes(bytes, objects.length - 1);
         add2Bytes(bytes, length);
@@ -57,10 +57,10 @@ public class DataWritingManager {
         return fullBytes;
     }
 
-    public static void writeDataObjectsInAllLocalizations(String path, Writable[] abilities, int length) {
+    public static void writeDataObjectsInAllLocalizations(String path, Writable[] abilities, final int length, final boolean optimizeStrings) {
         LOCALIZATIONS.forEach((key, value) -> {
             String localePath = GAME_FILES_ROOT + MODS_FOLDER + getLocalizationRoot(key) + path;
-            int[] bytes = dataObjectsToBytes(abilities, length, key);
+            int[] bytes = dataObjectsToBytes(abilities, length, key, optimizeStrings);
             writeByteArrayToFile(localePath, bytes);
         });
     }

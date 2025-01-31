@@ -6,7 +6,7 @@ import main.StringHelper;
 import model.AbilityDataObject;
 import model.LocalizedStringObject;
 import model.Nameable;
-import script.model.StackObject;
+import atel.model.StackObject;
 
 import java.util.ArrayList;
 import java.util.List;

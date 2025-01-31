@@ -1,6 +1,5 @@
-package script;
+package atel;
 
-import main.StringHelper;
 import model.Nameable;
 import reading.Chunk;
 import model.MonsterLootDataObject;
@@ -13,7 +12,7 @@ import java.util.List;
  * jppc/battle/mon/.../.bin
  */
 public class MonsterFile implements Nameable {
-    public ScriptObject monsterAi;
+    public AtelScriptObject monsterAi;
     public MonsterStatDataObject monsterStatData;
     public MonsterLootDataObject monsterLootData;
     Chunk scriptChunk;
@@ -38,7 +37,7 @@ public class MonsterFile implements Nameable {
     }
 
     private void mapObjects() {
-        monsterAi = new ScriptObject(scriptChunk, workerMappingBytes);
+        monsterAi = new AtelScriptObject(scriptChunk, workerMappingBytes);
         monsterStatData = new MonsterStatDataObject(statBytes, Arrays.copyOfRange(statBytes, MonsterStatDataObject.LENGTH, statBytes.length), "us");
         monsterLootData = new MonsterLootDataObject(lootBytes);
         MonsterStatDataObject englishTextStatData = new MonsterStatDataObject(englishTextBytes, Arrays.copyOfRange(englishTextBytes, MonsterStatDataObject.LENGTH, englishTextBytes.length), "us");

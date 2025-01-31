@@ -1,7 +1,7 @@
 package model;
 
 import main.DataAccess;
-import script.MonsterFile;
+import atel.MonsterFile;
 
 import java.util.ArrayList;
 import java.util.List;

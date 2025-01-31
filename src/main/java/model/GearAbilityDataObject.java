@@ -101,19 +101,14 @@ public class GearAbilityDataObject implements Nameable {
     int statusResistChanceNShock;
     int statusResistChanceNTide;
 
-    int extraStatusInflictFlags1;
-    int extraStatusInflictFlags2;
-    int extraStatusResistFlags1;
-    int extraStatusResistFlags2;
     int statIncreaseAmount;
     int unknownByte56;
     int statIncreaseFlags;
-    int autoStatuses1;
-    int autoStatuses2;
-    int autoStatuses3;
-    int autoStatuses4;
-    int unknownByte5C;
-    int unknownByte5D;
+    int autoStatusesPermanent;
+    int autoStatusesTemporal;
+    int autoStatusesExtra;
+    int extraStatusInflict;
+    int extraStatusImmunities;
     private int abilityFlags62;
     private int abilityFlags63;
     private int abilityFlags64;
@@ -152,6 +147,22 @@ public class GearAbilityDataObject implements Nameable {
     boolean autoRegen;
     boolean autoHaste;
     boolean autoSlow;
+    boolean autoScan;
+    boolean autoShield;
+    boolean autoBoost;
+    boolean autoDistillPower;
+    boolean autoDistillMana;
+    boolean autoDistillSpeed;
+    boolean autoDistillAbility;
+    boolean autoUnused1;
+    boolean autoEject;
+    boolean autoAutoLife;
+    boolean autoCurse;
+    boolean autoDoom;
+    boolean autoDefend;
+    boolean autoGuard;
+    boolean autoSentinel;
+    boolean autoUnused2;
 
     boolean inflictScan;
     boolean inflictShield;
@@ -328,16 +339,11 @@ public class GearAbilityDataObject implements Nameable {
         statIncreaseAmount = bytes[0x55];
         unknownByte56 = bytes[0x56];
         statIncreaseFlags = bytes[0x57];
-        autoStatuses1 = bytes[0x58];
-        autoStatuses2 = bytes[0x59];
-        autoStatuses3 = bytes[0x5A];
-        autoStatuses4 = bytes[0x5B];
-        unknownByte5C = bytes[0x5C];
-        unknownByte5D = bytes[0x5D];
-        extraStatusInflictFlags1 = bytes[0x5E];
-        extraStatusInflictFlags2 = bytes[0x5F];
-        extraStatusResistFlags1 = bytes[0x60];
-        extraStatusResistFlags2 = bytes[0x61];
+        autoStatusesPermanent = read2Bytes(0x58);
+        autoStatusesTemporal = read2Bytes(0x5A);
+        autoStatusesExtra = read2Bytes(0x5C);
+        extraStatusInflict = read2Bytes(0x5E);
+        extraStatusImmunities = read2Bytes(0x60);
         abilityFlags62 = bytes[0x62];
         abilityFlags63 = bytes[0x63];
         abilityFlags64 = bytes[0x64];
@@ -352,64 +358,79 @@ public class GearAbilityDataObject implements Nameable {
 
     private void mapFlags() {
         sosFlag = sosFlagByte > 0;
-        autoDeath = (autoStatuses1 & 0x01) > 0;
-        autoZombie = (autoStatuses1 & 0x02) > 0;
-        autoPetrify = (autoStatuses1 & 0x04) > 0;
-        autoPoison = (autoStatuses1 & 0x08) > 0;
-        autoPowerBreak = (autoStatuses1 & 0x10) > 0;
-        autoMagicBreak = (autoStatuses1 & 0x20) > 0;
-        autoArmorBreak = (autoStatuses1 & 0x40) > 0;
-        autoMentalBreak = (autoStatuses1 & 0x80) > 0;
-        autoConfuse = (autoStatuses2 & 0x01) > 0;
-        autoBerserk = (autoStatuses2 & 0x02) > 0;
-        autoProvoke = (autoStatuses2 & 0x04) > 0;
-        autoThreaten = (autoStatuses2 & 0x08) > 0;
-        autoSleep = (autoStatuses2 & 0x10) > 0;
-        autoSilence = (autoStatuses2 & 0x20) > 0;
-        autoDarkness = (autoStatuses2 & 0x40) > 0;
-
-        autoShell = (autoStatuses3 & 0x08) > 0;
-        autoProtect = (autoStatuses3 & 0x10) > 0;
-        autoReflect = (autoStatuses3 & 0x20) > 0;
-        autoNTide = (autoStatuses3 & 0x40) > 0;
-        autoNBlaze = (autoStatuses3 & 0x80) > 0;
-        autoNShock = (autoStatuses4 & 0x01) > 0;
-        autoNFrost = (autoStatuses4 & 0x02) > 0;
-        autoRegen = (autoStatuses4 & 0x04) > 0;
-        autoHaste = (autoStatuses4 & 0x08) > 0;
-        autoSlow = (autoStatuses4 & 0x10) > 0;
-        inflictScan = (extraStatusInflictFlags1 & 0x01) > 0;
-        inflictDistillPower = (extraStatusInflictFlags1 & 0x02) > 0;
-        inflictDistillMana = (extraStatusInflictFlags1 & 0x04) > 0;
-        inflictDistillSpeed = (extraStatusInflictFlags1 & 0x08) > 0;
-        inflictUnused1 = (extraStatusInflictFlags1 & 0x10) > 0;
-        inflictDistillAbility = (extraStatusInflictFlags1 & 0x20) > 0;
-        inflictShield = (extraStatusInflictFlags1 & 0x40) > 0;
-        inflictBoost = (extraStatusInflictFlags1 & 0x80) > 0;
-        inflictEject = (extraStatusInflictFlags2 & 0x01) > 0;
-        inflictAutoLife = (extraStatusInflictFlags2 & 0x02) > 0;
-        inflictCurse = (extraStatusInflictFlags2 & 0x04) > 0;
-        inflictDefend = (extraStatusInflictFlags2 & 0x08) > 0;
-        inflictGuard = (extraStatusInflictFlags2 & 0x10) > 0;
-        inflictSentinel = (extraStatusInflictFlags2 & 0x20) > 0;
-        inflictDoom = (extraStatusInflictFlags2 & 0x40) > 0;
-        inflictUnused2 = (extraStatusInflictFlags2 & 0x80) > 0;
-        resistScan = (extraStatusResistFlags1 & 0x01) > 0;
-        resistDistillPower = (extraStatusResistFlags1 & 0x02) > 0;
-        resistDistillMana = (extraStatusResistFlags1 & 0x04) > 0;
-        resistDistillSpeed = (extraStatusResistFlags1 & 0x08) > 0;
-        resistUnused1 = (extraStatusResistFlags1 & 0x10) > 0;
-        resistDistillAbility = (extraStatusResistFlags1 & 0x20) > 0;
-        resistShield = (extraStatusResistFlags1 & 0x40) > 0;
-        resistBoost = (extraStatusResistFlags1 & 0x80) > 0;
-        resistEject = (extraStatusResistFlags2 & 0x01) > 0;
-        resistAutoLife = (extraStatusResistFlags2 & 0x02) > 0;
-        resistCurse = (extraStatusResistFlags2 & 0x04) > 0;
-        resistDefend = (extraStatusResistFlags2 & 0x08) > 0;
-        resistGuard = (extraStatusResistFlags2 & 0x10) > 0;
-        resistSentinel = (extraStatusResistFlags2 & 0x20) > 0;
-        resistDoom = (extraStatusResistFlags2 & 0x40) > 0;
-        resistUnused2 = (extraStatusResistFlags2 & 0x80) > 0;
+        autoDeath = (autoStatusesPermanent & 0x0001) > 0;
+        autoZombie = (autoStatusesPermanent & 0x0002) > 0;
+        autoPetrify = (autoStatusesPermanent & 0x0004) > 0;
+        autoPoison = (autoStatusesPermanent & 0x0008) > 0;
+        autoPowerBreak = (autoStatusesPermanent & 0x0010) > 0;
+        autoMagicBreak = (autoStatusesPermanent & 0x0020) > 0;
+        autoArmorBreak = (autoStatusesPermanent & 0x0040) > 0;
+        autoMentalBreak = (autoStatusesPermanent & 0x0080) > 0;
+        autoConfuse = (autoStatusesPermanent & 0x0100) > 0;
+        autoBerserk = (autoStatusesPermanent & 0x0200) > 0;
+        autoProvoke = (autoStatusesPermanent & 0x0400) > 0;
+        autoThreaten = (autoStatusesPermanent & 0x0800) > 0;
+        autoSleep = (autoStatusesTemporal & 0x0001) > 0;
+        autoSilence = (autoStatusesTemporal & 0x0002) > 0;
+        autoDarkness = (autoStatusesTemporal & 0x0004) > 0;
+        autoShell = (autoStatusesTemporal & 0x0008) > 0;
+        autoProtect = (autoStatusesTemporal & 0x0010) > 0;
+        autoReflect = (autoStatusesTemporal & 0x0020) > 0;
+        autoNTide = (autoStatusesTemporal & 0x0040) > 0;
+        autoNBlaze = (autoStatusesTemporal & 0x0080) > 0;
+        autoNShock = (autoStatusesTemporal & 0x0100) > 0;
+        autoNFrost = (autoStatusesTemporal & 0x0200) > 0;
+        autoRegen = (autoStatusesTemporal & 0x0400) > 0;
+        autoHaste = (autoStatusesTemporal & 0x0800) > 0;
+        autoSlow = (autoStatusesTemporal & 0x1000) > 0;
+        autoScan = (autoStatusesExtra & 0x0001) > 0;
+        autoDistillPower = (autoStatusesExtra & 0x0002) > 0;
+        autoDistillMana = (autoStatusesExtra & 0x0004) > 0;
+        autoDistillSpeed = (autoStatusesExtra & 0x0008) > 0;
+        autoUnused1 = (autoStatusesExtra & 0x0010) > 0;
+        autoDistillAbility = (autoStatusesExtra & 0x0020) > 0;
+        autoShield = (autoStatusesExtra & 0x0040) > 0;
+        autoBoost = (autoStatusesExtra & 0x0080) > 0;
+        autoEject = (autoStatusesExtra & 0x0100) > 0;
+        autoAutoLife = (autoStatusesExtra & 0x0200) > 0;
+        autoCurse = (autoStatusesExtra & 0x0400) > 0;
+        autoDefend = (autoStatusesExtra & 0x0800) > 0;
+        autoGuard = (autoStatusesExtra & 0x1000) > 0;
+        autoSentinel = (autoStatusesExtra & 0x2000) > 0;
+        autoDoom = (autoStatusesExtra & 0x4000) > 0;
+        autoUnused2 = (autoStatusesExtra & 0x8000) > 0;
+        inflictScan = (extraStatusInflict & 0x0001) > 0;
+        inflictDistillPower = (extraStatusInflict & 0x0002) > 0;
+        inflictDistillMana = (extraStatusInflict & 0x0004) > 0;
+        inflictDistillSpeed = (extraStatusInflict & 0x0008) > 0;
+        inflictUnused1 = (extraStatusInflict & 0x0010) > 0;
+        inflictDistillAbility = (extraStatusInflict & 0x0020) > 0;
+        inflictShield = (extraStatusInflict & 0x0040) > 0;
+        inflictBoost = (extraStatusInflict & 0x0080) > 0;
+        inflictEject = (extraStatusInflict & 0x0100) > 0;
+        inflictAutoLife = (extraStatusInflict & 0x0200) > 0;
+        inflictCurse = (extraStatusInflict & 0x0400) > 0;
+        inflictDefend = (extraStatusInflict & 0x0800) > 0;
+        inflictGuard = (extraStatusInflict & 0x1000) > 0;
+        inflictSentinel = (extraStatusInflict & 0x2000) > 0;
+        inflictDoom = (extraStatusInflict & 0x4000) > 0;
+        inflictUnused2 = (extraStatusInflict & 0x8000) > 0;
+        resistScan = (extraStatusImmunities & 0x0001) > 0;
+        resistDistillPower = (extraStatusImmunities & 0x0002) > 0;
+        resistDistillMana = (extraStatusImmunities & 0x0004) > 0;
+        resistDistillSpeed = (extraStatusImmunities & 0x0008) > 0;
+        resistUnused1 = (extraStatusImmunities & 0x0010) > 0;
+        resistDistillAbility = (extraStatusImmunities & 0x0020) > 0;
+        resistShield = (extraStatusImmunities & 0x0040) > 0;
+        resistBoost = (extraStatusImmunities & 0x0080) > 0;
+        resistEject = (extraStatusImmunities & 0x0100) > 0;
+        resistAutoLife = (extraStatusImmunities & 0x0200) > 0;
+        resistCurse = (extraStatusImmunities & 0x0400) > 0;
+        resistDefend = (extraStatusImmunities & 0x0800) > 0;
+        resistGuard = (extraStatusImmunities & 0x1000) > 0;
+        resistSentinel = (extraStatusImmunities & 0x2000) > 0;
+        resistDoom = (extraStatusImmunities & 0x4000) > 0;
+        resistUnused2 = (extraStatusImmunities & 0x8000) > 0;
         increaseHp = (statIncreaseFlags & 0x01) > 0;
         increaseMp = (statIncreaseFlags & 0x02) > 0;
         increaseStr = (statIncreaseFlags & 0x04) > 0;
@@ -505,7 +526,7 @@ public class GearAbilityDataObject implements Nameable {
 
     private String autoBuffs() {
         StringBuilder buffs = new StringBuilder();
-        if (autoStatuses1 == 0 && autoStatuses2 == 0 && autoStatuses3 == 0 && autoStatuses4 == 0) {
+        if (autoStatusesPermanent == 0 && autoStatusesTemporal == 0 && autoStatusesExtra == 0) {
             return "";
         }
         if (sosFlag) {
@@ -546,6 +567,54 @@ public class GearAbilityDataObject implements Nameable {
         }
         if (autoSlow) {
             buffs.append("-Slow");
+        }
+        if (autoScan) {
+            buffs.append("-Scan");
+        }
+        if (autoShield) {
+            buffs.append("-Shield");
+        }
+        if (autoBoost) {
+            buffs.append("-Boost");
+        }
+        if (autoDistillPower) {
+            buffs.append("-DistillPower");
+        }
+        if (autoDistillMana) {
+            buffs.append("-DistillMana");
+        }
+        if (autoDistillSpeed) {
+            buffs.append("-DistillSpeed");
+        }
+        if (autoDistillAbility) {
+            buffs.append("-DistillAbility");
+        }
+        if (autoUnused1) {
+            buffs.append("-Unused1");
+        }
+        if (autoEject) {
+            buffs.append("-Eject??");
+        }
+        if (autoAutoLife) {
+            buffs.append("-AutoLife");
+        }
+        if (autoCurse) {
+            buffs.append("-Curse");
+        }
+        if (autoDoom) {
+            buffs.append("-Doom");
+        }
+        if (autoDefend) {
+            buffs.append("-Defend");
+        }
+        if (autoGuard) {
+            buffs.append("-Guard");
+        }
+        if (autoSentinel) {
+            buffs.append("-Sentinel");
+        }
+        if (autoUnused2) {
+            buffs.append("-Unused2");
         }
         return buffs.toString();
     }

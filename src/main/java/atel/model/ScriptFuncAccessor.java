@@ -1,4 +1,4 @@
-package script.model;
+package atel.model;
 
 import java.util.ArrayList;
 import java.util.Arrays;

@@ -4,7 +4,7 @@ import main.DataAccess;
 import main.DataReadingManager;
 import main.StringHelper;
 import model.spheregrid.SphereGridSphereTypeDataObject;
-import script.model.StackObject;
+import atel.model.StackObject;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -105,14 +105,11 @@ public class AbilityDataObject implements Nameable, Writable {
     int statusDurationNFrost;
     int statusDurationNShock;
     int statusDurationNTide;
-    int extraStatusFlags1;
-    int extraStatusFlags2;
-    int statBuffFlags1;
-    int statBuffFlags2Unused;
+    int extraStatusInflict;
+    int statBuffFlags;
     int overdriveCategorizationByte;
     int statBuffValue;
-    int specialBuffFlags1;
-    int specialBuffFlags2Unused;
+    int specialBuffInflict;
     int orderingIndexInMenu;
     int sphereTypeForSphereGrid;
     int alwaysZero5E;
@@ -209,8 +206,7 @@ public class AbilityDataObject implements Nameable, Writable {
     boolean statBuffReflex;
     boolean statBuffLuck;
     boolean statBuffJinx;
-    boolean statBuffUnused1;
-    boolean statBuffUnused2;
+    boolean statBuffUnused;
     boolean specialBuffDoubleHP;
     boolean specialBuffDoubleMP;
     boolean specialBuffMPCost0;
@@ -313,14 +309,11 @@ public class AbilityDataObject implements Nameable, Writable {
         statusDurationRegen = bytes[0x51];
         statusDurationHaste = bytes[0x52];
         statusDurationSlow = bytes[0x53];
-        extraStatusFlags1 = bytes[0x54];
-        extraStatusFlags2 = bytes[0x55];
-        statBuffFlags1 = bytes[0x56];
-        statBuffFlags2Unused = bytes[0x57];
+        extraStatusInflict = read2Bytes(0x54);
+        statBuffFlags = read2Bytes(0x56);
         overdriveCategorizationByte = bytes[0x58];
         statBuffValue = bytes[0x59];
-        specialBuffFlags1 = bytes[0x5A];
-        specialBuffFlags2Unused = bytes[0x5B];
+        specialBuffInflict = read2Bytes(0x5A);
         if (isCharacterAbility) {
             orderingIndexInMenu = bytes[0x5C];
             sphereTypeForSphereGrid = bytes[0x5D];
@@ -396,38 +389,37 @@ public class AbilityDataObject implements Nameable, Writable {
         element6 = (elementFlags & 0x20) > 0;
         element7 = (elementFlags & 0x40) > 0;
         element8 = (elementFlags & 0x80) > 0;
-        inflictScan = (extraStatusFlags1 & 0x01) > 0;
-        inflictDistillPower = (extraStatusFlags1 & 0x02) > 0;
-        inflictDistillMana = (extraStatusFlags1 & 0x04) > 0;
-        inflictDistillSpeed = (extraStatusFlags1 & 0x08) > 0;
-        inflictUnused1 = (extraStatusFlags1 & 0x10) > 0;
-        inflictDistillAbility = (extraStatusFlags1 & 0x20) > 0;
-        inflictShield = (extraStatusFlags1 & 0x40) > 0;
-        inflictBoost = (extraStatusFlags1 & 0x80) > 0;
-        inflictEject = (extraStatusFlags2 & 0x01) > 0;
-        inflictAutoLife = (extraStatusFlags2 & 0x02) > 0;
-        inflictCurse = (extraStatusFlags2 & 0x04) > 0;
-        inflictDefend = (extraStatusFlags2 & 0x08) > 0;
-        inflictGuard = (extraStatusFlags2 & 0x10) > 0;
-        inflictSentinel = (extraStatusFlags2 & 0x20) > 0;
-        inflictDoom = (extraStatusFlags2 & 0x40) > 0;
-        inflictUnused2 = (extraStatusFlags2 & 0x80) > 0;
-        statBuffCheer = (statBuffFlags1 & 0x01) > 0;
-        statBuffAim = (statBuffFlags1 & 0x02) > 0;
-        statBuffFocus = (statBuffFlags1 & 0x04) > 0;
-        statBuffReflex = (statBuffFlags1 & 0x08) > 0;
-        statBuffLuck = (statBuffFlags1 & 0x10) > 0;
-        statBuffJinx = (statBuffFlags1 & 0x20) > 0;
-        statBuffUnused1 = (statBuffFlags1 & 0x40) > 0;
-        statBuffUnused2 = (statBuffFlags1 & 0x80) > 0;
-        specialBuffDoubleHP = (specialBuffFlags1 & 0x01) > 0;
-        specialBuffDoubleMP = (specialBuffFlags1 & 0x02) > 0;
-        specialBuffMPCost0 = (specialBuffFlags1 & 0x04) > 0;
-        specialBuffQuartet = (specialBuffFlags1 & 0x08) > 0;
-        specialBuffAlwaysCrit = (specialBuffFlags1 & 0x10) > 0;
-        specialBuffOverdrive150 = (specialBuffFlags1 & 0x20) > 0;
-        specialBuffOverdrive200 = (specialBuffFlags1 & 0x40) > 0;
-        specialBuffUnused = (specialBuffFlags1 & 0x80) > 0;
+        inflictScan = (extraStatusInflict & 0x0001) > 0;
+        inflictDistillPower = (extraStatusInflict & 0x0002) > 0;
+        inflictDistillMana = (extraStatusInflict & 0x0004) > 0;
+        inflictDistillSpeed = (extraStatusInflict & 0x0008) > 0;
+        inflictUnused1 = (extraStatusInflict & 0x0010) > 0;
+        inflictDistillAbility = (extraStatusInflict & 0x0020) > 0;
+        inflictShield = (extraStatusInflict & 0x0040) > 0;
+        inflictBoost = (extraStatusInflict & 0x0080) > 0;
+        inflictEject = (extraStatusInflict & 0x0100) > 0;
+        inflictAutoLife = (extraStatusInflict & 0x0200) > 0;
+        inflictCurse = (extraStatusInflict & 0x0400) > 0;
+        inflictDefend = (extraStatusInflict & 0x0800) > 0;
+        inflictGuard = (extraStatusInflict & 0x1000) > 0;
+        inflictSentinel = (extraStatusInflict & 0x2000) > 0;
+        inflictDoom = (extraStatusInflict & 0x4000) > 0;
+        inflictUnused2 = (extraStatusInflict & 0x8000) > 0;
+        statBuffCheer = (statBuffFlags & 0x01) > 0;
+        statBuffAim = (statBuffFlags & 0x02) > 0;
+        statBuffFocus = (statBuffFlags & 0x04) > 0;
+        statBuffReflex = (statBuffFlags & 0x08) > 0;
+        statBuffLuck = (statBuffFlags & 0x10) > 0;
+        statBuffJinx = (statBuffFlags & 0x20) > 0;
+        statBuffUnused = statBuffFlags >= 0x40;
+        specialBuffDoubleHP = (specialBuffInflict & 0x01) > 0;
+        specialBuffDoubleMP = (specialBuffInflict & 0x02) > 0;
+        specialBuffMPCost0 = (specialBuffInflict & 0x04) > 0;
+        specialBuffQuartet = (specialBuffInflict & 0x08) > 0;
+        specialBuffAlwaysCrit = (specialBuffInflict & 0x10) > 0;
+        specialBuffOverdrive150 = (specialBuffInflict & 0x20) > 0;
+        specialBuffOverdrive200 = (specialBuffInflict & 0x40) > 0;
+        specialBuffUnused = specialBuffInflict >= 0x80;
         if (overdriveCategorizationByte > 0) {
             overdriveCharacter = StackObject.enumToScriptField("playerChar", overdriveCategorizationByte & 0x0F).name;
             overdriveCategory = overdriveCategorizationByte >> 4;
@@ -553,7 +545,7 @@ public class AbilityDataObject implements Nameable, Writable {
     }
 
     private String statBuffs() {
-        if (statBuffValue <= 0 && statBuffFlags1 <= 0) {
+        if (statBuffValue <= 0 && statBuffFlags <= 0) {
             return "";
         }
         String statBuffTypes = "";
@@ -575,14 +567,8 @@ public class AbilityDataObject implements Nameable, Writable {
         if (statBuffJinx) {
             statBuffTypes += "Jinx/";
         }
-        if (statBuffUnused1) {
-            statBuffTypes += "UnusedBuff-40/";
-        }
-        if (statBuffUnused2) {
-            statBuffTypes += "UnusedBuff-80/";
-        }
-        if (statBuffFlags2Unused > 0) {
-            statBuffTypes += "UnusedBuffsByte-" + String.format("%02X", statBuffFlags2Unused) + "/";
+        if (statBuffUnused) {
+            statBuffTypes += "UnusedBuffsByte-" + String.format("%02X", statBuffFlags) + "/";
         }
         if (statBuffTypes.isEmpty()) {
             statBuffTypes = "NullBuff";
@@ -734,10 +720,7 @@ public class AbilityDataObject implements Nameable, Writable {
         if (specialBuffAlwaysCrit) { buffs.append(" Always Crit;"); }
         if (specialBuffOverdrive150) { buffs.append(" Overdrive x1.5;"); }
         if (specialBuffOverdrive200) { buffs.append(" Overdrive x2;"); }
-        if (specialBuffUnused) { buffs.append(" Unused;"); }
-        if (specialBuffFlags2Unused > 0) {
-            buffs.append(" SecondByte=").append(String.format("%02X", specialBuffFlags2Unused)).append(";");
-        }
+        if (specialBuffUnused) { buffs.append(" Unused=").append(String.format("%02X", specialBuffInflict)).append(";"); }
         String conv = buffs.toString();
         if (conv.endsWith(";")) {
             String withoutLastSemicolon = conv.substring(0, conv.length() - 1);
@@ -820,6 +803,7 @@ public class AbilityDataObject implements Nameable, Writable {
     private static void prepareMaps() {
         if (submenus == null) {
             submenus = new HashMap<>();
+            submenus.put(0x00, "Normal Menu");
             submenus.put(0x01, "Black Magic");
             submenus.put(0x02, "White Magic");
             submenus.put(0x03, "Skill");
@@ -829,6 +813,8 @@ public class AbilityDataObject implements Nameable, Writable {
             submenus.put(0x07, "Weapon Change");
             submenus.put(0x08, "Escape");
             submenus.put(0x0A, "Switch Character");
+            submenus.put(0x0C, "Left Menu");
+            submenus.put(0x0D, "Right Menu");
             submenus.put(0x0E, "Special");
             submenus.put(0x0F, "Armor Change");
             submenus.put(0x11, "Use");
@@ -918,14 +904,11 @@ public class AbilityDataObject implements Nameable, Writable {
         array[0x51] = statusDurationRegen;
         array[0x52] = statusDurationHaste;
         array[0x53] = statusDurationSlow;
-        array[0x54] = extraStatusFlags1;
-        array[0x55] = extraStatusFlags2;
-        array[0x56] = statBuffFlags1;
-        array[0x57] = statBuffFlags2Unused;
+        write2Bytes(array, 0x54, extraStatusInflict);
+        write2Bytes(array, 0x56, statBuffFlags);
         array[0x58] = overdriveCategorizationByte;
         array[0x59] = statBuffValue;
-        array[0x5A] = specialBuffFlags1;
-        array[0x5B] = specialBuffFlags2Unused;
+        write2Bytes(array, 0x5A, specialBuffInflict);
         if (isCharacterAbility) {
             array[0x5C] = orderingIndexInMenu;
             array[0x5D] = sphereTypeForSphereGrid;
@@ -937,7 +920,7 @@ public class AbilityDataObject implements Nameable, Writable {
 
     private void write2Bytes(int[] array, int offset, int value) {
         array[offset]     =  value & 0x00FF;
-        array[offset + 1] = (value & 0xFF00) / 0x100;
+        array[offset + 1] = (value & 0xFF00) >> 8;
     }
 
     @Override

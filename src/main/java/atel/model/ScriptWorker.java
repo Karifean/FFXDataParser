@@ -1,6 +1,6 @@
-package script.model;
+package atel.model;
 
-import script.ScriptObject;
+import atel.AtelScriptObject;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -40,9 +40,9 @@ public class ScriptWorker {
     public Integer purposeSlot;
     private int[] purposeBytes;
 
-    public ScriptObject parentScript;
+    public AtelScriptObject parentScript;
 
-    public ScriptWorker(ScriptObject parentScript, int workerIndex, int[] bytes) {
+    public ScriptWorker(AtelScriptObject parentScript, int workerIndex, int[] bytes) {
         this.parentScript = parentScript;
         this.workerIndex = workerIndex;
         eventWorkerType = read2Bytes(bytes,0x00);

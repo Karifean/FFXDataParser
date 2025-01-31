@@ -1,4 +1,4 @@
-package script.model;
+package atel.model;
 
 import java.util.List;
 
@@ -570,12 +570,12 @@ public abstract class ScriptFuncLib {
         putUnknownFunc(0x500D, 1);
         putUnknownFunc(0x500E, 1);
         putUnknownFunc(0x500F, 1);
-        putFuncWithIdx(0x5010, new ScriptFunc(p("model"), p(2)));
-        putUnknownFunc(0x5013, 1);
+        putFuncWithIdx(0x5010, new ScriptFunc("loadModelMotionGroup", "unknown", null, p("model"), p("motionType")));
+        putFuncWithIdx(0x5013, new ScriptFunc("setFieldModeAndMotionType", "unknown", null, p("motionType")));
         putUnknownFunc(0x5014, 2);
         putUnknownFunc(0x5015, 4);
         putUnknownFunc(0x5016, 3);
-        putUnknownFunc(0x5017, 1);
+        putFuncWithIdx(0x5017, new ScriptFunc("setGravityMode", "unknown", null, p("gravityMode")));
         putUnknownFunc(0x5018, 1);
         putUnknownFunc(0x5019, 5);
         putFuncWithIdx(0x501A, new ScriptFunc(p("motion"), p(2), p(3), p(4), p(5)));
@@ -1057,7 +1057,7 @@ public abstract class ScriptFuncLib {
         putUnknownFunc(0x70F8, "btlGetCommandBuffer", "move", 0);
         putUnknownFunc(0x70F9, "btlSearchChr3", 5);
         putUnknownFunc(0x70FA, "btlSetMegasRandomCommand", 1);
-        putFuncWithIdx(0x70FB, new ScriptFunc(null, "btlActor", "btlGetCommandTargetSearch", p("move"), p(2), p(3), p(4), p(5)));
+        putFuncWithIdx(0x70FB, new ScriptFunc(null, "btlActor", "btlGetCommandTargetSearch", p("move"), p("targeting", "magusTarget"), p("property", "btlActorProperty"), p("selector"), p("chance", "int")));
         putUnknownFunc(0x70FC, "btlGetMegasRandomCommand", 0);
         putFuncWithIdx(0x70FD, new ScriptFunc("increaseMagusMotivationAndOverdrive", "unknown", "btlSetUpLimit", p("overdrive", "int"), p("motivation", "int")));
         putFuncWithIdx(0x70FE, new ScriptFunc(null, "unknown", "btlSetUpLimit2", p(1), p(2), p("overdrive", "int"), p("motivation", "int")));

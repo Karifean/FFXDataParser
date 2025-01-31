@@ -8,6 +8,7 @@ import reading.FileAccessorWithMods;
 
 import java.io.File;
 import java.util.*;
+import java.util.stream.Stream;
 
 import static main.DataReadingManager.LOCALIZATIONS;
 import static main.DataReadingManager.getLocalizationRoot;
@@ -213,6 +214,10 @@ public abstract class StringHelper {
         return strings;
     }
 
+    public static String bytesToString(int[] bytes) {
+        return getStringAtLookupOffset(bytes, 0);
+    }
+
     public static String getStringAtLookupOffset(int[] table, int offset) {
         if (offset >= table.length) {
             return "{OOB}";
@@ -226,6 +231,8 @@ public abstract class StringHelper {
                 out.append(chr);
             } else if (idx == 0x01) {
                 out.append("{PAUSE}");
+            } else if (idx == 0x03) {
+                out.append('\n');
             } else if (idx == 0x09) {
                 offset++;
                 int varIdx = table[offset] - 0x30;
@@ -290,17 +297,21 @@ public abstract class StringHelper {
         return out.toString();
     }
 
-    public static StringStruct createStringMap(final List<String> strings) {
+    public static StringStruct createStringMap(final List<String> strings, final boolean optimize) {
         final Map<String, Integer> map = new HashMap<>();
         map.put("", 0);
         final List<Integer> byteList = new ArrayList<>();
         byteList.add(0);
-        strings.stream().sorted(Comparator.comparingInt(String::length).reversed()).forEach((s) -> {
+        Stream<String> stringStream = strings.stream();
+        if (optimize) {
+            stringStream = stringStream.sorted(Comparator.comparingInt(String::length).reversed());
+        }
+        stringStream.forEach((s) -> {
             if (map.containsKey(s)) {
                 return;
             }
             int offset = byteList.size();
-            for (int i = 0; i < s.length(); i++) {
+            for (int i = 0; i < (optimize ? s.length() : 1); i++) {
                 char chr = s.charAt(i);
                 map.put(s.substring(i), offset + i);
                 List<Integer> cmdBytes = chr == '{' ? parseCommand(s, i) : null;
