@@ -2,6 +2,7 @@ package model;
 
 import main.DataAccess;
 import atel.MonsterFile;
+import main.StringHelper;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -92,7 +93,7 @@ public class FormationDataObject {
         for (int i = 0; i < 8; i++) {
             int monsterIndex = monsters[i];
             if (monsterIndex != 0xFFFF) {
-                list.add("Monster #" + (i+1) + ": " + writeMonster(monsterIndex));
+                list.add("Monster " + StringHelper.formatHex2(i) + ": " + writeMonster(monsterIndex));
             }
         }
         list.add("Voice lines " + (commonVoiceLinesEnabled ? "enabled" : "disabled"));
