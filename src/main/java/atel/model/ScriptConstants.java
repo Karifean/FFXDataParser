@@ -919,8 +919,8 @@ public abstract class ScriptConstants {
         putBattleActorProperty(0x0019, null, "bool", "stat_monster");
         putBattleActorProperty(0x001A, null, "bool", "stat_fly");
         putBattleActorProperty(0x001B, "?willDieToAttack", "bool", "stat_will_die");
-        putBattleActorProperty(0x001C, "?Area", "int", "stat_area");
-        putBattleActorProperty(0x001D, "?Position", "int", "stat_pos");
+        putBattleActorProperty(0x001C, "Area", "int", "stat_area");
+        putBattleActorProperty(0x001D, "Position", "int", "stat_pos");
         putBattleActorProperty(0x001E, "BattleDistance", "int", "stat_far");
         putBattleActorProperty(0x001F, null, "int", "stat_group");
         putBattleActorProperty(0x0020, "Armored", "bool", "stat_sp_hard");
@@ -953,7 +953,7 @@ public abstract class ScriptConstants {
         putBattleActorProperty(0x003B, "FirstStrike", "bool", "ability_lead");
         putBattleActorProperty(0x003C, "?Initiative", "bool", "ability_first");
         putBattleActorProperty(0x003D, "CounterAttack", "bool", "ability_counter");
-        putBattleActorProperty(0x003E, "?EvadeAndCounter", "bool", "ability_counter2");
+        putBattleActorProperty(0x003E, "EvadeAndCounter", "bool", "ability_counter2");
         putBattleActorProperty(0x003F, null, "bool", "ability_dark");
         putBattleActorProperty(0x0040, null, "bool", "ability_ap2");
         putBattleActorProperty(0x0041, null, "bool", "ability_exp2");
@@ -962,7 +962,7 @@ public abstract class ScriptConstants {
         putBattleActorProperty(0x0044, "?Alchemy", "bool", "ability_medicine");
         putBattleActorProperty(0x0045, "?Auto-Potion", "bool", "ability_auto_potion");
         putBattleActorProperty(0x0046, "?Auto-Med", "bool", "ability_auto_cureall");
-        putBattleActorProperty(0x0047, "?Auto-Phoenix", "bool", "ability_auto_phenix");
+        putBattleActorProperty(0x0047, "Auto-Phoenix", "bool", "ability_auto_phenix");
         putBattleActorProperty(0x0048, null, "bool", "ability_limitup");
         putBattleActorProperty(0x0049, null, "bool", "ability_dream");
         putBattleActorProperty(0x004A, null, "bool", "ability_pierce");
@@ -976,8 +976,8 @@ public abstract class ScriptConstants {
         putBattleActorProperty(0x0052, "Targetable", "bool", "stat_cursor");
         putBattleActorProperty(0x0053, "VisibleOnCTB", "bool", "stat_ctb_list");
         putBattleActorProperty(0x0054, null, "unknown", "stat_visible");
-        putBattleActorProperty(0x0055, "?AreaToMoveTo", "int", "stat_move_area");
-        putBattleActorProperty(0x0056, "?PositionToMoveTo", "int", "stat_move_pos");
+        putBattleActorProperty(0x0055, "AreaToMoveTo", "int", "stat_move_area");
+        putBattleActorProperty(0x0056, "PositionToMoveTo", "int", "stat_move_pos");
         putBattleActorProperty(0x0057, null, "int", "stat_efflv");
         putBattleActorProperty(0x0058, null, "unknown", "stat_model");
         putBattleActorProperty(0x0059, "?Host", "btlActor", "stat_damage_chr");

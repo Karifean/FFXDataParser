@@ -1,7 +1,7 @@
 package atel;
 
 import main.StringHelper;
-import model.BattlePositionsDataObject;
+import model.BattleAreasPositionsDataObject;
 import model.FormationDataObject;
 import model.LocalizedStringObject;
 import reading.Chunk;
@@ -17,11 +17,11 @@ import static main.DataReadingManager.DEFAULT_LOCALIZATION;
 public class EncounterFile {
     public AtelScriptObject encounterScript;
     public FormationDataObject formation;
-    public BattlePositionsDataObject battlePositions;
+    public BattleAreasPositionsDataObject battleAreasPositions;
     Chunk scriptChunk;
     int[] workerMappingBytes;
     int[] formationBytes;
-    int[] battlePositionsBytes;
+    int[] battleAreasPositionsBytes;
     int[] textBytes;
     public List<LocalizedStringObject> strings;
 
@@ -38,7 +38,7 @@ public class EncounterFile {
         scriptChunk = chunks.get(0);
         workerMappingBytes = chunks.get(1).bytes;
         formationBytes = chunks.get(2).bytes;
-        battlePositionsBytes = chunks.get(3).bytes;
+        battleAreasPositionsBytes = chunks.get(3).bytes;
         if (chunks.size() > 6 && chunks.get(6).offset != 0) {
             textBytes = chunks.get(6).bytes;
         } else if (chunks.size() > 4 && chunks.get(4).offset != 0) {
@@ -54,8 +54,8 @@ public class EncounterFile {
         if (formationBytes != null && formationBytes.length > 0) {
             formation = new FormationDataObject(formationBytes);
         }
-        if (battlePositionsBytes != null && battlePositionsBytes.length > 0) {
-            battlePositions = new BattlePositionsDataObject(battlePositionsBytes);
+        if (battleAreasPositionsBytes != null && battleAreasPositionsBytes.length > 0) {
+            battleAreasPositions = new BattleAreasPositionsDataObject(battleAreasPositionsBytes);
         }
     }
 
@@ -100,8 +100,8 @@ public class EncounterFile {
         if (formation != null) {
             full.append("- Encounter Formation -\n").append(formation).append('\n');
         }
-        if (battlePositions != null) {
-            full.append("- Encounter Positions -\n").append(battlePositions).append('\n');
+        if (battleAreasPositions != null) {
+            full.append("- Encounter Areas/Positions -\n").append(battleAreasPositions).append('\n');
         }
         if (encounterScript != null) {
             full.append("- Script Code -").append('\n');
