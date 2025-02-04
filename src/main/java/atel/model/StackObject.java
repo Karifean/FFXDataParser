@@ -1,5 +1,6 @@
 package atel.model;
 
+import atel.EventFile;
 import main.DataAccess;
 import main.StringHelper;
 import model.AbilityDataObject;
@@ -12,150 +13,201 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class StackObject {
-    public AtelScriptObject parentScript;
+    private static final boolean UNWRAP_SINGLE_NEGATED_BIT = false;
+
     public ScriptWorker parentWorker;
     public ScriptInstruction parentInstruction;
     public String type;
     public boolean expression;
     public String content;
-    public int value;
+    public int valueSigned;
+    public int valueUnsigned;
     public boolean maybeBracketize = false;
     public Integer referenceIndex;
+    public String rawType;
 
     public StackObject(ScriptWorker worker, ScriptInstruction instruction, String type, boolean expression, String content, int value) {
         this.parentWorker = worker;
-        this.parentScript = worker.parentScript;
         this.parentInstruction = instruction;
         this.type = type;
         this.expression = expression;
         this.content = content;
-        this.value = value;
+        this.valueSigned = value;
+    }
+
+    public StackObject(ScriptWorker worker, ScriptInstruction instruction, String rawType, int valueSigned, int valueUnsigned) {
+        this.parentWorker = worker;
+        this.parentInstruction = instruction;
+        this.type = rawType;
+        this.rawType = rawType;
+        this.valueSigned = valueSigned;
+        this.valueUnsigned = valueUnsigned;
     }
 
     public StackObject(String type, StackObject obj) {
-        this(type, obj, obj.value);
-    }
-
-    public StackObject(String type, StackObject obj, int value) {
         this.parentWorker = obj.parentWorker;
-        this.parentScript = obj.parentScript;
         this.parentInstruction = obj.parentInstruction;
         // direct values should never be type-cast to float as the format will just be wrong.
-        this.type = (type == null || "unknown".equals(type) || ("float".equals(type) && !obj.expression)) ? obj.type : type;
+        this.type = (!isValidType(type) || ("float".equals(type) && !obj.expression)) ? obj.type : type;
         this.expression = obj.expression;
         this.content = obj.content;
-        this.value = value;
+        this.rawType = obj.rawType;
+        this.valueSigned = obj.valueSigned;
+        this.valueUnsigned = obj.valueUnsigned;
         this.maybeBracketize = obj.maybeBracketize;
         this.referenceIndex = obj.referenceIndex;
     }
 
     @Override
     public String toString() {
-        if (!expression && type != null && !"unknown".equals(type)) {
-            String hex = String.format(value >= 0x10000 ? "%08X" : value >= 0x100 ? "%04X" : "%02X", value);
-            String hexSuffix = ScriptField.PRINT_WITH_HEX_SUFFIX ? " [" + hex + "h]" : "";
-            if ("bool".equals(type)) {
-                return (value != 0 ? "true" : "false") + hexSuffix;
+        if (expression) {
+            return content;
+        }
+        String valueString = asString(this);
+        if (valueString != null) {
+            return valueString;
+        } else {
+            return asString(new StackObject(rawType, this));
+        }
+    }
+
+    public static boolean isValidType(String type) {
+        return type != null && !"unknown".equals(type);
+    }
+
+    public static String asString(StackObject obj) {
+        return asString(obj.type, obj.rawType, obj.valueSigned, obj.valueUnsigned, obj.parentWorker);
+    }
+
+    public static String asString(String type, int value) {
+        return asString(type, null, value, value, null);
+    }
+
+    public static String asString(String type, String rawType, int valueSigned, int valueUnsigned, ScriptWorker parentWorker) {
+        if (!isValidType(type)) {
+            return null;
+        }
+        String format = "int32".equals(rawType) ? "%08X" : (valueSigned >= 0x100 ? "%04X" : "%02X");
+        String hex = String.format(format, valueSigned);
+        if (!"int32".equals(rawType) && hex.length() == 8 && hex.startsWith("FFFF")) {
+            hex = hex.substring(4);
+        }
+        String hexSuffix = ScriptField.PRINT_WITH_HEX_SUFFIX ? " [" + hex + "h]" : "";
+        if (type.startsWith("int")) {
+            return valueSigned + hexSuffix;
+        }
+        if (type.startsWith("uint")) {
+            return valueUnsigned + hexSuffix;
+        }
+        if ("bool".equals(type)) {
+            return (valueSigned != 0 ? "true" : "false") + hexSuffix;
+        }
+        if ("float".equals(type)) {
+            return Float.intBitsToFloat(valueSigned) + hexSuffix;
+        }
+        if ("bitfield".equals(type)) {
+            return bitfieldToString(null, valueUnsigned) + hexSuffix;
+        }
+        if ("bitfieldNegated".equals(type)) {
+            return negatedBitfieldToString(null, valueUnsigned) + hexSuffix;
+        }
+        if ("worker".equals(type)) {
+            if (valueSigned == -1) {
+                return "<Self>" + hexSuffix;
             }
-            if ("float".equals(type)) {
-                return Float.intBitsToFloat(value) + hexSuffix;
+            AtelScriptObject parentScript = parentWorker != null ? parentWorker.parentScript : null;
+            ScriptWorker header = parentScript != null ? parentScript.getWorker(valueSigned) : null;
+            if (header != null) {
+                return header + hexSuffix;
+            } else {
+                return "<w" + hex + ">" + hexSuffix;
             }
-            if ("bitfield".equals(type)) {
-                return bitfieldToString(null, value) + hexSuffix;
+        }
+        if ("var".equals(type)) {
+            AtelScriptObject parentScript = parentWorker != null ? parentWorker.parentScript : null;
+            return parentScript != null ? parentScript.getVariableLabel(valueSigned) : ("var" + hex);
+        }
+        if ("pointer".equals(type)) {
+            ScriptVariable scriptVariable = new ScriptVariable(parentWorker, 0, valueSigned, 1);
+            return "*" + scriptVariable.getDereference() + hexSuffix;
+        }
+        if ("encounter".equals(type)) {
+            int field = (valueSigned & 0xFFFF0000) >> 16;
+            int encIdx = valueSigned & 0x0000FFFF;
+            ScriptField fieldObj = ScriptConstants.getEnumMap("field").get(field);
+            if (fieldObj == null) {
+                return '?' + type + ':' + valueSigned + hexSuffix;
+            } else {
+                return fieldObj.name + '_' + String.format("%02d", encIdx) + hexSuffix;
             }
-            if ("bitfieldNegated".equals(type)) {
-                return negatedBitfieldToString(null, value) + hexSuffix;
-            }
-            if (type.startsWith("uint") || type.startsWith("int")) {
-                if ("int16".equals(type) && ScriptField.PRINT_WITH_HEX_SUFFIX && hex.length() == 8 && hex.startsWith("FFFF")) {
-                    return value + " [" + hex.substring(4) + "h]";
-                }
-                return value + hexSuffix;
-            }
-            if ("worker".equals(type)) {
-                if (value == -1) {
-                    return "<Self>";
-                }
-                ScriptWorker header = parentScript != null ? parentScript.getWorker(value) : null;
-                if (header != null) {
-                    return header + hexSuffix;
-                } else {
-                    return "<w" + hex + ">";
-                }
-            }
-            if ("var".equals(type)) {
-                return parentScript != null ? parentScript.getVariableLabel(value) : ("var" + hex);
-            }
-            if ("pointer".equals(type)) {
-                ScriptVariable scriptVariable = new ScriptVariable(parentWorker, 0, value, 1);
-                return "*" + scriptVariable.getDereference() + hexSuffix;
-            }
-            if ("encounter".equals(type)) {
-                int field = (value & 0xFFFF0000) >> 16;
-                int encIdx = value & 0x0000FFFF;
-                ScriptField fieldObj = ScriptConstants.getEnumMap("field").get(field);
-                if (fieldObj == null) {
-                    return '?' + type + ':' + value + hexSuffix;
-                } else {
-                    return fieldObj.name + '_' + String.format("%02d", encIdx) + hexSuffix;
-                }
-            }
-            if ("menu".equals(type)) {
-                return interpretMenu(value) + hexSuffix;
-            }
-            if ("sphereGridNodeState".equals(type)) {
-                return compositeUint16ToString("sgNodeActivationBitfield", "sgNodeType", "(Activation: %s, Content: %s)") + hexSuffix;
-            }
-            if ("move".equals(type)) {
-                if (value == 0) {
-                    return "Null Move" + hexSuffix;
-                } else if (value <= 0x11) {
-                    return "Switch/Summon:" + ScriptConstants.getEnumMap("playerChar").get(value) + hexSuffix;
-                } else {
-                    AbilityDataObject ability = DataAccess.getMove(value);
-                    return (ability != null ? '"'+ability.getName()+'"' : "????") + hexSuffix;
-                }
-            } else if ("charMove".equals(type)) {
-                AbilityDataObject ability = DataAccess.getMove(value + 0x3000);
+        }
+        if ("menu".equals(type)) {
+            return interpretMenu(valueSigned) + hexSuffix;
+        }
+        if ("sphereGridNodeState".equals(type)) {
+            return compositeUint16ToString("sgNodeActivationBitfield", "sgNodeType", valueUnsigned, "(Activation: %s, Content: %s)") + hexSuffix;
+        }
+        if ("move".equals(type)) {
+            if (valueSigned == 0) {
+                return "Null Move" + hexSuffix;
+            } else if (valueSigned <= 0x11) {
+                return "Switch/Summon:" + ScriptConstants.getEnumMap("playerChar").get(valueSigned) + hexSuffix;
+            } else {
+                AbilityDataObject ability = DataAccess.getMove(valueSigned);
                 return (ability != null ? '"'+ability.getName()+'"' : "????") + hexSuffix;
             }
-            if ("btlActor".equals(type) && value >= 0x1000 && value < 0x2000) {
-                try {
-                    MonsterFile monster = DataAccess.getMonster(value);
-                    if (monster != null) {
-                        return "Actors:MonsterType=m" + String.format("%03d", value - 0x1000) + " (" + monster.getName() + ")" + hexSuffix;
-                    }
-                } catch (UnsupportedOperationException ignored) {}
-            }
-            if ("macroString".equals(type)) {
-                return StringHelper.MACRO_LOOKUP.computeIfAbsent(value, k -> new LocalizedStringObject()).getDefaultContent();
-            }
-            if ("localString".equals(type) && parentScript != null && parentScript.strings != null && parentScript.strings.size() > value) {
-                String targetString = parentScript.strings.get(value).getDefaultContent();
+        } else if ("charMove".equals(type)) {
+            AbilityDataObject ability = DataAccess.getMove(valueSigned + 0x3000);
+            return (ability != null ? '"'+ability.getName()+'"' : "????") + hexSuffix;
+        }
+        if ("btlActor".equals(type) && valueSigned >= 0x1000 && valueSigned < 0x2000) {
+            try {
+                MonsterFile monster = DataAccess.getMonster(valueSigned);
+                if (monster != null) {
+                    return "Actors:MonsterType=m" + String.format("%03d", valueSigned - 0x1000) + " (" + monster.getName() + ")" + hexSuffix;
+                }
+            } catch (UnsupportedOperationException ignored) {}
+        }
+        if ("macroString".equals(type)) {
+            return StringHelper.MACRO_LOOKUP.computeIfAbsent(valueSigned, k -> new LocalizedStringObject()).getDefaultContent();
+        }
+        if ("localString".equals(type)) {
+            AtelScriptObject parentScript = parentWorker != null ? parentWorker.parentScript : null;
+            if (parentScript != null && parentScript.strings != null && parentScript.strings.size() > valueSigned) {
+                String targetString = parentScript.strings.get(valueSigned).getDefaultContent();
                 String nullSafeString = targetString != null ? targetString : "null";
                 String noLineBreakString = nullSafeString.replace("\n", "\\n");
                 return '"' + noLineBreakString + '"' + hexSuffix;
             }
-            Nameable object = DataAccess.getNameableObject(type, value);
-            if (object != null) {
-                return object.getName() + hexSuffix;
-            }
-            if (type.endsWith("Bitfield")) {
-                return bitfieldToString(type, value) + hexSuffix;
-            } else if (type.endsWith("BitfieldNegated")) {
-                return negatedBitfieldToString(type.substring(0, type.length() - 7), value) + hexSuffix;
-            }
-            if (ScriptConstants.ENUMERATIONS.containsKey(type)) {
-                return enumToString(type, value);
+        }
+        if ("map".equals(type)) {
+            String mapName = EventFile.getMapNameById(valueSigned);
+            if (mapName != null) {
+                EventFile event = DataAccess.getEvent(mapName);
+                return mapName + (event != null ? " (" + event.getName() + ")" : "") + hexSuffix;
+            } else {
+                return "Map#" + valueSigned + hexSuffix;
             }
         }
-        return content;
+        Nameable object = DataAccess.getNameableObject(type, valueSigned);
+        if (object != null) {
+            return object.getName() + hexSuffix;
+        }
+        if (type.endsWith("Bitfield")) {
+            return bitfieldToString(type, valueUnsigned) + hexSuffix;
+        } else if (type.endsWith("BitfieldNegated")) {
+            return negatedBitfieldToString(type.substring(0, type.length() - 7), valueUnsigned) + hexSuffix;
+        }
+        if (ScriptConstants.ENUMERATIONS.containsKey(type)) {
+            return enumToString(type, valueSigned);
+        }
+        return null;
     }
 
-    public String compositeUint16ToString(String hbType, String lbType, String format) {
-        StackObject hbObj = new StackObject(hbType, this, (value & 0xFF00) >> 8);
-        StackObject lbObj = new StackObject(lbType, this, value & 0x00FF);
-        return String.format(format, hbObj, lbObj);
+    public static String compositeUint16ToString(String hbType, String lbType, int value, String format) {
+        String hbStr = StackObject.asString(hbType, (value & 0xFF00) >> 8);
+        String lbStr = StackObject.asString(lbType, value & 0x00FF);
+        return String.format(format, hbStr, lbStr);
     }
 
     private static String interpretMenu(int value) {
@@ -237,22 +289,19 @@ public class StackObject {
         return "[" + bits.stream().map(ScriptField::getLabel).collect(Collectors.joining(", ")) + "]";
     }
 
-    public static String bitfieldToString(String type, int value) {
-        List<ScriptField> bits = bitfieldToList(type, value);
+    public static String bitfieldToString(String type, int valueUnsigned) {
+        List<ScriptField> bits = bitfieldToList(type, valueUnsigned);
         return bitsToString(bits);
     }
 
-    public static List<ScriptField> negatedBitfieldToList(String type, int value) {
+    public static List<ScriptField> negatedBitfieldToList(String type, int valueUnsigned) {
         List<ScriptField> bits = new ArrayList<>();
-        if (value <= 0) {
-            return bits;
-        }
         Map<Integer, ScriptField> map = type != null ? ScriptConstants.ENUMERATIONS.getOrDefault(type, Collections.emptyMap()) : Collections.emptyMap();
-        String format = value >= 0x10000 ? "b%08X" : "b%04X";
-        int max = value >= 0x10000 ? 0x80000000 : 0x8000;
+        String format = valueUnsigned >= 0x10000 ? "b%08X" : "b%04X";
+        int max = valueUnsigned >= 0x10000 ? 0x80000000 : 0x8000;
         for (int bit = 0x01; true; bit = bit << 1) {
-            if ((value & bit) == 0) {
-                ScriptField field = map.getOrDefault(bit, new ScriptField(String.format(format, bit), type).withIdx(value));
+            if ((valueUnsigned & bit) == 0) {
+                ScriptField field = map.getOrDefault(bit, new ScriptField(String.format(format, bit), type).withIdx(valueUnsigned));
                 bits.add(field);
             }
             if (bit == max) {
@@ -265,15 +314,15 @@ public class StackObject {
     public static String negatedBitsToString(List<ScriptField> bits) {
         if (bits.isEmpty()) {
             return "~[]";
-        } else if (bits.size() == 1) {
+        } else if (bits.size() == 1 && StackObject.UNWRAP_SINGLE_NEGATED_BIT) {
             return "~" + bits.get(0).getLabel();
         } else {
             return "~[" + bits.stream().map(ScriptField::getLabel).collect(Collectors.joining(", ")) + "]";
         }
     }
 
-    public static String negatedBitfieldToString(String type, int value) {
-        List<ScriptField> bits = negatedBitfieldToList(type, value);
+    public static String negatedBitfieldToString(String type, int valueUnsigned) {
+        List<ScriptField> bits = negatedBitfieldToList(type, valueUnsigned);
         return negatedBitsToString(bits);
     }
 }

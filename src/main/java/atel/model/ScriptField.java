@@ -58,7 +58,12 @@ public class ScriptField implements Nameable {
         if (hexFormatter != null) {
             return hexFormatter.apply(idx);
         }
-        return String.format(idx >= 0x10000 ? "%08X" : (idx >= 0x100 ? "%04X" : "%02X"), idx);
+        String format = idx >= 0x10000 ? "%08X" : (idx >= 0x100 ? "%04X" : "%02X");
+        String formatted = String.format(format, idx);
+        if ("%08X".equals(format) && formatted.startsWith("FFFF")) {
+            return formatted.substring(4);
+        }
+        return formatted;
     }
 
     public String getHexSuffix() {

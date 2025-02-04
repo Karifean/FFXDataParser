@@ -1,6 +1,7 @@
 package atel;
 
 import main.StringHelper;
+import model.BattlePositionsDataObject;
 import model.FormationDataObject;
 import model.LocalizedStringObject;
 import reading.Chunk;
@@ -16,15 +17,20 @@ import static main.DataReadingManager.DEFAULT_LOCALIZATION;
 public class EncounterFile {
     public AtelScriptObject encounterScript;
     public FormationDataObject formation;
+    public BattlePositionsDataObject battlePositions;
     Chunk scriptChunk;
     int[] workerMappingBytes;
     int[] formationBytes;
+    int[] battlePositionsBytes;
     int[] textBytes;
     public List<LocalizedStringObject> strings;
 
+    private int chunkCount;
+
     public EncounterFile(List<Chunk> chunks) {
+        chunkCount = chunks.size();
         mapChunks(chunks);
-        mapObjects(chunks.size());
+        mapObjects();
         mapStrings();
     }
 
@@ -32,6 +38,7 @@ public class EncounterFile {
         scriptChunk = chunks.get(0);
         workerMappingBytes = chunks.get(1).bytes;
         formationBytes = chunks.get(2).bytes;
+        battlePositionsBytes = chunks.get(3).bytes;
         if (chunks.size() > 6 && chunks.get(6).offset != 0) {
             textBytes = chunks.get(6).bytes;
         } else if (chunks.size() > 4 && chunks.get(4).offset != 0) {
@@ -39,10 +46,16 @@ public class EncounterFile {
         }
     }
 
-    private void mapObjects(int chunkCount) {
+    private void mapObjects() {
+        if (chunkCount == 5) {
+            return;
+        }
         encounterScript = new AtelScriptObject(scriptChunk, workerMappingBytes);
         if (formationBytes != null && formationBytes.length > 0) {
             formation = new FormationDataObject(formationBytes);
+        }
+        if (battlePositionsBytes != null && battlePositionsBytes.length > 0) {
+            battlePositions = new BattlePositionsDataObject(battlePositionsBytes);
         }
     }
 
@@ -81,8 +94,14 @@ public class EncounterFile {
     @Override
     public String toString() {
         StringBuilder full = new StringBuilder();
+        if (chunkCount != 8) {
+            full.append("Unsafe format - ChunkCount is ").append(chunkCount).append('\n');
+        }
         if (formation != null) {
             full.append("- Encounter Formation -\n").append(formation).append('\n');
+        }
+        if (battlePositions != null) {
+            full.append("- Encounter Positions -\n").append(battlePositions).append('\n');
         }
         if (encounterScript != null) {
             full.append("- Script Code -").append('\n');

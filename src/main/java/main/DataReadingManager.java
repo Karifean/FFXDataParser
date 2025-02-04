@@ -393,6 +393,7 @@ public class DataReadingManager {
                         .filter(f -> f.isDirectory())
                         .flatMap(f -> Arrays.stream(Objects.requireNonNull(f.list())))
                         .filter(sf -> !sf.startsWith("."))
+                        .sorted()
                         .collect(Collectors.toList());
                 if (print) {
                     System.out.println("Found events: " + String.join(", ", eventFiles));

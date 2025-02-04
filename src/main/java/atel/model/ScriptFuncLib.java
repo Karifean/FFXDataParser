@@ -221,7 +221,7 @@ public abstract class ScriptFuncLib {
         putFuncWithIdx(0x00DB, new ScriptFunc("loadAndPlayMoveAnimation", "unknown", null, p("moveAnim")));
         putFuncWithIdx(0x00DC, new ScriptFunc("awaitLoadingOfMoveAnimation", "unknown", null, true));
         putUnknownFunc(0x00DE, 0);
-        putFuncWithIdx(0x00DF, new ScriptFunc("playSFX?", "unknown", null, p("sfx")));
+        putFuncWithIdx(0x00DF, new ScriptFunc("playSfx", "unknown", null, p("sfx")));
         putUnknownFunc(0x00E0, 1);
         putUnknownFunc(0x00E1, 0);
         putUnknownFunc(0x00E2, 1);

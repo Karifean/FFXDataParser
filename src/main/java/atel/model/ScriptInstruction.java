@@ -11,7 +11,6 @@ public class ScriptInstruction {
     public final int arg2;
     public final int argv;
     public final int argvSigned;
-    public final String argvsh;
 
     public List<ScriptJump> jumps;
     public List<ScriptJump> reachableFrom;
@@ -25,7 +24,6 @@ public class ScriptInstruction {
         this.arg2 = 0;
         this.argv = 0;
         this.argvSigned = 0;
-        this.argvsh = null;
     }
 
     public ScriptInstruction(int addr, int opcode, int arg1, int arg2) {
@@ -37,7 +35,6 @@ public class ScriptInstruction {
         this.arg2 = arg2;
         this.argv = arg1 + arg2 * 0x100;
         this.argvSigned = argv < 0x8000 ? argv : (argv - 0x10000);
-        this.argvsh = String.format(arg2 > 0 ? "%04X" : "%02X", argv);
     }
 
     public String asHexString() {
@@ -56,7 +53,7 @@ public class ScriptInstruction {
         if (!hasArgs) {
             return "";
         }
-        return "0x" + argvsh;
+        return "0x" + String.format(arg2 > 0 ? "%04X" : "%02X", argv);
     }
 
     public String asAsmString() {

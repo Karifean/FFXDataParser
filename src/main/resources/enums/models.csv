@@ -472,8 +472,8 @@ model,301A,MEGAS4
 model,301B,MEGAS5
 model,301C,MEGAS6
 model,301F,,Shuriken (Yojimbo?)
-model,5001,SAVESPHERE001
-model,5002,TAKARABOX002
+model,5001,SAVESPHERE001,SaveSphere
+model,5002,TAKARABOX002,TreasureChest
 model,5006,BALL006
 model,5007,FISH007
 model,5008,BUTTERFLY008
@@ -533,6 +533,7 @@ model,509C,SIPAHU_KURA156
 model,509E,TRUMPET158
 model,509F,SAIDAN_2PUT159
 model,50A8,BREAK_PILLAR168
+model,50AA,,TreasureChestBlue
 model,50AC,MINI_AIRSHIP172
 model,6001,,Child
 model,6002,,Young Man (Slender)

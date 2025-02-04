@@ -43,7 +43,7 @@ public class ScriptFuncAccessor extends ScriptFunc {
     public String getType(List<StackObject> params) {
         int predIdx = self ? 0 : 1;
         StackObject predParam = predIdx < params.size() ? params.get(predIdx) : null;
-        ScriptField predicate = fixedPredicate != null ? fixedPredicate : (predParam == null || predParam.expression) ? null : accessMap.get(predParam.value);
+        ScriptField predicate = fixedPredicate != null ? fixedPredicate : (predParam == null || predParam.expression) ? null : accessMap.get(predParam.valueSigned);
         return predicate != null ? predicate.type : "unknown";
     }
 
@@ -65,7 +65,7 @@ public class ScriptFuncAccessor extends ScriptFunc {
         }
         str.append('.');
         StackObject predParam = predicateParamIndex >= 0 && predicateParamIndex < params.size() ? params.get(predicateParamIndex) : null;
-        ScriptField predicate = fixedPredicate != null ? fixedPredicate : (predParam == null || predParam.expression) ? null : accessMap.get(predParam.value);
+        ScriptField predicate = fixedPredicate != null ? fixedPredicate : (predParam == null || predParam.expression) ? null : accessMap.get(predParam.valueSigned);
         if (predicate != null) {
             str.append(predicate);
         } else {

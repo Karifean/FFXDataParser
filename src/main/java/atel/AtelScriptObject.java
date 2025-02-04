@@ -74,6 +74,7 @@ public class AtelScriptObject {
     List<String> jumpLines;
     List<String> warnLines;
     List<ScriptInstruction> instructions = new ArrayList<>();
+    List<ScriptLine> scriptLines = new ArrayList<>();
 
     public AtelScriptObject(Chunk chunk, int[] battleWorkerMappingBytes) {
         this(chunk.bytes, chunk.offset, battleWorkerMappingBytes);
@@ -284,13 +285,14 @@ public class AtelScriptObject {
 
     protected void syntacticParseScriptCode() {
         lineCount = 0;
+        scriptLines = new ArrayList<>();
         instructions = new ArrayList<>();
         offsetLines = new ArrayList<>();
         hexScriptLines = new ArrayList<>();
         jumpLines = new ArrayList<>();
         List<ScriptInstruction> lineInstructions = new ArrayList<>();
         List<ScriptJump> jumpsOnLine = new ArrayList<>();
-        int nextLineOffset = 0;
+        int currentScriptLineOffset = 0;
         int cursor = 0;
         while (cursor < scriptCodeLength) {
             List<ScriptJump> jumpsOnInstruction = new ArrayList<>();
@@ -312,14 +314,15 @@ public class AtelScriptObject {
             lineInstructions.add(instruction);
             instructions.add(instruction);
             if (getLineEnd(opcode)) {
+                scriptLines.add(new ScriptLine(currentScriptLineOffset, lineInstructions));
                 lineCount++;
-                offsetLines.add(String.format("%04X", nextLineOffset));
-                nextLineOffset = cursor;
+                offsetLines.add(String.format("%04X", currentScriptLineOffset));
+                currentScriptLineOffset = cursor;
                 hexScriptLines.add(getHexLine(lineInstructions));
                 jumpLines.add(getJumpLine(jumpsOnLine));
                 textScriptLine = "";
                 jumpsOnLine.clear();
-                lineInstructions.clear();
+                lineInstructions = new ArrayList<>();
             }
         }
     }
@@ -435,7 +438,6 @@ public class AtelScriptObject {
     protected void processInstruction(ScriptInstruction ins) {
         final int opcode = ins.opcode;
         final int argv = ins.argv;
-        final String argvsh = ins.argvsh;
         StackObject p1 = null, p2 = null, p3 = null;
         try {
             switch (getStackPops(opcode)) {
@@ -452,233 +454,247 @@ public class AtelScriptObject {
         }
         if (opcode == 0x00 || opcode == 0x1D || opcode == 0x1E) { // NOP, LABEL, TAG
             // No handling yet, they should probably be written a certain way parsed out but are never actually used
-        } else if (opcode >= 0x01 && opcode <= 0x18) {
-            ScriptField op = ScriptConstants.COMP_OPERATORS.get(opcode);
-            String resultType = op.type;
-            String p1s = p1.toString();
-            String p2s = p2.toString();
+        } else {
+            ScriptWorker currentWorker = workers[currentWorkerIndex];
+            if (opcode >= 0x01 && opcode <= 0x18) {
+                ScriptField op = ScriptConstants.COMP_OPERATORS.get(opcode);
+                String resultType = op.type;
+                String p1s = p1.toString();
+                String p2s = p2.toString();
 
-            if (opcode == 0x03 || opcode == 0x05 || opcode == 0x06 || opcode == 0x07) {
+                if (opcode == 0x03 || opcode == 0x05 || opcode == 0x06 || opcode == 0x07) {
+                    String p1t = resolveType(p1);
+                    String p2t = resolveType(p2);
+                    boolean p1w = !p1.expression && isWeakType(p1t);
+                    boolean p2w = !p2.expression && isWeakType(p2t);
+                    if (opcode == 0x03 || opcode == 0x05) {
+                        if (p1w) {
+                            p1t = opcode == 0x05 && inferIsNegationValue(p1) ? "bitfieldNegated" : "bitfield";
+                            p1 = new StackObject(p1t, p1);
+                            p1s = p1.toString();
+                        }
+                        if (p2w) {
+                            p2t = opcode == 0x05 && inferIsNegationValue(p2) ? "bitfieldNegated" : "bitfield";
+                            p2 = new StackObject(p2t, p2);
+                            p2s = p2.toString();
+                        }
+                    }
+                    if (p1w && !isWeakType(p2t)) {
+                        if (opcode == 0x05 && ("bitfield".equals(p2t) || p2t.endsWith("Bitfield")) && inferIsNegationValue(p1)) {
+                            p1s = typed(p1, p2t + "Negated");
+                        } else {
+                            p1s = typed(p1, p2t);
+                        }
+                    } else if (p2w && !isWeakType(p1t)) {
+                        if (opcode == 0x05 && ("bitfield".equals(p1t) || p1t.endsWith("Bitfield")) && inferIsNegationValue(p2)) {
+                            p2s = typed(p2, p1t + "Negated");
+                        } else {
+                            p2s = typed(p2, p1t);
+                        }
+                    }
+                }
+                if (p1.maybeBracketize) {
+                    p1s = '(' + p1s + ')';
+                }
+                if (p2.maybeBracketize) {
+                    p2s = '(' + p2s + ')';
+                }
+                String content = p1s + ' ' + op.name + ' ' + p2s;
+                StackObject stackObject = new StackObject(currentWorker, ins, resultType, true, content, opcode);
+                stackObject.maybeBracketize = true;
+                stack.push(stackObject);
+            } else if (opcode == 0x19) { // OPNOT / NOT_LOGIC
+                String p1s = p1.toString();
+                if (p1.maybeBracketize) {
+                    p1s = '(' + p1s + ')';
+                }
+                stack.push(new StackObject(currentWorker, ins, "bool", true, "!" + p1s, 0x19));
+            } else if (opcode == 0x1A) { // OPUMINUS / NEG
+                String p1s = p1.toString();
+                if (p1.maybeBracketize) {
+                    p1s = '(' + p1s + ')';
+                }
+                stack.push(new StackObject(currentWorker, ins, p1.type, true, "-" + p1s, 0x1A));
+            } else if (opcode == 0x1C) { // OPBNOT / NOT
+                String p1s = p1.toString();
+                if (p1.maybeBracketize) {
+                    p1s = '(' + p1s + ')';
+                }
+                stack.push(new StackObject(currentWorker, ins, p1.type, true, "~" + p1s, 0x1C));
+            } else if (opcode == 0x25) { // POPA / SET_RETURN_VALUE
+                textScriptLine += p1 + ";";
+                currentRAType = resolveType(p1);
+            } else if (opcode == 0x26) { // PUSHA / GET_RETURN_VALUE
+                stack.push(new StackObject(currentWorker, ins, currentRAType, true, "LastCallResult", 0x26));
+            } else if (opcode == 0x28) { // PUSHX / GET_TEST
+                stack.push(new StackObject(currentWorker, ins, currentRXType, true, "rX", 0x28));
+            } else if (opcode == 0x29) { // PUSHY / GET_CASE
+                stack.push(new StackObject(currentWorker, ins, currentRYType, true, "case", 0x29));
+            } else if (opcode == 0x2A) { // POPX / SET_TEST
+                textScriptLine += "Set rX = " + p1;
+                currentRXType = resolveType(p1);
+            } else if (opcode == 0x2B) { // REPUSH / COPY
+                stack.push(new StackObject(p1.type, p1));
+                stack.push(new StackObject(p1.type, p1));
+            } else if (opcode == 0x2C) { // POPY / SET_CASE
+                textScriptLine += "switch " + p1;
+                currentRYType = resolveType(p1);
+            } else if (opcode == 0x34) { // RTS / RETURN
+                textScriptLine += "return from subroutine;";
+                resetRegisterTypes();
+            } else if (opcode >= 0x36 && opcode <= 0x38) { // REQ / SIG_NOACK
+                String cmd = "run";
+                if (opcode == 0x37) { // REQSW / SIG_ONSTART
+                    cmd += "AndAwaitStart";
+                } else if (opcode == 0x38) { // REQEW / SIG_ONEND
+                    cmd += "AndAwaitEnd";
+                }
+                String level = p1.expression ? ""+p1 : ""+p1.valueSigned;
+                boolean direct = !p2.expression && !p3.expression && isWeakType(p2.type) && isWeakType(p3.type) && p2.valueSigned < workers.length && p3.valueSigned < workers[p2.valueSigned].entryPoints.length;
+                String s = p2.expression ? "(" + p2 + ")" : format2Or4Byte(p2.valueSigned);
+                String e = p3.expression ? "(" + p3 + ")" : format2Or4Byte(p3.valueSigned);
+                String scriptLabel = direct ? workers[p2.valueSigned].entryPoints[p3.valueSigned].getLabel() : ("w" + s + "e" + e);
+                String content = cmd + " " + scriptLabel + " (Level " + level + ")";
+                stack.push(new StackObject(currentWorker, ins, "worker", true, content, opcode));
+            } else if (opcode == 0x39) { // PREQ
+                String content = "PREQ(" + p1 + ", " + p2 + ", " + p3 + ")";
+                stack.push(new StackObject(currentWorker, ins, "unknown", true, content, 0x39));
+            } else if (opcode == 0x3C) { // RET / END
+                textScriptLine += "return;";
+                resetRegisterTypes();
+            } else if (opcode == 0x3D) { // Never used: RETN / CLEANUP_END
+            } else if (opcode == 0x3E) { // Never used: RETT / TO_MAIN
+            } else if (opcode == 0x3F) { // RETTN / CLEANUP_TO_MAIN
+                textScriptLine += "return (RETTN): " + p1;
+                resetRegisterTypes();
+            } else if (opcode == 0x40) { // HALT / DYNAMIC
+                textScriptLine += "halt";
+                resetRegisterTypes();
+            } else if (opcode == 0x46) { // TREQ
+                String content = "TREQ(" + p1 + ", " + p2 + ", " + p3 + ")";
+                stack.push(new StackObject(currentWorker, ins, "unknown", true, content, 0x46));
+            } else if (opcode == 0x54) { // DRET / CLEANUP_ALL_END
+                textScriptLine += "direct return;";
+                resetRegisterTypes();
+            } else if (opcode >= 0x59 && opcode <= 0x5C) { // POPI0..3 / SET_INT
                 String p1t = resolveType(p1);
-                String p2t = resolveType(p2);
-                boolean p1w = !p1.expression && isWeakType(p1t);
-                boolean p2w = !p2.expression && isWeakType(p2t);
-                if (p1w && !p2w) {
-                    if (opcode == 0x05 && ("bitfield".equals(p2t) || p2t.endsWith("Bitfield")) && inferIsNegationValue(p1)) {
-                        p1s = typed(p1, p2t + "Negated");
-                    } else {
-                        p1s = typed(p1, p2t);
-                    }
-                } else if (p2w && !p1w) {
-                    if (opcode == 0x05 && ("bitfield".equals(p1t) || p1t.endsWith("Bitfield")) && inferIsNegationValue(p2)) {
-                        p2s = typed(p2, p1t + "Negated");
-                    } else {
-                        p2s = typed(p2, p1t);
-                    }
+                int tempIndex = opcode - 0x59;
+                if (p1t != null && !"unknown".equals(p1t)) {
+                    currentTempITypes.put(tempIndex, p1t);
+                } else {
+                    currentTempITypes.remove(tempIndex);
                 }
-            }
-            if (p1.maybeBracketize) {
-                p1s = '(' + p1s + ')';
-            }
-            if (p2.maybeBracketize) {
-                p2s = '(' + p2s + ')';
-            }
-            String content = p1s + ' ' + op.name + ' ' + p2s;
-            StackObject stackObject = new StackObject(workers[currentWorkerIndex], ins, resultType, true, content, opcode);
-            stackObject.maybeBracketize = true;
-            stack.push(stackObject);
-        } else if (opcode == 0x19) { // OPNOT / NOT_LOGIC
-            String p1s = p1.toString();
-            if (p1.maybeBracketize) {
-                p1s = '(' + p1s + ')';
-            }
-            stack.push(new StackObject(workers[currentWorkerIndex], ins, "bool", true, "!" + p1s, 0x19));
-        } else if (opcode == 0x1A) { // OPUMINUS / NEG
-            String p1s = p1.toString();
-            if (p1.maybeBracketize) {
-                p1s = '(' + p1s + ')';
-            }
-            stack.push(new StackObject(workers[currentWorkerIndex], ins, p1.type, true, "-" + p1s, 0x1A));
-        } else if (opcode == 0x1C) { // OPBNOT / NOT
-            String p1s = p1.toString();
-            if (p1.maybeBracketize) {
-                p1s = '(' + p1s + ')';
-            }
-            stack.push(new StackObject(workers[currentWorkerIndex], ins, p1.type, true, "~" + p1s, 0x1C));
-        } else if (opcode == 0x25) { // POPA / SET_RETURN_VALUE
-            textScriptLine += p1 + ";";
-            currentRAType = resolveType(p1);
-        } else if (opcode == 0x26) { // PUSHA / GET_RETURN_VALUE
-            stack.push(new StackObject(workers[currentWorkerIndex], ins, currentRAType, true, "LastCallResult", 0x26));
-        } else if (opcode == 0x28) { // PUSHX / GET_TEST
-            stack.push(new StackObject(workers[currentWorkerIndex], ins, currentRXType, true, "rX", 0x28));
-        } else if (opcode == 0x29) { // PUSHY / GET_CASE
-            stack.push(new StackObject(workers[currentWorkerIndex], ins, currentRYType, true, "case", 0x29));
-        } else if (opcode == 0x2A) { // POPX / SET_TEST
-            textScriptLine += "Set rX = " + p1;
-            currentRXType = resolveType(p1);
-        } else if (opcode == 0x2B) { // REPUSH / COPY
-            stack.push(new StackObject(p1.type, p1));
-            stack.push(new StackObject(p1.type, p1));
-        } else if (opcode == 0x2C) { // POPY / SET_CASE
-            textScriptLine += "switch " + p1;
-            currentRYType = resolveType(p1);
-        } else if (opcode == 0x34) { // RTS / RETURN
-            textScriptLine += "return from subroutine;";
-            resetRegisterTypes();
-        } else if (opcode >= 0x36 && opcode <= 0x38) { // REQ / SIG_NOACK
-            String cmd = "run";
-            if (opcode == 0x37) { // REQSW / SIG_ONSTART
-                cmd += "AndAwaitStart";
-            } else if (opcode == 0x38) { // REQEW / SIG_ONEND
-                cmd += "AndAwaitEnd";
-            }
-            String level = p1.expression ? ""+p1 : ""+p1.value;
-            boolean direct = !p2.expression && !p3.expression && isWeakType(p2.type) && isWeakType(p3.type) && p2.value < workers.length && p3.value < workers[p2.value].entryPoints.length;
-            String s = p2.expression ? "(" + p2 + ")" : format2Or4Byte(p2.value);
-            String e = p3.expression ? "(" + p3 + ")" : format2Or4Byte(p3.value);
-            String scriptLabel = direct ? workers[p2.value].entryPoints[p3.value].getLabel() : ("w" + s + "e" + e);
-            String content = cmd + " " + scriptLabel + " (Level " + level + ")";
-            stack.push(new StackObject(workers[currentWorkerIndex], ins, "worker", true, content, opcode));
-        } else if (opcode == 0x39) { // PREQ
-            String content = "PREQ(" + p1 + ", " + p2 + ", " + p3 + ")";
-            stack.push(new StackObject(workers[currentWorkerIndex], ins, "unknown", true, content, 0x39));
-        } else if (opcode == 0x3C) { // RET / END
-            textScriptLine += "return;";
-            resetRegisterTypes();
-        } else if (opcode == 0x3D) { // Never used: RETN / CLEANUP_END
-        } else if (opcode == 0x3E) { // Never used: RETT / TO_MAIN
-        } else if (opcode == 0x3F) { // RETTN / CLEANUP_TO_MAIN
-            textScriptLine += "return (RETTN): " + p1;
-            resetRegisterTypes();
-        } else if (opcode == 0x40) { // HALT / DYNAMIC
-            textScriptLine += "halt";
-            resetRegisterTypes();
-        } else if (opcode == 0x46) { // TREQ
-            String content = "TREQ(" + p1 + ", " + p2 + ", " + p3 + ")";
-            stack.push(new StackObject(workers[currentWorkerIndex], ins, "unknown", true, content, 0x46));
-        } else if (opcode == 0x54) { // DRET / CLEANUP_ALL_END
-            textScriptLine += "direct return;";
-            resetRegisterTypes();
-        } else if (opcode >= 0x59 && opcode <= 0x5C) { // POPI0..3 / SET_INT
-            String p1t = resolveType(p1);
-            int tempIndex = opcode - 0x59;
-            if (p1t != null && !"unknown".equals(p1t)) {
-                currentTempITypes.put(tempIndex, p1t);
-            } else {
-                currentTempITypes.remove(tempIndex);
-            }
-            String val = typed(p1, currentTempITypes.get(tempIndex));
-            textScriptLine += "Set tmpI" + tempIndex + " = " + val + ";";
-        } else if (opcode >= 0x5D && opcode <= 0x66) { // POPF0..9 / SET_FLOAT
-            int tempIndex = opcode - 0x5D;
-            textScriptLine += "Set tmpF" + tempIndex + " = " + p1 + ";";
-        } else if (opcode >= 0x67 && opcode <= 0x6A) { // PUSHI0..3 / GET_INT
-            int tempIndex = opcode - 0x67;
-            StackObject stackObject = new StackObject(workers[currentWorkerIndex], ins, "tmpI", true, "tmpI" + tempIndex, tempIndex);
-            stackObject.referenceIndex = tempIndex;
-            stack.push(stackObject);
-        } else if (opcode >= 0x6B && opcode <= 0x74) { // PUSHF0..9 / GET_FLOAT
-            int tempIndex = opcode - 0x6B;
-            StackObject stackObject = new StackObject(workers[currentWorkerIndex], ins, "float", true, "tmpF" + tempIndex, opcode);
-            stackObject.referenceIndex = tempIndex;
-            stack.push(stackObject);
-        } else if (opcode == 0x77) { // REQWAIT / WAIT_DELETE
-            boolean direct = !p1.expression && !p2.expression && isWeakType(p1.type) && isWeakType(p2.type) && p1.value < workers.length && p2.value < workers[p1.value].entryPoints.length;
-            String w = p1.expression ? "(" + p1 + ")" : format2Or4Byte(p1.value);
-            String e = p2.expression ? "(" + p2 + ")" : format2Or4Byte(p2.value);
-            String scriptLabel = direct ? workers[p1.value].entryPoints[p2.value].getLabel() : ("w" + w + "e" + e);
-            textScriptLine += "await " + scriptLabel + ";";
-        } else if (opcode == 0x78) { // Never used: PREQWAIT / WAIT_SPEC_DELETE
-        } else if (opcode == 0x79) { // REQCHG / EDIT_ENTRY_TABLE
-            ScriptJump[] entryPoints = workers[currentWorkerIndex].entryPoints;
-            int oldIdx = p2.value + 2;
-            int newIdx = p3.value;
-            boolean direct = !p2.expression && !p3.expression && isWeakType(p2.type) && isWeakType(p3.type) && oldIdx < entryPoints.length && newIdx < entryPoints.length;
-            String oldScriptLabel = direct ? entryPoints[oldIdx].getLabel() : ("e" + (p2.expression ? "(" + p2 + ")" : format2Or4Byte(oldIdx)));
-            String newScriptLabel = direct ? entryPoints[newIdx].getLabel() : ("e" + (p3.expression ? "(" + p3 + ")" : format2Or4Byte(newIdx)));
-            String tableHolder = p1.expression ? ""+p1 : ""+p1.value;
-            if (p1.parentInstruction.opcode == 0xA7) {
-                addVarType(p1.value, "workerEventTable");
-            }
-            textScriptLine += "Replace script " + oldScriptLabel + " with " + newScriptLabel + " (store table at " + tableHolder + ")";;
-            // textScriptLine += "REQCHG(" + p1 + ", " + p2 + ", " + p3 + ");";
-        } else if (opcode == 0x7A) { // Never used: ACTREQ / SET_EDGE_TRIGGER
-        } else if (opcode == 0x9F) { // PUSHV / GET_DATUM
-            StackObject stackObject = new StackObject(workers[currentWorkerIndex], ins, "var", true, getVariableLabel(argv), argv);
-            stackObject.referenceIndex = argv;
-            stack.push(stackObject);
-        } else if (opcode == 0xA0 || opcode == 0xA1) { // POPV(L) / SET_DATUM_(W/T)
-            addVarType(argv, resolveType(p1));
-            if (gatheringInfo) {
-                if (!varEnums.containsKey(argv)) {
-                    varEnums.put(argv, new ArrayList<>());
+                String val = typed(p1, currentTempITypes.get(tempIndex));
+                textScriptLine += "Set tmpI" + tempIndex + " = " + val + ";";
+            } else if (opcode >= 0x5D && opcode <= 0x66) { // POPF0..9 / SET_FLOAT
+                int tempIndex = opcode - 0x5D;
+                textScriptLine += "Set tmpF" + tempIndex + " = " + p1 + ";";
+            } else if (opcode >= 0x67 && opcode <= 0x6A) { // PUSHI0..3 / GET_INT
+                int tempIndex = opcode - 0x67;
+                StackObject stackObject = new StackObject(currentWorker, ins, "tmpI", true, "tmpI" + tempIndex, tempIndex);
+                stackObject.referenceIndex = tempIndex;
+                stack.push(stackObject);
+            } else if (opcode >= 0x6B && opcode <= 0x74) { // PUSHF0..9 / GET_FLOAT
+                int tempIndex = opcode - 0x6B;
+                StackObject stackObject = new StackObject(currentWorker, ins, "float", true, "tmpF" + tempIndex, opcode);
+                stackObject.referenceIndex = tempIndex;
+                stack.push(stackObject);
+            } else if (opcode == 0x77) { // REQWAIT / WAIT_DELETE
+                boolean direct = !p1.expression && !p2.expression && isWeakType(p1.type) && isWeakType(p2.type) && p1.valueSigned < workers.length && p2.valueSigned < workers[p1.valueSigned].entryPoints.length;
+                String w = p1.expression ? "(" + p1 + ")" : format2Or4Byte(p1.valueSigned);
+                String e = p2.expression ? "(" + p2 + ")" : format2Or4Byte(p2.valueSigned);
+                String scriptLabel = direct ? workers[p1.valueSigned].entryPoints[p2.valueSigned].getLabel() : ("w" + w + "e" + e);
+                textScriptLine += "await " + scriptLabel + ";";
+            } else if (opcode == 0x78) { // Never used: PREQWAIT / WAIT_SPEC_DELETE
+            } else if (opcode == 0x79) { // REQCHG / EDIT_ENTRY_TABLE
+                ScriptJump[] entryPoints = currentWorker.entryPoints;
+                int oldIdx = p2.valueSigned + 2;
+                int newIdx = p3.valueSigned;
+                boolean direct = !p2.expression && !p3.expression && isWeakType(p2.type) && isWeakType(p3.type) && oldIdx < entryPoints.length && newIdx < entryPoints.length;
+                String oldScriptLabel = direct ? entryPoints[oldIdx].getLabel() : ("e" + (p2.expression ? "(" + p2 + ")" : format2Or4Byte(oldIdx)));
+                String newScriptLabel = direct ? entryPoints[newIdx].getLabel() : ("e" + (p3.expression ? "(" + p3 + ")" : format2Or4Byte(newIdx)));
+                String tableHolder = p1.expression ? ""+p1 : ""+p1.valueSigned;
+                if (p1.parentInstruction.opcode == 0xA7) {
+                    addVarType(p1.valueSigned, "workerEventTable");
                 }
-                varEnums.get(argv).add(p1);
+                textScriptLine += "Replace script " + oldScriptLabel + " with " + newScriptLabel + " (store table at " + tableHolder + ")";;
+                // textScriptLine += "REQCHG(" + p1 + ", " + p2 + ", " + p3 + ");";
+            } else if (opcode == 0x7A) { // Never used: ACTREQ / SET_EDGE_TRIGGER
+            } else if (opcode == 0x9F) { // PUSHV / GET_DATUM
+                StackObject stackObject = new StackObject(currentWorker, ins, "var", true, getVariableLabel(argv), argv);
+                stackObject.referenceIndex = argv;
+                stack.push(stackObject);
+            } else if (opcode == 0xA0 || opcode == 0xA1) { // POPV(L) / SET_DATUM_(W/T)
+                addVarType(argv, resolveType(p1));
+                if (gatheringInfo) {
+                    if (!varEnums.containsKey(argv)) {
+                        varEnums.put(argv, new ArrayList<>());
+                    }
+                    varEnums.get(argv).add(p1);
+                }
+                textScriptLine += "Set ";
+                if (opcode == 0xA1) {
+                    textScriptLine += "(limit) ";
+                }
+                String val = typed(p1, varTypes.get(argv));
+                textScriptLine += getVariableLabel(argv) + " = " + val + ";";
+            } else if (opcode == 0xA2) { // PUSHAR / GET_DATUM_INDEX
+                StackObject stackObject = new StackObject(currentWorker, ins, "var", true, ensureVariableValidWithArray(argv, p1), argv);
+                stackObject.referenceIndex = argv;
+                stack.push(stackObject);
+            } else if (opcode == 0xA3 || opcode == 0xA4) { // POPAR(L) / SET_DATUM_INDEX_(W/T)
+                addVarType(argv, resolveType(p2));
+                textScriptLine += "Set ";
+                if (opcode == 0xA4) {
+                    textScriptLine += "(limit) ";
+                }
+                String val = typed(p2, varTypes.get(argv));
+                textScriptLine += ensureVariableValidWithArray(argv, p1) + " = " + val + ";";
+            } else if (opcode == 0xA7) { // PUSHARP / GET_DATUM_DESC
+                StackObject stackObject = new StackObject(currentWorker, ins, "pointer", true, "&" + ensureVariableValidWithArray(argv, p1), argv);
+                stackObject.referenceIndex = argv;
+                stack.push(stackObject);
+            } else if (opcode == 0xAD) { // PUSHI / CONST_INT
+                int refInt = refInts[argv];
+                StackObject stackObject = new StackObject(currentWorker, ins, "int32", refInt, refInt);
+                stackObject.referenceIndex = argv;
+                stack.push(stackObject);
+            } else if (opcode == 0xAE) { // PUSHII / IMM
+                StackObject stackObject = new StackObject(currentWorker, ins, "int16", ins.argvSigned, ins.argv);
+                stack.push(stackObject);
+            } else if (opcode == 0xAF) { // PUSHF / CONST_FLOAT
+                int refFloat = refFloats[argv];
+                StackObject stackObject = new StackObject(currentWorker, ins, "float", refFloat, refFloat);
+                stackObject.referenceIndex = argv;
+                stack.push(stackObject);
+            } else if (opcode == 0xB0) { // JMP / JUMP
+                ScriptJump jump = referenceJump(argv);
+                textScriptLine += "Jump to " + (jump != null ? jump.getLabelWithAddr() : ("j" + String.format("%02X", argv)));
+                resetRegisterTypes();
+            } else if (opcode == 0xB1) { // Never used: CJMP / BNEZ
+            } else if (opcode == 0xB2) { // Never used: NCJMP / BEZ
+            } else if (opcode == 0xB3) { // JSR
+                ScriptWorker worker = workers == null || workers.length <= argv ? null : workers[argv];
+                textScriptLine += "Jump to subroutine " + (worker != null ? worker.getIndexLabel() : ("w" + String.format("%02X", argv)));
+            } else if (opcode == 0xB5) { // CALL / FUNC_RET
+                List<StackObject> params = popParamsForFunc(argv);
+                ScriptFunc func = getAndTypeFuncCall(argv, params);
+                StackObject stackObject = new StackObject(currentWorker, ins, func.getType(params), true, func.callB5(params), argv);
+                stackObject.referenceIndex = argv;
+                stack.push(stackObject);
+            } else if (opcode == 0xD6) { // POPXCJMP / SET_BNEZ
+                ScriptJump jump = referenceJump(argv);
+                textScriptLine += "(" + p1 + ") -> " + (jump != null ? jump.getLabelWithAddr() : ("j" + String.format("%02X", argv)));
+            } else if (opcode == 0xD7) { // POPXNCJMP / SET_BEZ
+                ScriptJump jump = referenceJump(argv);
+                textScriptLine += "Check (" + p1 + ") else jump to " + (jump != null ? jump.getLabelWithAddr() : ("j" + String.format("%02X", argv)));
+            } else if (opcode == 0xD8) { // CALLPOPA / FUNC
+                List<StackObject> params = popParamsForFunc(argv);
+                ScriptFunc func = getAndTypeFuncCall(argv, params);
+                currentRAType = func.getType(params);
+                String call = func.callD8(params);
+                textScriptLine += call + ';';
             }
-            textScriptLine += "Set ";
-            if (opcode == 0xA1) {
-                textScriptLine += "(limit) ";
-            }
-            String val = typed(p1, varTypes.get(argv));
-            textScriptLine += getVariableLabel(argv) + " = " + val + ";";
-        } else if (opcode == 0xA2) { // PUSHAR / GET_DATUM_INDEX
-            StackObject stackObject = new StackObject(workers[currentWorkerIndex], ins, "var", true, ensureVariableValidWithArray(argv, p1), argv);
-            stackObject.referenceIndex = argv;
-            stack.push(stackObject);
-        } else if (opcode == 0xA3 || opcode == 0xA4) { // POPAR(L) / SET_DATUM_INDEX_(W/T)
-            addVarType(argv, resolveType(p2));
-            textScriptLine += "Set ";
-            if (opcode == 0xA4) {
-                textScriptLine += "(limit) ";
-            }
-            String val = typed(p2, varTypes.get(argv));
-            textScriptLine += ensureVariableValidWithArray(argv, p1) + " = " + val + ";";
-        } else if (opcode == 0xA7) { // PUSHARP / GET_DATUM_DESC
-            StackObject stackObject = new StackObject(workers[currentWorkerIndex], ins, "pointer", true, "&" + ensureVariableValidWithArray(argv, p1), argv);
-            stackObject.referenceIndex = argv;
-            stack.push(stackObject);
-        } else if (opcode == 0xAD) { // PUSHI / CONST_INT
-            int refInt = refInts[argv];
-            String content = "rI[" + argvsh + "]:" + refInt + " [" + String.format("%08X", refInt) + "h]";
-            StackObject stackObject = new StackObject(workers[currentWorkerIndex], ins, "int32", false, content, refInt);
-            stackObject.referenceIndex = argv;
-            stack.push(stackObject);
-        } else if (opcode == 0xAE) { // PUSHII / IMM
-            stack.push(new StackObject(workers[currentWorkerIndex], ins, "int16", false, ins.argvSigned + " [" + argvsh + "h]", ins.argvSigned));
-        } else if (opcode == 0xAF) { // PUSHF / CONST_FLOAT
-            int refFloat = refFloats[argv];
-            String content = "rF[" + argvsh + "]:" + Float.intBitsToFloat(refFloat) + " [" + String.format("%08X", refFloat) + "h]";
-            StackObject stackObject = new StackObject(workers[currentWorkerIndex], ins, "float", false, content, refFloat);
-            stackObject.referenceIndex = argv;
-            stack.push(stackObject);
-        } else if (opcode == 0xB0) { // JMP / JUMP
-            ScriptJump jump = referenceJump(argv);
-            textScriptLine += "Jump to " + (jump != null ? jump.getLabelWithAddr() : ("j" + String.format("%02X", argv)));
-            resetRegisterTypes();
-        } else if (opcode == 0xB1) { // Never used: CJMP / BNEZ
-        } else if (opcode == 0xB2) { // Never used: NCJMP / BEZ
-        } else if (opcode == 0xB3) { // JSR
-            ScriptWorker worker = workers == null || workers.length <= argv ? null : workers[argv];
-            textScriptLine += "Jump to subroutine " + (worker != null ? worker.getIndexLabel() : ("w" + String.format("%02X", argv)));
-        } else if (opcode == 0xB5) { // CALL / FUNC_RET
-            List<StackObject> params = popParamsForFunc(argv);
-            ScriptFunc func = getAndTypeFuncCall(argv, params);
-            StackObject stackObject = new StackObject(workers[currentWorkerIndex], ins, func.getType(params), true, func.callB5(params), argv);
-            stackObject.referenceIndex = argv;
-            stack.push(stackObject);
-        } else if (opcode == 0xD6) { // POPXCJMP / SET_BNEZ
-            ScriptJump jump = referenceJump(argv);
-            textScriptLine += "(" + p1 + ") -> " + (jump != null ? jump.getLabelWithAddr() : ("j" + String.format("%02X", argv)));
-        } else if (opcode == 0xD7) { // POPXNCJMP / SET_BEZ
-            ScriptJump jump = referenceJump(argv);
-            textScriptLine += "Check (" + p1 + ") else jump to " + (jump != null ? jump.getLabelWithAddr() : ("j" + String.format("%02X", argv)));
-        } else if (opcode == 0xD8) { // CALLPOPA / FUNC
-            List<StackObject> params = popParamsForFunc(argv);
-            ScriptFunc func = getAndTypeFuncCall(argv, params);
-            currentRAType = func.getType(params);
-            String call = func.callD8(params);
-            textScriptLine += call + ';';
         }
     }
 
@@ -767,16 +783,16 @@ public class AtelScriptObject {
             return "unknown";
         }
         if ("var".equals(obj.type)) {
-            return varTypes.getOrDefault(obj.value, "unknown");
+            return varTypes.getOrDefault(obj.valueSigned, "unknown");
         }
         if ("tmpI".equals(obj.type)) {
-            return currentTempITypes.getOrDefault(obj.value, "unknown");
+            return currentTempITypes.getOrDefault(obj.valueSigned, "unknown");
         }
         return obj.type;
     }
 
     protected static boolean isWeakType(String type) {
-        return type == null || "unknown".equals(type) || type.isBlank() || type.startsWith("int") || type.startsWith("uint");
+        return type == null || "unknown".equals(type) || type.startsWith("int") || type.startsWith("uint");
     }
 
     protected String typed(StackObject obj, String type) {
@@ -784,10 +800,10 @@ public class AtelScriptObject {
             return type + ":null";
         } else {
             if ("var".equals(obj.type)) {
-                addVarType(obj.value, type);
+                addVarType(obj.valueSigned, type);
             }
             if ("tmpI".equals(obj.type) && type != null && !"unknown".equals(type)) {
-                currentTempITypes.put(obj.value, type);
+                currentTempITypes.put(obj.valueSigned, type);
             }
             if (obj.expression || type == null || "unknown".equals(type)) {
                 return obj.toString();
@@ -812,16 +828,16 @@ public class AtelScriptObject {
         if (isWeakType(indexType) && (variableDeclarations != null && index >= 0 && index < variableDeclarations.length)) {
             indexType = variableDeclarations[index].getArrayIndexType();
         }
-        String arrayIndex = !p1.expression && isWeakType(indexType) ? String.format("%04X", p1.value) : typed(p1, indexType);
+        String arrayIndex = !p1.expression && isWeakType(indexType) ? String.format("%04X", p1.valueSigned) : typed(p1, indexType);
         return varLabel + '[' + arrayIndex + ']';
     }
 
     private boolean inferIsNegationValue(StackObject obj) {
-        int inactiveBits = StackObject.negatedBitfieldToList(obj.type, obj.value).size();
+        int inactiveBits = StackObject.negatedBitfieldToList(obj.type, obj.valueUnsigned).size();
         if (inactiveBits == 1) {
             return true;
         }
-        int activeBits = StackObject.bitfieldToList(obj.type, obj.value).size();
+        int activeBits = StackObject.bitfieldToList(obj.type, obj.valueUnsigned).size();
         return inactiveBits < activeBits;
     }
 
@@ -865,7 +881,7 @@ public class AtelScriptObject {
                 if (enums.size() == 1 && !enums.get(0).expression) {
                     constants.put(varIdx, enums.get(0));
                 } else if (enums.stream().noneMatch(a -> a.expression)) {
-                    Set<Integer> distinctContents = enums.stream().map(a -> a.value).collect(Collectors.toSet());
+                    Set<Integer> distinctContents = enums.stream().map(a -> a.valueSigned).collect(Collectors.toSet());
                     if (distinctContents.size() == 2 && distinctContents.contains(0) && (distinctContents.contains(0x01) || distinctContents.contains(0xFF))) {
                         varTypes.put(varIdx, "bool");
                     }
@@ -950,8 +966,11 @@ public class AtelScriptObject {
             lines.add("other_offset = " + String.format("%06X", other_offset));
         }
         if (areaNameIndexes != null) {
+            int firstAreaNameIndex = areaNameIndexes.get(0);
+            List<Integer> differentAreaNameIndexes = areaNameIndexes.stream().filter((id) -> id != firstAreaNameIndex).toList();
             lines.add("Area Names");
-            areaNameIndexes.forEach(i -> lines.add(MACRO_LOOKUP.get(0xB00 + i).getDefaultContent()));
+            lines.add(MACRO_LOOKUP.get(0xB00 + firstAreaNameIndex).getDefaultContent());
+            differentAreaNameIndexes.forEach(i -> lines.add(MACRO_LOOKUP.get(0xB00 + i).getDefaultContent()));
         }
         lines.add(namespaceCount + " Workers Total");
         for (int i = 0; i < namespaceCount; i++) {

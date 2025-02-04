@@ -196,7 +196,7 @@ public class ScriptVariable {
     }
 
     public String initString() {
-        boolean hasInit = values.stream().anyMatch(v -> v.value != 0);
+        boolean hasInit = values.stream().anyMatch(v -> v.valueSigned != 0);
         return getVarLabel() + (hasInit ? "=" + valuesString() : "");
     }
 
