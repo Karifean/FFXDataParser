@@ -70,6 +70,9 @@ public class BattlePositionsDataObject {
         int offsetMonsterSwitchLocations;
         int offsetUnknownSubstructs;
         int offsetFinalLocation;
+        BattleLocation extraLocation1;
+        BattleLocation extraLocation2;
+        BattleLocation extraLocation3;
 
         public BattlePositioningHeader(int[] bytes, int offset) {
             this.bytes = bytes;
@@ -99,6 +102,9 @@ public class BattlePositionsDataObject {
             offsetMonsterSwitchLocations = read4Bytes(0x24 + headerOffset);
             offsetUnknownSubstructs = read4Bytes(0x28 + headerOffset);
             offsetFinalLocation = read4Bytes(0x2C + headerOffset);
+            extraLocation1 = new BattleLocation(bytes, 0x30);
+            extraLocation2 = new BattleLocation(bytes, 0x40);
+            extraLocation3 = new BattleLocation(bytes, 0x50);
         }
 
         private int read4Bytes(int offset) {
@@ -167,6 +173,15 @@ public class BattlePositionsDataObject {
                 list.add("Extra Struct " + StringHelper.formatHex2(i) + " " + unknownTargetStructs[i]);
             }
             list.add("Final Vector " + finalLocation);
+            if (header.extraLocation1.notNothing()) {
+                list.add("Extra Vector 1 " + header.extraLocation1);
+            }
+            if (header.extraLocation2.notNothing()) {
+                list.add("Extra Vector 2 " + header.extraLocation2);
+            }
+            if (header.extraLocation3.notNothing()) {
+                list.add("Extra Vector 3 " + header.extraLocation3);
+            }
             if (header.byte00Always00 != 0x00) {
                 list.add("headerbyte00=" + StringHelper.formatHex2(header.byte00Always00));
             }
@@ -260,6 +275,10 @@ public class BattlePositionsDataObject {
             y = Float.intBitsToFloat(read4Bytes(bytes, offset + 0x04));
             z = Float.intBitsToFloat(read4Bytes(bytes, offset + 0x08));
             w = Float.intBitsToFloat(read4Bytes(bytes, offset + 0x0C));
+        }
+
+        public boolean notNothing() {
+            return x != 0 || y != 0 || z != 0 || w != 0;
         }
 
         @Override
