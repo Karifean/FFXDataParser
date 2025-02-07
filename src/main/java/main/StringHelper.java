@@ -28,7 +28,6 @@ public abstract class StringHelper {
     public static final Map<Integer, Character> BIN_LOOKUP = new HashMap<>();
     public static final Map<Character, Integer> BIN_REV_LOOKUP = new HashMap<>();
     public static final Map<Integer, LocalizedStringObject> MACRO_LOOKUP = new HashMap<>();
-    public static final List<String> LOCALIZATION_ROOTS = List.of("jp", "us", "in", "new_jp", "new_us", "new_ch", "new_de", "new_fr", "new_it", "new_kr", "new_sp");
 
     public static String formatHex2(int twoByteValue) {
         return String.format("%02X", twoByteValue);
@@ -127,6 +126,8 @@ public abstract class StringHelper {
             case 0x0F -> "CINDY";
             case 0x10 -> "SANDY";
             case 0x11 -> "MINDY";
+            case 0x12 -> "DUMMY";
+            case 0x13 -> "DUMMY2";
             default -> "?";
         };
     }
@@ -226,9 +227,13 @@ public abstract class StringHelper {
         int idx = table[offset];
         boolean anyColorization = false;
         while (idx != 0x00) {
-            Character chr = byteToChar(idx);
-            if (chr != null) {
-                out.append(chr);
+            if (idx >= 0x30) {
+                Character chr = byteToChar(idx);
+                if (chr != null) {
+                    out.append(chr);
+                } else {
+                    out.append('?');
+                }
             } else if (idx == 0x01) {
                 out.append("{PAUSE}");
             } else if (idx == 0x03) {
@@ -254,7 +259,7 @@ public abstract class StringHelper {
                 offset++;
                 int varIdx = table[offset] - 0x30;
                 out.append("{VAR").append(String.format("%02X", varIdx)).append('}');
-            } else if (idx == 0x13 && table[offset+1] <= 0x41) {
+            } else if (idx == 0x13 && table[offset+1] <= 0x43) {
                 offset++;
                 int pcIdx = table[offset] - 0x30;
                 out.append("{PC").append(String.format("%02X", pcIdx)).append(':').append(getPlayerChar(pcIdx)).append('}');
@@ -283,7 +288,7 @@ public abstract class StringHelper {
                 }
                 out.append('}');
             } else {
-                out.append('?');
+                out.append("{CMD").append(StringHelper.formatHex2(idx)).append('}');
             }
             offset++;
             if (offset >= table.length) {

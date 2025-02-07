@@ -1,5 +1,7 @@
 package atel.model;
 
+import main.StringHelper;
+
 import java.util.List;
 
 public class ScriptInstruction {
@@ -38,11 +40,11 @@ public class ScriptInstruction {
     }
 
     public String asHexString() {
-        return String.format("%02X", opcode) + (hasArgs ? String.format("%02X", arg1) + String.format("%02X", arg2) : "");
+        return StringHelper.formatHex2(opcode) + (hasArgs ? StringHelper.formatHex2(arg1) + StringHelper.formatHex2(arg2) : "");
     }
 
     public String asSeparatedHexString() {
-        return String.format("%02X", opcode) + (hasArgs ? ' ' + String.format("%02X", arg1) + ' ' + String.format("%02X", arg2) : "");
+        return StringHelper.formatHex2(opcode) + (hasArgs ? ' ' + StringHelper.formatHex2(arg1) + ' ' + StringHelper.formatHex2(arg2) : "");
     }
 
     public String getOpcodeLabel() {

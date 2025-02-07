@@ -312,6 +312,7 @@ public abstract class ScriptConstants {
         putSaveDataVariable(0x0214, "LightningDodgingHighestConsecutiveDodges", "int"); // 440
         putSaveDataVariable(0x024C, "BlitzballWakkaPowerProgress", "int");
         putSaveDataVariable(0x0254, "BlitzballMovementType", "blitzballMovementType");
+        putSaveDataVariable(0x0265, "AirshipLocationsVisitedFlags", "int");
         putSaveDataVariable(0x0A00, "GameMoment", "int");
         putSaveDataVariable(0x0A34, "GilLentToOAka", "int");
         putSaveDataVariable(0x0A38, "MacalaniaPricesChosenForOAka", "int");
@@ -339,6 +340,14 @@ public abstract class ScriptConstants {
         putSaveDataVariable(0x0AA3, "DarkAnimaCompletionFlags", "int");
         putSaveDataVariable(0x0AA4, "DarkMagusSistersCompletionFlags", "int");
         putSaveDataVariable(0x0AA5, "PenanceUnlockState", "int");
+        putSaveDataVariable(0x0AEB, "BattleDialogLinesSeenFlags", "int");
+        putSaveDataVariable(0x0B63, "?TidusBattleTalkativeness", "int");
+        putSaveDataVariable(0x0B64, "?WakkaBattleTalkativeness", "int");
+        putSaveDataVariable(0x0B65, "?YunaBattleTalkativeness", "int");
+        putSaveDataVariable(0x0B66, "?LuluBattleTalkativeness", "int");
+        putSaveDataVariable(0x0B67, "?RikkuBattleTalkativeness", "int");
+        putSaveDataVariable(0x0B68, "?AuronBattleTalkativeness", "int");
+        putSaveDataVariable(0x0B69, "Unused?KimahriBattleTalkativeness", "int");
         putSaveDataVariable(0x1000, "BlitzballPlayerLearnedTechsPage1", "blitzTechsP1Bitfield", "blitzballPlayer");
         putSaveDataVariable(0x10F0, "BlitzballPlayerLearnedTechsPage2", "blitzTechsP2Bitfield", "blitzballPlayer");
         putSaveDataVariable(0x1266, "BlitzballPlayerEquippedTechs", "blitzTech"); // index = blitzballPlayer * 5 + 0..4
@@ -369,6 +378,9 @@ public abstract class ScriptConstants {
         putSaveDataVariable(0x1820, "?BlitzballPlayerUncoveredTechsPage1", "blitzTechsP1Bitfield", "blitzballPlayer");
         putSaveDataVariable(0x1910, "?BlitzballPlayerUncoveredTechsPage2", "blitzTechsP2Bitfield", "blitzballPlayer");
         putSaveDataVariable(0x2000, "SphereGridNodeState", "sphereGridNodeState", "int");
+
+        putCommonVariable(0x0170, "BattleDialogLineVoiceFile", "int");
+        putCommonVariable(0x028C, "BattleDialogLineString", "system01String");
 
         putEnum("deathAnimation", 0x00, "Character (Body remains and targetable)", "death_normal");
         putEnum("deathAnimation", 0x01, "Boss (Body remains but untargetable)", "death_nop");
@@ -683,6 +695,7 @@ public abstract class ScriptConstants {
         putEnum("sfx", 0x80000030, "AlBhedPrimerObtained");
         putEnum("sfx", 0x80000032, "SaveSphere");
         putEnum("sfx", 0x8000003D, "?ShineCelestialMirror");
+        putEnum("sfx", 0x80000047, "AirshipCursorMove");
         putEnum("sfx", 0x80000048, "BoardAirship");
         putEnum("sfx", 0x8000004A, "InstructionsChime");
         putEnum("sfx", 0x00015403, "LightningBoltHit");
@@ -1282,6 +1295,17 @@ public abstract class ScriptConstants {
 
     private static void putSaveDataVariable(int idx, String name, String type) {
         putSaveDataVariable(idx, name, type, "unknown");
+    }
+
+    private static void putCommonVariable(int idx, String name, String type, String indexType) {
+        ScriptField field = new ScriptField(name, type);
+        field.idx = idx;
+        field.indexType = indexType;
+        getEnumMap("commonVar").put(idx, field);
+    }
+
+    private static void putCommonVariable(int idx, String name, String type) {
+        putCommonVariable(idx, name, type, "unknown");
     }
 
     private static void putBattleActorProperty(int idx, String name, String type, String internalName) {

@@ -42,6 +42,7 @@ You can then run the parser with the following command:
 | `READ_CUSTOMIZATIONS`              | | Reads customizations for gear and aeons. (from `kaizou.bin` and `sum_grow.bin`) |
 | `PARSE_ATEL_FILE`     | `<file/folder1> [<file/folder2>] ...` | Reads the ATEL script from a file (event, encounter or monster) and prints it to the console. If given a folder, recurses through all atel files within. |
 | `PARSE_MONSTER`            | `<mIndex1, ex: 234> [<mIndex2, ex: 235>] ...` | Reads the monster files with the given decimal index and prints their information. |
+| `PARSE_ALL_MONSTERS`          | | Reads all monster files (m000-m360) and prints their information. | 
 | `PARSE_ENCOUNTER`          | `<btlIndex1, ex: sins04_07> [<btlIndex2, ex: zzzz03_33>] ...` | Reads the encounter files with the given name and prints their information. | 
 | `PARSE_ALL_ENCOUNTERS`          | | Reads all encounter files and prints their information. | 
 | `PARSE_EVENT`              | `<evIndex1, ex: lmyt0000> [<evIndex2, ex: kami0300>] ...` | Reads the event files with the given name and prints their information. |

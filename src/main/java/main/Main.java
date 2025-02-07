@@ -26,11 +26,12 @@ public class Main {
     private static final String MODE_READ_WEAPON_FILE = "READ_WEAPON_FILE";
     private static final String MODE_READ_STRING_FILE = "READ_STRING_FILE";
     private static final String MODE_PARSE_ATEL_FILE = "PARSE_ATEL_FILE";
+    private static final String MODE_PARSE_MONSTER = "PARSE_MONSTER";
+    private static final String MODE_PARSE_ALL_MONSTERS = "PARSE_ALL_MONSTERS";
     private static final String MODE_PARSE_ENCOUNTER = "PARSE_ENCOUNTER";
     private static final String MODE_PARSE_ALL_ENCOUNTERS = "PARSE_ALL_ENCOUNTERS";
     private static final String MODE_PARSE_EVENT = "PARSE_EVENT";
     private static final String MODE_PARSE_ALL_EVENTS = "PARSE_ALL_EVENTS";
-    private static final String MODE_PARSE_MONSTER = "PARSE_MONSTER";
     private static final String MODE_READ_SPHERE_GRID_NODE_TYPES = "READ_SPHERE_GRID_NODE_TYPES";
     private static final String MODE_READ_SPHERE_GRID_LAYOUT = "READ_SPHERE_GRID_LAYOUT";
     private static final String MODE_READ_CUSTOMIZATIONS = "READ_CUSTOMIZATIONS";
@@ -108,6 +109,9 @@ public class Main {
                     }
                 }
                 break;
+            case MODE_PARSE_ALL_MONSTERS:
+                readAllMonsters(true);
+                break;
             case MODE_PARSE_ENCOUNTER:
                 for (String filename : realArgs) {
                     readEncounterFull(filename, true);
@@ -131,7 +135,7 @@ public class Main {
                         readMonsterFile(filename, true);
                     } else if (filename.contains("battle/btl")) {
                         System.out.println("Encounter file: " + filename);
-                        EncounterFile encounterFile = readEncounterFile(filename, true);
+                        EncounterFile encounterFile = readEncounterFile(filename, true, filename.contains("/inpc/"));
                         if (encounterFile != null) {
                             encounterFile.parseScript();
                             System.out.println(encounterFile);
@@ -251,8 +255,9 @@ public class Main {
         int[] bytes = new int[str.length() / 2 + 1];
         for (int i = 0; i < str.length(); i += 2) {
             int idx = Integer.parseInt(str.substring(i, i+2), 16);
-            bytes[i / 2] = idx;
+            bytes[i / 2] = idx == 0x00 ? 0x03 : idx;
         }
+        bytes[str.length() / 2] = 0x00;
         System.out.println(StringHelper.bytesToString(bytes));
     }
 }

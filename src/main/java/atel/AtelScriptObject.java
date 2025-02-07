@@ -1,8 +1,7 @@
 package atel;
 
-import model.LocalizedStringObject;
-import reading.Chunk;
 import atel.model.*;
+import model.LocalizedStringObject;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -17,9 +16,9 @@ public class AtelScriptObject {
     private static final boolean VERBOSE_HEADER_OUTPUT = false;
     private static final boolean PRINT_REF_INTS_FLOATS = false;
     private static final boolean PRINT_JUMP_TABLE = false;
+    private static final boolean INFER_BITWISE_OPS_AS_BITFIELDS = false;
 
     protected final int[] bytes;
-    protected final int absoluteOffset;
     protected final int[] battleWorkerMappingBytes;
 
     protected int[] actualScriptCodeBytes;
@@ -76,13 +75,8 @@ public class AtelScriptObject {
     List<ScriptInstruction> instructions = new ArrayList<>();
     List<ScriptLine> scriptLines = new ArrayList<>();
 
-    public AtelScriptObject(Chunk chunk, int[] battleWorkerMappingBytes) {
-        this(chunk.bytes, chunk.offset, battleWorkerMappingBytes);
-    }
-
-    public AtelScriptObject(int[] bytes, int absoluteOffset, int[] battleWorkerMappingBytes) {
+    public AtelScriptObject(int[] bytes, int[] battleWorkerMappingBytes) {
         this.bytes = bytes;
-        this.absoluteOffset = absoluteOffset;
         this.battleWorkerMappingBytes = battleWorkerMappingBytes;
         mapFields();
         parseWorkers();
@@ -226,7 +220,7 @@ public class AtelScriptObject {
         int notActuallySectionCount = battleWorkerMappingBytes[0];
         int preSectionLength = battleWorkerMappingBytes[1];
         // map from section index to purpose slot
-        HashMap<Integer,Integer> slotMap = new HashMap();
+        Map<Integer,Integer> slotMap = new HashMap<>();
         for (int i = 2; i < preSectionLength+2; i++) {
             if (battleWorkerMappingBytes[i] != 0xFF) {
                 slotMap.put(battleWorkerMappingBytes[i], i-2);
@@ -467,7 +461,7 @@ public class AtelScriptObject {
                     String p2t = resolveType(p2);
                     boolean p1w = !p1.expression && isWeakType(p1t);
                     boolean p2w = !p2.expression && isWeakType(p2t);
-                    if (opcode == 0x03 || opcode == 0x05) {
+                    if (INFER_BITWISE_OPS_AS_BITFIELDS && (opcode == 0x03 || opcode == 0x05)) {
                         if (p1w) {
                             p1t = opcode == 0x05 && inferIsNegationValue(p1) ? "bitfieldNegated" : "bitfield";
                             p1 = new StackObject(p1t, p1);
@@ -913,13 +907,8 @@ public class AtelScriptObject {
         currentTempITypes.clear();
     }
 
-    public String getScriptStartAddressLine() {
-        return "Script code starts at offset " + String.format("%04X", scriptCodeStartAddress + absoluteOffset);
-    }
-
     public String allLinesString() {
         List<String> lines = new ArrayList<>();
-        lines.add(getScriptStartAddressLine());
         for (int i = 0; i < lineCount; i++) {
             lines.add(fullLineString(i));
         }
@@ -938,7 +927,6 @@ public class AtelScriptObject {
 
     public String allInstructionsAsmString() {
         List<String> lines = new ArrayList<>();
-        lines.add(getScriptStartAddressLine());
         int offset = 0;
         for (ScriptInstruction ins : instructions) {
             String ol = String.format("%-6s", String.format("%04X", offset) + ' ');

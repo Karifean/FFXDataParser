@@ -12,7 +12,7 @@ public abstract class ChunkedFileHelper {
         File file = FileAccessorWithMods.resolveFile(filename, print);
         if (!file.isDirectory()) {
             int[] bytes = fileToBytes(file);
-            return bytesToChunks(bytes, readChunkCount ? read4Bytes(bytes, 0x00) : DEFAULT_ASSUMED_CHUNK_COUNT, DEFAULT_ASSUMED_CHUNK_OFFSET, knownLengths);
+            return bytesToChunks(bytes, readChunkCount ? read4Bytes(bytes, 0x00) - 1 : DEFAULT_ASSUMED_CHUNK_COUNT, DEFAULT_ASSUMED_CHUNK_OFFSET, knownLengths);
         }
         return null;
     }
@@ -54,8 +54,8 @@ public abstract class ChunkedFileHelper {
             return null;
         }
         int chunkCount = assumedChunkCount;
-        int[] offsets = new int[chunkCount];
-        for (int i = 0; i < chunkCount; i++) {
+        int[] offsets = new int[chunkCount + 1];
+        for (int i = 0; i <= chunkCount; i++) {
             int offset = read4Bytes(bytes, i * 4 + chunkOffset);
             if (offset == 0xFFFFFFFF) {
                 chunkCount = i - 1;
@@ -66,7 +66,7 @@ public abstract class ChunkedFileHelper {
         List<Chunk> chunks = new ArrayList<>(chunkCount);
         for (int i = 0; i < chunkCount; i++) {
             int offset = offsets[i];
-            if (offset <= 0) {
+            if (offset == 0) {
                 chunks.add(new Chunk());
             } else {
                 if (knownLengths != null && knownLengths.size() > i && knownLengths.get(i) != null) {
@@ -74,7 +74,7 @@ public abstract class ChunkedFileHelper {
                     chunks.add(new Chunk(bytes, offset, offset + length));
                 } else {
                     int to = -1;
-                    for (int j = i + 1; j < chunkCount; j++) {
+                    for (int j = i + 1; j <= chunkCount; j++) {
                         if (offsets[j] >= offset) {
                             to = offsets[j];
                             break;

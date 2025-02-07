@@ -1,5 +1,6 @@
 package atel.model;
 
+import atel.EncounterFile;
 import atel.EventFile;
 import main.DataAccess;
 import main.StringHelper;
@@ -170,6 +171,15 @@ public class StackObject {
         }
         if ("macroString".equals(type)) {
             return StringHelper.MACRO_LOOKUP.computeIfAbsent(valueSigned, k -> new LocalizedStringObject()).getDefaultContent();
+        }
+        if ("system01String".equals(type)) {
+            EncounterFile system01 = DataAccess.getEncounter("system_01");
+            if (system01 != null && system01.strings != null && system01.strings.size() > valueSigned) {
+                String targetString = system01.strings.get(valueSigned).getDefaultContent();
+                String nullSafeString = targetString != null ? targetString : "null";
+                String noLineBreakString = nullSafeString.replace("\n", "\\n");
+                return '"' + noLineBreakString + '"' + hexSuffix;
+            }
         }
         if ("localString".equals(type)) {
             AtelScriptObject parentScript = parentWorker != null ? parentWorker.parentScript : null;

@@ -18,41 +18,52 @@ public class EncounterFile {
     public AtelScriptObject encounterScript;
     public FormationDataObject formation;
     public BattleAreasPositionsDataObject battleAreasPositions;
-    Chunk scriptChunk;
+    int[] scriptBytes;
     int[] workerMappingBytes;
     int[] formationBytes;
     int[] battleAreasPositionsBytes;
-    int[] textBytes;
+    int[] ftcxBytes;
+    int[] englishTextBytes;
+    int[] japaneseTextBytes;
     public List<LocalizedStringObject> strings;
 
     private int chunkCount;
 
-    public EncounterFile(List<Chunk> chunks) {
+    public EncounterFile(List<Chunk> chunks, boolean isInpc) {
         chunkCount = chunks.size();
-        mapChunks(chunks);
+        mapChunks(chunks, isInpc);
         mapObjects();
         mapStrings();
     }
 
-    private void mapChunks(List<Chunk> chunks) {
-        scriptChunk = chunks.get(0);
+    private void mapChunks(List<Chunk> chunks, boolean isInpc) {
+        scriptBytes = chunks.get(0).bytes;
         workerMappingBytes = chunks.get(1).bytes;
         formationBytes = chunks.get(2).bytes;
         battleAreasPositionsBytes = chunks.get(3).bytes;
+        if (chunks.size() > 4) {
+            if (isInpc) {
+                englishTextBytes = chunks.get(4).bytes;
+            } else {
+                japaneseTextBytes = chunks.get(4).bytes;
+            }
+        }
+        if (chunks.size() > 5 && chunks.get(5).offset != 0) {
+            ftcxBytes = chunks.get(5).bytes;
+        }
         if (chunks.size() > 6 && chunks.get(6).offset != 0) {
-            textBytes = chunks.get(6).bytes;
-        } else if (chunks.size() > 4 && chunks.get(4).offset != 0) {
-            textBytes = chunks.get(4).bytes;
+            // Yes, in inpc/.../test00_12.bin, chunks 4 and 6 are apparently identical, both the englishTextBytes
+            englishTextBytes = chunks.get(6).bytes;
         }
     }
 
     private void mapObjects() {
-        if (chunkCount == 5) {
-            return;
-        }
-        encounterScript = new AtelScriptObject(scriptChunk, workerMappingBytes);
+        encounterScript = new AtelScriptObject(scriptBytes, workerMappingBytes);
         if (formationBytes != null && formationBytes.length > 0) {
             formation = new FormationDataObject(formationBytes);
+        }
+        if (chunkCount == 4) {
+            return;
         }
         if (battleAreasPositionsBytes != null && battleAreasPositionsBytes.length > 0) {
             battleAreasPositions = new BattleAreasPositionsDataObject(battleAreasPositionsBytes);
@@ -60,7 +71,7 @@ public class EncounterFile {
     }
 
     private void mapStrings() {
-        List<String> rawStrings = StringHelper.readStringData(textBytes, false);
+        List<String> rawStrings = StringHelper.readStringData(englishTextBytes, false);
         if (rawStrings != null) {
             strings = rawStrings.stream().map(str -> new LocalizedStringObject(DEFAULT_LOCALIZATION, str)).collect(Collectors.toList());
         }
@@ -94,7 +105,7 @@ public class EncounterFile {
     @Override
     public String toString() {
         StringBuilder full = new StringBuilder();
-        if (chunkCount != 8) {
+        if (chunkCount == 4) {
             full.append("Unsafe format - ChunkCount is ").append(chunkCount).append('\n');
         }
         if (formation != null) {

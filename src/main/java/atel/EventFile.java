@@ -20,7 +20,7 @@ public class EventFile implements Nameable {
     public static Map<Integer, String> EVENT_BY_MAP_ID;
 
     public AtelScriptObject eventScript;
-    Chunk scriptChunk;
+    int[] scriptBytes;
     int[] englishTextBytes;
     List<LocalizedStringObject> strings;
 
@@ -31,13 +31,15 @@ public class EventFile implements Nameable {
     }
 
     private void mapChunks(List<Chunk> chunks) {
-        scriptChunk = chunks.get(0);
+        scriptBytes = chunks.get(0).bytes;
         // chunk index 1 seems to be original japanese text?
-        englishTextBytes = chunks.size() > 4 ? chunks.get(4).bytes : null;
+        if (chunks.size() > 4 && chunks.get(4).offset != 0) {
+            englishTextBytes = chunks.get(4).bytes;
+        }
     }
 
     private void mapObjects() {
-        eventScript = new AtelScriptObject(scriptChunk, null);
+        eventScript = new AtelScriptObject(scriptBytes, null);
     }
 
     private void mapStrings() {

@@ -71,7 +71,7 @@ public class DataReadingManager {
         DataAccess.GEAR_SHOPS = readWeaponShops(PATH_ORIGINALS_KERNEL + "arms_shop.bin", false);
         DataAccess.ITEM_SHOPS = readItemShops(PATH_ORIGINALS_KERNEL + "item_shop.bin", false);
         DataAccess.TREASURES = readTreasures(PATH_ORIGINALS_KERNEL + "takara.bin", false);
-        readMonsterFile(PATH_MONSTER_FOLDER, false);
+        readAllMonsters(false);
         if (LOAD_EVENTS_AND_ENCOUNTERS) {
             readAllEvents(false, false);
             readAllEncounters(false);
@@ -261,36 +261,17 @@ public class DataReadingManager {
     }
 
     public static MonsterFile readMonsterFile(String filename, boolean print) {
-        File file = FileAccessorWithMods.getRealFile(filename);
-        if (file.isDirectory()) {
-            String[] contents = file.list();
-            if (contents != null) {
-                Arrays.stream(contents).filter(sf -> !sf.startsWith(".")).sorted().forEach(sf -> readMonsterFile(filename + '/' + sf, print));
-            }
-            return null;
-        } else if (!(filename.endsWith(".bin") || (ALLOW_DAT_FILES && filename.endsWith(".dat")))) {
+        if (!(filename.endsWith(".bin") || (ALLOW_DAT_FILES && filename.endsWith(".dat")))) {
             return null;
         }
         List<Chunk> chunks = ChunkedFileHelper.readGenericChunkedFile(filename, print, null, true);
         if (chunks == null) {
             return null;
         }
-        MonsterFile monsterFile = new MonsterFile(chunks);
-        try {
-            int idx = Integer.parseInt(filename.substring(filename.length() - 7, filename.length() - 4), 10);
-            DataAccess.MONSTERS[idx] = monsterFile;
-        } catch (RuntimeException e) {
-            System.err.println("Got exception while storing monster object (" + filename + ")");
-            e.printStackTrace();
-        }
-        if (print) {
-            monsterFile.parseScript();
-            System.out.println(monsterFile);
-        }
-        return monsterFile;
+        return new MonsterFile(chunks);
     }
 
-    public static EncounterFile readEncounterFile(String filename, final boolean print) {
+    public static EncounterFile readEncounterFile(String filename, final boolean print, final boolean isInpc) {
         if (!(filename.endsWith(".bin") || (ALLOW_DAT_FILES && filename.endsWith(".dat")))) {
             return null;
         }
@@ -302,7 +283,7 @@ public class DataReadingManager {
         if (chunks == null) {
             return null;
         }
-        return new EncounterFile(chunks);
+        return new EncounterFile(chunks, isInpc);
     }
 
     public static EventFile readEventFile(String filename, final boolean print) {
@@ -322,14 +303,38 @@ public class DataReadingManager {
         return new EventFile(chunks);
     }
 
+    public static MonsterFile readMonsterFull(int index, boolean print) {
+        String mIndex = String.format("m%03d", index);
+        String midPath = '_' + mIndex + '/' + mIndex;
+        String originalsPath = PATH_MONSTER_FOLDER + midPath + ".bin";
+        MonsterFile monsterFile = readMonsterFile(originalsPath, print);
+        if (monsterFile == null) {
+            return null;
+        }
+        if (print) {
+            monsterFile.parseScript();
+            System.out.println(monsterFile);
+        }
+        return monsterFile;
+    }
+
+    public static void readAllMonsters(final boolean print) {
+        for (int index = 0; index <= 360; index++) {
+            MonsterFile monsterFile = readMonsterFull(index, print);
+            if (monsterFile != null) {
+                DataAccess.MONSTERS[index] = monsterFile;
+            }
+        }
+    }
+
     public static void readAllEncounters(final boolean print) {
         File encountersFolder = FileAccessorWithMods.getRealFile(PATH_ORIGINALS_ENCOUNTER);
         if (encountersFolder.isDirectory()) {
             String[] contents = encountersFolder.list();
             if (contents != null) {
-                if (print) {
+                /* if (print) {
                     System.out.println("Found encounters: " + String.join(", ", contents));
-                }
+                } */
                 Arrays.stream(contents).filter(sf -> !sf.startsWith(".")).sorted().forEach(sf -> {
                     EncounterFile encounterFile = readEncounterFull(sf, print);
                     if (encounterFile != null) {
@@ -351,12 +356,12 @@ public class DataReadingManager {
     public static EncounterFile readEncounterFull(String btl, boolean print) {
         String endPath = btl + '/' + btl + ".bin";
         String originalsPath = PATH_ORIGINALS_ENCOUNTER + endPath;
-        EncounterFile encounterFile = readEncounterFile(originalsPath, print);
+        EncounterFile encounterFile = readEncounterFile(originalsPath, print, false);
         if (encounterFile == null) {
             return null;
         }
         String internationalPath = PATH_INTERNATIONAL_ENCOUNTER + endPath;
-        EncounterFile internationalFile = readEncounterFile(internationalPath, false);
+        EncounterFile internationalFile = readEncounterFile(internationalPath, false, true);
         if (internationalFile != null && internationalFile.strings != null) {
             if (encounterFile.strings == null) {
                 encounterFile.strings = new ArrayList<>();
@@ -383,9 +388,9 @@ public class DataReadingManager {
         if (eventsFolder.isDirectory()) {
             String[] contents = eventsFolder.list();
             if (contents != null) {
-                if (print) {
+                /* if (print) {
                     System.out.println("Found folders: " + String.join(", ", contents));
-                }
+                } */
                 List<String> eventFiles = Arrays.stream(contents)
                         .filter(sf -> !sf.startsWith(".") && (!skipBlitzballEvents || !sf.equals("bl")))
                         .sorted()
@@ -395,9 +400,9 @@ public class DataReadingManager {
                         .filter(sf -> !sf.startsWith("."))
                         .sorted()
                         .collect(Collectors.toList());
-                if (print) {
+                /* if (print) {
                     System.out.println("Found events: " + String.join(", ", eventFiles));
-                }
+                } */
                 eventFiles.forEach(ev -> {
                     EventFile eventFile = readEventFull(ev, print);
                     DataAccess.EVENTS.put(ev, eventFile);

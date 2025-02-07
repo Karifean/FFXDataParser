@@ -971,7 +971,7 @@ public abstract class ScriptFuncLib {
         putUnknownFunc(0x70A2, "btlMotionRead", 1);
         putUnknownFunc(0x70A3, "btlSetMotionAbs", 1);
         putUnknownFunc(0x70A4, "btlMotionDispose", 0);
-        putUnknownFunc(0x70A5, "btlSetMapCenter", 3);
+        putFuncWithIdx(0x70A5, new ScriptFunc(null, "unknown", "btlSetMapCenter", p("x", "float"), p("y", "float"), p("z", "float")));
         putUnknownFunc(0x70A6, "btlSetEscape", 1);
         putUnknownFunc(0x70A7, "btlGetMotionData", "float", 2);
         putFuncWithIdx(0x70A8, new ScriptFuncAccessor("setMotionValue", "btlActor", "btlSetMotionData", "=", "motionProperty"));
@@ -1043,7 +1043,7 @@ public abstract class ScriptFuncLib {
         putFuncWithIdx(0x70EA, new ScriptFunc("setYojimboHireAnswer", "unknown", "btlSetYoujinboType", p("int")));
         putUnknownFunc(0x70EB, "btlGetYoujinboRandom", 0);
         putUnknownFunc(0x70EC, "btlGetItemNum", 1);
-        putFuncWithIdx(0x70ED, new ScriptFunc("giveItem", "unknown", "btlGetItem", p("item", "move"), p("quantity", "int")));
+        putFuncWithIdx(0x70ED, new ScriptFunc("giveItem", "unknown", "btlGetItem", p("item", "move"), p("amount", "int")));
         putFuncWithIdx(0x70EE, new ScriptFunc("RollYojimboMove", "move", "btlGetYoujinboCommand", p("motivation", "int"), p("unknown")));
         putFuncWithIdx(0x70EF, new ScriptFunc(null, "unknown", "btlSetEffSignal", p("btlActor"), p(2)));
         putUnknownFunc(0x70F0, "btlGetCameraCount", "float", 0);
@@ -1092,7 +1092,7 @@ public abstract class ScriptFuncLib {
         putUnknownFunc(0x711B, "btlSetCameraStandard", 0);
         putUnknownFunc(0x711C, "btlSetGameOverEffNum", 1);
         putUnknownFunc(0x711D, "btlSetShadowHeight", 1);
-        putFuncWithIdx(0x7120, new ScriptFunc("displayBattleStringSimple?", "unknown", null, p("boxIndex", "int"), p("string", "localString")));
+        putFuncWithIdx(0x7120, new ScriptFunc("displayBattleSystem01String?", "unknown", null, p("boxIndex", "int"), p("string", "system01String")));
         putUnknownFunc(0x7123, 1);
         putUnknownFunc(0x7124, 1);
         putUnknownFunc(0x7125, 0);
@@ -1114,22 +1114,22 @@ public abstract class ScriptFuncLib {
         putFuncWithIdx(0x800C, new ScriptFunc("setGfxEnabledGlobal", "unknown", null, p("enabled", "bool"))); // controls all gfx rendering/updates 
         putFuncWithIdx(0x800D, new ScriptFunc("setGfxVisibility", "unknown", null, p("gfxIndex", "int"), p("visible", "bool")));
         // next several are about the image planes used for forced-perspective areas
-        putUnknownFunc(0x800F, 1); // clear image hidden flag
-        putUnknownFunc(0x8010, 1); // set image hidden flag
-        putUnknownFunc(0x8011, 3); 
+        putFuncWithIdx(0x800F, new ScriptFunc("?show2DLayer", "unknown", null, p("layerIndex", "int"))); // clear image hidden flag
+        putFuncWithIdx(0x8010, new ScriptFunc("?hide2DLayer", "unknown", null, p("layerIndex", "int"))); // set image hidden flag
+        putFuncWithIdx(0x8011, new ScriptFunc("?set2DLayerPos", "unknown", null, p("layerIndex", "int"), p("?x", "int"), p("?y", "int")));
         putUnknownFunc(0x8014, 2); // set image depth
-        putUnknownFunc(0x801D, 2);
-        putUnknownFunc(0x801E, 1);
-        putUnknownFunc(0x801F, 1);
-        putUnknownFunc(0x8020, 1);
-        putUnknownFunc(0x8021, 1);
-        putUnknownFunc(0x8022, 2);
+        putFuncWithIdx(0x801D, new ScriptFunc("?set2DLayerTexture", "unknown", null, p("layerIndex", "int"), p("textureIndex", "int")));
+        putFuncWithIdx(0x801E, new ScriptFunc(p("layerIndex", "int")));
+        putFuncWithIdx(0x801F, new ScriptFunc(p("layerIndex", "int")));
+        putFuncWithIdx(0x8020, new ScriptFunc(p("layerIndex", "int")));
+        putFuncWithIdx(0x8021, new ScriptFunc(p("layerIndex", "int")));
+        putFuncWithIdx(0x8022, new ScriptFunc(p("layerIndex", "int"), p(2)));
         putUnknownFunc(0x8026, 5);
         putUnknownFunc(0x802C, 0);
         putUnknownFunc(0x802D, 0);
-        putUnknownFunc(0x802E, 2);
-        putUnknownFunc(0x802F, 1);
-        putUnknownFunc(0x8030, 2); // set image opacity
+        putFuncWithIdx(0x802E, new ScriptFunc(p("layerIndex", "int"), p(2)));
+        putFuncWithIdx(0x802F, new ScriptFunc(p("layerIndex", "int")));
+        putFuncWithIdx(0x8030, new ScriptFunc("?set2DLayerOpacity", "unknown", null, p("layerIndex", "int"), p("opacity", "int"))); // set image opacity
         putUnknownFunc(0x8032, 1); // minimap related?
         putFuncWithIdx(0x8035, new ScriptFunc("setGfxGroupActive", "unknown", null, p("group", "int"), p("active", "bool")));
         putFuncWithIdx(0x8036, new ScriptFunc("setGfxGroupVisibility", "unknown", null, p("group", "int"), p("visible", "bool")));
@@ -1163,12 +1163,12 @@ public abstract class ScriptFuncLib {
         putUnknownFunc(0x8067, 4);
         putUnknownFunc(0x806A, 1); // set an image plane's map group
         putUnknownFunc(0x806B, 1); // totally empty?!
-        putFuncWithIdx(0xB000, new ScriptFunc("loadFMV", "unknown", null, p("fmv"), p("flags", "bitfield")));
-        putFuncWithIdx(0xB001, new ScriptFunc("?unloadFMV", "unknown", null, true));
+        putFuncWithIdx(0xB000, new ScriptFunc("loadFmv", "unknown", null, p("fmv"), p("flags", "bitfield")));
+        putFuncWithIdx(0xB001, new ScriptFunc("?unloadFmv", "unknown", null, true));
         putUnknownFunc(0xB002, 0);
-        putFuncWithIdx(0xB003, new ScriptFunc("CurrentPlaybackProgress", "int", null, false));
-        putFuncWithIdx(0xB004, new ScriptFunc("?awaitFMV", "unknown", null, true));
-        putFuncWithIdx(0xB009, new ScriptFunc("?playLoadedFMV", "unknown", null, true));
+        putFuncWithIdx(0xB003, new ScriptFunc("CurrentFmvPlaybackProgress", "int", null, false));
+        putFuncWithIdx(0xB004, new ScriptFunc("?awaitFmv", "unknown", null, true));
+        putFuncWithIdx(0xB009, new ScriptFunc("?playLoadedFmv", "unknown", null, true));
         putUnknownFunc(0xB00A, 2);
         putUnknownFunc(0xB00B, 0);
         putUnknownFunc(0xB00C, 0);

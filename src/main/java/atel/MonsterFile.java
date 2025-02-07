@@ -15,8 +15,8 @@ public class MonsterFile implements Nameable {
     public AtelScriptObject monsterAi;
     public MonsterStatDataObject monsterStatData;
     public MonsterLootDataObject monsterLootData;
-    Chunk scriptChunk;
-    Chunk audioChunkApparently;
+    int[] scriptBytes;
+    int[] audioBytesApparently;
     int[] workerMappingBytes;
     int[] statBytes;
     int[] lootBytes;
@@ -28,16 +28,16 @@ public class MonsterFile implements Nameable {
     }
 
     private void mapChunks(List<Chunk> chunks) {
-        scriptChunk = chunks.get(0);
+        scriptBytes = chunks.get(0).bytes;
         workerMappingBytes = chunks.get(1).bytes;
         statBytes = chunks.get(2).bytes;
         lootBytes = chunks.get(4).bytes;
-        audioChunkApparently = chunks.get(5);
+        audioBytesApparently = chunks.get(5).bytes;
         englishTextBytes = chunks.get(6).bytes;
     }
 
     private void mapObjects() {
-        monsterAi = new AtelScriptObject(scriptChunk, workerMappingBytes);
+        monsterAi = new AtelScriptObject(scriptBytes, workerMappingBytes);
         monsterStatData = new MonsterStatDataObject(statBytes, Arrays.copyOfRange(statBytes, MonsterStatDataObject.LENGTH, statBytes.length), "us");
         monsterLootData = new MonsterLootDataObject(lootBytes);
         MonsterStatDataObject englishTextStatData = new MonsterStatDataObject(englishTextBytes, Arrays.copyOfRange(englishTextBytes, MonsterStatDataObject.LENGTH, englishTextBytes.length), "us");
