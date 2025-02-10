@@ -177,7 +177,7 @@ public class StackObject {
             if (system01 != null && system01.strings != null && system01.strings.size() > valueSigned) {
                 String targetString = system01.strings.get(valueSigned).getDefaultContent();
                 String nullSafeString = targetString != null ? targetString : "null";
-                String noLineBreakString = nullSafeString.replace("\n", "\\n");
+                String noLineBreakString = nullSafeString.replace("\n", "{\\n}");
                 return '"' + noLineBreakString + '"' + hexSuffix;
             }
         }
@@ -186,7 +186,7 @@ public class StackObject {
             if (parentScript != null && parentScript.strings != null && parentScript.strings.size() > valueSigned) {
                 String targetString = parentScript.strings.get(valueSigned).getDefaultContent();
                 String nullSafeString = targetString != null ? targetString : "null";
-                String noLineBreakString = nullSafeString.replace("\n", "\\n");
+                String noLineBreakString = nullSafeString.replace("\n", "{\\n}");
                 return '"' + noLineBreakString + '"' + hexSuffix;
             }
         }
@@ -288,7 +288,7 @@ public class StackObject {
         String format = value >= 0x10000 ? "b%08X" : "b%04X";
         for (int bit = 0x01; bit <= value && bit > 0; bit = bit << 1) {
             if ((value & bit) != 0) {
-                ScriptField field = map.getOrDefault(bit, new ScriptField(String.format(format, bit), type).withIdx(value));
+                ScriptField field = map.getOrDefault(bit, new ScriptField(String.format(format, bit), type, null, value));
                 bits.add(field);
             }
         }
@@ -311,7 +311,7 @@ public class StackObject {
         int max = valueUnsigned >= 0x10000 ? 0x80000000 : 0x8000;
         for (int bit = 0x01; true; bit = bit << 1) {
             if ((valueUnsigned & bit) == 0) {
-                ScriptField field = map.getOrDefault(bit, new ScriptField(String.format(format, bit), type).withIdx(valueUnsigned));
+                ScriptField field = map.getOrDefault(bit, new ScriptField(String.format(format, bit), type, null, valueUnsigned));
                 bits.add(field);
             }
             if (bit == max) {

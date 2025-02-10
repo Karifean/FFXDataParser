@@ -127,15 +127,14 @@ public class FormationDataObject {
     }
 
     private static String formatUnknownByte(int bt) {
-        return String.format("%02X", bt) + '=' + String.format("%03d", bt) + '(' + String.format("%8s", Integer.toBinaryString(bt)).replace(' ', '0') + ')';
+        return StringHelper.formatHex2(bt) + '=' + String.format("%03d", bt) + '(' + String.format("%8s", Integer.toBinaryString(bt)).replace(' ', '0') + ')';
     }
 
     private static String writeMonster(int monsterIndex) {
         MonsterFile monster = DataAccess.getMonster(monsterIndex);
         String monsterIdxString = "m" + String.format("%03d", monsterIndex - 0x1000);
         String monsterName = monsterIdxString + (monster != null ? " - " + monster.getName() : "");
-        String hexSuffix = " [" + String.format("%04X", monsterIndex) + "h]";
-        return monsterName + hexSuffix;
+        return monsterName + StringHelper.hex4Suffix(monsterIndex);
     }
 
     private int read2Bytes(int offset) {

@@ -127,7 +127,7 @@ public class DataReadingManager {
         DataFileReader<AbilityDataObject> reader = new DataFileReader<>((bytes, stringBytes) -> new AbilityDataObject(bytes, stringBytes, localization, group)) {
             @Override
             public String indexWriter(int idx) {
-                return String.format("%04X", idx + group * 0x1000);
+                return StringHelper.formatHex4(idx + group * 0x1000);
             }
         };
         List<AbilityDataObject> list = reader.readGenericDataFile(filename, print);
@@ -142,7 +142,7 @@ public class DataReadingManager {
         DataFileReader<X2AbilityDataObject> reader = new DataFileReader<>((b, sb) -> new X2AbilityDataObject(b, sb, localization)) {
             @Override
             public String indexWriter(int idx) {
-                return String.format("%04X", idx);
+                return StringHelper.formatHex4(idx);
             }
         };
         List<X2AbilityDataObject> list = reader.readGenericX2DataFile(filename, print);
@@ -175,7 +175,7 @@ public class DataReadingManager {
         DataFileReader<KeyItemDataObject> reader = new DataFileReader<>((int[] bytes, int[] stringBytes) -> new KeyItemDataObject(bytes, stringBytes, localization)) {
             @Override
             public String indexWriter(int idx) {
-                return "A0" + String.format("%02X", idx);
+                return "A0" + StringHelper.formatHex2(idx);
             }
         };
         List<KeyItemDataObject> list = reader.readGenericDataFile(filename, print);
@@ -249,7 +249,7 @@ public class DataReadingManager {
         DataFileReader<GearAbilityDataObject> reader = new DataFileReader<>((int[] bytes, int[] stringBytes) -> new GearAbilityDataObject(bytes, stringBytes, localization)) {
             @Override
             public String indexWriter(int idx) {
-                return "80" + String.format("%02X", idx);
+                return "80" + StringHelper.formatHex2(idx);
             }
         };
         List<GearAbilityDataObject> list = reader.readGenericDataFile(filename, print);

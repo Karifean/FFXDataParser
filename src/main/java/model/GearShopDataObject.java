@@ -1,6 +1,7 @@
 package model;
 
 import main.DataAccess;
+import main.StringHelper;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -39,7 +40,7 @@ public class GearShopDataObject implements Nameable {
         for (int i = 0; i < 0x10; i++) {
             int idx = offeredGearIndexes[i];
             if (idx != 0x00) {
-                String idxHexSuffix = " [" + String.format("%02X", idx) + "h]";
+                String idxHexSuffix = StringHelper.hex2Suffix(idx);
                 GearDataObject gear = DataAccess.BUYABLE_GEAR != null ? DataAccess.BUYABLE_GEAR[idx] : null;
                 list.add("Slot #" + i + ": " + (gear != null ? gear.toString() : "null") + idxHexSuffix);
             }

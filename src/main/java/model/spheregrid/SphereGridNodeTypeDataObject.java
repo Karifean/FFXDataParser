@@ -80,14 +80,14 @@ public class SphereGridNodeTypeDataObject implements Nameable {
     @Override
     public String toString() {
         List<String> list = new ArrayList<>();
-        list.add("Effects: " + StackObject.bitfieldToString("sgNodeEffectsBitfield", nodeEffectBitfield) + " [" + String.format("%04X", nodeEffectBitfield) + "h]");
+        list.add("Effects: " + StackObject.bitfieldToString("sgNodeEffectsBitfield", nodeEffectBitfield) + StringHelper.hex4Suffix(nodeEffectBitfield));
         if (learnedMove > 0) {
             list.add("Teaches Move: " + asMove(learnedMove));
         }
         if (increaseAmount > 0) {
-            list.add("Increase=" + increaseAmount + " [" + String.format("%04X", increaseAmount) + "h]");
+            list.add("Increase=" + StringHelper.hex4WithSuffix(increaseAmount));
         }
-        list.add("Appearance?=" + appearanceType + " [" + String.format("%04X", appearanceType) + "h]");
+        list.add("Appearance?=" + StringHelper.hex4WithSuffix(appearanceType));
         String full = list.stream().filter(s -> s != null && !s.isBlank()).collect(Collectors.joining(", "));
         String descriptionStr = (descriptionOffset > 0 ? description.getDefaultContent() : "");
         return String.format("%-20s", getName()) + " { " + full + " } " + descriptionStr;
@@ -106,10 +106,10 @@ public class SphereGridNodeTypeDataObject implements Nameable {
 
     private static String asMove(int idx) {
         AbilityDataObject move = DataAccess.getMove(idx);
-        return (move != null ? move.name : "null") + " [" + String.format("%04X", idx) + "h]";
+        return (move != null ? move.name : "null") + StringHelper.hex4Suffix(idx);
     }
 
     private static String formatUnknownByte(int bt) {
-        return String.format("%02X", bt) + '=' + String.format("%03d", bt) + '(' + String.format("%8s", Integer.toBinaryString(bt)).replace(' ', '0') + ')';
+        return StringHelper.formatHex2(bt) + '=' + String.format("%03d", bt) + '(' + String.format("%8s", Integer.toBinaryString(bt)).replace(' ', '0') + ')';
     }
 }

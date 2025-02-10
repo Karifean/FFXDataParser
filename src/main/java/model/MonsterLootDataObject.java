@@ -2,6 +2,7 @@ package model;
 
 import main.DataAccess;
 import atel.model.StackObject;
+import main.StringHelper;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -225,16 +226,16 @@ public class MonsterLootDataObject {
 
     private static String asGearAbility(int idx) {
         GearAbilityDataObject abil = DataAccess.getGearAbility(idx);
-        return (abil != null ? abil.getName() : "null") + " [" + String.format("%04X", idx) + "h]";
+        return (abil != null ? abil.getName() : "null") + StringHelper.hex4Suffix(idx);
     }
 
     private static String asMove(int idx) {
         AbilityDataObject move = DataAccess.getMove(idx);
-        return (move != null ? move.name : "null") + " [" + String.format("%04X", idx) + "h]";
+        return (move != null ? move.name : "null") + StringHelper.hex4Suffix(idx);
     }
 
     private static String formatUnknownByte(int bt) {
-        return String.format("%02X", bt) + '=' + String.format("%03d", bt) + '(' + String.format("%8s", Integer.toBinaryString(bt)).replace(' ', '0') + ')';
+        return StringHelper.formatHex2(bt) + '=' + String.format("%03d", bt) + '(' + String.format("%8s", Integer.toBinaryString(bt)).replace(' ', '0') + ')';
     }
 
 }

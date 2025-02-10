@@ -1,5 +1,7 @@
 package atel.model;
 
+import main.StringHelper;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -102,7 +104,7 @@ public class ScriptVariable {
             if ("int8".equals(type) && value >= 0x80 && value <= 0xFF) {
                 value -= 0x100;
             }
-            String content = value + " [" + String.format("%04X", value) + "h]";
+            String content = value + " [" + StringHelper.formatHex4(value) + "h]";
             StackObject obj = new StackObject(parentWorker, null, type, false, content, value);
             values.add(obj);
         }
@@ -186,12 +188,12 @@ public class ScriptVariable {
     }
 
     public String getVarLabel() {
-        return "var" + String.format("%02X", index);
+        return "var" + StringHelper.formatHex2(index);
     }
 
     public String getDereference() {
         String loc = locationToString();
-        String arrayIndex = "[" + String.format("%04X", offset) + "]";
+        String arrayIndex = "[" + StringHelper.formatHex4(offset) + "]";
         return loc + arrayIndex;
     }
 

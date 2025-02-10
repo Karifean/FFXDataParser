@@ -319,10 +319,14 @@ public abstract class ScriptConstants {
         putSaveDataVariable(0x0A3C, "JechtShotMinigameCleared", "bool");
         putSaveDataVariable(0x0A49, "WorldChampionPrerequisitesCleared", "bool");
         putSaveDataVariable(0x0A4A, "SaveSphereInstructionsSeen", "int");
+        putSaveDataVariable(0x0A4C, "CelestialMirrorObtained", "bool");
+        putSaveDataVariable(0x0A4D, "CelestialsObtainedFlags", "int");
         putSaveDataVariable(0x0A60, "AlBhedPrimersCollectedCount", "int");
         putSaveDataVariable(0x0A68, "BlitzballMenuReturnMap", "int");
         putSaveDataVariable(0x0A6C, "BlitzballMenuReturnEntrance", "int");
         putSaveDataVariable(0x0A70, "AnimaSealsUnlocked", "int");
+        putSaveDataVariable(0x0A80, "CelestialsHalfPoweredFlags", "int");
+        putSaveDataVariable(0x0A81, "CelestialsFullPoweredFlags", "int");
         putSaveDataVariable(0x0A83, "isRedButterflyEncounter", "bool");
         putSaveDataVariable(0x0A88, "BlitzballTeamPlayerCount", "int", "blitzballTeam");
         putSaveDataVariable(0x0A93, "JechtSpheresCollectedCount", "int");
@@ -1269,20 +1273,12 @@ public abstract class ScriptConstants {
     }
 
     private static void putEnum(String type, int idx, String name, String internalName) {
-        ScriptField field = new ScriptField(name, type, internalName);
-        field.idx = idx;
-        if (idx < 0) {
-            field.hexFormatter = (s) -> {
-                String raw = String.format("%04X", s);
-                return raw.startsWith("FFFF") && raw.length() == 8 ? raw.substring(4) : raw;
-            };
-        }
+        ScriptField field = new ScriptField(name, type, internalName, idx);
         getEnumMap(type).put(idx, field);
     }
 
     private static void putCompOperator(int idx, String name, String type, String internalName) {
-        ScriptField field = new ScriptField(name, type, internalName);
-        field.idx = idx;
+        ScriptField field = new ScriptField(name, type, internalName, idx);
         COMP_OPERATORS.put(idx, field);
     }
 
@@ -1309,14 +1305,12 @@ public abstract class ScriptConstants {
     }
 
     private static void putBattleActorProperty(int idx, String name, String type, String internalName) {
-        ScriptField field = new ScriptField(name, type, internalName);
-        field.idx = idx;
+        ScriptField field = new ScriptField(name, type, internalName, idx);
         getEnumMap("btlActorProperty").put(idx, field);
     }
 
     private static void putMotionProperty(int idx, String name, String internalName) {
-        ScriptField field = new ScriptField(name, "float", internalName);
-        field.idx = idx;
+        ScriptField field = new ScriptField(name, "float", internalName, idx);
         getEnumMap("motionProperty").put(idx, field);
     }
 

@@ -25,6 +25,7 @@ public abstract class StringHelper {
     public static final String ANSI_WHITE = "\u001B[37m";
 
     public static final boolean COLORS_USE_CONSOLE_CODES = false;
+    public static final boolean WRITE_LINEBREAKS_AS_COMMANDS = false;
     public static final Map<Integer, Character> BIN_LOOKUP = new HashMap<>();
     public static final Map<Character, Integer> BIN_REV_LOOKUP = new HashMap<>();
     public static final Map<Integer, LocalizedStringObject> MACRO_LOOKUP = new HashMap<>();
@@ -43,6 +44,14 @@ public abstract class StringHelper {
 
     public static String hex4Suffix(int fourByteValue) {
         return " [" + formatHex4(fourByteValue) + "h]";
+    }
+
+    public static String hex2WithSuffix(int twoByteValue) {
+        return twoByteValue + hex2Suffix(twoByteValue);
+    }
+
+    public static String hex4WithSuffix(int fourByteValue) {
+        return fourByteValue + hex4Suffix(fourByteValue);
     }
 
     public static Integer charToByte(char chr) {
@@ -75,7 +84,7 @@ public abstract class StringHelper {
             case 0x97 -> "PINK";
             case 0xA1 -> "OL_PURPLE";
             case 0xB1 -> "OL_CYAN";
-            default -> String.format("%02X", hex);
+            default -> StringHelper.formatHex2(hex);
         };
     }
 
@@ -189,7 +198,7 @@ public abstract class StringHelper {
                 int options = hasOptions ? bytes[addr + 0x03] : 0;
                 if (print) {
                     String choosable = options > 0 ? " (" + options + " selectable)" : "";
-                    System.out.print("String #" + i + " [" + String.format("%04X", offset) + "h]" + choosable + ":");
+                    System.out.print("String #" + i + StringHelper.hex4Suffix(offset) + choosable + ":");
                 }
                 String out = getStringAtLookupOffset(bytes, offset);
                 if (print) {
@@ -201,7 +210,7 @@ public abstract class StringHelper {
                     int clonedSomethingElse = bytes[addr + 0x06];
                     int clonedChoosableOptions = bytes[addr + 0x07];
                     if (offset != clonedOffset) {
-                        System.err.println("offset " + i + " not cloned: offset " + String.format("%04X", offset) + "; other " + String.format("%04X", clonedOffset));
+                        System.err.println("offset " + i + " not cloned: offset " + StringHelper.formatHex4(offset) + "; other " + StringHelper.formatHex4(clonedOffset));
                     } else if (options != clonedChoosableOptions) {
                         System.err.println("options " + i + " not cloned: original " + options + "; other " + clonedChoosableOptions);
                     } else if (somethingElse != clonedSomethingElse) {
@@ -237,11 +246,15 @@ public abstract class StringHelper {
             } else if (idx == 0x01) {
                 out.append("{PAUSE}");
             } else if (idx == 0x03) {
-                out.append('\n');
+                out.append(WRITE_LINEBREAKS_AS_COMMANDS ? "{\\n}" : '\n');
+            } else if (idx == 0x07) {
+                offset++;
+                int pixels = table[offset] - 0x30;
+                out.append("{SPACE:").append(StringHelper.formatHex2(pixels)).append('}');
             } else if (idx == 0x09) {
                 offset++;
                 int varIdx = table[offset] - 0x30;
-                out.append("{BOX:").append(String.format("%02X", varIdx)).append('}');
+                out.append("{TIME:").append(StringHelper.formatHex2(varIdx)).append('}');
             } else if (idx == 0x0A) {
                 offset++;
                 int clr = table[offset];
@@ -250,24 +263,29 @@ public abstract class StringHelper {
             } else if (idx == 0x0B) {
                 offset++;
                 int varIdx = table[offset] - 0x30;
-                out.append("{CTRL:").append(String.format("%02X", varIdx)).append('}');
+                out.append("{CTRL:").append(StringHelper.formatHex2(varIdx)).append('}');
             } else if (idx == 0x10) {
                 offset++;
-                int choiceIdx = table[offset] - 0x30;
-                out.append("{CHOICE").append(String.format("%02X", choiceIdx)).append('}');
+                int rawValue = table[offset];
+                if (rawValue == 0xFF) {
+                    out.append("{CHOICE-END}");
+                } else {
+                    int choiceIdx = rawValue - 0x30;
+                    out.append("{CHOICE:").append(StringHelper.formatHex2(choiceIdx)).append('}');
+                }
             } else if (idx == 0x12) {
                 offset++;
                 int varIdx = table[offset] - 0x30;
-                out.append("{VAR").append(String.format("%02X", varIdx)).append('}');
+                out.append("{VAR:").append(StringHelper.formatHex2(varIdx)).append('}');
             } else if (idx == 0x13 && table[offset+1] <= 0x43) {
                 offset++;
                 int pcIdx = table[offset] - 0x30;
-                out.append("{PC").append(String.format("%02X", pcIdx)).append(':').append(getPlayerChar(pcIdx)).append('}');
+                out.append("{PC:").append(StringHelper.formatHex2(pcIdx)).append(':').append(getPlayerChar(pcIdx)).append('}');
             } else if (idx >= 0x13 && idx <= 0x22) {
                 int section = idx - 0x13;
                 offset++;
                 int line = table[offset] - 0x30;
-                out.append("{MCR:s").append(String.format("%02X", section)).append('l').append(String.format("%02X", line));
+                out.append("{MCR:s").append(StringHelper.formatHex2(section)).append('l').append(StringHelper.formatHex2(line));
                 if (!MACRO_LOOKUP.isEmpty()) {
                     out.append(':');
                     int index = section * 0x100 + line;
@@ -281,14 +299,14 @@ public abstract class StringHelper {
             } else if (idx == 0x23) {
                 offset++;
                 int varIdx = table[offset] - 0x30;
-                out.append("{KEY:").append(String.format("%02X", varIdx));
+                out.append("{KEY:").append(StringHelper.formatHex2(varIdx));
                 KeyItemDataObject keyItem = DataAccess.getKeyItem(varIdx + 0xA000);
                 if (keyItem != null) {
                     out.append(':').append('"').append(keyItem.getName()).append('"');
                 }
                 out.append('}');
             } else {
-                out.append("{CMD").append(StringHelper.formatHex2(idx)).append('}');
+                out.append("{CMD:").append(StringHelper.formatHex2(idx)).append('}');
             }
             offset++;
             if (offset >= table.length) {
@@ -346,33 +364,54 @@ public abstract class StringHelper {
         String cmd = substring.substring(1, endIndex);
         if (cmd.equals("PAUSE")) {
             return List.of(0x01);
-        } else if (cmd.startsWith("BOX:")) {
+        } else if (cmd.equals("\\n")) {
+            return List.of(0x03);
+        } else if (cmd.startsWith("SPACE:")) {
+            int pixels = Integer.parseInt(cmd.substring(9), 16) + 0x30;
+            return List.of(0x07, pixels);
+        } else if (cmd.startsWith("TIME:")) {
             int boxType = Integer.parseInt(cmd.substring(4), 16) + 0x30;
             return List.of(0x09, boxType);
         } else if (cmd.startsWith("CLR:")) {
             return List.of(0x0A, colorToByte(cmd.substring(4)));
+        } else if (cmd.startsWith("COLOR:")) {
+            return List.of(0x0A, colorToByte(cmd.substring(6)));
         } else if (cmd.startsWith("CTRL:")) {
             int ctrlIdx = Integer.parseInt(cmd.substring(5), 16) + 0x30;
             return List.of(0x0B, ctrlIdx);
-        } else if (cmd.startsWith("CHOICE")) {
-            int choiceIdx = Integer.parseInt(cmd.substring(6), 16) + 0x30;
+        } else if (cmd.equals("CHOICE-END")) {
+            return List.of(0x10, 0xFF);
+        } if (cmd.startsWith("CHOICE:")) {
+            int choiceIdx = Integer.parseInt(cmd.substring(7), 16) + 0x30;
             return List.of(0x10, choiceIdx);
-        } else if (cmd.startsWith("VAR")) {
-            int varIdx = Integer.parseInt(cmd.substring(3), 16) + 0x30;
+        } else if (cmd.startsWith("VAR:")) {
+            int varIdx = Integer.parseInt(cmd.substring(4), 16) + 0x30;
             return List.of(0x12, varIdx);
-        } else if (cmd.startsWith("PC")) {
-            int pc = Integer.parseInt(cmd.substring(2, 4), 16) + 0x30;
+        } else if (cmd.startsWith("PC:")) {
+            int pc = Integer.parseInt(cmd.substring(3, 5), 16) + 0x30;
             return List.of(0x13, pc);
-        } else if (cmd.startsWith("MCR")) {
+        } else if (cmd.startsWith("MCR:")) {
             int section = Integer.parseInt(cmd.substring(5, 7), 16) + 0x13;
             int line = Integer.parseInt(cmd.substring(8, 10), 16) + 0x30;
             return List.of(section, line);
-        } else if (cmd.startsWith("KEY")) {
+        } else if (cmd.startsWith("KEY:")) {
             int keyItemIdx = Integer.parseInt(cmd.substring(4, 6), 16) + 0x30;
             return List.of(0x23, keyItemIdx);
         } else {
             return null;
         }
+    }
+
+    public static int getChoicesInString(String string) {
+        int choices = 0;
+        int choiceOffset = 0;
+        while (choiceOffset != -1) {
+            choiceOffset = string.indexOf("{CHOICE" + StringHelper.formatHex2(choices) + "}");
+            if (choiceOffset != -1) {
+                choices++;
+            }
+        }
+        return choices;
     }
 
     public static void initialize() {

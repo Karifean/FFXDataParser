@@ -496,13 +496,13 @@ public class AbilityDataObject implements Nameable, Writable {
         list.add(ifG0(shatterChance, "Shatter=", "%"));
         list.add(showSpellcastAura ? "Spellcast-Aura" : "");
         list.add("anim=" + casterAnimation + (useTier1CastAnimation ? "L" : "") + (useTier3CastAnimation ? "H" : "") +
-                "/" + String.format("%04X", anim1) +
-                "/" + String.format("%04X", anim2));
+                "/" + StringHelper.formatHex4(anim1) +
+                "/" + StringHelper.formatHex4(anim2));
         list.add(ifG0(alwaysZero5E, "Byte5E=", ""));
         list.add(ifG0(alwaysZero5F, "Byte5F=", ""));
         if (considerSphereType && sphereTypeForSphereGrid != 0xFF) {
             SphereGridSphereTypeDataObject sgSphereType = DataAccess.SG_SPHERE_TYPES[sphereTypeForSphereGrid];
-            list.add("SphereGridRole=" + sphereTypeForSphereGrid + " [" + String.format("%02X", sphereTypeForSphereGrid) + "h] " + (sgSphereType != null ? sgSphereType : "null"));
+            list.add("SphereGridRole=" + StringHelper.hex2WithSuffix(sphereTypeForSphereGrid) + " " + (sgSphereType != null ? sgSphereType : "null"));
         }
         String full = list.stream().filter(s -> s != null && !s.isBlank()).collect(Collectors.joining(", "));
         String descriptionStr = descriptionOffset > 0 ? description.getLocalizedContent(localization) : "";
@@ -523,7 +523,7 @@ public class AbilityDataObject implements Nameable, Writable {
                 damageClassString += "CTB/";
             }
             if (damageClassUnknown) {
-                damageClassString += "Unknown(" + String.format("%02X", damageClass) + ")/";
+                damageClassString += "Unknown(" + StringHelper.formatHex2(damageClass) + ")/";
             }
             damageClassString = damageClassString.substring(0, damageClassString.length() - 1);
             return damageType + ' ' + damageClassString + ' ' + (isHealing ? "Restore" : (absorbDamage ? "Absorb" : "Damage"));
@@ -568,7 +568,7 @@ public class AbilityDataObject implements Nameable, Writable {
             statBuffTypes += "Jinx/";
         }
         if (statBuffUnused) {
-            statBuffTypes += "UnusedBuffsByte-" + String.format("%02X", statBuffFlags) + "/";
+            statBuffTypes += "UnusedBuffsByte-" + StringHelper.formatHex2(statBuffFlags) + "/";
         }
         if (statBuffTypes.isEmpty()) {
             statBuffTypes = "NullBuff";
@@ -720,7 +720,7 @@ public class AbilityDataObject implements Nameable, Writable {
         if (specialBuffAlwaysCrit) { buffs.append(" Always Crit;"); }
         if (specialBuffOverdrive150) { buffs.append(" Overdrive x1.5;"); }
         if (specialBuffOverdrive200) { buffs.append(" Overdrive x2;"); }
-        if (specialBuffUnused) { buffs.append(" Unused=").append(String.format("%02X", specialBuffInflict)).append(";"); }
+        if (specialBuffUnused) { buffs.append(" Unused=").append(StringHelper.formatHex2(specialBuffInflict)).append(";"); }
         String conv = buffs.toString();
         if (conv.endsWith(";")) {
             String withoutLastSemicolon = conv.substring(0, conv.length() - 1);
@@ -797,7 +797,7 @@ public class AbilityDataObject implements Nameable, Writable {
     }
 
     private static String formatUnknownByte(int bt) {
-        return String.format("%02X", bt) + '=' + String.format("%03d", bt) + '(' + String.format("%8s", Integer.toBinaryString(bt)).replace(' ', '0') + ')';
+        return StringHelper.formatHex2(bt) + '=' + String.format("%03d", bt) + '(' + String.format("%8s", Integer.toBinaryString(bt)).replace(' ', '0') + ')';
     }
 
     private static void prepareMaps() {

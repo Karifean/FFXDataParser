@@ -1,6 +1,7 @@
 package model.spheregrid;
 
 import main.DataAccess;
+import main.StringHelper;
 import model.AbilityDataObject;
 import model.Nameable;
 
@@ -121,6 +122,6 @@ public class SphereGridLayoutDataObject implements Nameable {
 
     private static String asMove(int idx) {
         AbilityDataObject move = DataAccess.getMove(idx);
-        return (move != null ? move.name : "null") + " [" + String.format("%04X", idx) + "h]";
+        return (move != null ? move.name : "null") + StringHelper.hex4Suffix(idx);
     }
 }

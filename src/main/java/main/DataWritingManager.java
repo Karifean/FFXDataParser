@@ -1,5 +1,6 @@
 package main;
 
+import model.LocalizedStringObject;
 import model.StringStruct;
 import model.Writable;
 
@@ -10,6 +11,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import static main.DataReadingManager.LOCALIZATIONS;
@@ -46,7 +48,7 @@ public class DataWritingManager {
         add2Bytes(bytes, objects.length * length);
         bytes.addAll(List.of(0x14, 0x00, 0x00, 0x00));
         for (Writable obj : objects) {
-            int[] abilityBytes = obj.toBytes(localization, stringStruct.stringMap);
+            int[] abilityBytes = obj.toBytes(localization, stringStruct.stringToOffsetMap);
             bytes.addAll(Arrays.stream(abilityBytes).boxed().collect(Collectors.toList()));
         }
         bytes.addAll(Arrays.stream(stringStruct.stringBytes).boxed().collect(Collectors.toList()));
@@ -65,8 +67,43 @@ public class DataWritingManager {
         });
     }
 
+    public static void writeStringFileForAllLocalizations(String path, List<LocalizedStringObject> localizedStrings, final boolean doubleHeaders) {
+        LOCALIZATIONS.forEach((key, value) -> {
+            String localePath = GAME_FILES_ROOT + MODS_FOLDER + getLocalizationRoot(key) + path;
+            int[] bytes = stringsToStringFileBytes(localizedStrings, key, doubleHeaders);
+            writeByteArrayToFile(localePath, bytes);
+        });
+    }
+
+    public static int[] stringsToStringFileBytes(List<LocalizedStringObject> localizedStrings, String localization, boolean doubleHeaders) {
+        List<String> strings = localizedStrings.stream().map(so -> so.getLocalizedContent(localization)).toList();
+        StringStruct stringStruct = StringHelper.createStringMap(strings, false);
+        Map<String, Integer> headMap = stringStruct.get4ByteHeadMap();
+        List<Integer> bytes = new ArrayList<>();
+        strings.forEach(str -> {
+            int head = headMap.get(str);
+            add4Bytes(bytes, head);
+            if (doubleHeaders) {
+                add4Bytes(bytes, head);
+            }
+        });
+        bytes.addAll(Arrays.stream(stringStruct.stringBytes).boxed().collect(Collectors.toList()));
+        int[] fullBytes = new int[bytes.size()];
+        for (int i = 0; i < bytes.size(); i++) {
+            fullBytes[i] = bytes.get(i);
+        }
+        return fullBytes;
+    }
+
     private static void add2Bytes(List<Integer> array, int value) {
         array.add(value & 0x00FF);
-        array.add((value & 0xFF00) / 0x100);
+        array.add((value & 0xFF00) >> 8);
+    }
+
+    private static void add4Bytes(List<Integer> array, int value) {
+        array.add(value & 0x00FF);
+        array.add((value & 0xFF00) >> 8);
+        array.add((value & 0xFF0000) >> 16);
+        array.add((value & 0xFF000000) >> 24);
     }
 }

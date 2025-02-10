@@ -326,9 +326,9 @@ public abstract class ScriptFuncLib {
         putFuncWithIdx(0x015B, new ScriptFunc("obtainTreasure", "unknown", null, p("textboxIndex", "int"), p("treasure")));
         putUnknownFunc(0x015D, 1);
         putUnknownFunc(0x015E, 1);
-        putUnknownFunc(0x015F, 1);
+        putFuncWithIdx(0x015F, new ScriptFunc(p("?addKeyItem")));
         putFuncWithIdx(0x0160, new ScriptFunc("hasKeyItem", "bool", null, p("keyItem")));
-        putUnknownFunc(0x0161, 1);
+        putFuncWithIdx(0x0161, new ScriptFunc("?removeKeyItem", p("keyItem")));
         putUnknownFunc(0x0166, 1);
         putUnknownFunc(0x0167, 0);
         putFuncWithIdx(0x016A, new ScriptFunc(p("bgm"), p(2)));
@@ -1186,6 +1186,7 @@ public abstract class ScriptFuncLib {
         putUnknownFunc(0xC022, 1);
         putFuncWithIdx(0xC024, new ScriptFunc("launchBattleAlwaysWin?", "unknown", null, p("encounter"), p("transition", "battleTransition")));
         putUnknownFunc(0xC025, 1);
+        putFuncWithIdx(0xC027, new ScriptFunc("RemoveAllKeyItemsAndPrimersRequireDebug", "unknown", null, true)); // Never called
         putUnknownFunc(0xC028, 0);
         putUnknownFunc(0xC02A, 1);
         putUnknownFunc(0xC02C, 1);

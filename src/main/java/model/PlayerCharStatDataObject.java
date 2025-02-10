@@ -157,7 +157,7 @@ public class PlayerCharStatDataObject implements Nameable {
 
     public String getStrings() {
         List<String> list = new ArrayList<>();
-        list.add("Name at Offset " + String.format("%04X", nameOffset) + ":");
+        list.add("Name at Offset " + StringHelper.formatHex4(nameOffset) + ":");
         list.add(characterName.getAllContent());
         // TODO
         String full = list.stream().filter(s -> s != null && !s.isBlank()).collect(Collectors.joining("\n"));
@@ -185,7 +185,7 @@ public class PlayerCharStatDataObject implements Nameable {
     }
 
     private static String asMove(int move) {
-        return DataAccess.getMove(move).getName() + " [" + String.format("%04X", move) + "h]";
+        return DataAccess.getMove(move).getName() + StringHelper.hex4Suffix(move);
     }
 
     @Override

@@ -1,6 +1,7 @@
 package model;
 
 import main.DataAccess;
+import main.StringHelper;
 
 /**
  * takara.bin
@@ -29,12 +30,12 @@ public class TreasureDataObject implements Nameable {
 
     @Override
     public String toString() {
-        String typeHexSuffix = " [" + String.format("%02X", type) + "h]";
+        String typeHexSuffix = StringHelper.hex2Suffix(type);
         String typeString = type + typeHexSuffix;
         if (kind == 0x02) {
             return "Item: " + quantity + "x " + DataAccess.getMove(type).name + typeHexSuffix;
         } else if (kind == 0x00) {
-            return "Gil: " + quantity * 100 + (type != 0 ? "T=" + typeString : "") + " [" + String.format("%02X", quantity) + "h]";
+            return "Gil: " + quantity * 100 + (type != 0 ? "T=" + typeString : "") + StringHelper.hex2Suffix(quantity);
         } else if (kind == 0x05) {
             GearDataObject gear = DataAccess.WEAPON_PICKUPS != null ? DataAccess.WEAPON_PICKUPS[type] : null;
             return "Gear: buki_get #" + typeString + (quantity != 1 ? " Q=" + quantity : "") + " " + (gear != null ? gear.compactString() : "null");

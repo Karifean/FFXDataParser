@@ -1,34 +1,42 @@
 package atel.model;
 
+import main.StringHelper;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
 
 public class ScriptFunc extends ScriptField {
-    private static final Function<Integer, String> FOUR_HEX_FORMATTER = (s) -> String.format("%04X", s);
     public List<ScriptField> inputs;
     public int funcspace;
 
     public ScriptFunc(String name, String type, String internalName, boolean brackets) {
         super(name, type, internalName);
         this.inputs = brackets ? new ArrayList<>() : null;
-        this.hexFormatter = FOUR_HEX_FORMATTER;
     }
 
     public ScriptFunc(String name, String type, String internalName, ScriptField... inputs) {
         super(name, type, internalName);
         this.inputs = List.of(inputs);
-        this.hexFormatter = FOUR_HEX_FORMATTER;
+    }
+
+    public ScriptFunc(String name, ScriptField... inputs) {
+        super(name, "unknown", null);
+        this.inputs = List.of(inputs);
     }
 
     public ScriptFunc(ScriptField... inputs) {
         super(null, "unknown");
         this.inputs = List.of(inputs);
-        this.hexFormatter = FOUR_HEX_FORMATTER;
     }
 
     public String getType(List<StackObject> params) {
         return type;
+    }
+
+    @Override
+    public String getHexIndex() {
+        return idx != null ? StringHelper.formatHex4(idx) : null;
     }
 
     @Override

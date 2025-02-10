@@ -1,5 +1,6 @@
 package model.spheregrid;
 
+import main.StringHelper;
 import model.Nameable;
 
 import java.util.ArrayList;
@@ -48,19 +49,19 @@ public class SphereGridClusterDataObject implements Nameable {
         list.add("Position=(" + posX + "/" + posY + ")");
         list.add("Radius/Type=" + radiusType);
         if (unused3 != 0) {
-            list.add("Unknown3=" + String.format("%04X", unused3));
+            list.add("Unknown3=" + StringHelper.formatHex4(unused3));
         }
         if (unused5 != 0) {
-            list.add("Unknown5=" + String.format("%04X", unused5));
+            list.add("Unknown5=" + StringHelper.formatHex4(unused5));
         }
         if (unused6 != 0) {
-            list.add("Unknown6=" + String.format("%04X", unused6));
+            list.add("Unknown6=" + StringHelper.formatHex4(unused6));
         }
         if (unused7 != 0) {
-            list.add("Unknown7=" + String.format("%04X", unused7));
+            list.add("Unknown7=" + StringHelper.formatHex4(unused7));
         }
         if (unused8 != 0) {
-            list.add("Unknown8=" + String.format("%04X", unused8));
+            list.add("Unknown8=" + StringHelper.formatHex4(unused8));
         }
         String full = String.join(", ", list);
         return "{ " +  full + " }";

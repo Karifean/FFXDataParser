@@ -1,6 +1,7 @@
 package model.spheregrid;
 
 import main.DataAccess;
+import main.StringHelper;
 import model.Nameable;
 
 import java.util.ArrayList;
@@ -48,9 +49,9 @@ public class SphereGridNodeDataObject implements Nameable {
         if (hasContent() && content != redundantContent) {
             list.add("Content-Mismatch - Original=" + getContentLabel(redundantContent));
         }
-        list.add("U6=" + String.format("%04X", unknown6) + "=" + unknown6);
+        list.add("U6=" + StringHelper.formatHex4(unknown6) + "=" + unknown6);
         if (unused3 != 0) {
-            list.add("Unknown3=" + String.format("%04X", unused3));
+            list.add("Unknown3=" + StringHelper.formatHex4(unused3));
         }
         String full = String.join(", ", list);
         String prefix = hasContent() ? getContentLabel(content) : ("[" + getContentLabel(redundantContent) + "]");

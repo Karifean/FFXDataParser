@@ -61,7 +61,7 @@ public class X2AbilityDataObject implements Nameable {
     @Override
     public String toString() {
         List<String> list = new ArrayList<>();
-        list.add("anim=" + String.format("%04X", anim1) + "/" + String.format("%04X", anim2));
+        list.add("anim=" + StringHelper.formatHex4(anim1) + "/" + StringHelper.formatHex4(anim2));
         String full = list.stream().filter(s -> s != null && !s.isBlank()).collect(Collectors.joining(", "));
         String descriptionStr = (descriptionOffset > 0 ? description : "");
         return String.format("%-20s", getName()) + " { " + full + " } " + descriptionStr;
@@ -82,6 +82,6 @@ public class X2AbilityDataObject implements Nameable {
     }
 
     private static String formatUnknownByte(int bt) {
-        return String.format("%02X", bt) + '=' + String.format("%03d", bt) + '(' + String.format("%8s", Integer.toBinaryString(bt)).replace(' ', '0') + ')';
+        return StringHelper.formatHex2(bt) + '=' + String.format("%03d", bt) + '(' + String.format("%8s", Integer.toBinaryString(bt)).replace(' ', '0') + ')';
     }
 }

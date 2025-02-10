@@ -2,6 +2,7 @@ package model;
 
 import main.DataAccess;
 import atel.model.StackObject;
+import main.StringHelper;
 
 /**
  * weapon.bin
@@ -108,7 +109,7 @@ public class GearDataObject {
     public String toString() {
         String abilityString = getAbilityString();
         return "{ " + StackObject.enumToString("playerChar", character) +
-                ", " + (armor ? "Armor" : "Weapon") + " [" + String.format("%02X", armorByte) + "h]" +
+                ", " + (armor ? "Armor" : "Weapon") + StringHelper.hex2Suffix(armorByte) +
                 ", Formula=" + StackObject.enumToString("damageFormula", formula) +
                 ", Power=" + power +
                 ", Crit=" + crit + '%' +
@@ -151,7 +152,7 @@ public class GearDataObject {
     }
 
     private static String formatUnknownByte(int bt) {
-        return String.format("%02X", bt) + '=' + String.format("%03d", bt) + '(' + String.format("%8s", Integer.toBinaryString(bt)).replace(' ', '0') + ')';
+        return StringHelper.formatHex2(bt) + '=' + String.format("%03d", bt) + '(' + String.format("%8s", Integer.toBinaryString(bt)).replace(' ', '0') + ')';
     }
 
     private static String getGearAbilityLabel(int idx) {
@@ -162,7 +163,7 @@ public class GearDataObject {
             if (obj == null) {
                 return "null";
             } else {
-                return obj.getName() + " [" + String.format("%04X", idx) + "h]";
+                return obj.getName() + StringHelper.hex4Suffix(idx);
             }
         }
     }

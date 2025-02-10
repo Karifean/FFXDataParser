@@ -521,7 +521,7 @@ public class GearAbilityDataObject implements Nameable {
     }
 
     private String grouping() {
-        return "Group=" + groupIndex + " [" + String.format("%02X", groupIndex) + "h] Level=" + groupLevel;
+        return "Group=" + StringHelper.hex2WithSuffix(groupIndex) + " Level=" + groupLevel;
     }
 
     private String autoBuffs() {

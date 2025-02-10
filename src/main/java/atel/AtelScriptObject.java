@@ -1,6 +1,7 @@
 package atel;
 
 import atel.model.*;
+import main.StringHelper;
 import model.LocalizedStringObject;
 
 import java.util.*;
@@ -220,10 +221,10 @@ public class AtelScriptObject {
         int notActuallySectionCount = battleWorkerMappingBytes[0];
         int preSectionLength = battleWorkerMappingBytes[1];
         // map from section index to purpose slot
-        Map<Integer,Integer> slotMap = new HashMap<>();
-        for (int i = 2; i < preSectionLength+2; i++) {
+        Map<Integer, Integer> slotMap = new HashMap<>();
+        for (int i = 2; i < preSectionLength + 2; i++) {
             if (battleWorkerMappingBytes[i] != 0xFF) {
-                slotMap.put(battleWorkerMappingBytes[i], i-2);
+                slotMap.put(battleWorkerMappingBytes[i], i - 2);
             }
         }
         int sectionsLineOffset = preSectionLength + (preSectionLength % 2 == 0 ? 2 : 3);
@@ -308,9 +309,12 @@ public class AtelScriptObject {
             lineInstructions.add(instruction);
             instructions.add(instruction);
             if (getLineEnd(opcode)) {
-                scriptLines.add(new ScriptLine(currentScriptLineOffset, lineInstructions));
+                ScriptLine scriptLine = new ScriptLine(null, currentScriptLineOffset, lineInstructions);
+                scriptLine.jumps = jumpsOnLine;
+                jumpsOnLine.forEach(j -> j.targetLine = scriptLine);
+                scriptLines.add(scriptLine);
                 lineCount++;
-                offsetLines.add(String.format("%04X", currentScriptLineOffset));
+                offsetLines.add(StringHelper.formatHex4(currentScriptLineOffset));
                 currentScriptLineOffset = cursor;
                 hexScriptLines.add(getHexLine(lineInstructions));
                 jumpLines.add(getJumpLine(jumpsOnLine));
@@ -443,7 +447,7 @@ public class AtelScriptObject {
                     break;
             }
         } catch (EmptyStackException e) {
-            warningsOnLine.add("Empty stack for opcode " + String.format("%02X", opcode));
+            warningsOnLine.add("Empty stack for opcode " + StringHelper.formatHex2(opcode));
             return;
         }
         if (opcode == 0x00 || opcode == 0x1D || opcode == 0x1E) { // NOP, LABEL, TAG
@@ -663,13 +667,13 @@ public class AtelScriptObject {
                 stack.push(stackObject);
             } else if (opcode == 0xB0) { // JMP / JUMP
                 ScriptJump jump = referenceJump(argv);
-                textScriptLine += "Jump to " + (jump != null ? jump.getLabelWithAddr() : ("j" + String.format("%02X", argv)));
+                textScriptLine += "Jump to " + (jump != null ? jump.getLabelWithAddr() : ("j" + StringHelper.formatHex2(argv)));
                 resetRegisterTypes();
             } else if (opcode == 0xB1) { // Never used: CJMP / BNEZ
             } else if (opcode == 0xB2) { // Never used: NCJMP / BEZ
             } else if (opcode == 0xB3) { // JSR
                 ScriptWorker worker = workers == null || workers.length <= argv ? null : workers[argv];
-                textScriptLine += "Jump to subroutine " + (worker != null ? worker.getIndexLabel() : ("w" + String.format("%02X", argv)));
+                textScriptLine += "Jump to subroutine " + (worker != null ? worker.getIndexLabel() : ("w" + StringHelper.formatHex2(argv)));
             } else if (opcode == 0xB5) { // CALL / FUNC_RET
                 List<StackObject> params = popParamsForFunc(argv);
                 ScriptFunc func = getAndTypeFuncCall(argv, params);
@@ -678,10 +682,10 @@ public class AtelScriptObject {
                 stack.push(stackObject);
             } else if (opcode == 0xD6) { // POPXCJMP / SET_BNEZ
                 ScriptJump jump = referenceJump(argv);
-                textScriptLine += "(" + p1 + ") -> " + (jump != null ? jump.getLabelWithAddr() : ("j" + String.format("%02X", argv)));
+                textScriptLine += "(" + p1 + ") -> " + (jump != null ? jump.getLabelWithAddr() : ("j" + StringHelper.formatHex2(argv)));
             } else if (opcode == 0xD7) { // POPXNCJMP / SET_BEZ
                 ScriptJump jump = referenceJump(argv);
-                textScriptLine += "Check (" + p1 + ") else jump to " + (jump != null ? jump.getLabelWithAddr() : ("j" + String.format("%02X", argv)));
+                textScriptLine += "Check (" + p1 + ") else jump to " + (jump != null ? jump.getLabelWithAddr() : ("j" + StringHelper.formatHex2(argv)));
             } else if (opcode == 0xD8) { // CALLPOPA / FUNC
                 List<StackObject> params = popParamsForFunc(argv);
                 ScriptFunc func = getAndTypeFuncCall(argv, params);
@@ -740,7 +744,7 @@ public class AtelScriptObject {
                     break;
             }
         } catch (EmptyStackException e) {
-            warningsOnLine.add("Empty stack for func " + String.format("%04X", idx));
+            warningsOnLine.add("Empty stack for func " + StringHelper.formatHex4(idx));
         }
         return params;
     }
@@ -748,7 +752,7 @@ public class AtelScriptObject {
     protected ScriptFunc getAndTypeFuncCall(int idx, List<StackObject> params) {
         ScriptFunc func = ScriptFuncLib.get(idx, params);
         if (func == null) {
-            func = new ScriptFunc("Unknown:" + String.format("%04X", idx), "unknown", null, false);
+            func = new ScriptFunc("Unknown:" + StringHelper.formatHex4(idx), "unknown", null, false);
         }
         List<ScriptField> inputs = func.inputs;
         if (inputs != null) {
@@ -811,7 +815,7 @@ public class AtelScriptObject {
         if (variableDeclarations != null && index >= 0 && index < variableDeclarations.length) {
             return variableDeclarations[index].getLabel();
         }
-        String hexIdx = String.format("%02X", index);
+        String hexIdx = StringHelper.formatHex2(index);
         warningsOnLine.add("Variable index " + hexIdx + " out of bounds!");
         return "var" + hexIdx;
     }
@@ -822,7 +826,7 @@ public class AtelScriptObject {
         if (isWeakType(indexType) && (variableDeclarations != null && index >= 0 && index < variableDeclarations.length)) {
             indexType = variableDeclarations[index].getArrayIndexType();
         }
-        String arrayIndex = !p1.expression && isWeakType(indexType) ? String.format("%04X", p1.valueSigned) : typed(p1, indexType);
+        String arrayIndex = !p1.expression && isWeakType(indexType) ? StringHelper.formatHex4(p1.valueSigned) : typed(p1, indexType);
         return varLabel + '[' + arrayIndex + ']';
     }
 
@@ -848,7 +852,7 @@ public class AtelScriptObject {
     protected int getStackPops(int opcode) {
         int stackpops = ScriptConstants.OPCODE_STACKPOPS[opcode];
         if (stackpops < 0) {
-            warningsOnLine.add("Undefined stackpops for opcode " + String.format("%02X", opcode));
+            warningsOnLine.add("Undefined stackpops for opcode " + StringHelper.formatHex2(opcode));
             return 0;
         }
         return stackpops;
@@ -857,7 +861,7 @@ public class AtelScriptObject {
     protected int getFunctionParamCount(int idx) {
         ScriptFunc func = ScriptFuncLib.get(idx, null);
         if (func == null) {
-            warningsOnLine.add("Undefined stackpops for func " + String.format("%04X", idx));
+            warningsOnLine.add("Undefined stackpops for func " + StringHelper.formatHex4(idx));
             return 0;
         }
         return func.inputs != null ? func.inputs.size() : 0;
@@ -929,7 +933,7 @@ public class AtelScriptObject {
         List<String> lines = new ArrayList<>();
         int offset = 0;
         for (ScriptInstruction ins : instructions) {
-            String ol = String.format("%-6s", String.format("%04X", offset) + ' ');
+            String ol = String.format("%-6s", StringHelper.formatHex4(offset) + ' ');
             String jl = consoleColorIfEnabled(ANSI_PURPLE) + String.format("%-11s", getJumpLine(scriptJumpsByDestination.get(offset)) + ' ');
             String hl = consoleColorIfEnabled(ANSI_BLUE) + String.format("%-11s", ins.asSeparatedHexString() + ' ');
             String asml = consoleColorIfEnabled(ANSI_GREEN) + (ins.hasArgs ? String.format("%-10s", ins.getOpcodeLabel() + ' ') + consoleColorIfEnabled(ANSI_YELLOW) + ins.getArgLabel() : ins.getOpcodeLabel());
@@ -945,12 +949,12 @@ public class AtelScriptObject {
         }
         List<String> lines = new ArrayList<>();
         if (mainScriptIndex != 0xFFFF) {
-            lines.add("Main Worker: " + mainScriptIndex + " [" + String.format("%02X", mainScriptIndex) + "h]");
+            lines.add("Main Worker: " + mainScriptIndex + " [" + StringHelper.formatHex2(mainScriptIndex) + "h]");
         }
         if (VERBOSE_HEADER_OUTPUT) {
-            lines.add("map_start = " + String.format("%04X", map_start));
-            lines.add("unk1 = " + String.format("%04X", unknown1A));
-            lines.add("unk2 = " + String.format("%04X", unknown24));
+            lines.add("map_start = " + StringHelper.formatHex4(map_start));
+            lines.add("unk1 = " + StringHelper.formatHex4(unknown1A));
+            lines.add("unk2 = " + StringHelper.formatHex4(unknown24));
             lines.add("other_offset = " + String.format("%06X", other_offset));
         }
         if (areaNameIndexes != null) {
@@ -962,30 +966,30 @@ public class AtelScriptObject {
         }
         lines.add(namespaceCount + " Workers Total");
         for (int i = 0; i < namespaceCount; i++) {
-            lines.add("w" + String.format("%02X", i) + ": " + workers[i].getNonCommonString());
+            lines.add("w" + StringHelper.formatHex2(i) + ": " + workers[i].getNonCommonString());
         }
-        lines.add("Variables (" + variableDeclarations.length + " at offset " + String.format("%04X", variableStructsTableOffset) + ")");
+        lines.add("Variables (" + variableDeclarations.length + " at offset " + StringHelper.formatHex4(variableStructsTableOffset) + ")");
         if (variableDeclarations.length > 0) {
             List<String> refsStrings = new ArrayList<>();
             for (int i = 0; i < variableDeclarations.length; i++) {
-                refsStrings.add("var" + String.format("%02X", i) + ": " + variableDeclarations[i] + " [" + String.format("%016X", variableDeclarations[i].fullBytes) + "h] - Inferred " + varTypes.get(i));
+                refsStrings.add("var" + StringHelper.formatHex2(i) + ": " + variableDeclarations[i] + " [" + String.format("%016X", variableDeclarations[i].fullBytes) + "h] - Inferred " + varTypes.get(i));
             }
             lines.add(String.join("\n", refsStrings));
         }
         if (PRINT_REF_INTS_FLOATS) {
-            lines.add("Integers (" + refInts.length + " at offset " + String.format("%04X", intTableOffset) + ")");
+            lines.add("Integers (" + refInts.length + " at offset " + StringHelper.formatHex4(intTableOffset) + ")");
             if (refInts.length > 0) {
                 List<String> intStrings = new ArrayList<>();
                 for (int i = 0; i < refInts.length; i++) {
-                    intStrings.add("refI" + String.format("%02X", i) + ": " + refInts[i] + " [" + String.format("%08X", refInts[i]) + "h]");
+                    intStrings.add("refI" + StringHelper.formatHex2(i) + ": " + refInts[i] + " [" + String.format("%08X", refInts[i]) + "h]");
                 }
                 lines.add(String.join(", ", intStrings));
             }
-            lines.add("Floats (" + refFloats.length + " at offset " + String.format("%04X", floatTableOffset) + ")");
+            lines.add("Floats (" + refFloats.length + " at offset " + StringHelper.formatHex4(floatTableOffset) + ")");
             if (refFloats.length > 0) {
                 List<String> floatStrings = new ArrayList<>();
                 for (int i = 0; i < refFloats.length; i++) {
-                    floatStrings.add("refF" + String.format("%02X", i) + ": " + Float.intBitsToFloat(refFloats[i]) + " [" + String.format("%08X", refFloats[i]) + "h]");
+                    floatStrings.add("refF" + StringHelper.formatHex2(i) + ": " + Float.intBitsToFloat(refFloats[i]) + " [" + String.format("%08X", refFloats[i]) + "h]");
                 }
                 lines.add(String.join(", ", floatStrings));
             }
@@ -993,7 +997,7 @@ public class AtelScriptObject {
         if (PRINT_JUMP_TABLE) {
             lines.add("- Jump Table -");
             for (int i = 0; i < namespaceCount; i++) {
-                lines.add("w" + String.format("%02X", i));
+                lines.add("w" + StringHelper.formatHex2(i));
                 ScriptWorker h = workers[i];
                 lines.add(h.getEntryPointsLine());
                 lines.add(h.getJumpsLine());

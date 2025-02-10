@@ -80,7 +80,7 @@ public class KeyItemDataObject implements Nameable {
         list.add("byte12=" + formatUnknownByte(unknownByte12));
         list.add(ifG0(isAlBhedPrimer, "isPrimerByte=", ""));
         list.add(ifG0(alwaysZero, "byte11 not Zero!=", ""));
-        list.add("Ordering: " + ordering + " [" + String.format("%02X", ordering) + "h]");
+        list.add("Ordering: " + StringHelper.hex2WithSuffix(ordering));
         String full = list.stream().filter(s -> s != null && !s.isBlank()).collect(Collectors.joining(", "));
         String descriptionStr = (descriptionOffset > 0 ? description.getDefaultContent() : "");
         return String.format("%-20s", getName()) + " { " + full + " } " + descriptionStr;
@@ -101,6 +101,6 @@ public class KeyItemDataObject implements Nameable {
     }
 
     private static String formatUnknownByte(int bt) {
-        return String.format("%02X", bt) + '=' + String.format("%03d", bt) + '(' + String.format("%8s", Integer.toBinaryString(bt)).replace(' ', '0') + ')';
+        return StringHelper.formatHex2(bt) + '=' + String.format("%03d", bt) + '(' + String.format("%8s", Integer.toBinaryString(bt)).replace(' ', '0') + ')';
     }
 }

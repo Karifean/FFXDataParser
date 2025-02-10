@@ -1,6 +1,7 @@
 package model;
 
 import main.DataAccess;
+import main.StringHelper;
 
 /**
  * kaizou.bin
@@ -40,7 +41,7 @@ public class CustomizationDataObject implements Nameable {
             GearAbilityDataObject gearAbility = DataAccess.getGearAbility(customizedAbility);
             AbilityDataObject move = DataAccess.getMove(customizedAbility);
             Nameable relevantNameable = gearAbility != null ? gearAbility : move != null ? move : (l) -> "null";
-            String result = relevantNameable.getName() + " [" + String.format("%04X", customizedAbility) + "h]";
+            String result = relevantNameable.getName() + StringHelper.hex4Suffix(customizedAbility);
             String costString = requiredItemQuantity + "x " + asMove(requiredItemType);
             return customizeTarget + " - " + result + ": " + costString;
         } else {
@@ -73,7 +74,7 @@ public class CustomizationDataObject implements Nameable {
 
     private static String asMove(int idx) {
         AbilityDataObject move = DataAccess.getMove(idx);
-        return (move != null ? move.name : "null") + " [" + String.format("%04X", idx) + "h]";
+        return (move != null ? move.name : "null") + StringHelper.hex4Suffix(idx);
     }
 
     private int read2Bytes(int offset) {

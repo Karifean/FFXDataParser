@@ -94,7 +94,7 @@ public class SphereGridSphereTypeDataObject implements Nameable {
         } else {
             list.add("Unknown Range" + StringHelper.hex2Suffix(rangeByte));
         }
-        list.add("SpecialRole=" + specialRole + StringHelper.hex2Suffix(specialRole));
+        list.add("SpecialRole=" + StringHelper.hex2WithSuffix(specialRole));
         if (alwaysZero > 0) {
             list.add("Not Zero !? " + alwaysZero);
         }
@@ -120,6 +120,6 @@ public class SphereGridSphereTypeDataObject implements Nameable {
     }
 
     private static String formatUnknownByte(int bt) {
-        return String.format("%02X", bt) + '=' + String.format("%03d", bt) + '(' + String.format("%16s", Integer.toBinaryString(bt)).replace(' ', '0') + ')';
+        return StringHelper.formatHex2(bt) + '=' + String.format("%03d", bt) + '(' + String.format("%16s", Integer.toBinaryString(bt)).replace(' ', '0') + ')';
     }
 }

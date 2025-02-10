@@ -11,7 +11,6 @@ public class ScriptField implements Nameable {
     public String internalName;
     public String type;
     public Integer idx;
-    public Function<Integer, String> hexFormatter;
     public String indexType;
 
     public ScriptField(String typeAndName) {
@@ -28,6 +27,13 @@ public class ScriptField implements Nameable {
         this.name = name;
         this.type = type;
         this.internalName = internalName;
+    }
+
+    public ScriptField(String name, String type, String internalName, int idx) {
+        this.name = name;
+        this.type = type;
+        this.internalName = internalName;
+        this.idx = idx;
     }
 
     @Override
@@ -55,10 +61,7 @@ public class ScriptField implements Nameable {
         if (idx == null) {
             return null;
         }
-        if (hexFormatter != null) {
-            return hexFormatter.apply(idx);
-        }
-        String format = idx >= 0x10000 ? "%08X" : (idx >= 0x100 ? "%04X" : "%02X");
+        String format = idx >= 0x10000 || idx < 0 ? "%08X" : (idx >= 0x100 ? "%04X" : "%02X");
         String formatted = String.format(format, idx);
         if ("%08X".equals(format) && formatted.startsWith("FFFF")) {
             return formatted.substring(4);
@@ -72,10 +75,5 @@ public class ScriptField implements Nameable {
             return "";
         }
         return " [" + hexIndex + "h]";
-    }
-
-    public ScriptField withIdx(int idx) {
-        this.idx = idx;
-        return this;
     }
 }

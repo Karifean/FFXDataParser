@@ -1,5 +1,7 @@
 package reading;
 
+import main.StringHelper;
+
 import java.io.*;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -13,7 +15,7 @@ public class DataFileReader<T> {
     }
 
     public String indexWriter(int idx) {
-        return "Index " + idx + " [" + String.format("%02X", idx) + "h]";
+        return "Index " + idx + " [" + StringHelper.formatHex2(idx) + "h]";
     }
 
     public List<T> readGenericDataFile(String filename, boolean print) {
@@ -42,7 +44,7 @@ public class DataFileReader<T> {
                     T obj = objectCreator.create(Arrays.copyOfRange(dataBytes, i * individualLength, (i + 1) * individualLength), allStrings);
                     objects.add(obj);
                     if (print) {
-                        String offset = String.format("%04X", (i * individualLength) + 0x14);
+                        String offset = StringHelper.formatHex4((i * individualLength) + 0x14);
                         System.out.println(indexWriter(i + minIndex) + " (Offset " + offset + ") - " + obj);
                     }
                 }
@@ -78,7 +80,7 @@ public class DataFileReader<T> {
                     T obj = objectCreator.create(Arrays.copyOfRange(dataBytes, i * individualLength, (i + 1) * individualLength), allStrings);
                     objects.add(obj);
                     if (print) {
-                        String offset = String.format("%04X", (i * individualLength) + 0x20);
+                        String offset = StringHelper.formatHex4((i * individualLength) + 0x20);
                         System.out.println(indexWriter(i + minIndex) + " (Offset " + offset + ") - " + obj);
                     }
                 }

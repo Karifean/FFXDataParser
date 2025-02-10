@@ -352,10 +352,10 @@ public class MonsterStatDataObject {
 
     public String getStrings(String localization) {
         List<String> list = new ArrayList<>();
-        list.add("Name: " + monsterName.getLocalizedContent(localization) + " (Offset " + String.format("%04X", nameOffset) + ")");
-        list.add("- Sensor Text - (Offset " + String.format("%04X", sensorOffset) + ")");
+        list.add("Name: " + monsterName.getLocalizedContent(localization) + " (Offset " + StringHelper.formatHex4(nameOffset) + ")");
+        list.add("- Sensor Text - (Offset " + StringHelper.formatHex4(sensorOffset) + ")");
         list.add(monsterSensorText.getLocalizedContent(localization));
-        list.add("- Scan Text - (Offset " + String.format("%04X", scanOffset) + ")");
+        list.add("- Scan Text - (Offset " + StringHelper.formatHex4(scanOffset) + ")");
         list.add(monsterScanText.getLocalizedContent(localization));
         String full = list.stream().filter(s -> s != null && !s.isBlank()).collect(Collectors.joining("\n"));
         return full;
@@ -372,7 +372,7 @@ public class MonsterStatDataObject {
         }
         list.add(specialImmunities());
         if (miscProperties29 >= 0x08) {
-            list.add("Unknown byte 29: " + String.format("%02X", miscProperties29));
+            list.add("Unknown byte 29: " + StringHelper.formatHex2(miscProperties29));
         }
         list.add(allElemental());
         list.add(statusResists());
@@ -396,7 +396,7 @@ public class MonsterStatDataObject {
         list.add("Doom Counter=" + doomCounter);
         list.add("CTB Icon Type=" + StackObject.enumToString("ctbIconType", ctbIconType));
         if (monsterArenaIdx != 0xFF) {
-            list.add("Captured Monster Index=" + monsterArenaIdx + " [" + String.format("%02X", monsterArenaIdx) + "h]");
+            list.add("Captured Monster Index=" + monsterArenaIdx + " [" + StringHelper.formatHex2(monsterArenaIdx) + "h]");
         } else {
             list.add("Cannot be Captured");
         }
@@ -404,16 +404,16 @@ public class MonsterStatDataObject {
         list.add("Model Texture?=" + StackObject.enumToString("model", modelIdxOther));
 
         if (alwaysZero7C != 0) {
-            list.add("byte 7C not zero!: " + String.format("%02X", alwaysZero7C));
+            list.add("byte 7C not zero!: " + StringHelper.formatHex2(alwaysZero7C));
         }
         if (alwaysZero7D != 0) {
-            list.add("byte 7D not zero!: " + String.format("%02X", alwaysZero7D));
+            list.add("byte 7D not zero!: " + StringHelper.formatHex2(alwaysZero7D));
         }
         if (alwaysZero7E != 0) {
-            list.add("byte 7E not zero!: " + String.format("%02X", alwaysZero7E));
+            list.add("byte 7E not zero!: " + StringHelper.formatHex2(alwaysZero7E));
         }
         if (alwaysZero7F != 0) {
-            list.add("byte 7F not zero!: " + String.format("%02X", alwaysZero7F));
+            list.add("byte 7F not zero!: " + StringHelper.formatHex2(alwaysZero7F));
         }
 
         String full = list.stream().filter(s -> s != null && !s.isBlank()).collect(Collectors.joining("\n"));
@@ -716,7 +716,7 @@ public class MonsterStatDataObject {
     }
 
     private static String asMove(int move) {
-        return DataAccess.getMove(move).getName() + " [" + String.format("%04X", move) + "h]";
+        return DataAccess.getMove(move).getName() + StringHelper.hex4Suffix(move);
     }
 
 }

@@ -1,5 +1,7 @@
 package atel.model;
 
+import main.StringHelper;
+
 import java.util.List;
 import java.util.Map;
 
@@ -16,6 +18,7 @@ public class ScriptJump {
     public Map<Integer, String> tempITypes;
     public List<ScriptJump> reachableFrom;
     public boolean hardMisaligned = false;
+    public ScriptLine targetLine;
 
     private String label;
     private int battleWorkerEntryPointType;
@@ -37,21 +40,21 @@ public class ScriptJump {
     }
 
     public String getLabelWithAddr() {
-        return getLabel() + " (" + String.format("%04X", addr) + ")";
+        return getLabel() + " (" + StringHelper.formatHex4(addr) + ")";
     }
 
     public String getDefaultLabel() {
         if (!isEntryPoint) {
-            return "j" + String.format("%02X", jumpIndex);
+            return "j" + StringHelper.formatHex2(jumpIndex);
         } else {
-            String wPrefix = "w" + String.format("%02X", scriptWorker.workerIndex);
+            String wPrefix = "w" + StringHelper.formatHex2(scriptWorker.workerIndex);
             if (jumpIndex == 0) {
                 return wPrefix + "init";
             } else if (jumpIndex == 1) {
                 return wPrefix + "main";
             } else {
                 if (scriptWorker.battleWorkerType != null) {
-                    String wePrefix = wPrefix + "e" + String.format("%02X", jumpIndex);
+                    String wePrefix = wPrefix + "e" + StringHelper.formatHex2(jumpIndex);
                     return wePrefix + battleWorkerEntryPointToString();
                 } else {
                     return wPrefix + eventWorkerEntryPointToStringWithFallback(scriptWorker.eventWorkerType, jumpIndex);
@@ -89,9 +92,9 @@ public class ScriptJump {
                 return s;
             }
         }
-        String strBattleWorkerType = "t" + String.format("%02X", battleWorkerType);
-        String strBattleWorkerEntryPointType = "p" + String.format("%02X", battleWorkerEntryPointType);
-        String strWorkerPurposeSlot = "s" + String.format("%02X", scriptWorker.purposeSlot);
+        String strBattleWorkerType = "t" + StringHelper.formatHex2(battleWorkerType);
+        String strBattleWorkerEntryPointType = "p" + StringHelper.formatHex2(battleWorkerEntryPointType);
+        String strWorkerPurposeSlot = "s" + StringHelper.formatHex2(scriptWorker.purposeSlot);
         return strWorkerPurposeSlot + strBattleWorkerType + strBattleWorkerEntryPointType;
     }
 
@@ -100,7 +103,7 @@ public class ScriptJump {
         if (label != null) {
             return label;
         }
-        return "e" + String.format("%02X", eventWorkerEntryPoint);
+        return "e" + StringHelper.formatHex2(eventWorkerEntryPoint);
     }
 
     private static String eventWorkerEntryPointToString(int eventWorkerType, int eventWorkerEntryPoint) {

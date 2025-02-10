@@ -1,6 +1,7 @@
 package atel.model;
 
 import atel.AtelScriptObject;
+import main.StringHelper;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -68,7 +69,7 @@ public class ScriptWorker {
     }
 
     public String getIndexLabel() {
-        return "w" + String.format("%02X", workerIndex);
+        return "w" + StringHelper.formatHex2(workerIndex);
     }
 
     public String getNonCommonString() {
@@ -81,7 +82,7 @@ public class ScriptWorker {
             list.add("Type=" + StackObject.enumToString("eventWorkerType", eventWorkerType));
         }
         if (purposeSlot != null) {
-            list.add("PurposeSlot=" + purposeSlotToString(purposeSlot) + " [" + String.format("%02X", purposeSlot) + "h]");
+            list.add("PurposeSlot=" + purposeSlotToString(purposeSlot) + " [" + StringHelper.formatHex2(purposeSlot) + "h]");
         }
         list.add("Entrypoints=" + entryPointCount);
         list.add("Jumps=" + jumpCount);
@@ -96,14 +97,14 @@ public class ScriptWorker {
         if (entryPoints == null || entryPoints.length == 0) {
             return null;
         }
-        return Arrays.stream(entryPoints).map(e -> "e" + String.format("%02X", e.jumpIndex) + "=" + String.format("%04X", e.addr)).collect(Collectors.joining(" "));
+        return Arrays.stream(entryPoints).map(e -> "e" + StringHelper.formatHex2(e.jumpIndex) + "=" + StringHelper.formatHex4(e.addr)).collect(Collectors.joining(" "));
     }
 
     public String getJumpsLine() {
         if (jumps == null || jumps.length == 0) {
             return null;
         }
-        return Arrays.stream(jumps).map(j -> "j" + String.format("%02X", j.jumpIndex) + "=" + String.format("%04X", j.addr)).collect(Collectors.joining(" "));
+        return Arrays.stream(jumps).map(j -> "j" + StringHelper.formatHex2(j.jumpIndex) + "=" + StringHelper.formatHex4(j.addr)).collect(Collectors.joining(" "));
     }
 
     public void setVariableInitialValues() {
@@ -159,7 +160,7 @@ public class ScriptWorker {
             String chr = StackObject.enumToString("playerChar", purposeSlot - 0x2B);
             return "Ex" + chr;
         }
-        return "?" + String.format("%02X", purposeSlot);
+        return "?" + StringHelper.formatHex2(purposeSlot);
     }
 
     private String privateValuesString() {

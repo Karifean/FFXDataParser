@@ -102,7 +102,7 @@ public class Main {
                     MonsterFile monster = DataAccess.getMonster(monsterIdx);
                     if (monster != null) {
                         monster.parseScript();
-                        System.out.println("Printing monster #" + arg + " [" + String.format("%04X", monsterIdx) + "h]");
+                        System.out.println("Printing monster #" + arg + StringHelper.hex4Suffix(monsterIdx));
                         System.out.println(monster);
                     } else {
                         System.err.println("Monster with idx " + arg + " not found");
