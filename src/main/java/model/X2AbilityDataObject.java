@@ -1,6 +1,7 @@
 package model;
 
 import main.StringHelper;
+import model.strings.LocalizedStringObject;
 
 import java.util.ArrayList;
 import java.util.List;

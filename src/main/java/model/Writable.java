@@ -1,9 +1,12 @@
 package model;
 
-import java.util.Map;
+import model.strings.KeyedString;
+import model.strings.LocalizedKeyedStringObject;
+
 import java.util.stream.Stream;
 
 public interface Writable {
-    Stream<String> getStrings(String localization);
-    int[] toBytes(String localization, Map<String, Integer> stringMap);
+    Stream<KeyedString> streamKeyedStrings(String localization);
+    LocalizedKeyedStringObject getKeyedString(String title);
+    int[] toBytes(String localization);
 }

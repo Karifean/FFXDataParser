@@ -5,6 +5,8 @@ import main.DataAccess;
 import main.DataReadingManager;
 import main.StringHelper;
 import model.spheregrid.SphereGridSphereTypeDataObject;
+import model.strings.KeyedString;
+import model.strings.LocalizedKeyedStringObject;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -14,6 +16,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static reading.ChunkedFileHelper.write2Bytes;
+import static reading.ChunkedFileHelper.write4Bytes;
 
 /**
  * command.bin
@@ -29,10 +32,10 @@ public class AbilityDataObject implements Nameable, Writable {
     private final boolean isCharacterAbility;
     private final int[] bytes;
 
-    public LocalizedStringObject name = new LocalizedStringObject();
-    public LocalizedStringObject unusedString0405 = new LocalizedStringObject();
-    public LocalizedStringObject description = new LocalizedStringObject();
-    public LocalizedStringObject unusedString0C0D = new LocalizedStringObject();
+    public LocalizedKeyedStringObject name = new LocalizedKeyedStringObject();
+    public LocalizedKeyedStringObject unusedString0405 = new LocalizedKeyedStringObject();
+    public LocalizedKeyedStringObject description = new LocalizedKeyedStringObject();
+    public LocalizedKeyedStringObject unusedString0C0D = new LocalizedKeyedStringObject();
     public int nameOffset;
     public int unusedString0405Offset;
     public int descriptionOffset;
@@ -235,7 +238,7 @@ public class AbilityDataObject implements Nameable, Writable {
         if (!displayMoveName) {
             return "[" + name.getLocalizedContent(localization) + "]";
         }
-        return name.getLocalizedContent(localization);
+        return name.getLocalizedContent(localization).toString();
     }
 
     private void mapBytes() {
@@ -326,16 +329,12 @@ public class AbilityDataObject implements Nameable, Writable {
         }
     }
 
-    public int[] toBytes(String localization, Map<String, Integer> stringMap) {
+    public int[] toBytes(String localization) {
         int[] array = new int[isCharacterAbility ? AbilityDataObject.PCCOM_LENGTH : AbilityDataObject.COM_LENGTH];
-        write2Bytes(array, 0x00, stringMap.get(name.getLocalizedContent(localization)));
-        write2Bytes(array, 0x02, nameKey);
-        write2Bytes(array, 0x04, stringMap.get(unusedString0405.getLocalizedContent(localization)));
-        write2Bytes(array, 0x06, unusedString0405Key);
-        write2Bytes(array, 0x08, stringMap.get(description.getLocalizedContent(localization)));
-        write2Bytes(array, 0x0A, descriptionKey);
-        write2Bytes(array, 0x0C, stringMap.get(unusedString0C0D.getLocalizedContent(localization)));
-        write2Bytes(array, 0x0E, unusedString0C0DKey);
+        write4Bytes(array, 0x00, name.getLocalizedContent(localization).toHeaderBytes());
+        write4Bytes(array, 0x04, unusedString0405.getLocalizedContent(localization).toHeaderBytes());
+        write4Bytes(array, 0x08, description.getLocalizedContent(localization).toHeaderBytes());
+        write4Bytes(array, 0x0C, unusedString0C0D.getLocalizedContent(localization).toHeaderBytes());
         write2Bytes(array, 0x10, anim1);
         write2Bytes(array, 0x12, anim2);
         array[0x14] = icon;
@@ -521,10 +520,20 @@ public class AbilityDataObject implements Nameable, Writable {
     }
 
     private void mapStrings(int[] stringBytes, String localization) {
-        name.readAndSetLocalizedContent(localization, stringBytes, nameOffset);
-        unusedString0405.readAndSetLocalizedContent(localization, stringBytes, unusedString0405Offset);
-        description.readAndSetLocalizedContent(localization, stringBytes, descriptionOffset);
-        unusedString0C0D.readAndSetLocalizedContent(localization, stringBytes, unusedString0C0DOffset);
+        name.readAndSetLocalizedContent(localization, stringBytes, nameOffset, nameKey);
+        unusedString0405.readAndSetLocalizedContent(localization, stringBytes, unusedString0405Offset, unusedString0405Key);
+        description.readAndSetLocalizedContent(localization, stringBytes, descriptionOffset, descriptionKey);
+        unusedString0C0D.readAndSetLocalizedContent(localization, stringBytes, unusedString0C0DOffset, unusedString0C0DKey);
+    }
+
+    @Override
+    public Stream<KeyedString> streamKeyedStrings(String localization) {
+        return Stream.of(
+                name.getLocalizedContent(localization),
+                unusedString0405.getLocalizedContent(localization),
+                description.getLocalizedContent(localization),
+                unusedString0C0D.getLocalizedContent(localization)
+        );
     }
 
     public void setLocalizations(AbilityDataObject localizationObject) {
@@ -532,6 +541,19 @@ public class AbilityDataObject implements Nameable, Writable {
         localizationObject.unusedString0405.copyInto(unusedString0405);
         localizationObject.description.copyInto(description);
         localizationObject.unusedString0C0D.copyInto(unusedString0C0D);
+    }
+
+    public String nameInAllLanguages() {
+        return List.of("us", "de", "fr", "sp", "it", "jp", "ch", "kr").stream().map(l -> getName(l)).collect(Collectors.joining(" / "));
+    }
+
+    @Override
+    public LocalizedKeyedStringObject getKeyedString(String title) {
+        return switch (title) {
+            case "name" -> name;
+            case "description" -> description;
+            default -> null;
+        };
     }
 
     @Override
@@ -599,8 +621,8 @@ public class AbilityDataObject implements Nameable, Writable {
             list.add("SphereGridRole=" + StringHelper.hex2WithSuffix(sphereTypeForSphereGrid) + " " + (sgSphereType != null ? sgSphereType : "null"));
         }
         String full = list.stream().filter(s -> s != null && !s.isBlank()).collect(Collectors.joining(", "));
-        String descriptionStr = descriptionOffset > 0 ? description.getLocalizedContent(localization) : "";
-        return String.format("%-22s", getName()) + " { " + full + " } " + descriptionStr;
+        String descriptionStr = descriptionOffset > 0 ? description.getLocalizedString(localization) : "";
+        return String.format("%-22s", getName(localization)) + " { " + full + " } " + descriptionStr;
     }
 
     private String damageKind() {
@@ -920,15 +942,5 @@ public class AbilityDataObject implements Nameable, Writable {
 
     private int read2Bytes(int offset) {
         return bytes[offset] + bytes[offset+1] * 0x100;
-    }
-
-    @Override
-    public Stream<String> getStrings(String localization) {
-        return Stream.of(
-                name.getLocalizedContent(localization),
-                unusedString0405.getLocalizedContent(localization),
-                description.getLocalizedContent(localization),
-                unusedString0C0D.getLocalizedContent(localization)
-        );
     }
 }

@@ -2,23 +2,25 @@ package model;
 
 import main.DataAccess;
 import main.StringHelper;
+import model.strings.KeyedString;
+import model.strings.LocalizedKeyedStringObject;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
-import static reading.ChunkedFileHelper.read2Bytes;
-import static reading.ChunkedFileHelper.read4Bytes;
+import static reading.ChunkedFileHelper.*;
 
 /**
  * ply_save.bin
  */
-public class PlayerCharStatDataObject implements Nameable {
+public class PlayerCharStatDataObject implements Nameable, Writable {
     public static final int LENGTH = 0x9C;
 
     private final int[] bytes;
 
-    public LocalizedStringObject name = new LocalizedStringObject();
+    public LocalizedKeyedStringObject name = new LocalizedKeyedStringObject();
     int nameOffset;
     private int nameKey;
 
@@ -151,17 +153,40 @@ public class PlayerCharStatDataObject implements Nameable {
         if (stringBytes == null || stringBytes.length == 0) {
             return;
         }
-        name.readAndSetLocalizedContent(localization, stringBytes, nameOffset);
+        name.readAndSetLocalizedContent(localization, stringBytes, nameOffset, nameKey);
     }
 
     public void setLocalizations(PlayerCharStatDataObject localizationObject) {
         localizationObject.name.copyInto(name);
     }
 
-    public String getStrings() {
+    @Override
+    public LocalizedKeyedStringObject getKeyedString(String title) {
+        return switch (title) {
+            case "name" -> name;
+            default -> null;
+        };
+    }
+
+    @Override
+    public int[] toBytes(String localization) {
+        int[] array = new int[CustomizationDataObject.LENGTH];
+        write4Bytes(array, 0x00, name.getLocalizedContent(localization).toHeaderBytes());
+        write4Bytes(array, 0x04, baseHp);
+        write4Bytes(array, 0x08, baseMp);
+        // TODO
+        return array;
+    }
+
+    @Override
+    public Stream<KeyedString> streamKeyedStrings(String localization) {
+        return Stream.of(name.getLocalizedContent(localization));
+    }
+
+    public String buildStrings() {
         List<String> list = new ArrayList<>();
         list.add("Name at Offset " + StringHelper.formatHex4(nameOffset) + ":");
-        list.add(name.getAllContent());
+        list.add(name.getDefaultContent().getString());
         // TODO
         String full = list.stream().filter(s -> s != null && !s.isBlank()).collect(Collectors.joining("\n"));
         return full;
@@ -185,6 +210,6 @@ public class PlayerCharStatDataObject implements Nameable {
 
     @Override
     public String getName(String localization) {
-        return name.getLocalizedContent(localization);
+        return name.getLocalizedString(localization);
     }
 }

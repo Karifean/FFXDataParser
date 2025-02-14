@@ -1,27 +1,31 @@
 package model.spheregrid;
 
 import main.DataAccess;
-import main.DataReadingManager;
 import main.StringHelper;
-import model.AbilityDataObject;
-import model.LocalizedStringObject;
-import model.Nameable;
+import model.*;
 import atel.model.StackObject;
+import model.strings.KeyedString;
+import model.strings.LocalizedKeyedStringObject;
+import reading.ChunkedFileHelper;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import static reading.ChunkedFileHelper.write2Bytes;
+import static reading.ChunkedFileHelper.write4Bytes;
 
 /**
  * sphere.bin
  * referenced in AbilityDataObject
  */
-public class SphereGridSphereTypeDataObject implements Nameable {
+public class SphereGridSphereTypeDataObject implements Writable {
     public static final int LENGTH = 0x10;
     private final int[] bytes;
 
-    public LocalizedStringObject description = new LocalizedStringObject();
-    public LocalizedStringObject unusedString0405 = new LocalizedStringObject();
+    public LocalizedKeyedStringObject description = new LocalizedKeyedStringObject();
+    public LocalizedKeyedStringObject unusedString0405 = new LocalizedKeyedStringObject();
 
     private int descriptionOffset;
     private int descriptionKey;
@@ -41,10 +45,6 @@ public class SphereGridSphereTypeDataObject implements Nameable {
         mapBytes();
         mapFlags();
         mapStrings(stringBytes, localization);
-    }
-
-    public SphereGridSphereTypeDataObject(int[] bytes) {
-        this(bytes, null, DataReadingManager.DEFAULT_LOCALIZATION);
     }
 
     private void mapBytes() {
@@ -68,8 +68,37 @@ public class SphereGridSphereTypeDataObject implements Nameable {
         if (stringBytes == null || stringBytes.length == 0) {
             return;
         }
-        description.readAndSetLocalizedContent(localization, stringBytes, descriptionOffset);
-        unusedString0405.readAndSetLocalizedContent(localization, stringBytes, unusedString0405Offset);
+        description.readAndSetLocalizedContent(localization, stringBytes, descriptionOffset, descriptionKey);
+        unusedString0405.readAndSetLocalizedContent(localization, stringBytes, unusedString0405Offset, unusedString0405Key);
+    }
+
+    @Override
+    public LocalizedKeyedStringObject getKeyedString(String title) {
+        return switch (title) {
+            case "description" -> description;
+            default -> null;
+        };
+    }
+
+    @Override
+    public Stream<KeyedString> streamKeyedStrings(String localization) {
+        return Stream.of(
+                description.getLocalizedContent(localization),
+                unusedString0405.getLocalizedContent(localization)
+        );
+    }
+
+    @Override
+    public int[] toBytes(String localization) {
+        int[] array = new int[SphereGridSphereTypeDataObject.LENGTH];
+        write4Bytes(array, 0x00, description.getLocalizedContent(localization).toHeaderBytes());
+        write4Bytes(array, 0x04, unusedString0405.getLocalizedContent(localization).toHeaderBytes());
+        write2Bytes(array, 0x08, actionByte);
+        write2Bytes(array, 0x0A, activationBitfield);
+        array[0x0C] = rangeByte;
+        array[0x0D] = specialRole;
+        write2Bytes(array, 0x0E, alwaysZero);
+        return array;
     }
 
     public void setLocalizations(SphereGridSphereTypeDataObject localizationObject) {
@@ -102,19 +131,12 @@ public class SphereGridSphereTypeDataObject implements Nameable {
             list.add("Not Zero !? " + alwaysZero);
         }
         String full = list.stream().filter(s -> s != null && !s.isBlank()).collect(Collectors.joining(", "));
-        String descriptionStr = (descriptionOffset > 0 ? description.getDefaultContent() : "");
+        String descriptionStr = (descriptionOffset > 0 ? description.getDefaultContent().toString() : "");
         return "{ " + full + " } " + descriptionStr;
     }
 
-    @Override
-    public String getName(String localization) {
-        return this.toString();
-    }
-
     private int read2Bytes(int offset) {
-        int val = bytes[offset];
-        val += bytes[offset+1] * 0x100;
-        return val;
+        return ChunkedFileHelper.read2Bytes(bytes, offset);
     }
 
     private static String asMove(int idx) {

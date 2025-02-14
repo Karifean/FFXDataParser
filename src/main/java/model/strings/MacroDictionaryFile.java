@@ -1,4 +1,4 @@
-package model;
+package model.strings;
 
 import main.StringHelper;
 import reading.Chunk;
@@ -10,7 +10,7 @@ import java.util.List;
  * macrodic.dcp
  */
 public class MacroDictionaryFile {
-    List<List<String>> allStrings = new ArrayList<>();
+    List<List<MacroString>> allStrings = new ArrayList<>();
 
     private final String localization;
 
@@ -21,11 +21,11 @@ public class MacroDictionaryFile {
         }
     }
 
-    private List<String> mapStringsForChunk(Chunk chunk) {
+    private List<MacroString> mapStringsForChunk(Chunk chunk) {
         if (chunk.offset == 0) {
             return List.of();
         }
-        return StringHelper.readStringData(chunk.bytes, false, localization);
+        return MacroString.fromStringData(chunk.bytes, StringHelper.localizationToCharset(localization));
     }
 
     public void publishStrings() {
@@ -36,10 +36,10 @@ public class MacroDictionaryFile {
     }
 
     private void publishStringsOfChunk(int i) {
-        List<String> list = allStrings.get(i);
+        List<MacroString> list = allStrings.get(i);
         int stringCount = list.size();
         for (int j = 0; j < stringCount; j++) {
-            StringHelper.MACRO_LOOKUP.computeIfAbsent(i * 0x100 + j, k -> new LocalizedStringObject()).setLocalizedContent(localization, list.get(j));
+            StringHelper.MACRO_LOOKUP.computeIfAbsent(i * 0x100 + j, k -> new LocalizedMacroStringObject()).setLocalizedContent(localization, list.get(j));
         }
     }
 
@@ -47,10 +47,12 @@ public class MacroDictionaryFile {
     public String toString() {
         StringBuilder full = new StringBuilder();
         for (int i = 0; i < allStrings.size(); i++) {
-            List<String> list = allStrings.get(i);
-            full.append("- Macro Dict #").append(i).append(" -\n");
+            List<MacroString> list = allStrings.get(i);
+            full.append("- Macro Dict ").append(StringHelper.hex2WithSuffix(i)).append(" -\n");
             for (int j = 0; j < list.size(); j++) {
-                full.append("String #").append(j).append(":").append(list.get(j)).append('\n');
+                MacroString macroString = list.get(j);
+                full.append("String ").append(StringHelper.hex2WithSuffix(j)).append(": ").append(macroString.toString());
+                full.append('\n');
             }
         }
         return full.toString();

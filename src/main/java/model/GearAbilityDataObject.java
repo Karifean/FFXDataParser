@@ -1,6 +1,8 @@
 package model;
 
 import main.StringHelper;
+import model.strings.KeyedString;
+import model.strings.LocalizedKeyedStringObject;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -9,6 +11,8 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static reading.ChunkedFileHelper.write4Bytes;
+
 /**
  * a_ability.bin
  */
@@ -16,10 +20,10 @@ public class GearAbilityDataObject implements Nameable, Writable {
     public static final int LENGTH = 0x6C;
     private final int[] bytes;
 
-    public LocalizedStringObject name = new LocalizedStringObject();
-    public LocalizedStringObject unusedString0405 = new LocalizedStringObject();
-    public LocalizedStringObject description = new LocalizedStringObject();
-    public LocalizedStringObject unusedString0C0D = new LocalizedStringObject();
+    public LocalizedKeyedStringObject name = new LocalizedKeyedStringObject();
+    public LocalizedKeyedStringObject unusedString0405 = new LocalizedKeyedStringObject();
+    public LocalizedKeyedStringObject description = new LocalizedKeyedStringObject();
+    public LocalizedKeyedStringObject unusedString0C0D = new LocalizedKeyedStringObject();
     public int nameOffset;
     public int unusedString0405Offset;
     public int descriptionOffset;
@@ -255,7 +259,7 @@ public class GearAbilityDataObject implements Nameable, Writable {
     }
 
     public String getName(String localization) {
-        return name.getLocalizedContent(localization);
+        return name.getLocalizedString(localization);
     }
 
     private void mapBytes() {
@@ -356,16 +360,12 @@ public class GearAbilityDataObject implements Nameable, Writable {
     }
 
     @Override
-    public int[] toBytes(String localization, Map<String, Integer> stringMap) {
+    public int[] toBytes(String localization) {
         int[] array = new int[GearAbilityDataObject.LENGTH];
-        write2Bytes(array, 0x00, stringMap.get(name.getLocalizedContent(localization)));
-        write2Bytes(array, 0x02, nameKey);
-        write2Bytes(array, 0x04, stringMap.get(unusedString0405.getLocalizedContent(localization)));
-        write2Bytes(array, 0x06, unusedString0405Key);
-        write2Bytes(array, 0x08, stringMap.get(description.getLocalizedContent(localization)));
-        write2Bytes(array, 0x0A, descriptionKey);
-        write2Bytes(array, 0x0C, stringMap.get(unusedString0C0D.getLocalizedContent(localization)));
-        write2Bytes(array, 0x0E, unusedString0C0DKey);
+        write4Bytes(array, 0x00, name.getLocalizedContent(localization).toHeaderBytes());
+        write4Bytes(array, 0x04, unusedString0405.getLocalizedContent(localization).toHeaderBytes());
+        write4Bytes(array, 0x08, description.getLocalizedContent(localization).toHeaderBytes());
+        write4Bytes(array, 0x0C, unusedString0C0D.getLocalizedContent(localization).toHeaderBytes());
         array[0x10] = sosFlagByte;
         array[0x11] = elementStrike;
         array[0x12] = elementAbsorb;
@@ -579,10 +579,10 @@ public class GearAbilityDataObject implements Nameable, Writable {
     }
 
     private void mapStrings(int[] stringBytes, String localization) {
-        name.readAndSetLocalizedContent(localization, stringBytes, nameOffset);
-        unusedString0405.readAndSetLocalizedContent(localization, stringBytes, unusedString0405Offset);
-        description.readAndSetLocalizedContent(localization, stringBytes, descriptionOffset);
-        unusedString0C0D.readAndSetLocalizedContent(localization, stringBytes, unusedString0C0DOffset);
+        name.readAndSetLocalizedContent(localization, stringBytes, nameOffset, nameKey);
+        unusedString0405.readAndSetLocalizedContent(localization, stringBytes, unusedString0405Offset, unusedString0405Key);
+        description.readAndSetLocalizedContent(localization, stringBytes, descriptionOffset, descriptionKey);
+        unusedString0C0D.readAndSetLocalizedContent(localization, stringBytes, unusedString0C0DOffset, unusedString0C0DKey);
     }
 
     public void setLocalizations(GearAbilityDataObject localizationObject) {
@@ -593,13 +593,22 @@ public class GearAbilityDataObject implements Nameable, Writable {
     }
 
     @Override
-    public Stream<String> getStrings(String localization) {
+    public Stream<KeyedString> streamKeyedStrings(String localization) {
         return Stream.of(
                 name.getLocalizedContent(localization),
                 unusedString0405.getLocalizedContent(localization),
                 description.getLocalizedContent(localization),
                 unusedString0C0D.getLocalizedContent(localization)
         );
+    }
+
+    @Override
+    public LocalizedKeyedStringObject getKeyedString(String title) {
+        return switch (title) {
+            case "name" -> name;
+            case "description" -> description;
+            default -> null;
+        };
     }
 
     @Override
@@ -617,7 +626,7 @@ public class GearAbilityDataObject implements Nameable, Writable {
             list.add("Byte68=" + byte68usually14);
         }
         String full = list.stream().filter(s -> s != null && !s.isBlank()).collect(Collectors.joining(", "));
-        String descriptionStr = (descriptionOffset > 0 ? description.getDefaultContent() : "");
+        String descriptionStr = (descriptionOffset > 0 ? description.getDefaultContent().toString() : "");
         return String.format("%-18s", getName()) + " { " + full + " } " + descriptionStr;
     }
 

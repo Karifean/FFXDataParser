@@ -9,6 +9,8 @@ import model.*;
 import model.spheregrid.SphereGridLayoutDataObject;
 import model.spheregrid.SphereGridNodeTypeDataObject;
 import model.spheregrid.SphereGridSphereTypeDataObject;
+import model.strings.LocalizedFieldStringObject;
+import model.strings.MacroDictionaryFile;
 import reading.Chunk;
 import reading.ChunkedFileHelper;
 import reading.DataFileReader;
@@ -400,7 +402,7 @@ public class DataReadingManager {
                 }
             }
         }
-        List<LocalizedStringObject> localizedStrings = StringHelper.readLocalizedStringFiles("battle/btl/" + endPath);
+        List<LocalizedFieldStringObject> localizedStrings = StringHelper.readLocalizedStringFiles("battle/btl/" + endPath);
         encounterFile.addLocalizations(localizedStrings);
         if (print) {
             encounterFile.parseScript();
@@ -453,7 +455,7 @@ public class DataReadingManager {
         if (eventFile == null) {
             return null;
         }
-        List<LocalizedStringObject> localizedStrings = StringHelper.readLocalizedStringFiles("event/obj_ps3/" + midPath + ".bin");
+        List<LocalizedFieldStringObject> localizedStrings = StringHelper.readLocalizedStringFiles("event/obj_ps3/" + midPath + ".bin");
         eventFile.addLocalizations(localizedStrings);
         if (print) {
             eventFile.parseScript();

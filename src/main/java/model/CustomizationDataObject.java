@@ -2,12 +2,18 @@ package model;
 
 import main.DataAccess;
 import main.StringHelper;
+import model.strings.KeyedString;
+import model.strings.LocalizedKeyedStringObject;
+
+import java.util.stream.Stream;
+
+import static reading.ChunkedFileHelper.write2Bytes;
 
 /**
  * kaizou.bin
  * sum_grow.bin
  */
-public class CustomizationDataObject implements Nameable {
+public class CustomizationDataObject implements Writable {
     public static final int LENGTH = 0x08;
     private final int[] bytes;
 
@@ -22,16 +28,33 @@ public class CustomizationDataObject implements Nameable {
         mapBytes();
     }
 
-    public CustomizationDataObject(int[] bytes) {
-        this(bytes, null);
-    }
-
     private void mapBytes() {
         customizeTargetByte = read2Bytes(0x00);
         customizedAbility = read2Bytes(0x02);
         requiredItemType = read2Bytes(0x04);
         requiredItemQuantity = bytes[0x06];
         requiredItemQuantityBase = bytes[0x07];
+    }
+
+    @Override
+    public Stream<KeyedString> streamKeyedStrings(String localization) {
+        return Stream.of();
+    }
+
+    @Override
+    public LocalizedKeyedStringObject getKeyedString(String title) {
+        return null;
+    }
+
+    @Override
+    public int[] toBytes(String localization) {
+        int[] array = new int[CustomizationDataObject.LENGTH];
+        write2Bytes(array, 0x00, customizeTargetByte);
+        write2Bytes(array, 0x02, customizedAbility);
+        write2Bytes(array, 0x04, requiredItemType);
+        array[0x06] = requiredItemQuantity;
+        array[0x07] = requiredItemQuantityBase;
+        return array;
     }
 
     @Override
@@ -49,11 +72,6 @@ public class CustomizationDataObject implements Nameable {
             String costString = requiredItemQuantityBase + "x " + asMove(requiredItemType);
             return customizeTarget + " - " + result + ": " + costString;
         }
-    }
-
-    @Override
-    public String getName(String localization) {
-        return this.toString();
     }
 
     private static String asStatIncrease(int idx) {

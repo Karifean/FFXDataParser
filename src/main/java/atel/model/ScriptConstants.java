@@ -445,7 +445,7 @@ public abstract class ScriptConstants {
         putEnum("stringVarType", 0x37, "Treasure Label");
 
         for (int i = 0; i <= 60; i++) {
-            String name = StringHelper.MACRO_LOOKUP.get(0x800 + i).getDefaultContent();
+            String name = StringHelper.MACRO_LOOKUP.get(0x800 + i).getDefaultContent().toString();
             putEnum("blitzTech", i, name);
             if (i > 0) {
                 if (i < 31) {
@@ -1346,27 +1346,24 @@ public abstract class ScriptConstants {
     }
 
     private static void addEnumsFromCsv(File file) throws IOException {
-        try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
-            String line;
-            while ((line = reader.readLine()) != null) {
-                String[] components = line.split(",");
-                if (components.length >= 3) {
-                    String type = nullIfBlankElseTrimmed(components[0]);
-                    String indexString = nullIfBlankElseTrimmed(components[1]);
-                    if (indexString.startsWith("0x")) {
-                        indexString = indexString.substring(2);
-                    }
-                    String internalName = nullIfBlankElseTrimmed(components[2]);
-                    try {
-                        int idx = Integer.parseInt(indexString, 16);
-                        String readableName = components.length >= 4 ? nullIfBlankElseTrimmed(components[3]) : null;
-                        putEnum(type, idx, readableName, internalName);
-                    } catch (NumberFormatException ignored) {
-                        System.err.println("Cannot parse index in csv=" + file.getPath() + " index=" + indexString);
-                    }
-                } else {
-                    System.err.println("Erroneous line in csv=" + file.getPath() + " line=" + line);
+        List<String[]> lines = FileAccessorWithMods.csvToList(file);
+        for (String[] cells : lines) {
+            if (cells.length >= 3) {
+                String type = nullIfBlankElseTrimmed(cells[0]);
+                String indexString = nullIfBlankElseTrimmed(cells[1]);
+                if (indexString.startsWith("0x")) {
+                    indexString = indexString.substring(2);
                 }
+                String internalName = nullIfBlankElseTrimmed(cells[2]);
+                try {
+                    int idx = Integer.parseInt(indexString, 16);
+                    String readableName = cells.length >= 4 ? nullIfBlankElseTrimmed(cells[3]) : null;
+                    putEnum(type, idx, readableName, internalName);
+                } catch (NumberFormatException ignored) {
+                    System.err.println("Cannot parse index in csv=" + file.getPath() + " index=" + indexString);
+                }
+            } else {
+                System.err.println("Erroneous line in csv=" + file.getPath() + " line=" + String.join(",", cells));
             }
         }
     }

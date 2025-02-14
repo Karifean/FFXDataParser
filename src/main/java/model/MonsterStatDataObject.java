@@ -3,6 +3,8 @@ package model;
 import main.DataAccess;
 import main.StringHelper;
 import atel.model.StackObject;
+import model.strings.KeyedString;
+import model.strings.LocalizedKeyedStringObject;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -29,11 +31,11 @@ public class MonsterStatDataObject implements Nameable, Writable {
     int unusedString0809Offset;
     int scanTextOffset;
     int unusedString1011Offset;
-    public LocalizedStringObject name = new LocalizedStringObject();
-    public LocalizedStringObject sensorText = new LocalizedStringObject();
-    public LocalizedStringObject unusedString0809 = new LocalizedStringObject();
-    public LocalizedStringObject scanText = new LocalizedStringObject();
-    public LocalizedStringObject unusedString1011 = new LocalizedStringObject();
+    public LocalizedKeyedStringObject name = new LocalizedKeyedStringObject();
+    public LocalizedKeyedStringObject sensorText = new LocalizedKeyedStringObject();
+    public LocalizedKeyedStringObject unusedString0809 = new LocalizedKeyedStringObject();
+    public LocalizedKeyedStringObject scanText = new LocalizedKeyedStringObject();
+    public LocalizedKeyedStringObject unusedString1011 = new LocalizedKeyedStringObject();
     int nameKey;
     int sensorTextKey;
     int unusedString0809Key;
@@ -332,18 +334,13 @@ public class MonsterStatDataObject implements Nameable, Writable {
     }
 
     @Override
-    public int[] toBytes(String localization, Map<String, Integer> stringMap) {
+    public int[] toBytes(String localization) {
         int[] array = new int[MonsterStatDataObject.LENGTH];
-        write2Bytes(array, 0x00, stringMap.get(name.getLocalizedContent(localization)));
-        write2Bytes(array, 0x02, nameKey);
-        write2Bytes(array, 0x04, stringMap.get(sensorText.getLocalizedContent(localization)));
-        write2Bytes(array, 0x06, sensorTextKey);
-        write2Bytes(array, 0x08, stringMap.get(unusedString0809.getLocalizedContent(localization)));
-        write2Bytes(array, 0x0A, unusedString0809Key);
-        write2Bytes(array, 0x0C, stringMap.get(scanText.getLocalizedContent(localization)));
-        write2Bytes(array, 0x0E, scanTextKey);
-        write2Bytes(array, 0x10, stringMap.get(unusedString1011.getLocalizedContent(localization)));
-        write2Bytes(array, 0x12, unusedString1011Key);
+        write4Bytes(array, 0x00, name.getLocalizedContent(localization).toHeaderBytes());
+        write4Bytes(array, 0x04, sensorText.getLocalizedContent(localization).toHeaderBytes());
+        write4Bytes(array, 0x08, unusedString0809.getLocalizedContent(localization).toHeaderBytes());
+        write4Bytes(array, 0x0C, scanText.getLocalizedContent(localization).toHeaderBytes());
+        write4Bytes(array, 0x10, unusedString1011.getLocalizedContent(localization).toHeaderBytes());
         write4Bytes(array, 0x14, hp);
         write4Bytes(array, 0x18, mp);
         write4Bytes(array, 0x1C, overkillThreshold);
@@ -411,7 +408,7 @@ public class MonsterStatDataObject implements Nameable, Writable {
     }
 
     @Override
-    public Stream<String> getStrings(String localization) {
+    public Stream<KeyedString> streamKeyedStrings(String localization) {
         return Stream.of(
                 name.getLocalizedContent(localization),
                 sensorText.getLocalizedContent(localization),
@@ -421,15 +418,25 @@ public class MonsterStatDataObject implements Nameable, Writable {
         );
     }
 
+    @Override
+    public LocalizedKeyedStringObject getKeyedString(String title) {
+        return switch (title) {
+            case "name" -> name;
+            case "sensor" -> sensorText;
+            case "scan" -> scanText;
+            default -> null;
+        };
+    }
+
     private void mapStrings(int[] stringBytes, String localization) {
         if (stringBytes == null || stringBytes.length == 0) {
             return;
         }
-        name.readAndSetLocalizedContent(localization, stringBytes, nameOffset);
-        sensorText.readAndSetLocalizedContent(localization, stringBytes, sensorTextOffset);
-        unusedString0809.readAndSetLocalizedContent(localization, stringBytes, unusedString0809Offset);
-        scanText.readAndSetLocalizedContent(localization, stringBytes, scanTextOffset);
-        unusedString1011.readAndSetLocalizedContent(localization, stringBytes, unusedString1011Offset);
+        name.readAndSetLocalizedContent(localization, stringBytes, nameOffset, nameKey);
+        sensorText.readAndSetLocalizedContent(localization, stringBytes, sensorTextOffset, sensorTextKey);
+        unusedString0809.readAndSetLocalizedContent(localization, stringBytes, unusedString0809Offset, unusedString0809Key);
+        scanText.readAndSetLocalizedContent(localization, stringBytes, scanTextOffset, scanTextKey);
+        unusedString1011.readAndSetLocalizedContent(localization, stringBytes, unusedString1011Offset, unusedString1011Key);
     }
 
     public void addLocalizations(MonsterStatDataObject localizationObject) {
@@ -442,18 +449,18 @@ public class MonsterStatDataObject implements Nameable, Writable {
 
     public String buildStrings(String localization) {
         List<String> list = new ArrayList<>();
-        list.add("Name: " + name.getLocalizedContent(localization) + " (Offset " + StringHelper.formatHex4(nameOffset) + ")");
+        list.add("Name: " + name.getLocalizedString(localization) + " (Offset " + StringHelper.formatHex4(nameOffset) + ")");
         list.add("- Sensor Text - (Offset " + StringHelper.formatHex4(sensorTextOffset) + ")");
-        list.add(sensorText.getLocalizedContent(localization));
+        list.add(sensorText.getLocalizedString(localization));
         list.add("- Scan Text - (Offset " + StringHelper.formatHex4(scanTextOffset) + ")");
-        list.add(scanText.getLocalizedContent(localization));
+        list.add(scanText.getLocalizedString(localization));
         String full = list.stream().filter(s -> s != null && !s.isBlank()).collect(Collectors.joining("\n"));
         return full;
     }
 
     @Override
     public String getName(String localization) {
-        return name.getLocalizedContent(localization);
+        return name.getLocalizedString(localization);
     }
 
     @Override

@@ -3,12 +3,15 @@ package reading;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
 
 public class FileAccessorWithMods {
     public static final String RESOURCES_ROOT = "src/main/resources/";
     public static String GAME_FILES_ROOT = RESOURCES_ROOT;
     public static final String MODS_FOLDER = "mods/";
     private static final boolean DISABLE_MODS = false;
+    private static final String CSV_LINE_REGEX = ",(?=([^\"]*\"[^\"]*\")*[^\"]*$)";
 
     public static File getRealFile(String path) {
         return new File(GAME_FILES_ROOT + path);
@@ -36,6 +39,26 @@ public class FileAccessorWithMods {
 
     public static DataInputStream readFile(File file) throws FileNotFoundException {
         return new DataInputStream(new BufferedInputStream(new FileInputStream(file)));
+    }
+
+    public static List<String[]> csvToList(File file) throws IOException {
+        List<String[]> list = new ArrayList<>();
+        if (file.exists()) {
+            try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    String[] split = line.split(CSV_LINE_REGEX);
+                    for (int i = 0; i < split.length; i++) {
+                        String single = split[i];
+                        if (single.startsWith("\"")) {
+                            split[i] = single.substring(1, single.length() - 1);
+                        }
+                    }
+                    list.add(split);
+                }
+            }
+        }
+        return list;
     }
 
     public static void writeByteArrayToFile(String path, int[] bytes) {

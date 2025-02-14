@@ -2,14 +2,19 @@ package model;
 
 import main.DataAccess;
 import main.StringHelper;
+import model.strings.KeyedString;
+import model.strings.LocalizedKeyedStringObject;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Stream;
+
+import static reading.ChunkedFileHelper.write2Bytes;
 
 /**
  * arms_shop.bin
  */
-public class GearShopDataObject implements Nameable {
+public class GearShopDataObject implements Writable {
     public static final int LENGTH = 0x22;
     private final int[] bytes;
 
@@ -34,6 +39,26 @@ public class GearShopDataObject implements Nameable {
     }
 
     @Override
+    public Stream<KeyedString> streamKeyedStrings(String localization) {
+        return Stream.of();
+    }
+
+    @Override
+    public LocalizedKeyedStringObject getKeyedString(String title) {
+        return null;
+    }
+
+    @Override
+    public int[] toBytes(String localization) {
+        int[] array = new int[GearShopDataObject.LENGTH];
+        write2Bytes(array, 0x00, unusedPrices);
+        for (int i = 0; i < 0x10; i++) {
+            write2Bytes(array, i * 2 + 2, offeredGearIndexes[i]);
+        }
+        return array;
+    }
+
+    @Override
     public String toString() {
         List<String> list = new ArrayList<>();
         list.add("Price (unused): " + unusedPrices + "%");
@@ -46,11 +71,6 @@ public class GearShopDataObject implements Nameable {
             }
         }
         return String.join("\n", list);
-    }
-
-    @Override
-    public String getName(String localization) {
-        return this.toString();
     }
 
     private int read2Bytes(int offset) {

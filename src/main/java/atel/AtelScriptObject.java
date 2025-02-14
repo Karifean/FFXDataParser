@@ -2,7 +2,8 @@ package atel;
 
 import atel.model.*;
 import main.StringHelper;
-import model.LocalizedStringObject;
+import model.strings.LocalizedFieldStringObject;
+import model.strings.LocalizedStringObject;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -49,7 +50,7 @@ public class AtelScriptObject {
     protected int scriptCodeEndAddress;
     protected int namespaceCount;  // Total number of workers
     protected int actorCount; // Total number of workers except subroutines
-    public List<LocalizedStringObject> strings;
+    public List<LocalizedFieldStringObject> strings;
     public List<Integer> areaNameIndexes;
     Stack<StackObject> stack = new Stack<>();
     Map<Integer, String> currentTempITypes = new HashMap<>();
@@ -130,7 +131,7 @@ public class AtelScriptObject {
         parseBattleWorkerTypes();
     }
 
-    public void setStrings(List<LocalizedStringObject> strings) {
+    public void setStrings(List<LocalizedFieldStringObject> strings) {
         this.strings = strings;
     }
 
@@ -961,8 +962,8 @@ public class AtelScriptObject {
             int firstAreaNameIndex = areaNameIndexes.get(0);
             List<Integer> differentAreaNameIndexes = areaNameIndexes.stream().filter((id) -> id != firstAreaNameIndex).toList();
             lines.add("Area Names");
-            lines.add(MACRO_LOOKUP.get(0xB00 + firstAreaNameIndex).getDefaultContent());
-            differentAreaNameIndexes.forEach(i -> lines.add(MACRO_LOOKUP.get(0xB00 + i).getDefaultContent()));
+            lines.add(MACRO_LOOKUP.get(0xB00 + firstAreaNameIndex).toString());
+            differentAreaNameIndexes.forEach(i -> lines.add(MACRO_LOOKUP.get(0xB00 + i).toString()));
         }
         lines.add(namespaceCount + " Workers Total");
         for (int i = 0; i < namespaceCount; i++) {

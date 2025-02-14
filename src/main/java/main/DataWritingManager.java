@@ -2,8 +2,7 @@ package main;
 
 import atel.EncounterFile;
 import atel.EventFile;
-import model.LocalizedStringObject;
-import model.StringStruct;
+import model.strings.*;
 import model.Writable;
 import reading.FileAccessorWithMods;
 
@@ -12,6 +11,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static main.DataReadingManager.LOCALIZATIONS;
 import static main.DataReadingManager.getLocalizationRoot;
@@ -21,19 +21,19 @@ import static reading.FileAccessorWithMods.MODS_FOLDER;
 public class DataWritingManager {
 
     public static int[] dataObjectsToBytes(Writable[] objects, int length, int from, int to, String localization, final boolean optimizeStrings) {
-        List<String> strings = Arrays.stream(objects).flatMap(ab -> ab.getStrings(localization)).collect(Collectors.toList());
-        StringStruct stringStruct = StringHelper.createStringMap(strings, localization, optimizeStrings);
+        Stream<KeyedString> stringStream = Arrays.stream(objects).flatMap(ab -> ab.streamKeyedStrings(localization));
+        int[] stringBytes = KeyedString.rebuildKeyedStrings(stringStream, StringHelper.localizationToCharset(localization), optimizeStrings);
         List<Integer> bytes = new ArrayList<>(List.of(1, 0, 0, 0, 0, 0, 0, 0));
         add2Bytes(bytes, from);
-        add2Bytes(bytes, to);
+        add2Bytes(bytes, to - 1);
         add2Bytes(bytes, length);
         add2Bytes(bytes, objects.length * length);
         bytes.addAll(List.of(0x14, 0x00, 0x00, 0x00));
         for (Writable obj : objects) {
-            int[] abilityBytes = obj.toBytes(localization, stringStruct.stringToOffsetMap);
+            int[] abilityBytes = obj.toBytes(localization);
             bytes.addAll(Arrays.stream(abilityBytes).boxed().collect(Collectors.toList()));
         }
-        bytes.addAll(Arrays.stream(stringStruct.stringBytes).boxed().collect(Collectors.toList()));
+        bytes.addAll(Arrays.stream(stringBytes).boxed().collect(Collectors.toList()));
         int[] fullBytes = new int[bytes.size()];
         for (int i = 0; i < bytes.size(); i++) {
             fullBytes[i] = bytes.get(i);
@@ -60,7 +60,7 @@ public class DataWritingManager {
             return;
         }
         String path = "event/obj_ps3/" + id.substring(0, 2) + '/' + id + '/' + id + ".bin";
-        writeStringFileForAllLocalizations(path, event.strings, true);
+        writeStringFileForAllLocalizations(path, event.strings);
     }
 
     public static void writeEncounterStringsForAllLocalizations(String id) {
@@ -69,30 +69,26 @@ public class DataWritingManager {
             return;
         }
         String path = "battle/btl/" + id + '/' + id + ".bin";
-        writeStringFileForAllLocalizations(path, encounter.strings, true);
+        writeStringFileForAllLocalizations(path, encounter.strings);
     }
 
-    public static void writeStringFileForAllLocalizations(String path, List<LocalizedStringObject> localizedStrings, final boolean doubleHeaders) {
+    public static void writeStringFileForAllLocalizations(String path, List<LocalizedFieldStringObject> localizedStrings) {
         LOCALIZATIONS.forEach((key, value) -> {
             String localePath = GAME_FILES_ROOT + MODS_FOLDER + getLocalizationRoot(key) + path;
-            int[] bytes = stringsToStringFileBytes(localizedStrings, key, doubleHeaders);
+            int[] bytes = stringsToStringFileBytes(localizedStrings, key);
             FileAccessorWithMods.writeByteArrayToFile(localePath, bytes);
         });
     }
 
-    public static int[] stringsToStringFileBytes(List<LocalizedStringObject> localizedStrings, String localization, boolean doubleHeaders) {
-        List<String> strings = localizedStrings.stream().map(so -> so.getLocalizedContent(localization)).toList();
-        StringStruct stringStruct = StringHelper.createStringMap(strings, localization, false);
-        Map<String, Integer> headMap = stringStruct.get4ByteHeadMap();
+    public static int[] stringsToStringFileBytes(List<LocalizedFieldStringObject> localizedStrings, String localization) {
+        List<FieldString> strings = localizedStrings.stream().map(so -> so.getLocalizedContent(localization)).toList();
+        int[] stringBytes = FieldString.rebuildFieldStrings(strings, StringHelper.localizationToCharset(localization), false);
         List<Integer> bytes = new ArrayList<>();
         strings.forEach(str -> {
-            int head = headMap.get(str);
-            add4Bytes(bytes, head);
-            if (doubleHeaders) {
-                add4Bytes(bytes, head);
-            }
+            add4Bytes(bytes, str.toRegularHeaderBytes());
+            add4Bytes(bytes, str.toSimplifiedHeaderBytes());
         });
-        bytes.addAll(Arrays.stream(stringStruct.stringBytes).boxed().collect(Collectors.toList()));
+        bytes.addAll(Arrays.stream(stringBytes).boxed().collect(Collectors.toList()));
         int[] fullBytes = new int[bytes.size()];
         for (int i = 0; i < bytes.size(); i++) {
             fullBytes[i] = bytes.get(i);

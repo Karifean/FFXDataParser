@@ -5,13 +5,17 @@ import atel.EventFile;
 import main.DataAccess;
 import main.StringHelper;
 import model.AbilityDataObject;
-import model.LocalizedStringObject;
+import model.strings.FieldString;
+import model.strings.LocalizedMacroStringObject;
+import model.strings.LocalizedStringObject;
 import model.Nameable;
 import atel.MonsterFile;
 import atel.AtelScriptObject;
 
 import java.util.*;
 import java.util.stream.Collectors;
+
+import static main.DataReadingManager.DEFAULT_LOCALIZATION;
 
 public class StackObject {
     private static final boolean UNWRAP_SINGLE_NEGATED_BIT = false;
@@ -64,11 +68,11 @@ public class StackObject {
         if (expression) {
             return content;
         }
-        String valueString = asString(this);
+        String valueString = asString(DEFAULT_LOCALIZATION, this);
         if (valueString != null) {
             return valueString;
         } else {
-            return asString(new StackObject(rawType, this));
+            return asString(DEFAULT_LOCALIZATION, new StackObject(rawType, this));
         }
     }
 
@@ -76,15 +80,15 @@ public class StackObject {
         return type != null && !"unknown".equals(type);
     }
 
-    public static String asString(StackObject obj) {
-        return asString(obj.type, obj.rawType, obj.valueSigned, obj.valueUnsigned, obj.parentWorker);
+    public static String asString(String localization, StackObject obj) {
+        return asString(localization, obj.type, obj.rawType, obj.valueSigned, obj.valueUnsigned, obj.parentWorker);
     }
 
-    public static String asString(String type, int value) {
-        return asString(type, null, value, value, null);
+    public static String asString(String localization, String type, int value) {
+        return asString(localization, type, null, value, value, null);
     }
 
-    public static String asString(String type, String rawType, int valueSigned, int valueUnsigned, ScriptWorker parentWorker) {
+    public static String asString(String localization, String type, String rawType, int valueSigned, int valueUnsigned, ScriptWorker parentWorker) {
         if (!isValidType(type)) {
             return null;
         }
@@ -146,7 +150,7 @@ public class StackObject {
             return interpretMenu(valueSigned) + hexSuffix;
         }
         if ("sphereGridNodeState".equals(type)) {
-            return compositeUint16ToString("sgNodeActivationBitfield", "sgNodeType", valueUnsigned, "(Activation: %s, Content: %s)") + hexSuffix;
+            return compositeUint16ToString(localization, "sgNodeActivationBitfield", "sgNodeType", valueUnsigned, "(Activation: %s, Content: %s)") + hexSuffix;
         }
         if ("move".equals(type)) {
             if (valueSigned == 0) {
@@ -155,38 +159,38 @@ public class StackObject {
                 return "Switch/Summon:" + ScriptConstants.getEnumMap("playerChar").get(valueSigned) + hexSuffix;
             } else {
                 AbilityDataObject ability = DataAccess.getMove(valueSigned);
-                return (ability != null ? '"'+ability.getName()+'"' : "????") + hexSuffix;
+                return (ability != null ? '"'+ability.getName(localization)+'"' : "????") + hexSuffix;
             }
         } else if ("charMove".equals(type)) {
             AbilityDataObject ability = DataAccess.getMove(valueSigned + 0x3000);
-            return (ability != null ? '"'+ability.getName()+'"' : "????") + hexSuffix;
+            return (ability != null ? '"'+ability.getName(localization)+'"' : "????") + hexSuffix;
         }
         if ("btlActor".equals(type) && valueSigned >= 0x1000 && valueSigned < 0x2000) {
             try {
                 MonsterFile monster = DataAccess.getMonster(valueSigned);
                 if (monster != null) {
-                    return "Actors:MonsterType=m" + String.format("%03d", valueSigned - 0x1000) + " (" + monster.getName() + ")" + hexSuffix;
+                    return "Actors:MonsterType=m" + String.format("%03d", valueSigned - 0x1000) + " (" + monster.getName(localization) + ")" + hexSuffix;
                 }
             } catch (UnsupportedOperationException ignored) {}
         }
         if ("macroString".equals(type)) {
-            return StringHelper.MACRO_LOOKUP.computeIfAbsent(valueSigned, k -> new LocalizedStringObject()).getDefaultContent();
+            return StringHelper.MACRO_LOOKUP.computeIfAbsent(valueSigned, k -> new LocalizedMacroStringObject()).getLocalizedContent(localization).toString();
         }
         if ("system01String".equals(type)) {
             EncounterFile system01 = DataAccess.getEncounter("system_01");
             if (system01 != null && system01.strings != null && system01.strings.size() > valueSigned) {
-                String targetString = system01.strings.get(valueSigned).getDefaultContent();
-                String nullSafeString = targetString != null ? targetString : "null";
-                String noLineBreakString = nullSafeString.replace("\n", "{\\n}");
+                FieldString fieldString = system01.strings.get(valueSigned).getLocalizedContent(localization);
+                String fieldStringValue = fieldString != null ? fieldString.toString() : null;
+                String noLineBreakString = fieldStringValue != null ? fieldStringValue.replace("\n", "{\\n}") : "null";
                 return '"' + noLineBreakString + '"' + hexSuffix;
             }
         }
         if ("localString".equals(type)) {
             AtelScriptObject parentScript = parentWorker != null ? parentWorker.parentScript : null;
             if (parentScript != null && parentScript.strings != null && parentScript.strings.size() > valueSigned) {
-                String targetString = parentScript.strings.get(valueSigned).getDefaultContent();
-                String nullSafeString = targetString != null ? targetString : "null";
-                String noLineBreakString = nullSafeString.replace("\n", "{\\n}");
+                FieldString fieldString = parentScript.strings.get(valueSigned).getLocalizedContent(localization);
+                String fieldStringValue = fieldString != null ? fieldString.toString() : null;
+                String noLineBreakString = fieldStringValue != null ? fieldStringValue.replace("\n", "{\\n}") : "null";
                 return '"' + noLineBreakString + '"' + hexSuffix;
             }
         }
@@ -194,14 +198,14 @@ public class StackObject {
             String mapName = EventFile.getMapNameById(valueSigned);
             if (mapName != null) {
                 EventFile event = DataAccess.getEvent(mapName);
-                return mapName + (event != null ? " (" + event.getName() + ")" : "") + hexSuffix;
+                return mapName + (event != null ? " (" + event.getName(localization) + ")" : "") + hexSuffix;
             } else {
                 return "Map#" + valueSigned + hexSuffix;
             }
         }
         Nameable object = DataAccess.getNameableObject(type, valueSigned);
         if (object != null) {
-            return object.getName() + hexSuffix;
+            return object.getName(localization) + hexSuffix;
         }
         if (type.endsWith("Bitfield")) {
             return bitfieldToString(type, valueUnsigned) + hexSuffix;
@@ -214,9 +218,9 @@ public class StackObject {
         return null;
     }
 
-    public static String compositeUint16ToString(String hbType, String lbType, int value, String format) {
-        String hbStr = StackObject.asString(hbType, (value & 0xFF00) >> 8);
-        String lbStr = StackObject.asString(lbType, value & 0x00FF);
+    public static String compositeUint16ToString(String localization, String hbType, String lbType, int value, String format) {
+        String hbStr = StackObject.asString(localization, hbType, (value & 0xFF00) >> 8);
+        String lbStr = StackObject.asString(localization, lbType, value & 0x00FF);
         return String.format(format, hbStr, lbStr);
     }
 

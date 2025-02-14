@@ -1,8 +1,7 @@
 package main;
 
 import model.KeyItemDataObject;
-import model.LocalizedStringObject;
-import model.StringStruct;
+import model.strings.*;
 import reading.ChunkedFileHelper;
 import reading.FileAccessorWithMods;
 
@@ -28,14 +27,18 @@ public abstract class StringHelper {
     public static final boolean WRITE_LINEBREAKS_AS_COMMANDS = true;
     public static final Map<String, Map<Integer, Character>> BYTE_TO_CHAR_MAPS = new HashMap<>();
     public static final Map<String, Map<Character, Integer>> CHAR_TO_BYTE_MAPS = new HashMap<>();
-    public static final Map<Integer, LocalizedStringObject> MACRO_LOOKUP = new HashMap<>();
+    public static final Map<Integer, LocalizedMacroStringObject> MACRO_LOOKUP = new HashMap<>();
 
     public static String formatHex2(int twoByteValue) {
         return String.format("%02X", twoByteValue);
     }
 
     public static String formatHex4(int fourByteValue) {
-        return String.format("%04X", fourByteValue);
+        String formatted = String.format("%04X", fourByteValue);
+        if (formatted.length() == 8 && formatted.startsWith("FFFF")) {
+            return formatted.substring(4);
+        }
+        return formatted;
     }
 
     public static String hex2Suffix(int twoByteValue) {
@@ -54,12 +57,29 @@ public abstract class StringHelper {
         return fourByteValue + hex4Suffix(fourByteValue);
     }
 
-    public static Integer charToByte(char chr, String localization) {
-        return CHAR_TO_BYTE_MAPS.get(localizationToCharset(localization)).get(chr);
+    public static List<Integer> charToBytes(char chr, String charset) {
+        Integer indexValue = CHAR_TO_BYTE_MAPS.get(charset).get(chr);
+        if (indexValue == null) {
+            return null;
+        }
+        List<Integer> bytes = new ArrayList<>();
+        if (indexValue > 1070) {
+            indexValue -= 1040;
+            bytes.add(0x04);
+        }
+        if (indexValue >= 0x100) {
+            int byte1 = indexValue / 0xD0 + 0x2B;
+            int byte2 = indexValue % 0xD0;
+            bytes.add(byte1);
+            bytes.add(byte2);
+        } else {
+            bytes.add(indexValue);
+        }
+        return bytes;
     }
 
-    public static Integer charToByte(int chr, String localization) {
-        return charToByte((char) chr, localization);
+    public static List<Integer> charToBytes(int chr, String charset) {
+        return charToBytes((char) chr, charset);
     }
 
     public static Character byteToChar(int hex, String localization) {
@@ -154,14 +174,14 @@ public abstract class StringHelper {
         return COLORS_USE_CONSOLE_CODES ? ansiColor : "";
     }
 
-    public static List<LocalizedStringObject> readLocalizedStringFiles(String path) {
-        List<LocalizedStringObject> localized = new ArrayList<>();
+    public static List<LocalizedFieldStringObject> readLocalizedStringFiles(String path) {
+        List<LocalizedFieldStringObject> localized = new ArrayList<>();
         LOCALIZATIONS.forEach((key, value) -> {
-            List<String> localizedStrings = readStringFile(getLocalizationRoot(key) + path, false, key);
+            List<FieldString> localizedStrings = readStringFile(getLocalizationRoot(key) + path, false, key);
             if (localizedStrings != null) {
                 for (int i = 0; i < localizedStrings.size(); i++) {
                     if (i >= localized.size()) {
-                        localized.add(new LocalizedStringObject());
+                        localized.add(new LocalizedFieldStringObject());
                     }
                     if (!localizedStrings.get(i).isEmpty()) {
                         localized.get(i).setLocalizedContent(key, localizedStrings.get(i));
@@ -172,7 +192,7 @@ public abstract class StringHelper {
         return localized;
     }
 
-    public static List<String> readStringFile(String filename, boolean print, String localization) {
+    public static List<FieldString> readStringFile(String filename, boolean print, String localization) {
         File file = FileAccessorWithMods.getRealFile(filename);
         if (file.isDirectory()) {
             String[] contents = file.list();
@@ -182,60 +202,38 @@ public abstract class StringHelper {
             return null;
         }
         int[] bytes = ChunkedFileHelper.fileToBytes(FileAccessorWithMods.resolveFile(filename, print));
-        return readStringData(bytes, print, localization);
+        return FieldString.fromStringData(bytes, print, localization);
     }
 
-    public static List<String> readStringData(int[] bytes, boolean print, String localization) {
-        if (bytes == null || bytes.length <= 0) {
-            return null;
-        }
-        int first = bytes[0x00] + bytes[0x01] * 0x100;
-        int length = 0x04;
-        boolean hasOptions = true;
-        if (first == bytes[0x02] + bytes[0x03] * 0x100) {
-            hasOptions = false;
-        } else if (first == bytes[0x04] + bytes[0x05] * 0x100) {
-            length = 0x08;
-        }
-        int count = first / length;
-        List<String> strings = new ArrayList<>(count);
-        try {
-            for (int i = 0; i < count; i++) {
-                int addr = i * length;
-                int offset = bytes[addr] + bytes[addr + 0x01] * 0x100;
-                int somethingElse = bytes[addr + 0x02];
-                int options = hasOptions ? bytes[addr + 0x03] : 0;
-                if (print) {
-                    String choosable = options > 0 ? " (" + options + " selectable)" : "";
-                    System.out.print("String #" + i + StringHelper.hex4Suffix(offset) + choosable + ":");
+    public static void fillByteList(String actualString, List<Integer> byteList, String charset) {
+        for (int i = 0; i < actualString.length(); i++) {
+            char chr = actualString.charAt(i);
+            List<Integer> cmdBytes = chr == '{' ? StringHelper.parseCommand(actualString, i) : null;
+            if (cmdBytes == null) {
+                List<Integer> bytesOfChar = StringHelper.charToBytes(chr, charset);
+                if (bytesOfChar != null) {
+                    byteList.addAll(bytesOfChar);
+                } else {
+                    System.err.printf("Unknown character %c at index %d in string %s%n", chr, i, actualString);
                 }
-                String out = getStringAtLookupOffset(bytes, offset, localization);
-                if (print) {
-                    System.out.println(out);
-                }
-                strings.add(out);
-                if (length == 0x08) {
-                    int clonedOffset = bytes[addr + 0x04] + bytes[addr + 0x05] * 0x100;
-                    int clonedSomethingElse = bytes[addr + 0x06];
-                    int clonedChoosableOptions = bytes[addr + 0x07];
-                    if (offset != clonedOffset) {
-                        String uncloned = getStringAtLookupOffset(bytes, clonedOffset, localization);
-                        System.err.println("String " + formatHex2(i) + " not cloned, original=\"" + out + "\", other=" + uncloned);
-                    } else if (options != clonedChoosableOptions) {
-                        System.err.println("options " + formatHex2(i) + " not cloned, original=" + options + ", other=" + clonedChoosableOptions);
-                    } else if (somethingElse != clonedSomethingElse) {
-                        System.err.println("somethingElse " + formatHex2(i) + " not cloned, original=" + somethingElse + ", other=" + clonedSomethingElse);
-                    }
-                }
+            } else {
+                byteList.addAll(cmdBytes);
+                int endIndex = actualString.substring(i).indexOf('}');
+                i += endIndex;
             }
-        } catch (Exception e) {
-            System.err.println("Exception during string data reading. (" + e.getLocalizedMessage() + ")");
         }
-        return strings;
     }
 
     public static String bytesToString(int[] bytes, String localization) {
         return getStringAtLookupOffset(bytes, 0, localization);
+    }
+
+    public static int[] getStringBytesAtLookupOffset(int[] table, int offset) {
+        int end = offset;
+        while (end < table.length && table[end] != 0x00) {
+            end++;
+        }
+        return Arrays.copyOfRange(table, offset, end);
     }
 
     public static String getStringAtLookupOffset(int[] table, int offset, String localization) {
@@ -243,10 +241,10 @@ public abstract class StringHelper {
             return "{OOB}";
         }
         StringBuilder out = new StringBuilder();
-        int idx = table[offset];
+        int idx;
         boolean anyColorization = false;
         boolean extraFiveSections = false;
-        while (idx != 0x00) {
+        while (offset < table.length && (idx = table[offset]) != 0x00) {
             int extraOffset = extraFiveSections ? 0x410 : 0;
             extraFiveSections = false;
             if (idx >= 0x30) {
@@ -315,10 +313,12 @@ public abstract class StringHelper {
                 offset++;
                 int varIdx = table[offset] - 0x30;
                 out.append("{KEY:").append(StringHelper.formatHex2(varIdx));
-                KeyItemDataObject keyItem = DataAccess.getKeyItem(varIdx + 0xA000);
-                if (keyItem != null) {
-                    out.append(':').append('"').append(keyItem.getName(localization)).append('"');
-                }
+                try {
+                    KeyItemDataObject keyItem = DataAccess.getKeyItem(varIdx + 0xA000);
+                    if (keyItem != null) {
+                        out.append(':').append('"').append(keyItem.getName(localization)).append('"');
+                    }
+                } catch (UnsupportedOperationException ignored) {}
                 out.append('}');
             } else if (idx == 0x28) {
                 offset++;
@@ -345,10 +345,6 @@ public abstract class StringHelper {
                 out.append("{CMD:").append(StringHelper.formatHex2(idx)).append(':').append(StringHelper.formatHex2(varIdx)).append('}');
             }
             offset++;
-            if (offset >= table.length) {
-                return out.append("{OOB}").toString();
-            }
-            idx = table[offset];
         }
         if (COLORS_USE_CONSOLE_CODES && anyColorization) {
             out.append(ANSI_RESET);
@@ -356,44 +352,34 @@ public abstract class StringHelper {
         return out.toString();
     }
 
-    public static StringStruct createStringMap(final List<String> strings, String localization, final boolean optimize) {
-        final Map<String, Integer> map = new HashMap<>();
-        map.put("", 0);
+    public static List<Integer> stringToByteList(String string, String charset) {
         final List<Integer> byteList = new ArrayList<>();
-        byteList.add(0);
-        Stream<String> stringStream = strings.stream();
-        if (optimize) {
-            stringStream = stringStream.sorted(Comparator.comparingInt(String::length).reversed());
-        }
-        stringStream.forEach((s) -> {
-            if (map.containsKey(s)) {
-                return;
-            }
-            int offset = byteList.size();
-            for (int i = 0; i < (optimize ? s.length() : 1); i++) {
-                char chr = s.charAt(i);
-                map.put(s.substring(i), offset + i);
-                List<Integer> cmdBytes = chr == '{' ? parseCommand(s, i) : null;
-                if (cmdBytes == null) {
-                    Integer byteOfChar = charToByte(chr, localization);
-                    if (byteOfChar < 0x100) {
-                        byteList.add(byteOfChar);
-                    } else {
-                        System.err.println("No handling for byte > 255 yet");
-                    }
+        for (int i = 0; i < string.length(); i++) {
+            char chr = string.charAt(i);
+            List<Integer> cmdBytes = chr == '{' ? parseCommand(string, i) : null;
+            if (cmdBytes == null) {
+                List<Integer> bytesOfChar = charToBytes(chr, charset);
+                if (bytesOfChar != null) {
+                    byteList.addAll(bytesOfChar);
                 } else {
-                    byteList.addAll(cmdBytes);
-                    int endIndex = s.substring(i).indexOf('}');
-                    i += endIndex;
+                    System.err.printf("Unknown character %c at index %d in string %s%n", chr, i, string);
                 }
+            } else {
+                byteList.addAll(cmdBytes);
+                int endIndex = string.substring(i).indexOf('}');
+                i += endIndex;
             }
-            byteList.add(0x00);
-        });
+        }
+        return byteList;
+    }
+
+    public static int[] stringToBytes(String string, String charset) {
+        List<Integer> byteList = stringToByteList(string, charset);
         final int[] stringBytes = new int[byteList.size()];
         for (int i = 0; i < byteList.size(); i++) {
             stringBytes[i] = byteList.get(i);
         }
-        return new StringStruct(map, stringBytes);
+        return stringBytes;
     }
 
     public static List<Integer> parseCommand(String string, int startIndex) {

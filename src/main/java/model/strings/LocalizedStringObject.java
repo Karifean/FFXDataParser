@@ -1,4 +1,4 @@
-package model;
+package model.strings;
 
 import main.DataReadingManager;
 import main.StringHelper;

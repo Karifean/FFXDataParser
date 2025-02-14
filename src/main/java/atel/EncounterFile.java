@@ -3,7 +3,9 @@ package atel;
 import main.StringHelper;
 import model.BattleAreasPositionsDataObject;
 import model.FormationDataObject;
-import model.LocalizedStringObject;
+import model.strings.FieldString;
+import model.strings.LocalizedFieldStringObject;
+import model.strings.LocalizedStringObject;
 import reading.Chunk;
 
 import java.util.List;
@@ -23,7 +25,7 @@ public class EncounterFile {
     int[] japaneseTextBytes;
     int[] ftcxBytes;
     int[] englishTextBytes;
-    public List<LocalizedStringObject> strings;
+    public List<LocalizedFieldStringObject> strings;
 
     private int chunkCount;
 
@@ -69,27 +71,27 @@ public class EncounterFile {
     }
 
     private void mapStrings() {
-        List<String> japaneseStrings = StringHelper.readStringData(japaneseTextBytes, false, "jp");
+        List<FieldString> japaneseStrings = FieldString.fromStringData(japaneseTextBytes, false, "jp");
         if (japaneseStrings != null) {
-            List<LocalizedStringObject> localizedJpStringObjects = japaneseStrings.stream().map(str -> new LocalizedStringObject("jp", str)).collect(Collectors.toList());
+            List<LocalizedFieldStringObject> localizedJpStringObjects = japaneseStrings.stream().map(str -> new LocalizedFieldStringObject("jp", str)).collect(Collectors.toList());
             addLocalizations(localizedJpStringObjects);
         }
-        List<String> englishStrings = StringHelper.readStringData(englishTextBytes, false, "us");
+        List<FieldString> englishStrings = FieldString.fromStringData(englishTextBytes, false, "us");
         if (englishStrings != null) {
-            List<LocalizedStringObject> localizedUsStringObjects = englishStrings.stream().map(str -> new LocalizedStringObject("us", str)).collect(Collectors.toList());
+            List<LocalizedFieldStringObject> localizedUsStringObjects = englishStrings.stream().map(str -> new LocalizedFieldStringObject("us", str)).collect(Collectors.toList());
             addLocalizations(localizedUsStringObjects);
         }
     }
 
-    public void addLocalizations(List<LocalizedStringObject> strings) {
+    public void addLocalizations(List<LocalizedFieldStringObject> strings) {
         if (this.strings == null) {
             this.strings = strings;
             return;
         }
         for (int i = 0; i < strings.size(); i++) {
-            LocalizedStringObject localizationStringObject = strings.get(i);
+            LocalizedFieldStringObject localizationStringObject = strings.get(i);
             if (i < this.strings.size()) {
-                LocalizedStringObject stringObject = this.strings.get(i);
+                LocalizedFieldStringObject stringObject = this.strings.get(i);
                 if (stringObject != null && localizationStringObject != null) {
                     localizationStringObject.copyInto(stringObject);
                 }
