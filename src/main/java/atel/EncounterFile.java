@@ -9,8 +9,6 @@ import reading.Chunk;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static main.DataReadingManager.DEFAULT_LOCALIZATION;
-
 /**
  * jppc/battle/btl/.../.bin
  */
@@ -22,9 +20,9 @@ public class EncounterFile {
     int[] workerMappingBytes;
     int[] formationBytes;
     int[] battleAreasPositionsBytes;
+    int[] japaneseTextBytes;
     int[] ftcxBytes;
     int[] englishTextBytes;
-    int[] japaneseTextBytes;
     public List<LocalizedStringObject> strings;
 
     private int chunkCount;
@@ -71,9 +69,15 @@ public class EncounterFile {
     }
 
     private void mapStrings() {
-        List<String> rawStrings = StringHelper.readStringData(englishTextBytes, false);
-        if (rawStrings != null) {
-            strings = rawStrings.stream().map(str -> new LocalizedStringObject(DEFAULT_LOCALIZATION, str)).collect(Collectors.toList());
+        List<String> japaneseStrings = StringHelper.readStringData(japaneseTextBytes, false, "jp");
+        if (japaneseStrings != null) {
+            List<LocalizedStringObject> localizedJpStringObjects = japaneseStrings.stream().map(str -> new LocalizedStringObject("jp", str)).collect(Collectors.toList());
+            addLocalizations(localizedJpStringObjects);
+        }
+        List<String> englishStrings = StringHelper.readStringData(englishTextBytes, false, "us");
+        if (englishStrings != null) {
+            List<LocalizedStringObject> localizedUsStringObjects = englishStrings.stream().map(str -> new LocalizedStringObject("us", str)).collect(Collectors.toList());
+            addLocalizations(localizedUsStringObjects);
         }
     }
 

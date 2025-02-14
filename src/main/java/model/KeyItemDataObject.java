@@ -4,12 +4,15 @@ import main.StringHelper;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * important.bin
  */
-public class KeyItemDataObject implements Nameable {
+public class KeyItemDataObject implements Nameable, Writable {
+    public static final int LENGTH = 0x14;
     private final int[] bytes;
 
     public LocalizedStringObject name = new LocalizedStringObject();
@@ -57,14 +60,32 @@ public class KeyItemDataObject implements Nameable {
         ordering = bytes[0x13];
     }
 
+    @Override
+    public int[] toBytes(String localization, Map<String, Integer> stringMap) {
+        int[] array = new int[KeyItemDataObject.LENGTH];
+        write2Bytes(array, 0x00, stringMap.get(name.getLocalizedContent(localization)));
+        write2Bytes(array, 0x02, nameKey);
+        write2Bytes(array, 0x04, stringMap.get(unusedString0405.getLocalizedContent(localization)));
+        write2Bytes(array, 0x06, unusedString0405Key);
+        write2Bytes(array, 0x08, stringMap.get(description.getLocalizedContent(localization)));
+        write2Bytes(array, 0x0A, descriptionKey);
+        write2Bytes(array, 0x0C, stringMap.get(unusedString0C0D.getLocalizedContent(localization)));
+        write2Bytes(array, 0x0E, unusedString0C0DKey);
+        array[0x10] = isAlBhedPrimer;
+        array[0x11] = alwaysZero;
+        array[0x12] = unknownByte12;
+        array[0x13] = ordering;
+        return array;
+    }
+
     private void mapFlags() {
     }
 
     private void mapStrings(int[] stringBytes, String localization) {
-        name.setLocalizedContent(localization, StringHelper.getStringAtLookupOffset(stringBytes, nameOffset));
-        unusedString0405.setLocalizedContent(localization, StringHelper.getStringAtLookupOffset(stringBytes, unusedString0405Offset));
-        description.setLocalizedContent(localization, StringHelper.getStringAtLookupOffset(stringBytes, descriptionOffset));
-        unusedString0C0D.setLocalizedContent(localization, StringHelper.getStringAtLookupOffset(stringBytes, unusedString0C0DOffset));
+        name.readAndSetLocalizedContent(localization, stringBytes, nameOffset);
+        unusedString0405.readAndSetLocalizedContent(localization, stringBytes, unusedString0405Offset);
+        description.readAndSetLocalizedContent(localization, stringBytes, descriptionOffset);
+        unusedString0C0D.readAndSetLocalizedContent(localization, stringBytes, unusedString0C0DOffset);
     }
 
     public void setLocalizations(KeyItemDataObject localizationObject) {
@@ -72,6 +93,16 @@ public class KeyItemDataObject implements Nameable {
         localizationObject.unusedString0405.copyInto(unusedString0405);
         localizationObject.description.copyInto(description);
         localizationObject.unusedString0C0D.copyInto(unusedString0C0D);
+    }
+
+    @Override
+    public Stream<String> getStrings(String localization) {
+        return Stream.of(
+                name.getLocalizedContent(localization),
+                unusedString0405.getLocalizedContent(localization),
+                description.getLocalizedContent(localization),
+                unusedString0C0D.getLocalizedContent(localization)
+        );
     }
 
     @Override
@@ -102,5 +133,10 @@ public class KeyItemDataObject implements Nameable {
 
     private static String formatUnknownByte(int bt) {
         return StringHelper.formatHex2(bt) + '=' + String.format("%03d", bt) + '(' + String.format("%8s", Integer.toBinaryString(bt)).replace(' ', '0') + ')';
+    }
+
+    private static void write2Bytes(int[] array, int offset, int value) {
+        array[offset]     =  value & 0x00FF;
+        array[offset + 1] = (value & 0xFF00) >> 8;
     }
 }

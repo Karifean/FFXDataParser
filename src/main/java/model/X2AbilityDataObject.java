@@ -14,10 +14,10 @@ public class X2AbilityDataObject implements Nameable {
     public static final int LENGTH = 0x8C;
     private final int[] bytes;
 
-    public String name;
-    public String dash;
-    public String description;
-    public String otherText;
+    public LocalizedStringObject name;
+    public LocalizedStringObject dash;
+    public LocalizedStringObject description;
+    public LocalizedStringObject otherText;
 
     private int nameOffset;
     int unknownByte2;
@@ -36,7 +36,7 @@ public class X2AbilityDataObject implements Nameable {
     }
 
     public String getName(String localization) {
-        return name;
+        return name.getLocalizedContent(localization);
     }
 
     private void mapBytes() {
@@ -54,8 +54,8 @@ public class X2AbilityDataObject implements Nameable {
     }
 
     private void mapStrings(int[] stringBytes, String localization) {
-        name = StringHelper.getStringAtLookupOffset(stringBytes, nameOffset);
-        description = StringHelper.getStringAtLookupOffset(stringBytes, descriptionOffset);
+        name.readAndSetLocalizedContent(localization, stringBytes, nameOffset);
+        description.readAndSetLocalizedContent(localization, stringBytes, descriptionOffset);
     }
 
     @Override
@@ -63,7 +63,7 @@ public class X2AbilityDataObject implements Nameable {
         List<String> list = new ArrayList<>();
         list.add("anim=" + StringHelper.formatHex4(anim1) + "/" + StringHelper.formatHex4(anim2));
         String full = list.stream().filter(s -> s != null && !s.isBlank()).collect(Collectors.joining(", "));
-        String descriptionStr = (descriptionOffset > 0 ? description : "");
+        String descriptionStr = (descriptionOffset > 0 ? description.getDefaultContent() : "");
         return String.format("%-20s", getName()) + " { " + full + " } " + descriptionStr;
     }
 

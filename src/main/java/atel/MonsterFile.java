@@ -38,10 +38,10 @@ public class MonsterFile implements Nameable {
 
     private void mapObjects() {
         monsterAi = new AtelScriptObject(scriptBytes, workerMappingBytes);
-        monsterStatData = new MonsterStatDataObject(statBytes, Arrays.copyOfRange(statBytes, MonsterStatDataObject.LENGTH, statBytes.length), "us");
+        monsterStatData = new MonsterStatDataObject(statBytes, Arrays.copyOfRange(statBytes, MonsterStatDataObject.LENGTH, statBytes.length), "jp");
         monsterLootData = new MonsterLootDataObject(lootBytes);
         MonsterStatDataObject englishTextStatData = new MonsterStatDataObject(englishTextBytes, Arrays.copyOfRange(englishTextBytes, MonsterStatDataObject.LENGTH, englishTextBytes.length), "us");
-        monsterStatData.setLocalizations(englishTextStatData);
+        monsterStatData.addLocalizations(englishTextStatData);
     }
 
     public void parseScript() {
@@ -68,16 +68,16 @@ public class MonsterFile implements Nameable {
         full.append(monsterLootData).append('\n');
         if (monsterStatData != null) {
             full.append("- Localized Strings -").append('\n');
-            full.append("Name: ").append(monsterStatData.monsterName.getDefaultContent()).append('\n');
+            full.append("Name: ").append(monsterStatData.name.getDefaultContent()).append('\n');
             full.append("- Sensor Text -\n");
-            full.append(monsterStatData.monsterSensorText.getDefaultContent()).append('\n');
+            full.append(monsterStatData.sensorText.getDefaultContent()).append('\n');
             full.append("- Scan Text -").append('\n');
-            full.append(monsterStatData.monsterScanText.getDefaultContent()).append('\n');
+            full.append(monsterStatData.scanText.getDefaultContent()).append('\n');
         }
         return full.toString();
     }
 
     public String getName(String localization) {
-        return monsterStatData != null ? monsterStatData.monsterName.getLocalizedContent(localization) : null;
+        return monsterStatData != null ? monsterStatData.getName(localization) : null;
     }
 }

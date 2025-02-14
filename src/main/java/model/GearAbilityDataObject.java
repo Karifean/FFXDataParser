@@ -7,11 +7,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * a_ability.bin
  */
-public class GearAbilityDataObject implements Nameable {
+public class GearAbilityDataObject implements Nameable, Writable {
     public static final int LENGTH = 0x6C;
     private final int[] bytes;
 
@@ -102,7 +103,6 @@ public class GearAbilityDataObject implements Nameable {
     int statusResistChanceNTide;
 
     int statIncreaseAmount;
-    int unknownByte56;
     int statIncreaseFlags;
     int autoStatusesPermanent;
     int autoStatusesTemporal;
@@ -116,7 +116,7 @@ public class GearAbilityDataObject implements Nameable {
     private int abilityFlags66;
     int unknownByte67;
 
-    int byte67usually14;
+    int byte68usually14;
     public int groupIndex;
     public int groupLevel;
     int internationalBonusIndex; // 1/2/3/4 on Distil Pw/Mn/Sp/Ab, 255 on Ribbon, 254 on everything superceded by Ribbon
@@ -337,8 +337,7 @@ public class GearAbilityDataObject implements Nameable {
         statusResistChanceHaste = bytes[0x53];
         statusResistChanceSlow = bytes[0x54];
         statIncreaseAmount = bytes[0x55];
-        unknownByte56 = bytes[0x56];
-        statIncreaseFlags = bytes[0x57];
+        statIncreaseFlags = read2Bytes(0x56);
         autoStatusesPermanent = read2Bytes(0x58);
         autoStatusesTemporal = read2Bytes(0x5A);
         autoStatusesExtra = read2Bytes(0x5C);
@@ -350,10 +349,110 @@ public class GearAbilityDataObject implements Nameable {
         abilityFlags65 = bytes[0x65];
         abilityFlags66 = bytes[0x66];
         unknownByte67 = bytes[0x67];
-        byte67usually14 = bytes[0x68];
+        byte68usually14 = bytes[0x68];
         groupIndex = bytes[0x69];
         groupLevel = bytes[0x6A];
         internationalBonusIndex = bytes[0x6B];
+    }
+
+    @Override
+    public int[] toBytes(String localization, Map<String, Integer> stringMap) {
+        int[] array = new int[GearAbilityDataObject.LENGTH];
+        write2Bytes(array, 0x00, stringMap.get(name.getLocalizedContent(localization)));
+        write2Bytes(array, 0x02, nameKey);
+        write2Bytes(array, 0x04, stringMap.get(unusedString0405.getLocalizedContent(localization)));
+        write2Bytes(array, 0x06, unusedString0405Key);
+        write2Bytes(array, 0x08, stringMap.get(description.getLocalizedContent(localization)));
+        write2Bytes(array, 0x0A, descriptionKey);
+        write2Bytes(array, 0x0C, stringMap.get(unusedString0C0D.getLocalizedContent(localization)));
+        write2Bytes(array, 0x0E, unusedString0C0DKey);
+        array[0x10] = sosFlagByte;
+        array[0x11] = elementStrike;
+        array[0x12] = elementAbsorb;
+        array[0x13] = elementImmune;
+        array[0x14] = elementResist;
+        array[0x15] = elementWeak;
+        array[0x16] = statusInflictChanceDeath;
+        array[0x17] = statusInflictChanceZombie;
+        array[0x18] = statusInflictChancePetrify;
+        array[0x19] = statusInflictChancePoison;
+        array[0x1A] = statusInflictChancePowerBreak;
+        array[0x1B] = statusInflictChanceMagicBreak;
+        array[0x1C] = statusInflictChanceArmorBreak;
+        array[0x1D] = statusInflictChanceMentalBreak;
+        array[0x1E] = statusInflictChanceConfuse;
+        array[0x1F] = statusInflictChanceBerserk;
+        array[0x20] = statusInflictChanceProvoke;
+        array[0x21] = statusInflictChanceThreaten;
+        array[0x22] = statusInflictChanceSleep;
+        array[0x23] = statusInflictChanceSilence;
+        array[0x24] = statusInflictChanceDarkness;
+        array[0x25] = statusInflictChanceShell;
+        array[0x26] = statusInflictChanceProtect;
+        array[0x27] = statusInflictChanceReflect;
+        array[0x28] = statusInflictChanceNTide;
+        array[0x29] = statusInflictChanceNBlaze;
+        array[0x2A] = statusInflictChanceNShock;
+        array[0x2B] = statusInflictChanceNFrost;
+        array[0x2C] = statusInflictChanceRegen;
+        array[0x2D] = statusInflictChanceHaste;
+        array[0x2E] = statusInflictChanceSlow;
+        array[0x2F] = statusDurationSleep;
+        array[0x30] = statusDurationSilence;
+        array[0x31] = statusDurationDarkness;
+        array[0x32] = statusDurationShell;
+        array[0x33] = statusDurationProtect;
+        array[0x34] = statusDurationReflect;
+        array[0x35] = statusDurationNTide;
+        array[0x36] = statusDurationNBlaze;
+        array[0x37] = statusDurationNShock;
+        array[0x38] = statusDurationNFrost;
+        array[0x39] = statusDurationRegen;
+        array[0x3A] = statusDurationHaste;
+        array[0x3B] = statusDurationSlow;
+        array[0x3C] = statusResistChanceDeath;
+        array[0x3D] = statusResistChanceZombie;
+        array[0x3E] = statusResistChancePetrify;
+        array[0x3F] = statusResistChancePoison;
+        array[0x40] = statusResistChancePowerBreak;
+        array[0x41] = statusResistChanceMagicBreak;
+        array[0x42] = statusResistChanceArmorBreak;
+        array[0x43] = statusResistChanceMentalBreak;
+        array[0x44] = statusResistChanceConfuse;
+        array[0x45] = statusResistChanceBerserk;
+        array[0x46] = statusResistChanceProvoke;
+        array[0x47] = statusResistChanceThreaten;
+        array[0x48] = statusResistChanceSleep;
+        array[0x49] = statusResistChanceSilence;
+        array[0x4A] = statusResistChanceDarkness;
+        array[0x4B] = statusResistChanceShell;
+        array[0x4C] = statusResistChanceProtect;
+        array[0x4D] = statusResistChanceReflect;
+        array[0x4E] = statusResistChanceNTide;
+        array[0x4F] = statusResistChanceNBlaze;
+        array[0x50] = statusResistChanceNShock;
+        array[0x51] = statusResistChanceNFrost;
+        array[0x52] = statusResistChanceRegen;
+        array[0x53] = statusResistChanceHaste;
+        array[0x54] = statusResistChanceSlow;
+        array[0x55] = statIncreaseAmount;
+        write2Bytes(array, 0x56, statIncreaseFlags);
+        write2Bytes(array, 0x58, autoStatusesPermanent);
+        write2Bytes(array, 0x5A, autoStatusesTemporal);
+        write2Bytes(array, 0x5C, autoStatusesExtra);
+        write2Bytes(array, 0x5E, extraStatusInflict);
+        write2Bytes(array, 0x60, extraStatusImmunities);
+        array[0x62] = abilityFlags62;
+        array[0x63] = abilityFlags63;
+        array[0x64] = abilityFlags64;
+        array[0x65] = abilityFlags65;
+        array[0x66] = abilityFlags66;
+        array[0x67] = unknownByte67;
+        array[0x68] = byte68usually14;
+        array[0x69] = groupIndex;
+        array[0x6A] = groupLevel;
+        array[0x6B] = internationalBonusIndex;
+        return array;
     }
 
     private void mapFlags() {
@@ -431,12 +530,12 @@ public class GearAbilityDataObject implements Nameable {
         resistSentinel = (extraStatusImmunities & 0x2000) > 0;
         resistDoom = (extraStatusImmunities & 0x4000) > 0;
         resistUnused2 = (extraStatusImmunities & 0x8000) > 0;
-        increaseHp = (statIncreaseFlags & 0x01) > 0;
-        increaseMp = (statIncreaseFlags & 0x02) > 0;
-        increaseStr = (statIncreaseFlags & 0x04) > 0;
-        increaseMag = (statIncreaseFlags & 0x08) > 0;
-        increaseDef = (statIncreaseFlags & 0x10) > 0;
-        increaseMdf = (statIncreaseFlags & 0x20) > 0;
+        increaseHp = (statIncreaseFlags & 0x0001) > 0;
+        increaseMp = (statIncreaseFlags & 0x0002) > 0;
+        increaseStr = (statIncreaseFlags & 0x0004) > 0;
+        increaseMag = (statIncreaseFlags & 0x0008) > 0;
+        increaseDef = (statIncreaseFlags & 0x0010) > 0;
+        increaseMdf = (statIncreaseFlags & 0x0020) > 0;
         sensor = (abilityFlags62 & 0x01) > 0;
         firstStrike = (abilityFlags62 & 0x02) > 0;
         initiative = (abilityFlags62 & 0x04) > 0;
@@ -480,10 +579,10 @@ public class GearAbilityDataObject implements Nameable {
     }
 
     private void mapStrings(int[] stringBytes, String localization) {
-        name.setLocalizedContent(localization, StringHelper.getStringAtLookupOffset(stringBytes, nameOffset));
-        unusedString0405.setLocalizedContent(localization, StringHelper.getStringAtLookupOffset(stringBytes, unusedString0405Offset));
-        description.setLocalizedContent(localization, StringHelper.getStringAtLookupOffset(stringBytes, descriptionOffset));
-        unusedString0C0D.setLocalizedContent(localization, StringHelper.getStringAtLookupOffset(stringBytes, unusedString0C0DOffset));
+        name.readAndSetLocalizedContent(localization, stringBytes, nameOffset);
+        unusedString0405.readAndSetLocalizedContent(localization, stringBytes, unusedString0405Offset);
+        description.readAndSetLocalizedContent(localization, stringBytes, descriptionOffset);
+        unusedString0C0D.readAndSetLocalizedContent(localization, stringBytes, unusedString0C0DOffset);
     }
 
     public void setLocalizations(GearAbilityDataObject localizationObject) {
@@ -491,6 +590,16 @@ public class GearAbilityDataObject implements Nameable {
         localizationObject.unusedString0405.copyInto(unusedString0405);
         localizationObject.description.copyInto(description);
         localizationObject.unusedString0C0D.copyInto(unusedString0C0D);
+    }
+
+    @Override
+    public Stream<String> getStrings(String localization) {
+        return Stream.of(
+                name.getLocalizedContent(localization),
+                unusedString0405.getLocalizedContent(localization),
+                description.getLocalizedContent(localization),
+                unusedString0C0D.getLocalizedContent(localization)
+        );
     }
 
     @Override
@@ -504,8 +613,8 @@ public class GearAbilityDataObject implements Nameable {
         list.add(autoBuffs());
         list.add(grouping());
         list.add(ifG0(internationalBonusIndex, "InternationalBonus?=", ""));
-        if (byte67usually14 != 0x14) {
-            list.add("Byte68=" + byte67usually14);
+        if (byte68usually14 != 0x14) {
+            list.add("Byte68=" + byte68usually14);
         }
         String full = list.stream().filter(s -> s != null && !s.isBlank()).collect(Collectors.joining(", "));
         String descriptionStr = (descriptionOffset > 0 ? description.getDefaultContent() : "");
@@ -1024,5 +1133,10 @@ public class GearAbilityDataObject implements Nameable {
 
     private int read2Bytes(int offset) {
         return bytes[offset] + bytes[offset+1] * 0x100;
+    }
+
+    private static void write2Bytes(int[] array, int offset, int value) {
+        array[offset]     =  value & 0x00FF;
+        array[offset + 1] = (value & 0xFF00) >> 8;
     }
 }

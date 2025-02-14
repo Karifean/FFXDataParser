@@ -1,5 +1,10 @@
 package main;
 
+import atel.EncounterFile;
+import atel.EventFile;
+import atel.MonsterFile;
+import atel.model.ScriptConstants;
+import atel.model.ScriptFuncLib;
 import model.*;
 import model.spheregrid.SphereGridLayoutDataObject;
 import model.spheregrid.SphereGridNodeTypeDataObject;
@@ -8,13 +13,11 @@ import reading.Chunk;
 import reading.ChunkedFileHelper;
 import reading.DataFileReader;
 import reading.FileAccessorWithMods;
-import atel.EncounterFile;
-import atel.EventFile;
-import atel.MonsterFile;
-import atel.model.ScriptConstants;
-import atel.model.ScriptFuncLib;
 
+import java.io.DataInputStream;
 import java.io.File;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -41,6 +44,7 @@ public class DataReadingManager {
             "sp", "Spanish",
             "us", "English"
     );
+    public static final List<String> CHARSETS = List.of("ch", "cn", "jp", "kr", "us");
 
     private static final boolean ALLOW_DAT_FILES = true;
     private static final boolean LOAD_EVENTS_AND_ENCOUNTERS = false;
@@ -54,7 +58,7 @@ public class DataReadingManager {
     }
 
     public static void initializeInternals() {
-        StringHelper.initialize();
+        CHARSETS.forEach((charset) -> prepareCharset(charset));
         LOCALIZATIONS.forEach((key, value) -> prepareStringMacros(getLocalizationRoot(key) + "menu/macrodic.dcp", key, false));
         ScriptConstants.initialize();
         ScriptFuncLib.initialize();
@@ -83,6 +87,28 @@ public class DataReadingManager {
         DataAccess.ESG_LAYOUT = readSphereGridLayout(PATH_ABMAP + "dat03.dat", PATH_ABMAP + "dat11.dat", false);
         DataAccess.GEAR_CUSTOMIZATIONS = readCustomizations(PATH_ORIGINALS_KERNEL + "kaizou.bin", false);
         DataAccess.AEON_CUSTOMIZATIONS = readCustomizations(PATH_ORIGINALS_KERNEL + "sum_grow.bin", false);
+    }
+
+    public static void prepareCharset(String charset) {
+        String path = PATH_ORIGINALS_ROOT + "ffx_encoding/ffxsjistbl_" + charset + ".bin";
+        File file = FileAccessorWithMods.resolveFile(path, false);
+        byte[] allBytes = null;
+        try (DataInputStream data = FileAccessorWithMods.readFile(file)) {
+            allBytes = data.readAllBytes();
+        } catch (IOException ignored) {}
+        if (allBytes == null) {
+            return;
+        }
+        String str = new String(allBytes, StandardCharsets.UTF_8);
+        Map<Integer, Character> map = new HashMap<>();
+        Map<Character, Integer> reverseMap = new HashMap<>();
+        for (int i = 0; i < str.length(); i++) {
+            char c = str.charAt(i);
+            int idx = i + 0x30;
+            map.put(idx, c);
+            reverseMap.putIfAbsent(c, idx);
+        }
+        StringHelper.setCharMap(charset, map, reverseMap);
     }
 
     public static void prepareStringMacros(String filename, String localization, boolean print) {

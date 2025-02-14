@@ -1,6 +1,7 @@
 package model;
 
 import main.DataReadingManager;
+import main.StringHelper;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -24,6 +25,13 @@ public class LocalizedStringObject {
 
     public void setLocalizedContent(String localization, String content) {
         contents.put(localization, content);
+    }
+
+    public void readAndSetLocalizedContent(String localization, int[] stringBytes, int offset) {
+        if (stringBytes == null || stringBytes.length == 0) {
+            return;
+        }
+        contents.put(localization, StringHelper.getStringAtLookupOffset(stringBytes, offset, localization));
     }
 
     public String getAllContent() {

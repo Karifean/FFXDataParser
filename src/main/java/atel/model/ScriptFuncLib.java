@@ -98,9 +98,9 @@ public abstract class ScriptFuncLib {
         putFuncWithIdx(0x0035, new ScriptFunc("disableInteractionAtLevel", "unknown", null, p("level", "int")));
         putFuncWithIdx(0x0036, new ScriptFunc("stopOtherMotion", "unknown", null, p("worker")));
         putUnknownFunc(0x0037, 1);
-        putUnknownFunc(0x0038, null, "float", 1);
-        putUnknownFunc(0x0039, null, "float", 1);
-        putUnknownFunc(0x003A, null, "float", 1);
+        putFuncWithIdx(0x0038, new ScriptFunc("getWorkerX?", "float", null, p("worker")));
+        putFuncWithIdx(0x0039, new ScriptFunc("getWorkerY?", "float", null, p("worker")));
+        putFuncWithIdx(0x003A, new ScriptFunc("getWorkerZ?", "float", null, p("worker")));
         putUnknownFunc(0x003D, 0);
         putUnknownFunc(0x003F, 0);
         putFuncWithIdx(0x0042, new ScriptFunc("linkWorkerToActor", "unknown", null, p("btlActor")));
@@ -238,8 +238,8 @@ public abstract class ScriptFuncLib {
         putUnknownFunc(0x00EF, 1);
         putUnknownFunc(0x00F2, 1);
         putUnknownFunc(0x00F3, 1);
-        putFuncWithIdx(0x00F4, new ScriptFunc("yawToPoint", "float", null, p("x", "float"), p("y", "float"), p("z", "float"))); // y is unused
-        putFuncWithIdx(0x00F5, new ScriptFunc("pitchToPoint", "float", null, p("x", "float"), p("y", "float"), p("z", "float")));
+        putFuncWithIdx(0x00F4, new ScriptFunc("pointToYaw?", "float", null, p("x", "float"), p("y", "float"), p("z", "float"))); // y is unused
+        putFuncWithIdx(0x00F5, new ScriptFunc("pointToPitch?", "float", null, p("x", "float"), p("y", "float"), p("z", "float")));
         putFuncWithIdx(0x00F6, new ScriptFunc("waitForWorker", "float", null, p("level", "int"), p("worker"))); // waits until no signal is active or queued at level for the worker
         putUnknownFunc(0x00F8, 3);
         putUnknownFunc(0x00F9, 0);

@@ -1,6 +1,8 @@
 package reading;
 
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 
 public class FileAccessorWithMods {
     public static final String RESOURCES_ROOT = "src/main/resources/";
@@ -34,5 +36,23 @@ public class FileAccessorWithMods {
 
     public static DataInputStream readFile(File file) throws FileNotFoundException {
         return new DataInputStream(new BufferedInputStream(new FileInputStream(file)));
+    }
+
+    public static void writeByteArrayToFile(String path, int[] bytes) {
+        try {
+            Files.createDirectories(Paths.get(path.substring(0, path.lastIndexOf('/'))));
+        } catch (IOException e) {
+            System.err.println("Failed to create directories");
+            e.printStackTrace();
+        }
+        try (FileOutputStream fileOutputStream = new FileOutputStream(path)) {
+            for (int aByte : bytes) {
+                fileOutputStream.write(aByte);
+            }
+            fileOutputStream.flush();
+        } catch (IOException e) {
+            System.err.println("Failed to write file");
+            e.printStackTrace();
+        }
     }
 }

@@ -117,7 +117,7 @@ public abstract class DataAccess {
         }
         for (int i = 0; i < localizations.length && i < MONSTERS.length; i++) {
             if (MONSTERS[i] != null) {
-                MONSTERS[i].monsterStatData.setLocalizations(localizations[i]);
+                MONSTERS[i].monsterStatData.addLocalizations(localizations[i]);
             }
         }
     }

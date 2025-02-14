@@ -7,6 +7,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static reading.ChunkedFileHelper.read2Bytes;
+import static reading.ChunkedFileHelper.read4Bytes;
+
 /**
  * ply_save.bin
  */
@@ -15,7 +18,7 @@ public class PlayerCharStatDataObject implements Nameable {
 
     private final int[] bytes;
 
-    public LocalizedStringObject characterName = new LocalizedStringObject();
+    public LocalizedStringObject name = new LocalizedStringObject();
     int nameOffset;
     private int nameKey;
 
@@ -148,17 +151,17 @@ public class PlayerCharStatDataObject implements Nameable {
         if (stringBytes == null || stringBytes.length == 0) {
             return;
         }
-        characterName.setLocalizedContent(localization, StringHelper.getStringAtLookupOffset(stringBytes, nameOffset));
+        name.readAndSetLocalizedContent(localization, stringBytes, nameOffset);
     }
 
     public void setLocalizations(PlayerCharStatDataObject localizationObject) {
-        localizationObject.characterName.copyInto(characterName);
+        localizationObject.name.copyInto(name);
     }
 
     public String getStrings() {
         List<String> list = new ArrayList<>();
         list.add("Name at Offset " + StringHelper.formatHex4(nameOffset) + ":");
-        list.add(characterName.getAllContent());
+        list.add(name.getAllContent());
         // TODO
         String full = list.stream().filter(s -> s != null && !s.isBlank()).collect(Collectors.joining("\n"));
         return full;
@@ -176,20 +179,12 @@ public class PlayerCharStatDataObject implements Nameable {
         return full;
     }
 
-    private static int read2Bytes(int[] bytes, int offset) {
-        return bytes[offset] + bytes[offset+1] * 0x100;
-    }
-
-    private static int read4Bytes(int[] bytes, int offset) {
-        return bytes[offset] + bytes[offset+1] * 0x100 + bytes[offset+2] * 0x10000 + bytes[offset+3] * 0x1000000;
-    }
-
     private static String asMove(int move) {
         return DataAccess.getMove(move).getName() + StringHelper.hex4Suffix(move);
     }
 
     @Override
     public String getName(String localization) {
-        return characterName.getLocalizedContent(localization);
+        return name.getLocalizedContent(localization);
     }
 }

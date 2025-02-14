@@ -12,7 +12,7 @@ import java.util.List;
 public class MacroDictionaryFile {
     List<List<String>> allStrings = new ArrayList<>();
 
-    private String localization;
+    private final String localization;
 
     public MacroDictionaryFile(List<Chunk> chunks, String localization) {
         this.localization = localization;
@@ -25,7 +25,7 @@ public class MacroDictionaryFile {
         if (chunk.offset == 0) {
             return List.of();
         }
-        return StringHelper.readStringData(chunk.bytes, false);
+        return StringHelper.readStringData(chunk.bytes, false, localization);
     }
 
     public void publishStrings() {

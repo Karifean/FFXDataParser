@@ -26,13 +26,6 @@ public abstract class ChunkedFileHelper {
         return null;
     }
 
-    private static int read4Bytes(int[] bytes, int offset) {
-        if (bytes == null) {
-            return 0;
-        }
-        return bytes[offset] + bytes[offset+1] * 0x100 + bytes[offset+2] * 0x10000 + bytes[offset+3] * 0x1000000;
-    }
-
     public static int[] fileToBytes(File file) {
         byte[] allBytes = null;
         try (DataInputStream data = FileAccessorWithMods.readFile(file)) {
@@ -90,4 +83,35 @@ public abstract class ChunkedFileHelper {
         return chunks;
     }
 
+    public static int read2Bytes(int[] bytes, int offset) {
+        if (bytes == null) {
+            return 0;
+        }
+        return bytes[offset] + bytes[offset+1] * 0x100;
+    }
+
+    public static int read4Bytes(int[] bytes, int offset) {
+        if (bytes == null) {
+            return 0;
+        }
+        return bytes[offset] + bytes[offset+1] * 0x100 + bytes[offset+2] * 0x10000 + bytes[offset+3] * 0x1000000;
+    }
+
+    public static void write2Bytes(int[] bytes, int offset, int value) {
+        if (bytes == null) {
+            return;
+        }
+        bytes[offset]     =  value & 0x00FF;
+        bytes[offset + 1] = (value & 0xFF00) >> 8;
+    }
+
+    public static void write4Bytes(int[] bytes, int offset, int value) {
+        if (bytes == null) {
+            return;
+        }
+        bytes[offset]     =  value & 0x000000FF;
+        bytes[offset + 1] = (value & 0x0000FF00) >> 8;
+        bytes[offset + 2] = (value & 0x00FF0000) >> 16;
+        bytes[offset + 3] = (value & 0xFF000000) >> 24;
+    }
 }

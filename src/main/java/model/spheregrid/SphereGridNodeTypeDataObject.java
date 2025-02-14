@@ -64,10 +64,13 @@ public class SphereGridNodeTypeDataObject implements Nameable {
     }
 
     private void mapStrings(int[] stringBytes, String localization) {
-        name.setLocalizedContent(localization, StringHelper.getStringAtLookupOffset(stringBytes, nameOffset));
-        unusedString0405.setLocalizedContent(localization, StringHelper.getStringAtLookupOffset(stringBytes, unusedString0405Offset));
-        description.setLocalizedContent(localization, StringHelper.getStringAtLookupOffset(stringBytes, descriptionOffset));
-        unusedString0C0D.setLocalizedContent(localization, StringHelper.getStringAtLookupOffset(stringBytes, unusedString0C0DOffset));
+        if (stringBytes == null || stringBytes.length == 0) {
+            return;
+        }
+        name.readAndSetLocalizedContent(localization, stringBytes, nameOffset);
+        unusedString0405.readAndSetLocalizedContent(localization, stringBytes, unusedString0405Offset);
+        description.readAndSetLocalizedContent(localization, stringBytes, descriptionOffset);
+        unusedString0C0D.readAndSetLocalizedContent(localization, stringBytes, unusedString0C0DOffset);
     }
 
     public void setLocalizations(SphereGridNodeTypeDataObject localizationObject) {

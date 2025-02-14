@@ -5,6 +5,7 @@ import model.GearAbilityDataObject;
 import atel.EncounterFile;
 import atel.EventFile;
 import atel.MonsterFile;
+import model.MonsterStatDataObject;
 
 import java.util.Arrays;
 import java.util.List;
@@ -36,6 +37,7 @@ public class Main {
     private static final String MODE_READ_SPHERE_GRID_LAYOUT = "READ_SPHERE_GRID_LAYOUT";
     private static final String MODE_READ_CUSTOMIZATIONS = "READ_CUSTOMIZATIONS";
     private static final String MODE_READ_MACROS = "READ_MACROS";
+    private static final String MODE_MAKE_EDITS = "MAKE_EDITS";
     private static final String MODE_CUSTOM = "CUSTOM";
 
     private static final boolean SKIP_BLITZBALL_EVENTS_FOLDER = true;
@@ -53,9 +55,6 @@ public class Main {
             case MODE_GREP:
                 String joined = String.join(" ", realArgs);
                 writeGrep(joined);
-                /* for (String substr : realArgs) {
-                    writeGrep(substr);
-                } */
                 break;
             case MODE_TRANSLATE:
                 String concat = String.join("", realArgs);
@@ -208,26 +207,38 @@ public class Main {
                 break;
             case MODE_READ_STRING_FILE:
                 for (String filename : realArgs) {
-                    StringHelper.readStringFile(filename, true);
+                    StringHelper.readStringFile(filename, true, DEFAULT_LOCALIZATION);
                 }
                 break;
             case MODE_READ_MACROS:
                 prepareStringMacros(PATH_FFX_ROOT + "new_uspc/menu/macrodic.dcp", "us", true);
                 break;
             case MODE_CUSTOM:
-                // readX2AbilitiesFromFile("ffx_ps2/ffx2/master/new_uspc/battle/kernel/command.bin", "us", true);
+                readX2AbilitiesFromFile("ffx_ps2/ffx2/master/new_uspc/battle/kernel/command.bin", "us", true);
+                break;
+            case MODE_MAKE_EDITS:
                 System.out.println("--- command.bin ---");
                 AbilityDataObject[] commands = Arrays.copyOfRange(DataAccess.MOVES, 0x3000, 0x3140);
-                DataWritingManager.writeDataObjectsInAllLocalizations("battle/kernel/command.bin", commands, 0x60, true);
+                DataWritingManager.writeDataObjectsInAllLocalizations("battle/kernel/command.bin", commands, AbilityDataObject.PCCOM_LENGTH, true);
                 System.out.println("--- monmagic1.bin ---");
                 AbilityDataObject[] monmagics1 = Arrays.copyOfRange(DataAccess.MOVES, 0x4000, 0x412C);
-                DataWritingManager.writeDataObjectsInAllLocalizations("battle/kernel/monmagic1.bin", monmagics1, 0x5C, true);
+                DataWritingManager.writeDataObjectsInAllLocalizations("battle/kernel/monmagic1.bin", monmagics1, AbilityDataObject.COM_LENGTH, true);
                 System.out.println("--- monmagic2.bin ---");
                 AbilityDataObject[] monmagics2 = Arrays.copyOfRange(DataAccess.MOVES, 0x6000, 0x60F7);
-                DataWritingManager.writeDataObjectsInAllLocalizations("battle/kernel/monmagic2.bin", monmagics2, 0x5C, true);
+                DataWritingManager.writeDataObjectsInAllLocalizations("battle/kernel/monmagic2.bin", monmagics2, AbilityDataObject.COM_LENGTH, true);
                 System.out.println("--- item.bin ---");
                 AbilityDataObject[] items = Arrays.copyOfRange(DataAccess.MOVES, 0x2000, 0x2070);
-                DataWritingManager.writeDataObjectsInAllLocalizations("battle/kernel/item.bin", items, 0x60, true);
+                DataWritingManager.writeDataObjectsInAllLocalizations("battle/kernel/item.bin", items, AbilityDataObject.PCCOM_LENGTH, true);
+                System.out.println("--- a_ability.bin ---");
+                GearAbilityDataObject[] gearAbilities = DataAccess.GEAR_ABILITIES;
+                DataWritingManager.writeDataObjectsInAllLocalizations("battle/kernel/a_ability.bin", gearAbilities, GearAbilityDataObject.LENGTH, false);
+                System.out.println("--- monster1.bin ---");
+                MonsterStatDataObject[] statData = (MonsterStatDataObject[]) Arrays.stream(DataAccess.MONSTERS).map(mf -> mf.monsterStatData).toArray();
+                DataWritingManager.writeDataObjectsInAllLocalizations("battle/kernel/monster1.bin", statData, MonsterStatDataObject.LENGTH, 0, 100, false);
+                System.out.println("--- monster2.bin ---");
+                DataWritingManager.writeDataObjectsInAllLocalizations("battle/kernel/monster2.bin", statData, MonsterStatDataObject.LENGTH, 101, 180, false);
+                System.out.println("--- monster3.bin ---");
+                DataWritingManager.writeDataObjectsInAllLocalizations("battle/kernel/monster3.bin", statData, MonsterStatDataObject.LENGTH, 181, 365, false);
                 break;
             default:
                 break;
@@ -239,7 +250,7 @@ public class Main {
         final StringBuilder byteString = new StringBuilder();
         final StringBuilder grep = new StringBuilder("grep -r \"");
         str.chars().forEach(c -> {
-            int bc = StringHelper.charToByte(c);
+            int bc = StringHelper.charToByte(c, DEFAULT_LOCALIZATION);
             spaced.append((char) c).append(' ');
             byteString.append(Integer.toHexString(bc));
             grep.append("\\x").append(Integer.toHexString(bc));
@@ -258,6 +269,6 @@ public class Main {
             bytes[i / 2] = idx == 0x00 ? 0x03 : idx;
         }
         bytes[str.length() / 2] = 0x00;
-        System.out.println(StringHelper.bytesToString(bytes));
+        System.out.println(StringHelper.bytesToString(bytes, DEFAULT_LOCALIZATION));
     }
 }

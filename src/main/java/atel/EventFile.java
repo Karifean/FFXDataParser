@@ -10,7 +10,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import static main.DataReadingManager.DEFAULT_LOCALIZATION;
 import static main.StringHelper.MACRO_LOOKUP;
 
 /**
@@ -21,8 +20,11 @@ public class EventFile implements Nameable {
 
     public AtelScriptObject eventScript;
     int[] scriptBytes;
+    int[] japaneseTextBytes;
+    int[] unknownChunk2Bytes;
+    int[] ftcxBytes;
     int[] englishTextBytes;
-    List<LocalizedStringObject> strings;
+    public List<LocalizedStringObject> strings;
 
     public EventFile(List<Chunk> chunks) {
         mapChunks(chunks);
@@ -32,7 +34,9 @@ public class EventFile implements Nameable {
 
     private void mapChunks(List<Chunk> chunks) {
         scriptBytes = chunks.get(0).bytes;
-        // chunk index 1 seems to be original japanese text?
+        japaneseTextBytes = chunks.get(1).bytes;
+        unknownChunk2Bytes = chunks.get(2).bytes;
+        ftcxBytes = chunks.get(3).bytes;
         if (chunks.size() > 4 && chunks.get(4).offset != 0) {
             englishTextBytes = chunks.get(4).bytes;
         }
@@ -43,9 +47,15 @@ public class EventFile implements Nameable {
     }
 
     private void mapStrings() {
-        List<String> rawStrings = StringHelper.readStringData(englishTextBytes, false);
-        if (rawStrings != null) {
-            this.strings = rawStrings.stream().map(str -> new LocalizedStringObject(DEFAULT_LOCALIZATION, str)).collect(Collectors.toList());
+        List<String> japaneseStrings = StringHelper.readStringData(japaneseTextBytes, false, "jp");
+        if (japaneseStrings != null) {
+            List<LocalizedStringObject> localizedJpStringObjects = japaneseStrings.stream().map(str -> new LocalizedStringObject("jp", str)).collect(Collectors.toList());
+            addLocalizations(localizedJpStringObjects);
+        }
+        List<String> englishStrings = StringHelper.readStringData(englishTextBytes, false, "us");
+        if (englishStrings != null) {
+            List<LocalizedStringObject> localizedUsStringObjects = englishStrings.stream().map(str -> new LocalizedStringObject("us", str)).collect(Collectors.toList());
+            addLocalizations(localizedUsStringObjects);
         }
     }
 

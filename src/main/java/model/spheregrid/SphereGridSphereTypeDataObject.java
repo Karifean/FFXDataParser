@@ -65,8 +65,11 @@ public class SphereGridSphereTypeDataObject implements Nameable {
     }
 
     private void mapStrings(int[] stringBytes, String localization) {
-        description.setLocalizedContent(localization, StringHelper.getStringAtLookupOffset(stringBytes, descriptionOffset));
-        unusedString0405.setLocalizedContent(localization, StringHelper.getStringAtLookupOffset(stringBytes, unusedString0405Offset));
+        if (stringBytes == null || stringBytes.length == 0) {
+            return;
+        }
+        description.readAndSetLocalizedContent(localization, stringBytes, descriptionOffset);
+        unusedString0405.readAndSetLocalizedContent(localization, stringBytes, unusedString0405Offset);
     }
 
     public void setLocalizations(SphereGridSphereTypeDataObject localizationObject) {

@@ -277,7 +277,6 @@ public abstract class ScriptConstants {
         putCompOperator(0x18, "mod", "int", "OPMOD");
 
         addEnumsFromAllCsvsInFolder(new File(ENUM_CSV_ROOT));
-        // addDeclaredCommonVars();
 
         putSaveDataVariable(0x008D, "CalmLandsQuestProgressionFlags", "int");
         putSaveDataVariable(0x0092, "MushroomRockRoadTreasureFlags", "int");
@@ -713,6 +712,7 @@ public abstract class ScriptConstants {
         putEnum("bgm", 0x001A, "Seymour's Ambition");
         putEnum("bgm", 0x001B, "Blitz Off!");
         putEnum("bgm", 0x001D, "Thunder Plains");
+        putEnum("bgm", 0x001F, "?Underwater Ruins");
         putEnum("bgm", 0x0025, "People of the North Pole");
         putEnum("bgm", 0x0029, "Truth Revealed");
         putEnum("bgm", 0x002A, "Seymour Battle");
@@ -1370,85 +1370,6 @@ public abstract class ScriptConstants {
             }
         }
     }
-
-    /* private static void addDeclaredCommonVars() {
-        // Maybe will have to make path, initial offset and enum type into parameters.
-        // Well, if there will be more .src files to load enums from.
-        File file = new File(LOCAL_SRC_PATH);
-        if (!file.exists()) {
-            System.err.println("local.src is missing for variable mapping.");
-            return;
-        }
-        try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
-            String line;
-            int offset = 0x18;
-            while ((line = reader.readLine()) != null) {
-                if (!line.startsWith("\t")) {
-                    continue;
-                }
-                String[] split = line.split("\t+");
-                if (split.length < 2) {
-                    continue;
-                }
-                String rawType = split[1];
-                String name = split[2];
-                String type;
-                int offsetIncrease;
-                if ("int".equals(rawType)) {
-                    type = "int32";
-                    offsetIncrease = 4;
-                } else if ("char".equals(rawType)) {
-                    type = "int8";
-                    offsetIncrease = 1;
-                } else if ("float".equals(rawType)) {
-                    type = "float";
-                    offsetIncrease = 4;
-                } else {
-                    System.err.println("Unknown local.src type: " + rawType);
-                    continue;
-                }
-                ScriptField field = new ScriptField(name, type);
-                field.idx = offset;
-                getEnumMap("commonVar").put(offset, field);
-                offset += offsetIncrease;
-            }
-        } catch (IOException e) {
-            System.err.println("IOException during local.src reading. Skipped.");
-            e.printStackTrace();
-        }
-    }
-
-    private static void convertFileToCsv(File file) throws IOException {
-        try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
-            String type = "motion";
-            String line;
-            FileOutputStream fileOutputStream = new FileOutputStream(file.getPath() + ".alter");
-            while ((line = reader.readLine()) != null) {
-                String[] components = line.split("=");
-                if (components.length == 2) {
-                    String internalName = nullIfBlankElseTrimmed(components[0]);
-                    if (internalName.startsWith("//")) {
-                        continue;
-                    }
-                    // String type = nullIfBlankElseTrimmed(components[0]);
-                    String indexString = nullIfBlankElseTrimmed(components[1]);
-                    // int idx = Integer.parseInt(indexString, 16);
-                    // String readableName = components.length >= 4 ? nullIfBlankElseTrimmed(components[3]) : null;
-                    if (!indexString.startsWith("0x")) {
-                        continue;
-                    }
-                    String alteredLine = type + "," + indexString.substring(2) + "," + internalName + ",\n";
-                    fileOutputStream.write(alteredLine.getBytes(StandardCharsets.UTF_8));
-                    // putEnum(type, idx, readableName, internalName);
-                } else {
-                    System.err.println("Erroneous line in csv=" + file.getPath() + " line=" + line);
-                }
-            }
-            fileOutputStream.flush();
-            fileOutputStream.close();
-        }
-    }
-    */
 
     private static String nullIfBlankElseTrimmed(String s) {
         if (s == null || s.isBlank()) {

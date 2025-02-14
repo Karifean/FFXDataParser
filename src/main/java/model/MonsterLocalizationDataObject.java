@@ -1,7 +1,5 @@
 package model;
 
-import main.DataReadingManager;
-
 /**
  * monster1.bin (only uses Name/Sensor/Scan text strings)
  * monster2.bin (only uses Name/Sensor/Scan text strings)
@@ -9,7 +7,7 @@ import main.DataReadingManager;
  */
 public class MonsterLocalizationDataObject extends MonsterStatDataObject {
 
-    private String localization = DataReadingManager.DEFAULT_LOCALIZATION;
+    private final String localization;
 
     public MonsterLocalizationDataObject(int[] bytes, int[] stringBytes, String localization) {
         super(bytes, stringBytes, localization);
@@ -18,6 +16,6 @@ public class MonsterLocalizationDataObject extends MonsterStatDataObject {
 
     @Override
     public String toString() {
-        return super.getStrings(localization);
+        return buildStrings(localization);
     }
 }

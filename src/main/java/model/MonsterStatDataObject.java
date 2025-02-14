@@ -9,6 +9,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import static reading.ChunkedFileHelper.*;
 
 /**
  * Part of MonsterFile
@@ -16,21 +19,26 @@ import java.util.stream.Collectors;
  * monster2.bin (only uses Name/Sensor/Scan text strings)
  * monster3.bin (only uses Name/Sensor/Scan text strings)
  */
-public class MonsterStatDataObject {
+public class MonsterStatDataObject implements Nameable, Writable {
     public static final int LENGTH = 0x80;
 
     private final int[] bytes;
 
     int nameOffset;
-    int sensorOffset;
-    int sensorDashOffset;
-    int scanOffset;
-    int scanDashOffset;
-    public LocalizedStringObject monsterName = new LocalizedStringObject();
-    public LocalizedStringObject monsterSensorText = new LocalizedStringObject();
-    public LocalizedStringObject monsterSensorDash = new LocalizedStringObject();
-    public LocalizedStringObject monsterScanText = new LocalizedStringObject();
-    public LocalizedStringObject monsterScanDash = new LocalizedStringObject();
+    int sensorTextOffset;
+    int unusedString0809Offset;
+    int scanTextOffset;
+    int unusedString1011Offset;
+    public LocalizedStringObject name = new LocalizedStringObject();
+    public LocalizedStringObject sensorText = new LocalizedStringObject();
+    public LocalizedStringObject unusedString0809 = new LocalizedStringObject();
+    public LocalizedStringObject scanText = new LocalizedStringObject();
+    public LocalizedStringObject unusedString1011 = new LocalizedStringObject();
+    int nameKey;
+    int sensorTextKey;
+    int unusedString0809Key;
+    int scanTextKey;
+    int unusedString1011Key;
 
     int hp;
     int mp;
@@ -105,8 +113,8 @@ public class MonsterStatDataObject {
     boolean immunityMagicalDamage;
     boolean immunityAllDamage;
     boolean immunityDelay;
-    boolean immunitySliceProbably;
-    boolean immunityBribeProbably;
+    boolean immunitySlice;
+    boolean immunityBribe;
 
     boolean autoDeath;
     boolean autoZombie;
@@ -176,10 +184,15 @@ public class MonsterStatDataObject {
 
     private void mapBytes() {
         nameOffset = read2Bytes(bytes, 0x00);
-        sensorOffset = read2Bytes(bytes, 0x04);
-        sensorDashOffset = read2Bytes(bytes, 0x08);
-        scanOffset = read2Bytes(bytes, 0x0C);
-        scanDashOffset = read2Bytes(bytes, 0x10);
+        nameKey = read2Bytes(bytes, 0x02);
+        sensorTextOffset = read2Bytes(bytes, 0x04);
+        sensorTextKey = read2Bytes(bytes, 0x06);
+        unusedString0809Offset = read2Bytes(bytes, 0x08);
+        unusedString0809Key = read2Bytes(bytes, 0x0A);
+        scanTextOffset = read2Bytes(bytes, 0x0C);
+        scanTextKey = read2Bytes(bytes, 0x0E);
+        unusedString1011Offset = read2Bytes(bytes, 0x10);
+        unusedString1011Key = read2Bytes(bytes, 0x12);
         hp = read4Bytes(bytes, 0x14);
         mp = read4Bytes(bytes, 0x18);
         overkillThreshold = read4Bytes(bytes, 0x1C);
@@ -229,22 +242,9 @@ public class MonsterStatDataObject {
         extraStatusImmunities = read2Bytes(bytes, 0x4E);
 
         abilityList = new int[16];
-        abilityList[0] = read2Bytes(bytes, 0x50);
-        abilityList[1] = read2Bytes(bytes, 0x52);
-        abilityList[2] = read2Bytes(bytes, 0x54);
-        abilityList[3] = read2Bytes(bytes, 0x56);
-        abilityList[4] = read2Bytes(bytes, 0x58);
-        abilityList[5] = read2Bytes(bytes, 0x5A);
-        abilityList[6] = read2Bytes(bytes, 0x5C);
-        abilityList[7] = read2Bytes(bytes, 0x5E);
-        abilityList[8] = read2Bytes(bytes, 0x60);
-        abilityList[9] = read2Bytes(bytes, 0x62);
-        abilityList[10] = read2Bytes(bytes, 0x64);
-        abilityList[11] = read2Bytes(bytes, 0x66);
-        abilityList[12] = read2Bytes(bytes, 0x68);
-        abilityList[13] = read2Bytes(bytes, 0x6A);
-        abilityList[14] = read2Bytes(bytes, 0x6C);
-        abilityList[15] = read2Bytes(bytes, 0x6E);
+        for (int i = 0; i < 16; i++) {
+            abilityList[i] = read2Bytes(bytes, 0x50 + i * 2);
+        }
 
         forcedAction = read2Bytes(bytes, 0x70);
         monsterIdx = read2Bytes(bytes, 0x72);
@@ -269,8 +269,8 @@ public class MonsterStatDataObject {
         immunityMagicalDamage = (miscProperties28 & 0x40) > 0;
         immunityAllDamage = (miscProperties28 & 0x80) > 0;
         immunityDelay = (miscProperties29 & 0x01) > 0;
-        immunitySliceProbably = (miscProperties29 & 0x02) > 0;
-        immunityBribeProbably = (miscProperties29 & 0x04) > 0;
+        immunitySlice = (miscProperties29 & 0x02) > 0;
+        immunityBribe = (miscProperties29 & 0x04) > 0;
 
         autoDeath = (autoStatusesPermanent & 0x0001) > 0;
         autoZombie = (autoStatusesPermanent & 0x0002) > 0;
@@ -331,34 +331,129 @@ public class MonsterStatDataObject {
         resistUnused2 = (extraStatusImmunities & 0x8000) > 0;
     }
 
+    @Override
+    public int[] toBytes(String localization, Map<String, Integer> stringMap) {
+        int[] array = new int[MonsterStatDataObject.LENGTH];
+        write2Bytes(array, 0x00, stringMap.get(name.getLocalizedContent(localization)));
+        write2Bytes(array, 0x02, nameKey);
+        write2Bytes(array, 0x04, stringMap.get(sensorText.getLocalizedContent(localization)));
+        write2Bytes(array, 0x06, sensorTextKey);
+        write2Bytes(array, 0x08, stringMap.get(unusedString0809.getLocalizedContent(localization)));
+        write2Bytes(array, 0x0A, unusedString0809Key);
+        write2Bytes(array, 0x0C, stringMap.get(scanText.getLocalizedContent(localization)));
+        write2Bytes(array, 0x0E, scanTextKey);
+        write2Bytes(array, 0x10, stringMap.get(unusedString1011.getLocalizedContent(localization)));
+        write2Bytes(array, 0x12, unusedString1011Key);
+        write4Bytes(array, 0x14, hp);
+        write4Bytes(array, 0x18, mp);
+        write4Bytes(array, 0x1C, overkillThreshold);
+        array[0x20] = str;
+        array[0x21] = def;
+        array[0x22] = mag;
+        array[0x23] = mdf;
+        array[0x24] = agi;
+        array[0x25] = lck;
+        array[0x26] = eva;
+        array[0x27] = acc;
+        array[0x28] = miscProperties28;
+        array[0x29] = miscProperties29;
+        array[0x2A] = poisonDamage;
+        array[0x2B] = elementAbsorb;
+        array[0x2C] = elementImmune;
+        array[0x2D] = elementResist;
+        array[0x2E] = elementWeak;
+        array[0x2F] = statusResistChanceDeath;
+        array[0x30] = statusResistChanceZombie;
+        array[0x31] = statusResistChancePetrify;
+        array[0x32] = statusResistChancePoison;
+        array[0x33] = statusResistChancePowerBreak;
+        array[0x34] = statusResistChanceMagicBreak;
+        array[0x35] = statusResistChanceArmorBreak;
+        array[0x36] = statusResistChanceMentalBreak;
+        array[0x37] = statusResistChanceConfuse;
+        array[0x38] = statusResistChanceBerserk;
+        array[0x39] = statusResistChanceProvoke;
+        array[0x3A] = statusChanceThreaten;
+        array[0x3B] = statusResistChanceSleep;
+        array[0x3C] = statusResistChanceSilence;
+        array[0x3D] = statusResistChanceDarkness;
+        array[0x3E] = statusResistChanceShell;
+        array[0x3F] = statusResistChanceProtect;
+        array[0x40] = statusResistChanceReflect;
+        array[0x41] = statusResistChanceNTide;
+        array[0x42] = statusResistChanceNBlaze;
+        array[0x43] = statusResistChanceNShock;
+        array[0x44] = statusResistChanceNFrost;
+        array[0x45] = statusResistChanceRegen;
+        array[0x46] = statusResistChanceHaste;
+        array[0x47] = statusResistChanceSlow;
+        write2Bytes(array, 0x48, autoStatusesPermanent);
+        write2Bytes(array, 0x4A, autoStatusesTemporal);
+        write2Bytes(array, 0x4C, autoStatusesExtra);
+        write2Bytes(array, 0x4E, extraStatusImmunities);
+
+        for (int i = 0; i < 16; i++) {
+            write2Bytes(array, 0x50 + i * 2, abilityList[i]);
+        }
+
+        write2Bytes(array, 0x70, forcedAction);
+        write2Bytes(array, 0x72, monsterIdx);
+        write2Bytes(array, 0x74, modelIdx);
+        array[0x76] = ctbIconType;
+        array[0x77] = doomCounter;
+        write2Bytes(bytes, 0x78, monsterArenaIdx);
+        write2Bytes(bytes, 0x7A, modelIdxOther);
+        array[0x7C] = alwaysZero7C;
+        array[0x7D] = alwaysZero7D;
+        array[0x7E] = alwaysZero7E;
+        array[0x7F] = alwaysZero7F;
+        return array;
+    }
+
+    @Override
+    public Stream<String> getStrings(String localization) {
+        return Stream.of(
+                name.getLocalizedContent(localization),
+                sensorText.getLocalizedContent(localization),
+                unusedString0809.getLocalizedContent(localization),
+                scanText.getLocalizedContent(localization),
+                unusedString1011.getLocalizedContent(localization)
+        );
+    }
+
     private void mapStrings(int[] stringBytes, String localization) {
         if (stringBytes == null || stringBytes.length == 0) {
             return;
         }
-        monsterName.setLocalizedContent(localization, StringHelper.getStringAtLookupOffset(stringBytes, nameOffset));
-        monsterSensorText.setLocalizedContent(localization, StringHelper.getStringAtLookupOffset(stringBytes, sensorOffset));
-        monsterSensorDash.setLocalizedContent(localization, StringHelper.getStringAtLookupOffset(stringBytes, sensorDashOffset));
-        monsterScanText.setLocalizedContent(localization, StringHelper.getStringAtLookupOffset(stringBytes, scanOffset));
-        monsterScanDash.setLocalizedContent(localization, StringHelper.getStringAtLookupOffset(stringBytes, scanDashOffset));
+        name.readAndSetLocalizedContent(localization, stringBytes, nameOffset);
+        sensorText.readAndSetLocalizedContent(localization, stringBytes, sensorTextOffset);
+        unusedString0809.readAndSetLocalizedContent(localization, stringBytes, unusedString0809Offset);
+        scanText.readAndSetLocalizedContent(localization, stringBytes, scanTextOffset);
+        unusedString1011.readAndSetLocalizedContent(localization, stringBytes, unusedString1011Offset);
     }
 
-    public void setLocalizations(MonsterStatDataObject localizationObject) {
-        localizationObject.monsterName.copyInto(monsterName);
-        localizationObject.monsterSensorText.copyInto(monsterSensorText);
-        localizationObject.monsterSensorDash.copyInto(monsterSensorDash);
-        localizationObject.monsterScanText.copyInto(monsterScanText);
-        localizationObject.monsterScanDash.copyInto(monsterScanDash);
+    public void addLocalizations(MonsterStatDataObject localizationObject) {
+        localizationObject.name.copyInto(name);
+        localizationObject.sensorText.copyInto(sensorText);
+        localizationObject.unusedString0809.copyInto(unusedString0809);
+        localizationObject.scanText.copyInto(scanText);
+        localizationObject.unusedString1011.copyInto(unusedString1011);
     }
 
-    public String getStrings(String localization) {
+    public String buildStrings(String localization) {
         List<String> list = new ArrayList<>();
-        list.add("Name: " + monsterName.getLocalizedContent(localization) + " (Offset " + StringHelper.formatHex4(nameOffset) + ")");
-        list.add("- Sensor Text - (Offset " + StringHelper.formatHex4(sensorOffset) + ")");
-        list.add(monsterSensorText.getLocalizedContent(localization));
-        list.add("- Scan Text - (Offset " + StringHelper.formatHex4(scanOffset) + ")");
-        list.add(monsterScanText.getLocalizedContent(localization));
+        list.add("Name: " + name.getLocalizedContent(localization) + " (Offset " + StringHelper.formatHex4(nameOffset) + ")");
+        list.add("- Sensor Text - (Offset " + StringHelper.formatHex4(sensorTextOffset) + ")");
+        list.add(sensorText.getLocalizedContent(localization));
+        list.add("- Scan Text - (Offset " + StringHelper.formatHex4(scanTextOffset) + ")");
+        list.add(scanText.getLocalizedContent(localization));
         String full = list.stream().filter(s -> s != null && !s.isBlank()).collect(Collectors.joining("\n"));
         return full;
+    }
+
+    @Override
+    public String getName(String localization) {
+        return name.getLocalizedContent(localization);
     }
 
     @Override
@@ -446,10 +541,10 @@ public class MonsterStatDataObject {
         if (immunityDelay) {
             specials.add("Delay (All CTB Heal/Damage)");
         }
-        if (immunitySliceProbably) {
+        if (immunitySlice) {
             specials.add("Zan/Slice");
         }
-        if (immunityBribeProbably) {
+        if (immunityBribe) {
             specials.add("Bribe");
         }
         if (specials.isEmpty()) {
@@ -707,16 +802,7 @@ public class MonsterStatDataObject {
         return buffs.toString();
     }
 
-    private static int read2Bytes(int[] bytes, int offset) {
-        return bytes[offset] + bytes[offset+1] * 0x100;
-    }
-
-    private static int read4Bytes(int[] bytes, int offset) {
-        return bytes[offset] + bytes[offset+1] * 0x100 + bytes[offset+2] * 0x10000 + bytes[offset+3] * 0x1000000;
-    }
-
     private static String asMove(int move) {
         return DataAccess.getMove(move).getName() + StringHelper.hex4Suffix(move);
     }
-
 }
