@@ -1,13 +1,14 @@
 package main;
 
 import model.KeyItemDataObject;
-import model.strings.*;
+import model.strings.FieldString;
+import model.strings.LocalizedFieldStringObject;
+import model.strings.LocalizedMacroStringObject;
 import reading.ChunkedFileHelper;
 import reading.FileAccessorWithMods;
 
 import java.io.File;
 import java.util.*;
-import java.util.stream.Stream;
 
 import static main.DataReadingManager.LOCALIZATIONS;
 import static main.DataReadingManager.getLocalizationRoot;
@@ -222,6 +223,7 @@ public abstract class StringHelper {
                 i += endIndex;
             }
         }
+        byteList.add(0x00);
     }
 
     public static String bytesToString(int[] bytes, String localization) {
@@ -229,6 +231,12 @@ public abstract class StringHelper {
     }
 
     public static int[] getStringBytesAtLookupOffset(int[] table, int offset) {
+        if (table == null) {
+            return null;
+        }
+        if (table.length == 0) {
+            return new int[0];
+        }
         int end = offset;
         while (end < table.length && table[end] != 0x00) {
             end++;
@@ -238,7 +246,7 @@ public abstract class StringHelper {
 
     public static String getStringAtLookupOffset(int[] table, int offset, String localization) {
         if (offset >= table.length) {
-            return "{OOB}";
+            return "";
         }
         StringBuilder out = new StringBuilder();
         int idx;

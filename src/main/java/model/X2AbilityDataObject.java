@@ -1,7 +1,7 @@
 package model;
 
 import main.StringHelper;
-import model.strings.LocalizedStringObject;
+import model.strings.LocalizedKeyedStringObject;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -15,17 +15,13 @@ public class X2AbilityDataObject implements Nameable {
     public static final int LENGTH = 0x8C;
     private final int[] bytes;
 
-    public LocalizedStringObject name;
-    public LocalizedStringObject dash;
-    public LocalizedStringObject description;
-    public LocalizedStringObject otherText;
+    public LocalizedKeyedStringObject name;
+    public LocalizedKeyedStringObject description;
 
     private int nameOffset;
-    int unknownByte2;
-    int unknownByte3;
+    private int nameKey;
     private int descriptionOffset;
-    int unknownByte6;
-    int unknownByte7;
+    private int descriptionKey;
     int anim1;
     int anim2;
 
@@ -37,16 +33,14 @@ public class X2AbilityDataObject implements Nameable {
     }
 
     public String getName(String localization) {
-        return name.getLocalizedContent(localization);
+        return name.getLocalizedString(localization);
     }
 
     private void mapBytes() {
         nameOffset = read2Bytes(0x00);
-        unknownByte2 = bytes[0x02];
-        unknownByte3 = bytes[0x03];
+        nameKey = read2Bytes(0x02);
         descriptionOffset = read2Bytes(0x04);
-        unknownByte6 = bytes[0x06];
-        unknownByte7 = bytes[0x07];
+        descriptionKey = read2Bytes(0x06);
         anim1 = read2Bytes(0x08);
         anim2 = read2Bytes(0x0A);
     }
@@ -55,8 +49,8 @@ public class X2AbilityDataObject implements Nameable {
     }
 
     private void mapStrings(int[] stringBytes, String localization) {
-        name.readAndSetLocalizedContent(localization, stringBytes, nameOffset);
-        description.readAndSetLocalizedContent(localization, stringBytes, descriptionOffset);
+        name.readAndSetLocalizedContent(localization, stringBytes, nameOffset, nameKey);
+        description.readAndSetLocalizedContent(localization, stringBytes, descriptionOffset, descriptionKey);
     }
 
     @Override
@@ -64,7 +58,7 @@ public class X2AbilityDataObject implements Nameable {
         List<String> list = new ArrayList<>();
         list.add("anim=" + StringHelper.formatHex4(anim1) + "/" + StringHelper.formatHex4(anim2));
         String full = list.stream().filter(s -> s != null && !s.isBlank()).collect(Collectors.joining(", "));
-        String descriptionStr = (descriptionOffset > 0 ? description.getDefaultContent() : "");
+        String descriptionStr = (descriptionOffset > 0 ? description.getDefaultContent().getString() : "");
         return String.format("%-20s", getName()) + " { " + full + " } " + descriptionStr;
     }
 

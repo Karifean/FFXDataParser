@@ -6,7 +6,6 @@ import atel.MonsterFile;
 import model.*;
 import model.strings.LocalizedFieldStringObject;
 import model.strings.LocalizedKeyedStringObject;
-import model.strings.LocalizedStringObject;
 import reading.FileAccessorWithMods;
 
 import java.io.File;

@@ -1,11 +1,9 @@
 package atel;
 
-import main.StringHelper;
 import model.BattleAreasPositionsDataObject;
 import model.FormationDataObject;
 import model.strings.FieldString;
 import model.strings.LocalizedFieldStringObject;
-import model.strings.LocalizedStringObject;
 import reading.Chunk;
 
 import java.util.List;

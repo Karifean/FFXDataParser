@@ -3,7 +3,6 @@ package atel;
 import atel.model.*;
 import main.StringHelper;
 import model.strings.LocalizedFieldStringObject;
-import model.strings.LocalizedStringObject;
 
 import java.util.*;
 import java.util.stream.Collectors;

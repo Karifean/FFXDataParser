@@ -35,6 +35,7 @@ public class FieldString {
         final Map<String, Integer> offsetMap = new HashMap<>();
         final List<Integer> byteList = new ArrayList<>();
         byteList.add(0);
+        offsetMap.put("", 0);
         Stream<FieldString> stringStream = strings.stream();
         stringStream.forEach((fieldString) -> {
             String regularString = fieldString.getRegularString();
@@ -90,11 +91,11 @@ public class FieldString {
     }
 
     public int toRegularHeaderBytes() {
-        return regularOffset + regularFlags << 16 + regularChoices << 24;
+        return regularOffset | (regularFlags << 16) | (regularChoices << 24);
     }
 
     public int toSimplifiedHeaderBytes() {
-        return simplifiedOffset + simplifiedFlags << 16 + simplifiedChoices << 24;
+        return simplifiedOffset | (simplifiedFlags << 16) | (simplifiedChoices << 24);
     }
 
     @Override
@@ -145,7 +146,6 @@ public class FieldString {
 
     public void setCharset(String newCharset) {
         if (newCharset != null && !newCharset.equals(charset)) {
-            System.out.println("Changing charset");
             this.charset = newCharset;
         }
     }

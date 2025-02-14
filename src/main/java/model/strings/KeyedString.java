@@ -11,7 +11,7 @@ public class KeyedString {
         final Map<String, KeyedString> map = new HashMap<>();
         final List<Integer> byteList = new ArrayList<>();
         byteList.add(0);
-        stringStream = stringStream.sorted(Comparator.comparingInt(s -> s.getString().length()));
+        stringStream = stringStream.sorted(Comparator.comparingInt(s -> s.bytes.length));
         stringStream.forEach((keyedString) -> {
             String actualString = keyedString.getString();
             if (actualString == null || actualString.isEmpty()) {
@@ -49,7 +49,7 @@ public class KeyedString {
     }
 
     public int toHeaderBytes() {
-        return offset + key << 16;
+        return offset | (key << 16);
     }
 
     @Override
@@ -72,7 +72,6 @@ public class KeyedString {
 
     public void setCharset(String newCharset) {
         if (newCharset != null && !newCharset.equals(charset)) {
-            System.out.println("Changing charset");
             this.charset = newCharset;
         }
     }

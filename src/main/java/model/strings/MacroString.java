@@ -1,7 +1,6 @@
 package model.strings;
 
 import main.StringHelper;
-import reading.ChunkedFileHelper;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -87,7 +86,6 @@ public class MacroString {
 
     public void setCharset(String newCharset) {
         if (newCharset != null && !newCharset.equals(charset)) {
-            System.out.println("Changing charset");
             this.charset = newCharset;
         }
     }

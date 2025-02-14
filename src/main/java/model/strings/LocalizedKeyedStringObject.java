@@ -23,9 +23,6 @@ public class LocalizedKeyedStringObject {
     }
 
     public void readAndSetLocalizedContent(String localization, int[] bytes, int offset, int key) {
-        if (bytes == null || bytes.length == 0) {
-            return;
-        }
         contents.put(localization, new KeyedString(StringHelper.localizationToCharset(localization), offset, key, bytes));
     }
 
@@ -34,6 +31,10 @@ public class LocalizedKeyedStringObject {
     }
 
     public KeyedString getLocalizedContent(String localization) {
+        return contents.get(localization);
+    }
+
+    public KeyedString updateLocalizedContent(String localization) {
         return contents.get(localization);
     }
 

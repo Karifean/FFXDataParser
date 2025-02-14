@@ -1,9 +1,7 @@
 package atel;
 
-import main.StringHelper;
 import model.strings.FieldString;
 import model.strings.LocalizedFieldStringObject;
-import model.strings.LocalizedStringObject;
 import model.Nameable;
 import reading.Chunk;
 

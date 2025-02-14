@@ -7,7 +7,6 @@ import main.StringHelper;
 import model.AbilityDataObject;
 import model.strings.FieldString;
 import model.strings.LocalizedMacroStringObject;
-import model.strings.LocalizedStringObject;
 import model.Nameable;
 import atel.MonsterFile;
 import atel.AtelScriptObject;
