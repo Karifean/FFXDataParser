@@ -245,9 +245,12 @@ public abstract class StringHelper {
         StringBuilder out = new StringBuilder();
         int idx = table[offset];
         boolean anyColorization = false;
+        boolean extraFiveSections = false;
         while (idx != 0x00) {
+            int extraOffset = extraFiveSections ? 0x410 : 0;
+            extraFiveSections = false;
             if (idx >= 0x30) {
-                Character chr = byteToChar(idx, localization);
+                Character chr = byteToChar(idx + extraOffset, localization);
                 if (chr != null) {
                     out.append(chr);
                 } else {
@@ -258,7 +261,7 @@ public abstract class StringHelper {
             } else if (idx == 0x03) {
                 out.append(WRITE_LINEBREAKS_AS_COMMANDS ? "{\\n}" : '\n');
             } else if (idx == 0x04) {
-                out.append("{CMD04}");
+                extraFiveSections = true;
             } else if (idx == 0x07) {
                 offset++;
                 int pixels = table[offset] - 0x30;
@@ -330,7 +333,7 @@ public abstract class StringHelper {
                 offset++;
                 int lowByte = table[offset];
                 int actualIdx = section * 0xD0 + lowByte;
-                Character chr = byteToChar(actualIdx, localization);
+                Character chr = byteToChar(actualIdx + extraOffset, localization);
                 if (chr != null) {
                     out.append(chr);
                 } else {
