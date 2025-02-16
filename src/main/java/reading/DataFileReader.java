@@ -6,19 +6,22 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.IntFunction;
 
 public class DataFileReader<T> {
     private final DataObjectCreator<T> objectCreator;
+    private final IntFunction<T[]> arrayCreator;
 
-    public DataFileReader(DataObjectCreator<T> objectCreator) {
+    public DataFileReader(DataObjectCreator<T> objectCreator, IntFunction<T[]> arrayCreator) {
         this.objectCreator = objectCreator;
+        this.arrayCreator = arrayCreator;
     }
 
     public String indexWriter(int idx) {
         return "Index " + idx + " [" + StringHelper.formatHex2(idx) + "h]";
     }
 
-    public List<T> readGenericDataFile(String filename, boolean print) {
+    public List<T> toList(String filename, String localization, boolean print) {
         File file = FileAccessorWithMods.resolveFile(filename, print);
         if (!file.isDirectory()) {
             try (DataInputStream inputStream = FileAccessorWithMods.readFile(file)) {
@@ -41,7 +44,7 @@ public class DataFileReader<T> {
                 }
                 final int j = maxIndex - minIndex;
                 for (int i = 0; i <= j; i++) {
-                    T obj = objectCreator.create(Arrays.copyOfRange(dataBytes, i * individualLength, (i + 1) * individualLength), allStrings);
+                    T obj = objectCreator.create(Arrays.copyOfRange(dataBytes, i * individualLength, (i + 1) * individualLength), allStrings, localization);
                     objects.add(obj);
                     if (print) {
                         String offset = StringHelper.formatHex4((i * individualLength) + 0x14);
@@ -54,7 +57,7 @@ public class DataFileReader<T> {
         return null;
     }
 
-    public List<T> readGenericX2DataFile(String filename, boolean print) {
+    public List<T> readGenericX2DataFile(String filename, String localization, boolean print) {
         File file = FileAccessorWithMods.resolveFile(filename, print);
         if (!file.isDirectory()) {
             try (DataInputStream inputStream = FileAccessorWithMods.readFile(file)) {
@@ -77,7 +80,7 @@ public class DataFileReader<T> {
                 }
                 final int j = maxIndex - minIndex;
                 for (int i = 0; i <= j; i++) {
-                    T obj = objectCreator.create(Arrays.copyOfRange(dataBytes, i * individualLength, (i + 1) * individualLength), allStrings);
+                    T obj = objectCreator.create(Arrays.copyOfRange(dataBytes, i * individualLength, (i + 1) * individualLength), allStrings, localization);
                     objects.add(obj);
                     if (print) {
                         String offset = StringHelper.formatHex4((i * individualLength) + 0x20);
@@ -88,6 +91,14 @@ public class DataFileReader<T> {
             } catch (IOException ignored) {}
         }
         return null;
+    }
+
+    public T[] toArray(String filename, String localization, boolean print) {
+        List<T> list = toList(filename, localization, print);
+        if (list == null) {
+            return null;
+        }
+        return list.toArray(arrayCreator);
     }
 
     private int read2Bytes(DataInputStream stream) throws IOException {

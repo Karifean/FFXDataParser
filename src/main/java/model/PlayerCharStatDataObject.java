@@ -15,13 +15,13 @@ import static reading.ChunkedFileHelper.*;
 /**
  * ply_save.bin
  */
-public class PlayerCharStatDataObject implements Nameable, Writable {
+public class PlayerCharStatDataObject implements Nameable, Writable, Localized<PlayerCharStatDataObject> {
     public static final int LENGTH = 0x9C;
 
     private final int[] bytes;
 
     public LocalizedKeyedStringObject name = new LocalizedKeyedStringObject();
-    int nameOffset;
+    private int nameOffset;
     private int nameKey;
 
     int baseHp;

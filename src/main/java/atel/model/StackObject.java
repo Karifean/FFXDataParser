@@ -133,7 +133,7 @@ public class StackObject {
         }
         if ("pointer".equals(type)) {
             ScriptVariable scriptVariable = new ScriptVariable(parentWorker, 0, valueSigned, 1);
-            return "*" + scriptVariable.getDereference() + hexSuffix;
+            return "&" + scriptVariable.getDereference() + hexSuffix;
         }
         if ("encounter".equals(type)) {
             int field = (valueSigned & 0xFFFF0000) >> 16;

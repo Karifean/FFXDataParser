@@ -21,7 +21,7 @@ import static reading.ChunkedFileHelper.*;
  * monster2.bin (only uses Name/Sensor/Scan text strings)
  * monster3.bin (only uses Name/Sensor/Scan text strings)
  */
-public class MonsterStatDataObject implements Nameable, Writable {
+public class MonsterStatDataObject implements Nameable, Writable, Localized<MonsterStatDataObject> {
     public static final int LENGTH = 0x80;
 
     private final int[] bytes;
@@ -439,7 +439,7 @@ public class MonsterStatDataObject implements Nameable, Writable {
         unusedString1011.readAndSetLocalizedContent(localization, stringBytes, unusedString1011Offset, unusedString1011Key);
     }
 
-    public void addLocalizations(MonsterStatDataObject localizationObject) {
+    public void setLocalizations(MonsterStatDataObject localizationObject) {
         localizationObject.name.copyInto(name);
         localizationObject.sensorText.copyInto(sensorText);
         localizationObject.unusedString0809.copyInto(unusedString0809);

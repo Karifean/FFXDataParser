@@ -20,13 +20,13 @@ public class ItemShopDataObject implements Writable {
     private int unusedPrices;
     private int[] offeredItemIndexes = new int[0x10];
 
-    public ItemShopDataObject(int[] bytes, int[] stringBytes) {
+    public ItemShopDataObject(int[] bytes, int[] stringBytes, String localization) {
         this.bytes = bytes;
         mapBytes();
     }
 
     public ItemShopDataObject(int[] bytes) {
-        this(bytes, null);
+        this(bytes, null, null);
     }
 
     private void mapBytes() {

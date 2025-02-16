@@ -23,7 +23,7 @@ public class CustomizationDataObject implements Writable {
     private int requiredItemQuantity;
     private int requiredItemQuantityBase;
 
-    public CustomizationDataObject(int[] bytes, int[] stringBytes) {
+    public CustomizationDataObject(int[] bytes, int[] stringBytes, String localization) {
         this.bytes = bytes;
         mapBytes();
     }

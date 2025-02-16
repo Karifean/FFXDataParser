@@ -4,6 +4,7 @@ import atel.model.StackObject;
 import main.DataAccess;
 import main.DataReadingManager;
 import main.StringHelper;
+import model.Localized;
 import model.spheregrid.SphereGridSphereTypeDataObject;
 import model.strings.KeyedString;
 import model.strings.LocalizedKeyedStringObject;
@@ -24,7 +25,7 @@ import static reading.ChunkedFileHelper.write4Bytes;
  * monmagic2.bin
  * item.bin
  */
-public class AbilityDataObject implements Nameable, Writable {
+public class AbilityDataObject extends NameDescriptionTextObject implements Nameable, Writable {
     public static final int COM_LENGTH = 0x5C;
     public static final int PCCOM_LENGTH = 0x60;
     static Map<Integer, String> submenus;
@@ -32,18 +33,6 @@ public class AbilityDataObject implements Nameable, Writable {
     private final boolean isCharacterAbility;
     private final int[] bytes;
 
-    public LocalizedKeyedStringObject name = new LocalizedKeyedStringObject();
-    public LocalizedKeyedStringObject unusedString0405 = new LocalizedKeyedStringObject();
-    public LocalizedKeyedStringObject description = new LocalizedKeyedStringObject();
-    public LocalizedKeyedStringObject unusedString0C0D = new LocalizedKeyedStringObject();
-    public int nameOffset;
-    public int unusedString0405Offset;
-    public int descriptionOffset;
-    public int unusedString0C0DOffset;
-    int nameKey;
-    int unusedString0405Key;
-    int descriptionKey;
-    int unusedString0C0DKey;
     int anim1;
     int anim2;
     int icon;
@@ -225,31 +214,24 @@ public class AbilityDataObject implements Nameable, Writable {
     boolean considerSphereType;
 
     public AbilityDataObject(int[] bytes, int[] stringBytes, String localization, int group) {
+        super(bytes, stringBytes, localization);
         this.bytes = bytes;
         isCharacterAbility = group <= 3;
         considerSphereType = group == 2;
         prepareMaps();
         mapBytes();
         mapFlags();
-        mapStrings(stringBytes, localization);
     }
 
+    @Override
     public String getName(String localization) {
         if (!displayMoveName) {
-            return "[" + name.getLocalizedContent(localization) + "]";
+            return "[" + name.getLocalizedString(localization) + "]";
         }
-        return name.getLocalizedContent(localization).toString();
+        return name.getLocalizedString(localization);
     }
 
     private void mapBytes() {
-        nameOffset = read2Bytes(0x00);
-        nameKey = read2Bytes(0x02);
-        unusedString0405Offset = read2Bytes(0x04);
-        unusedString0405Key = read2Bytes(0x06);
-        descriptionOffset = read2Bytes(0x08);
-        descriptionKey = read2Bytes(0x0A);
-        unusedString0C0DOffset = read2Bytes(0x0C);
-        unusedString0C0DKey = read2Bytes(0x0E);
         anim1 = read2Bytes(0x10);
         anim2 = read2Bytes(0x12);
         icon = bytes[0x14];
@@ -331,10 +313,7 @@ public class AbilityDataObject implements Nameable, Writable {
 
     public int[] toBytes(String localization) {
         int[] array = new int[isCharacterAbility ? AbilityDataObject.PCCOM_LENGTH : AbilityDataObject.COM_LENGTH];
-        write4Bytes(array, 0x00, name.getLocalizedContent(localization).toHeaderBytes());
-        write4Bytes(array, 0x04, unusedString0405.getLocalizedContent(localization).toHeaderBytes());
-        write4Bytes(array, 0x08, description.getLocalizedContent(localization).toHeaderBytes());
-        write4Bytes(array, 0x0C, unusedString0C0D.getLocalizedContent(localization).toHeaderBytes());
+        System.arraycopy(super.toBytes(localization), 0, array, 0, 0x10);
         write2Bytes(array, 0x10, anim1);
         write2Bytes(array, 0x12, anim2);
         array[0x14] = icon;
@@ -519,30 +498,6 @@ public class AbilityDataObject implements Nameable, Writable {
         }
     }
 
-    private void mapStrings(int[] stringBytes, String localization) {
-        name.readAndSetLocalizedContent(localization, stringBytes, nameOffset, nameKey);
-        unusedString0405.readAndSetLocalizedContent(localization, stringBytes, unusedString0405Offset, unusedString0405Key);
-        description.readAndSetLocalizedContent(localization, stringBytes, descriptionOffset, descriptionKey);
-        unusedString0C0D.readAndSetLocalizedContent(localization, stringBytes, unusedString0C0DOffset, unusedString0C0DKey);
-    }
-
-    @Override
-    public Stream<KeyedString> streamKeyedStrings(String localization) {
-        return Stream.of(
-                name.getLocalizedContent(localization),
-                unusedString0405.getLocalizedContent(localization),
-                description.getLocalizedContent(localization),
-                unusedString0C0D.getLocalizedContent(localization)
-        );
-    }
-
-    public void setLocalizations(AbilityDataObject localizationObject) {
-        localizationObject.name.copyInto(name);
-        localizationObject.unusedString0405.copyInto(unusedString0405);
-        localizationObject.description.copyInto(description);
-        localizationObject.unusedString0C0D.copyInto(unusedString0C0D);
-    }
-
     public String nameInAllLanguages() {
         return List.of("us", "de", "fr", "sp", "it", "jp", "ch", "kr").stream().map(l -> getName(l)).collect(Collectors.joining(" / "));
     }
@@ -621,7 +576,7 @@ public class AbilityDataObject implements Nameable, Writable {
             list.add("SphereGridRole=" + StringHelper.hex2WithSuffix(sphereTypeForSphereGrid) + " " + (sgSphereType != null ? sgSphereType : "null"));
         }
         String full = list.stream().filter(s -> s != null && !s.isBlank()).collect(Collectors.joining(", "));
-        String descriptionStr = descriptionOffset > 0 ? description.getLocalizedString(localization) : "";
+        String descriptionStr = description.getDefaultString();
         return String.format("%-22s", getName(localization)) + " { " + full + " } " + descriptionStr;
     }
 

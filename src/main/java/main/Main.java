@@ -24,6 +24,7 @@ public class Main {
     private static final String MODE_READ_TREASURES = "READ_TREASURES";
     private static final String MODE_READ_GEAR_SHOPS = "READ_GEAR_SHOPS";
     private static final String MODE_READ_ITEM_SHOPS = "READ_ITEM_SHOPS";
+    private static final String MODE_READ_MISC_TEXTS = "READ_MISC_TEXTS";
     private static final String MODE_READ_MONSTER_LOCALIZATIONS = "READ_MONSTER_LOCALIZATIONS";
     private static final String MODE_READ_WEAPON_FILE = "READ_WEAPON_FILE";
     private static final String MODE_READ_STRING_FILE = "READ_STRING_FILE";
@@ -164,6 +165,15 @@ public class Main {
                 break;
             case MODE_READ_ITEM_SHOPS:
                 readItemShops(PATH_ORIGINALS_KERNEL + "item_shop.bin", true);
+                break;
+            case MODE_READ_MISC_TEXTS:
+                readNameDescriptionTexts("battle/kernel/arms_txt.bin", true);
+                readNameDescriptionTexts("battle/kernel/config_txt.bin", true);
+                readNameDescriptionTexts("battle/kernel/item_txt.bin", true);
+                readNameDescriptionTexts("battle/kernel/menu_txt.bin", true);
+                readNameDescriptionTexts("battle/kernel/mmain_txt.bin", true);
+                readNameDescriptionTexts("battle/kernel/status_txt.bin", true);
+                readNameDescriptionTexts("battle/kernel/summon_txt.bin", true);
                 break;
             case MODE_READ_MONSTER_LOCALIZATIONS:
                 readMonsterLocalizations(realArgs.size() > 0 ? realArgs.get(0) : DEFAULT_LOCALIZATION, true);

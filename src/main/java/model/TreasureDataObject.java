@@ -13,13 +13,13 @@ public class TreasureDataObject implements Nameable {
     private int quantity;
     private int type;
 
-    public TreasureDataObject(int[] bytes, int[] stringBytes) {
+    public TreasureDataObject(int[] bytes, int[] stringBytes, String localization) {
         this.bytes = bytes;
         mapBytes();
     }
 
     public TreasureDataObject(int[] bytes) {
-        this(bytes, null);
+        this(bytes, null, null);
     }
 
     private void mapBytes() {

@@ -41,7 +41,7 @@ public class MonsterFile implements Nameable {
         monsterStatData = new MonsterStatDataObject(statBytes, Arrays.copyOfRange(statBytes, MonsterStatDataObject.LENGTH, statBytes.length), "jp");
         monsterLootData = new MonsterLootDataObject(lootBytes);
         MonsterStatDataObject englishTextStatData = new MonsterStatDataObject(englishTextBytes, Arrays.copyOfRange(englishTextBytes, MonsterStatDataObject.LENGTH, englishTextBytes.length), "us");
-        monsterStatData.addLocalizations(englishTextStatData);
+        monsterStatData.setLocalizations(englishTextStatData);
     }
 
     public void parseScript() {

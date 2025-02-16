@@ -124,7 +124,8 @@ public abstract class ScriptFuncLib {
         putFuncWithIdx(0x005E, new ScriptFunc("disablePlayerControl?", "unknown", null, true));
         putFuncWithIdx(0x005F, new ScriptFunc("halt", "unknown", null, true));
         putUnknownFunc(0x0060, 1);
-        putUnknownFunc(0x0061, 1); // noclip: collision detection
+        putFuncWithIdx(0x0061, new ScriptFunc("setMovementSpeed?", "unknown", null, p("speed", "float")));
+        // putUnknownFunc(0x0061, 1); // noclip: collision detection
         putUnknownFunc(0x0062, 1); // noclip: collision detection
         putUnknownFunc(0x0063, 1); // noclip: collision detection
         putFuncWithIdx(0x0064, new ScriptFunc("displayFieldString", "unknown", null, p("boxIndex", "int"), p("string", "localString")));
@@ -133,7 +134,7 @@ public abstract class ScriptFuncLib {
         putFuncWithIdx(0x0069, new ScriptFunc(p("boxIndex", "int"), p(2), p(3)));
         putFuncWithIdx(0x006A, new ScriptFunc(p("boxIndex", "int"), p(2)));
         putFuncWithIdx(0x006B, new ScriptFunc(p("boxIndex", "int")));
-        putUnknownFunc(0x006C, 1);
+        putFuncWithIdx(0x006C, new ScriptFunc("setTalkingRange?", "unknown", null, p("range", "float")));
         putUnknownFunc(0x006D, 1);
         putUnknownFunc(0x006E, 1);
         putFuncWithIdx(0x006F, new ScriptFunc("setAllRotationRate1", "unknown", null, p("rate", "float")));
@@ -591,7 +592,7 @@ public abstract class ScriptFuncLib {
         putUnknownFunc(0x5029, 1);
         putUnknownFunc(0x502A, 1);
         putUnknownFunc(0x502C, 2);
-        putUnknownFunc(0x502D, 2);
+        putFuncWithIdx(0x502D, new ScriptFunc("setAttachedToWorker", "unknown", null, p("worker"), p("?attachmentPoint", "int")));
         putUnknownFunc(0x5032, 0);
         putUnknownFunc(0x5033, 2);
         putUnknownFunc(0x5034, 1);

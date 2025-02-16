@@ -100,6 +100,10 @@ public class FieldString {
 
     @Override
     public String toString() {
+        return getString();
+    }
+
+    public String getString() {
         if (hasDistinctSimplified()) {
             return getRegularString() + " (Simplified: " + getSimplifiedString() + ")";
         }

@@ -83,8 +83,8 @@ public abstract class StringHelper {
         return charToBytes((char) chr, charset);
     }
 
-    public static Character byteToChar(int hex, String localization) {
-        return BYTE_TO_CHAR_MAPS.get(localizationToCharset(localization)).get(hex);
+    public static Character byteToChar(int hex, String charset) {
+        return BYTE_TO_CHAR_MAPS.get(charset).get(hex);
     }
 
     public static String localizationToCharset(String localization) {
@@ -171,6 +171,20 @@ public abstract class StringHelper {
         };
     }
 
+    public static String getControllerInput(int ctrlIdx) {
+        return switch (ctrlIdx) {
+            case 0x00 -> "TRIANGLE";
+            case 0x01 -> "X";
+            case 0x02 -> "CIRCLE";
+            case 0x03 -> "SQUARE";
+            case 0x11 -> "UP";
+            case 0x12 -> "RIGHT?";
+            case 0x14 -> "DOWN";
+            case 0x18 -> "LEFT?";
+            default -> "?";
+        };
+    }
+
     public static String consoleColorIfEnabled(String ansiColor) {
         return COLORS_USE_CONSOLE_CODES ? ansiColor : "";
     }
@@ -206,24 +220,38 @@ public abstract class StringHelper {
         return FieldString.fromStringData(bytes, print, localization);
     }
 
-    public static void fillByteList(String actualString, List<Integer> byteList, String charset) {
-        for (int i = 0; i < actualString.length(); i++) {
-            char chr = actualString.charAt(i);
-            List<Integer> cmdBytes = chr == '{' ? StringHelper.parseCommand(actualString, i) : null;
+    public static void fillByteList(String string, List<Integer> byteList, String charset) {
+        for (int i = 0; i < string.length(); i++) {
+            char chr = string.charAt(i);
+            List<Integer> cmdBytes = chr == '{' ? StringHelper.parseCommand(string, i) : null;
             if (cmdBytes == null) {
                 List<Integer> bytesOfChar = StringHelper.charToBytes(chr, charset);
                 if (bytesOfChar != null) {
                     byteList.addAll(bytesOfChar);
                 } else {
-                    System.err.printf("Unknown character %c at index %d in string %s%n", chr, i, actualString);
+                    System.err.printf("Unknown character %c at index %d in string %s%n", chr, i, string);
                 }
             } else {
                 byteList.addAll(cmdBytes);
-                int endIndex = actualString.substring(i).indexOf('}');
+                int endIndex = string.substring(i).indexOf('}');
                 i += endIndex;
             }
         }
         byteList.add(0x00);
+    }
+
+    public static List<Integer> getInvalidCharacters(String string, String charset) {
+        List<Integer> indexList = new ArrayList<>();
+        for (int i = 0; i < string.length(); i++) {
+            char chr = string.charAt(i);
+            List<Integer> cmdBytes = chr == '{' ? StringHelper.parseCommand(string, i) : null;
+            if (cmdBytes != null) {
+                i += string.substring(i).indexOf('}');
+            } else if (StringHelper.charToBytes(chr, charset) == null) {
+                indexList.add(i);
+            }
+        }
+        return indexList;
     }
 
     public static String bytesToString(int[] bytes, String localization) {
@@ -231,11 +259,9 @@ public abstract class StringHelper {
     }
 
     public static int[] getStringBytesAtLookupOffset(int[] table, int offset) {
-        if (table == null) {
+        if (table == null || offset < 0 || offset >= table.length) {
+            System.err.println("Invalid bytes get, " + (table == null ? "table is null" : ("offset is " + offset)));
             return null;
-        }
-        if (table.length == 0) {
-            return new int[0];
         }
         int end = offset;
         while (end < table.length && table[end] != 0x00) {
@@ -245,18 +271,19 @@ public abstract class StringHelper {
     }
 
     public static String getStringAtLookupOffset(int[] table, int offset, String localization) {
-        if (offset >= table.length) {
+        if (table == null || offset < 0 || offset >= table.length) {
             return "";
         }
         StringBuilder out = new StringBuilder();
         int idx;
         boolean anyColorization = false;
         boolean extraFiveSections = false;
+        String charset = localizationToCharset(localization);
         while (offset < table.length && (idx = table[offset]) != 0x00) {
             int extraOffset = extraFiveSections ? 0x410 : 0;
             extraFiveSections = false;
             if (idx >= 0x30) {
-                Character chr = byteToChar(idx + extraOffset, localization);
+                Character chr = byteToChar(idx + extraOffset, charset);
                 if (chr != null) {
                     out.append(chr);
                 } else {
@@ -283,8 +310,8 @@ public abstract class StringHelper {
                 anyColorization = true;
             } else if (idx == 0x0B) {
                 offset++;
-                int varIdx = table[offset] - 0x30;
-                out.append("{CTRL:").append(StringHelper.formatHex2(varIdx)).append('}');
+                int ctrlIdx = table[offset] - 0x30;
+                out.append("{CTRL:").append(StringHelper.formatHex2(ctrlIdx)).append(':').append(getControllerInput(ctrlIdx)).append('}');
             } else if (idx == 0x10) {
                 offset++;
                 int rawValue = table[offset];
@@ -341,7 +368,7 @@ public abstract class StringHelper {
                 offset++;
                 int lowByte = table[offset];
                 int actualIdx = section * 0xD0 + lowByte;
-                Character chr = byteToChar(actualIdx + extraOffset, localization);
+                Character chr = byteToChar(actualIdx + extraOffset, charset);
                 if (chr != null) {
                     out.append(chr);
                 } else {

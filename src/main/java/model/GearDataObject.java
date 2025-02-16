@@ -39,10 +39,10 @@ public class GearDataObject {
     boolean brotherhood;
 
     public GearDataObject(int[] bytes) {
-        this(bytes, null);
+        this(bytes, null, null);
     }
 
-    public GearDataObject(int[] bytes, int[] stringBytes) {
+    public GearDataObject(int[] bytes, int[] stringBytes, String localization) {
         this.bytes = bytes;
         isBukiGet = (bytes.length == 16);
         if (isBukiGet) {

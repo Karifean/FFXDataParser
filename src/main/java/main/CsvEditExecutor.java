@@ -98,7 +98,8 @@ public abstract class CsvEditExecutor {
                         }
                     } else {
                         if (print) {
-                            System.out.printf("Copying [\"%s\"] into %04X%n", colToLocalization.keySet().stream().flatMap(i -> i < cells.length ? Stream.of(cells[i]) : Stream.empty()).collect(Collectors.joining("\",\"")), id);
+                            String localizedStrings = colToLocalization.keySet().stream().flatMap(i -> i < cells.length ? Stream.of(cells[i]) : Stream.empty()).collect(Collectors.joining("\",\""));
+                            System.out.printf("Copying [\"%s\"] into %04X%n", localizedStrings, id);
                         }
                         colToLocalization.forEach((colIdx, localization) -> {
                             String string = colIdx < cells.length ? cells[colIdx] : null;
@@ -153,7 +154,8 @@ public abstract class CsvEditExecutor {
                 idSet.add(id);
                 LocalizedFieldStringObject objToEdit = event.strings.get(stringIndex);
                 if (print) {
-                    System.out.printf("Copying [\"%s\"] into %s%n", colToLocalization.keySet().stream().map(i -> cells[i]).collect(Collectors.joining("\",\"")), id);
+                    String localizedStrings = colToLocalization.keySet().stream().flatMap(i -> i < cells.length ? Stream.of(cells[i]) : Stream.empty()).collect(Collectors.joining("\",\""));
+                    System.out.printf("Copying [\"%s\"] into %s%n", localizedStrings, id);
                 }
                 colToLocalization.forEach((colIdx, localization) -> {
                     String string = colIdx < cells.length ? cells[colIdx] : null;
@@ -163,7 +165,7 @@ public abstract class CsvEditExecutor {
                 });
             }
         }
-        idSet.forEach(id -> DataWritingManager.writeEventStringsForAllLocalizations(id));
+        idSet.forEach(id -> DataWritingManager.writeEventStringsForAllLocalizations(id, print));
     }
 
     public static void editAndSaveEncounterStrings(final boolean print) {
@@ -206,7 +208,8 @@ public abstract class CsvEditExecutor {
                 idSet.add(id);
                 LocalizedFieldStringObject objToEdit = encounter.strings.get(stringIndex);
                 if (print) {
-                    System.out.printf("Copying [\"%s\"] into %s%n", colToLocalization.keySet().stream().map(i -> cells[i]).collect(Collectors.joining("\",\"")), id);
+                    String localizedStrings = colToLocalization.keySet().stream().flatMap(i -> i < cells.length ? Stream.of(cells[i]) : Stream.empty()).collect(Collectors.joining("\",\""));
+                    System.out.printf("Copying [\"%s\"] into %s%n", localizedStrings, id);
                 }
                 colToLocalization.forEach((colIdx, localization) -> {
                     String string = colIdx < cells.length ? cells[colIdx] : null;
@@ -216,6 +219,6 @@ public abstract class CsvEditExecutor {
                 });
             }
         }
-        idSet.forEach(id -> DataWritingManager.writeEncounterStringsForAllLocalizations(id));
+        idSet.forEach(id -> DataWritingManager.writeEncounterStringsForAllLocalizations(id, print));
     }
 }

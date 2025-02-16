@@ -11,10 +11,7 @@ import model.spheregrid.SphereGridNodeTypeDataObject;
 import model.spheregrid.SphereGridSphereTypeDataObject;
 import model.strings.LocalizedFieldStringObject;
 import model.strings.MacroDictionaryFile;
-import reading.Chunk;
-import reading.ChunkedFileHelper;
-import reading.DataFileReader;
-import reading.FileAccessorWithMods;
+import reading.*;
 
 import java.io.DataInputStream;
 import java.io.File;
@@ -76,6 +73,18 @@ public class DataReadingManager {
         DataAccess.KEY_ITEMS = readKeyItems("battle/kernel/important.bin", false);
         DataAccess.GEAR_SHOPS = readWeaponShops(PATH_ORIGINALS_KERNEL + "arms_shop.bin", false);
         DataAccess.ITEM_SHOPS = readItemShops(PATH_ORIGINALS_KERNEL + "item_shop.bin", false);
+        DataAccess.ARMS_TEXT = readNameDescriptionTexts("battle/kernel/arms_txt.bin", false);
+        // DataAccess.BTL_TEXT = readNameDescriptionTexts("battle/kernel/btl_txt.bin", false); Wrong format
+        // DataAccess.BTLEND_TEXT = readNameDescriptionTexts("battle/kernel/btlend_txt.bin", false); Wrong format
+        // DataAccess.BUILD_TEXT = readNameDescriptionTexts("battle/kernel/build_txt.bin", false); Wrong format
+        DataAccess.CONFIG_TEXT = readNameDescriptionTexts("battle/kernel/config_txt.bin", false);
+        DataAccess.ITEM_TEXT = readNameDescriptionTexts("battle/kernel/item_txt.bin", false);
+        DataAccess.MENU_TEXT = readNameDescriptionTexts("battle/kernel/menu_txt.bin", false);
+        DataAccess.MMAIN_TEXT = readNameDescriptionTexts("battle/kernel/mmain_txt.bin", false);
+        // DataAccess.NAME_TEXT = readNameDescriptionTexts("battle/kernel/name_txt.bin", false); Wrong format
+        // DataAccess.SAVE_TEXT = readNameDescriptionTexts("battle/kernel/save_txt.bin", false); Wrong format
+        DataAccess.STATS_TEXT = readNameDescriptionTexts("battle/kernel/status_txt.bin", false);
+        DataAccess.SUMMON_TEXT = readNameDescriptionTexts("battle/kernel/summon_txt.bin", false);
         DataAccess.TREASURES = readTreasures(PATH_ORIGINALS_KERNEL + "takara.bin", false);
         readAllMonsters(false);
         if (LOAD_EVENTS_AND_ENCOUNTERS) {
@@ -133,47 +142,23 @@ public class DataReadingManager {
     }
 
     private static void prepareAbilitiesFromFile(String path, int group) {
-        AbilityDataObject[] abilities = readAbilitiesFromFile(getLocalizationRoot(getDefaultLocalization()) + path, group, getDefaultLocalization(), false);
-        if (abilities == null) {
-            System.err.println("Failed to load abilities from " + path + " (group " + group + ')');
-            return;
-        }
-        LOCALIZATIONS.forEach((key, name) -> {
-            AbilityDataObject[] localizations = readAbilitiesFromFile(getLocalizationRoot(key) + path, group, key, false);
-            if (localizations != null) {
-                for (int i = 0; i < localizations.length && i < abilities.length; i++) {
-                    if (abilities[i] != null && localizations[i] != null) {
-                        abilities[i].setLocalizations(localizations[i]);
-                    }
-                }
-            }
-        });
-        System.arraycopy(abilities, 0, DataAccess.MOVES, 0x1000 * group, abilities.length);
-    }
-
-    public static AbilityDataObject[] readAbilitiesFromFile(String filename, int group, String localization, boolean print) {
-        DataFileReader<AbilityDataObject> reader = new DataFileReader<>((bytes, stringBytes) -> new AbilityDataObject(bytes, stringBytes, localization, group)) {
+        AbilityDataObject[] abilities = new LocalizedDataFileReader<>((b, sb, l) -> new AbilityDataObject(b, sb, l, group), i -> new AbilityDataObject[i]) {
             @Override
             public String indexWriter(int idx) {
                 return StringHelper.formatHex4(idx + group * 0x1000);
             }
-        };
-        List<AbilityDataObject> list = reader.readGenericDataFile(filename, print);
-        if (list == null) {
-            return null;
-        }
-        AbilityDataObject[] array = new AbilityDataObject[list.size()];
-        return list.toArray(array);
+        }.read(path, false);
+        System.arraycopy(abilities, 0, DataAccess.MOVES, 0x1000 * group, abilities.length);
     }
 
     public static X2AbilityDataObject[] readX2AbilitiesFromFile(String filename, String localization, boolean print) {
-        DataFileReader<X2AbilityDataObject> reader = new DataFileReader<>((b, sb) -> new X2AbilityDataObject(b, sb, localization)) {
+        DataFileReader<X2AbilityDataObject> reader = new DataFileReader<>(X2AbilityDataObject::new, i -> new X2AbilityDataObject[i]) {
             @Override
             public String indexWriter(int idx) {
                 return StringHelper.formatHex4(idx);
             }
         };
-        List<X2AbilityDataObject> list = reader.readGenericX2DataFile(filename, print);
+        List<X2AbilityDataObject> list = reader.readGenericX2DataFile(filename, localization, print);
         if (list == null) {
             return null;
         }
@@ -182,81 +167,25 @@ public class DataReadingManager {
     }
 
     public static KeyItemDataObject[] readKeyItems(String path, boolean print) {
-        KeyItemDataObject[] items = readKeyItemsFromFile(getLocalizationRoot(getDefaultLocalization()) + path, getDefaultLocalization(), print);
-        if (items == null) {
-            return null;
-        }
-        LOCALIZATIONS.forEach((key, name) -> {
-            KeyItemDataObject[] localizations = readKeyItemsFromFile(getLocalizationRoot(key) + path, key, false);
-            if (localizations != null) {
-                for (int i = 0; i < localizations.length && i < items.length; i++) {
-                    if (items[i] != null && localizations[i] != null) {
-                        items[i].setLocalizations(localizations[i]);
-                    }
-                }
-            }
-        });
-        return items;
-    }
-
-    public static KeyItemDataObject[] readKeyItemsFromFile(String filename, String localization, boolean print) {
-        DataFileReader<KeyItemDataObject> reader = new DataFileReader<>((int[] bytes, int[] stringBytes) -> new KeyItemDataObject(bytes, stringBytes, localization)) {
+        return new LocalizedDataFileReader<>(KeyItemDataObject::new, i -> new KeyItemDataObject[i]) {
             @Override
             public String indexWriter(int idx) {
                 return "A0" + StringHelper.formatHex2(idx);
             }
-        };
-        List<KeyItemDataObject> list = reader.readGenericDataFile(filename, print);
-        if (list == null) {
-            return null;
-        }
-        KeyItemDataObject[] array = new KeyItemDataObject[list.size()];
-        return list.toArray(array);
+        }.read(path, print);
     }
 
     public static PlayerCharStatDataObject[] readPlayerCharStats(String path, boolean print) {
-        PlayerCharStatDataObject[] stats = readPlayerCharStatsFromFile(getLocalizationRoot(getDefaultLocalization()) + path, getDefaultLocalization(), print);
-        if (stats == null) {
-            return null;
-        }
-        LOCALIZATIONS.forEach((key, name) -> {
-            PlayerCharStatDataObject[] localizations = readPlayerCharStatsFromFile(getLocalizationRoot(key) + path, key, false);
-            if (localizations != null) {
-                for (int i = 0; i < localizations.length && i < stats.length; i++) {
-                    if (stats[i] != null && localizations[i] != null) {
-                        stats[i].setLocalizations(localizations[i]);
-                    }
-                }
-            }
-        });
-        return stats;
-    }
-
-    public static PlayerCharStatDataObject[] readPlayerCharStatsFromFile(String filename, String localization, boolean print) {
-        DataFileReader<PlayerCharStatDataObject> reader = new DataFileReader<>((b, sb) -> new PlayerCharStatDataObject(b, sb, localization));
-        List<PlayerCharStatDataObject> list = reader.readGenericDataFile(filename, print);
-        if (list == null) {
-            return null;
-        }
-        PlayerCharStatDataObject[] array = new PlayerCharStatDataObject[list.size()];
-        return list.toArray(array);
+        return new LocalizedDataFileReader<>(PlayerCharStatDataObject::new, i -> new PlayerCharStatDataObject[i]).read(path, print);
     }
 
     public static GearAbilityDataObject[] readGearAbilities(String path, boolean print) {
-        GearAbilityDataObject[] abilities = readGearAbilitiesFromFile(getLocalizationRoot(getDefaultLocalization()) + path, getDefaultLocalization(), print);
-        if (abilities == null) {
-            return null;
-        }
-        LOCALIZATIONS.forEach((key, name) -> {
-            GearAbilityDataObject[] localizations = readGearAbilitiesFromFile(getLocalizationRoot(key) + path, key, false);
-            if (localizations != null) {
-                for (int i = 0; i < localizations.length && i < abilities.length; i++) {
-                    if (abilities[i] != null && localizations[i] != null) {
-                        abilities[i].setLocalizations(localizations[i]);
-                    }
-                }
+        GearAbilityDataObject[] abilities = new LocalizedDataFileReader<>(GearAbilityDataObject::new, i -> new GearAbilityDataObject[i]) {
+            @Override
+            public String indexWriter(int idx) {
+                return "80" + StringHelper.formatHex2(idx);
             }
-        });
+        }.read(path, print);
         if (print) {
             Set<Integer> groups = new HashSet<>();
             List<Integer> untakenGroups = new ArrayList<>();
@@ -273,19 +202,8 @@ public class DataReadingManager {
         return abilities;
     }
 
-    public static GearAbilityDataObject[] readGearAbilitiesFromFile(String filename, String localization, boolean print) {
-        DataFileReader<GearAbilityDataObject> reader = new DataFileReader<>((int[] bytes, int[] stringBytes) -> new GearAbilityDataObject(bytes, stringBytes, localization)) {
-            @Override
-            public String indexWriter(int idx) {
-                return "80" + StringHelper.formatHex2(idx);
-            }
-        };
-        List<GearAbilityDataObject> list = reader.readGenericDataFile(filename, print);
-        if (list == null) {
-            return null;
-        }
-        GearAbilityDataObject[] array = new GearAbilityDataObject[list.size()];
-        return list.toArray(array);
+    public static NameDescriptionTextObject[] readNameDescriptionTexts(String path, boolean print) {
+        return new LocalizedDataFileReader<>(NameDescriptionTextObject::new, i -> new NameDescriptionTextObject[i]).read(path, print);
     }
 
     public static MonsterFile readMonsterFile(String filename, boolean print) {
@@ -465,129 +383,56 @@ public class DataReadingManager {
     }
 
     public static TreasureDataObject[] readTreasures(String filename, boolean print) {
-        DataFileReader<TreasureDataObject> reader = new DataFileReader<>(TreasureDataObject::new);
-        List<TreasureDataObject> list = reader.readGenericDataFile(filename, print);
-        if (list == null) {
-            return null;
-        }
-        TreasureDataObject[] array = new TreasureDataObject[list.size()];
-        return list.toArray(array);
+        return new DataFileReader<>(TreasureDataObject::new, i -> new TreasureDataObject[i]).toArray(filename, null, print);
     }
 
     public static GearDataObject[] readWeaponPickups(String filename, boolean print) {
-        DataFileReader<GearDataObject> reader = new DataFileReader<>(GearDataObject::new);
-        List<GearDataObject> list = reader.readGenericDataFile(filename, print);
-        if (list == null) {
-            return null;
-        }
-        GearDataObject[] array = new GearDataObject[list.size()];
-        return list.toArray(array);
+        return new DataFileReader<>(GearDataObject::new, i -> new GearDataObject[i]).toArray(filename, null, print);
     }
 
     public static GearShopDataObject[] readWeaponShops(String filename, boolean print) {
-        DataFileReader<GearShopDataObject> reader = new DataFileReader<>(GearShopDataObject::new);
-        List<GearShopDataObject> list = reader.readGenericDataFile(filename, print);
-        if (list == null) {
-            return null;
-        }
-        GearShopDataObject[] array = new GearShopDataObject[list.size()];
-        return list.toArray(array);
+        return new DataFileReader<>(GearShopDataObject::new, i -> new GearShopDataObject[i]).toArray(filename, null, print);
     }
 
     public static ItemShopDataObject[] readItemShops(String filename, boolean print) {
-        DataFileReader<ItemShopDataObject> reader = new DataFileReader<>(ItemShopDataObject::new);
-        List<ItemShopDataObject> list = reader.readGenericDataFile(filename, print);
-        if (list == null) {
-            return null;
-        }
-        ItemShopDataObject[] array = new ItemShopDataObject[list.size()];
-        return list.toArray(array);
+        return new DataFileReader<>(ItemShopDataObject::new, i -> new ItemShopDataObject[i]).toArray(filename, null, print);
     }
 
     public static CustomizationDataObject[] readCustomizations(String filename, boolean print) {
-        DataFileReader<CustomizationDataObject> reader = new DataFileReader<>(CustomizationDataObject::new);
-        List<CustomizationDataObject> list = reader.readGenericDataFile(filename, print);
-        if (list == null) {
-            return null;
-        }
-        CustomizationDataObject[] array = new CustomizationDataObject[list.size()];
-        return list.toArray(array);
+        return new DataFileReader<>(CustomizationDataObject::new, i -> new CustomizationDataObject[i]).toArray(filename, null, print);
     }
 
-    public static MonsterLocalizationDataObject[] readMonsterLocalizations(String localization, boolean print) {
-        DataFileReader<MonsterLocalizationDataObject> reader = new DataFileReader<>((b, sb) -> new MonsterLocalizationDataObject(b, sb, localization));
+    public static MonsterStatDataObject[] readMonsterLocalizations(String localization, boolean print) {
+        LocalizedDataFileReader<MonsterStatDataObject> reader = new LocalizedDataFileReader<>((bytes, stringBytes, loc) -> new MonsterStatDataObject(bytes, stringBytes, loc) {
+            @Override
+            public String toString() {
+                return buildStrings(localization);
+            }
+        }, i -> new MonsterStatDataObject[i]);
         int fileIndex = 0;
         File file;
-        List<MonsterLocalizationDataObject> fullList = new ArrayList<>();
+        List<MonsterStatDataObject> fullList = new ArrayList<>();
         do {
             fileIndex++;
             String path = getLocalizationRoot(localization) + "battle/kernel/monster" + fileIndex + ".bin";
             file = FileAccessorWithMods.resolveFile(path, false);
             if (file.exists()) {
-                List<MonsterLocalizationDataObject> list = reader.readGenericDataFile(path, print);
+                List<MonsterStatDataObject> list = reader.toList(path, localization, print);
                 if (list != null) {
                     fullList.addAll(list);
                 }
             }
         } while (file.exists());
-        MonsterLocalizationDataObject[] array = new MonsterLocalizationDataObject[fullList.size()];
+        MonsterStatDataObject[] array = new MonsterStatDataObject[fullList.size()];
         return fullList.toArray(array);
     }
 
     public static SphereGridSphereTypeDataObject[] readSphereGridSphereTypes(String path, boolean print) {
-        SphereGridSphereTypeDataObject[] sphereTypes = readSphereGridSphereTypesFromFile(getLocalizationRoot(getDefaultLocalization()) + path, getDefaultLocalization(), print);
-        if (sphereTypes == null) {
-            return null;
-        }
-        LOCALIZATIONS.forEach((key, name) -> {
-            SphereGridSphereTypeDataObject[] localizations = readSphereGridSphereTypesFromFile(getLocalizationRoot(key) + path, key, false);
-            if (localizations != null) {
-                for (int i = 0; i < localizations.length && i < sphereTypes.length; i++) {
-                    if (sphereTypes[i] != null && localizations[i] != null) {
-                        sphereTypes[i].setLocalizations(localizations[i]);
-                    }
-                }
-            }
-        });
-        return sphereTypes;
-    }
-
-    public static SphereGridSphereTypeDataObject[] readSphereGridSphereTypesFromFile(String filename, String localization, boolean print) {
-        DataFileReader<SphereGridSphereTypeDataObject> reader = new DataFileReader<>((b, sb) -> new SphereGridSphereTypeDataObject(b, sb, localization));
-        List<SphereGridSphereTypeDataObject> list = reader.readGenericDataFile(filename, print);
-        if (list == null) {
-            return null;
-        }
-        SphereGridSphereTypeDataObject[] array = new SphereGridSphereTypeDataObject[list.size()];
-        return list.toArray(array);
+        return new LocalizedDataFileReader<>(SphereGridSphereTypeDataObject::new, i -> new SphereGridSphereTypeDataObject[i]).read(path, print);
     }
 
     public static SphereGridNodeTypeDataObject[] readSphereGridNodeTypes(String path, boolean print) {
-        SphereGridNodeTypeDataObject[] nodeTypes = readSphereGridNodeTypesFromFile(getLocalizationRoot(getDefaultLocalization()) + path, getDefaultLocalization(), print);
-        if (nodeTypes == null) {
-            return null;
-        }
-        LOCALIZATIONS.forEach((key, name) -> {
-            SphereGridNodeTypeDataObject[] localizations = readSphereGridNodeTypesFromFile(getLocalizationRoot(key) + path, key, false);
-            if (localizations != null) {
-                for (int i = 0; i < localizations.length && i < nodeTypes.length; i++) {
-                    if (nodeTypes[i] != null && localizations[i] != null) {
-                        nodeTypes[i].setLocalizations(localizations[i]);
-                    }
-                }
-            }
-        });
-        return nodeTypes;
-    }
-
-    public static SphereGridNodeTypeDataObject[] readSphereGridNodeTypesFromFile(String filename, String localization, boolean print) {
-        DataFileReader<SphereGridNodeTypeDataObject> reader = new DataFileReader<>((b, sb) -> new SphereGridNodeTypeDataObject(b, sb, localization));
-        List<SphereGridNodeTypeDataObject> list = reader.readGenericDataFile(filename, print);
-        if (list == null) {
-            return null;
-        }
-        SphereGridNodeTypeDataObject[] array = new SphereGridNodeTypeDataObject[list.size()];
-        return list.toArray(array);
+        return new LocalizedDataFileReader<>(SphereGridNodeTypeDataObject::new, i -> new SphereGridNodeTypeDataObject[i]).read(path, print);
     }
 
     public static SphereGridLayoutDataObject readSphereGridLayout(String layout, String contents, boolean print) {

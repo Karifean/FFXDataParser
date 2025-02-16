@@ -54,25 +54,28 @@ public class DataWritingManager {
         writeDataObjectsInAllLocalizations(path, objects, length, 0, objects.length, optimizeStrings);
     }
 
-    public static void writeEventStringsForAllLocalizations(String id) {
+    public static void writeEventStringsForAllLocalizations(String id, final boolean print) {
         EventFile event = DataAccess.getEvent(id);
         if (event == null) {
             return;
         }
         String path = "event/obj_ps3/" + id.substring(0, 2) + '/' + id + '/' + id + ".bin";
-        writeStringFileForAllLocalizations(path, event.strings);
+        writeStringFileForAllLocalizations(path, event.strings, print);
     }
 
-    public static void writeEncounterStringsForAllLocalizations(String id) {
+    public static void writeEncounterStringsForAllLocalizations(String id, final boolean print) {
         EncounterFile encounter = DataAccess.getEncounter(id);
         if (encounter == null) {
             return;
         }
         String path = "battle/btl/" + id + '/' + id + ".bin";
-        writeStringFileForAllLocalizations(path, encounter.strings);
+        writeStringFileForAllLocalizations(path, encounter.strings, print);
     }
 
-    public static void writeStringFileForAllLocalizations(String path, List<LocalizedFieldStringObject> localizedStrings) {
+    public static void writeStringFileForAllLocalizations(String path, List<LocalizedFieldStringObject> localizedStrings, final boolean print) {
+        if (print) {
+            System.out.printf("Writing string file: %s%n", path);
+        }
         LOCALIZATIONS.forEach((key, value) -> {
             String localePath = GAME_FILES_ROOT + MODS_FOLDER + getLocalizationRoot(key) + path;
             int[] bytes = stringsToStringFileBytes(localizedStrings, key);

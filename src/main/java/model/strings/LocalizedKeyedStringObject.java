@@ -47,12 +47,17 @@ public class LocalizedKeyedStringObject {
         return getLocalizedContent(DEFAULT_LOCALIZATION);
     }
 
+    public String getDefaultString() {
+        String defaultString = getLocalizedString(DEFAULT_LOCALIZATION);
+        return defaultString != null ? defaultString : "";
+    }
+
     public void copyInto(LocalizedKeyedStringObject other) {
         contents.forEach((localization, content) -> other.setLocalizedContent(localization, content));
     }
 
     @Override
     public String toString() {
-        return getDefaultContent().toString();
+        return getDefaultString();
     }
 }

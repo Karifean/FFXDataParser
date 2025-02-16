@@ -31,6 +31,20 @@ public abstract class DataAccess {
     public static SphereGridLayoutDataObject ESG_LAYOUT;
     public static CustomizationDataObject[] GEAR_CUSTOMIZATIONS;
     public static CustomizationDataObject[] AEON_CUSTOMIZATIONS;
+
+    public static NameDescriptionTextObject[] ARMS_TEXT;
+    // public static NameDescriptionTextObject[] BTL_TEXT;
+    public static NameDescriptionTextObject[] BTLEND_TEXT;
+    public static NameDescriptionTextObject[] BUILD_TEXT;
+    public static NameDescriptionTextObject[] CONFIG_TEXT;
+    public static NameDescriptionTextObject[] ITEM_TEXT;
+    public static NameDescriptionTextObject[] MENU_TEXT;
+    public static NameDescriptionTextObject[] MMAIN_TEXT;
+    public static NameDescriptionTextObject[] NAME_TEXT;
+    public static NameDescriptionTextObject[] SAVE_TEXT;
+    public static NameDescriptionTextObject[] STATS_TEXT;
+    public static NameDescriptionTextObject[] SUMMON_TEXT;
+
     private final static Nameable DUMMY_OBJECT = (l) -> "null";
 
     public static Nameable getNameableObject(String type, int idx) {
@@ -111,13 +125,13 @@ public abstract class DataAccess {
         return TREASURES[idx];
     }
 
-    public static void addMonsterLocalizations(MonsterLocalizationDataObject[] localizations) {
+    public static void addMonsterLocalizations(MonsterStatDataObject[] localizations) {
         if (localizations == null) {
             return;
         }
         for (int i = 0; i < localizations.length && i < MONSTERS.length; i++) {
             if (MONSTERS[i] != null) {
-                MONSTERS[i].monsterStatData.addLocalizations(localizations[i]);
+                MONSTERS[i].monsterStatData.setLocalizations(localizations[i]);
             }
         }
     }

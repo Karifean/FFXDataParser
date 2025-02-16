@@ -21,13 +21,13 @@ public class GearShopDataObject implements Writable {
     private int unusedPrices;
     private int[] offeredGearIndexes;
 
-    public GearShopDataObject(int[] bytes, int[] stringBytes) {
+    public GearShopDataObject(int[] bytes, int[] stringBytes, String localization) {
         this.bytes = bytes;
         mapBytes();
     }
 
     public GearShopDataObject(int[] bytes) {
-        this(bytes, null);
+        this(bytes, null, null);
     }
 
     private void mapBytes() {

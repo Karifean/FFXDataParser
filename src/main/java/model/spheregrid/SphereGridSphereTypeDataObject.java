@@ -20,7 +20,7 @@ import static reading.ChunkedFileHelper.write4Bytes;
  * sphere.bin
  * referenced in AbilityDataObject
  */
-public class SphereGridSphereTypeDataObject implements Writable {
+public class SphereGridSphereTypeDataObject implements Writable, Localized<SphereGridSphereTypeDataObject> {
     public static final int LENGTH = 0x10;
     private final int[] bytes;
 
@@ -101,6 +101,7 @@ public class SphereGridSphereTypeDataObject implements Writable {
         return array;
     }
 
+    @Override
     public void setLocalizations(SphereGridSphereTypeDataObject localizationObject) {
         localizationObject.description.copyInto(description);
         localizationObject.unusedString0405.copyInto(unusedString0405);
