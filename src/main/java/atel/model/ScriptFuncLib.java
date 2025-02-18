@@ -229,7 +229,7 @@ public abstract class ScriptFuncLib {
         putUnknownFunc(0x00E4, 1);
         putUnknownFunc(0x00E6, 1);
         putFuncWithIdx(0x00E7, new ScriptFunc("putPartyMemberInSlot", "unknown", null, p("slot", "int"), p("playerChar")));
-        putFuncWithIdx(0x00E8, new ScriptFunc("storeFrontlineInArray", "unknown", null, p("slot1", "int"), p("slot2", "int"), p("slot3", "int")));
+        putFuncWithIdx(0x00E8, new ScriptFunc("storeFrontlineInArray", "unknown", null, p("slot1", "pointer"), p("slot2", "pointer"), p("slot3", "pointer")));
         putUnknownFunc(0x00E9, 1);
         putUnknownFunc(0x00EB, 0);
         putFuncWithIdx(0x00EC, new ScriptFunc("findPartyMemberFormationIndex", "int", null, p("playerChar")));
@@ -567,117 +567,142 @@ public abstract class ScriptFuncLib {
         putUnknownFunc(0x5001, 1); // noclip: load motion group
         putFuncWithIdx(0x5002, new ScriptFunc("playCharMotion2", "unknown", null, p("motion")));
         putFuncWithIdx(0x5003, new ScriptFunc("?awaitMotion", "unknown", null, true));
+        putFuncWithIdx(0x5004, new ScriptFunc("?shouldAwaitMotion", "bool", null, true));
         putFuncWithIdx(0x5005, new ScriptFunc("resetMotion", "unknown", null, true));
         putFuncWithIdx(0x5006, new ScriptFunc("scaleActor", "unknown", null, p("scaleXYZ", "float")));
         putFuncWithIdx(0x5007, new ScriptFunc("scaleActor", "unknown", null, p("scaledDimensions","dimensionsBitfield"), p("scaleX", "float"), p("scaleY", "float"), p("scaleZ", "float")));
         putFuncWithIdx(0x5008, new ScriptFunc("?setHideEvent", "unknown", null, p("bool")));
-        putFuncWithIdx(0x5009, new ScriptFunc("setActorWeight", "unknown", null, p("weight", "int")));
-        putFuncWithIdx(0x500B, new ScriptFunc("setActorHeight", "unknown", null, p("height", "float")));
-        putUnknownFunc(0x500C, 1);
+        putFuncWithIdx(0x5009, new ScriptFunc("setActorWeight", "float", null, p("weight", "float")));
+        putUnknownFunc(0x500A, 1); // cur_actor->__0x4f8 = p1
+        putFuncWithIdx(0x500B, new ScriptFunc("setActorGroundHeight", "unknown", null, p("height", "float")));
+        putUnknownFunc(0x500C, 1); // `chEnGravity`; noted invalid by dbgPrintf; En might stand for Enable?; supposed to set the gravity mode instead
         putFuncWithIdx(0x500D, new ScriptFunc("?setHideEvent2", "unknown", null, p("bool")));
         putUnknownFunc(0x500E, 1);
         putUnknownFunc(0x500F, 1);
         putFuncWithIdx(0x5010, new ScriptFunc("loadModelMotionGroup", "unknown", null, p("model"), p("motionType")));
+        putFuncWithIdx(0x5011, new ScriptFunc("disposeMotionGroup", "unknown", null, p(1)));
         putFuncWithIdx(0x5013, new ScriptFunc("setFieldModeAndMotionType", "unknown", null, p("motionType")));
         putFuncWithIdx(0x5014, new ScriptFunc("setShade", "unknown", null, p("target?", "float"), p("latch?", "unknown")));
         putFuncWithIdx(0x5015, new ScriptFunc("setShade", "unknown", null, p("targetR", "float"), p("targetG", "float"), p("targetB", "float"), p("latch?", "unknown")));
         putFuncWithIdx(0x5016, new ScriptFunc("setOffset", "unknown", null, p("x", "float"), p("y", "float"), p("z", "float")));
         putFuncWithIdx(0x5017, new ScriptFunc("setGravityMode", "unknown", "chSetGravMode", p("gravityMode")));
-        putFuncWithIdx(0x5018, new ScriptFunc("?setMotionSpeed", "unknown", null, p(1)));
-        putUnknownFunc(0x5019, 5);
+        putFuncWithIdx(0x5018, new ScriptFunc("setMotionSpeed", "unknown", null, p("motionSpeed", "float")));
+        putFuncWithIdx(0x5019, new ScriptFunc(p("motion"), p(2), p(3), p(4), p(5)));
         putFuncWithIdx(0x501A, new ScriptFunc(p("motion"), p(2), p(3), p(4), p(5)));
         putFuncWithIdx(0x501B, new ScriptFunc("playCharMotion3", "unknown", null, p("motion")));
-        putFuncWithIdx(0x501E, new ScriptFunc("?awaitMotion2", "unknown", null, true));
-        putUnknownFunc(0x501F, 0);
-        putUnknownFunc(0x5020, 0);
-        putUnknownFunc(0x5021, 1);
-        putUnknownFunc(0x5022, 1);
-        putFuncWithIdx(0x5025, new ScriptFunc(p(1), p("motion")));
+        putFuncWithIdx(0x501D, new ScriptFunc("playCharMotion4", "unknown", null, p("motion")));
+        putFuncWithIdx(0x501E, new ScriptFunc("?awaitMotion2", "unknown", null, true)); // also sets something in relation to g_debugVoiceSync
+        putFuncWithIdx(0x501F, new ScriptFunc("?shouldAwaitMotion2", "bool", null, true));
+        putFuncWithIdx(0x5020, new ScriptFunc("resetMotion2", "unknown", null, true));
+        putFuncWithIdx(0x5021, new ScriptFunc("setMotionSpeed2", "float", null, p("motionSpeed", "float")));
+        putUnknownFunc(0x5022, 1); // cur_actor->__0x737 = p1
+        putUnknownFunc(0x5023, 1); // Doesn't do anything
+        putUnknownFunc(0x5024, 1); // Doesn't do anything
+        putFuncWithIdx(0x5025, new ScriptFunc("setMotionMoves", "unknown", null, p(1), p("motion")));
         putUnknownFunc(0x5026, 5);
-        putUnknownFunc(0x5028, 1);
-        putUnknownFunc(0x5029, 1);
-        putUnknownFunc(0x502A, 1);
+        putUnknownFunc(0x5027, 8);
+        putFuncWithIdx(0x5028, new ScriptFunc("?setMoveSetChangeRun", "unknown", null, p("float")));
+        putFuncWithIdx(0x5029, new ScriptFunc("setShadowMode", "unknown", null, p(1)));
+        putFuncWithIdx(0x502A, new ScriptFunc("?setClip", "unknown", null, p("bool")));
+        putUnknownFunc(0x502B, 0);
         putUnknownFunc(0x502C, 2);
         putFuncWithIdx(0x502D, new ScriptFunc("setAttachedToWorker", "unknown", null, p("worker"), p("?attachmentPoint", "int")));
+        putFuncWithIdx(0x5030, new ScriptFunc("?getSound", "unknown", null, true));
+        putFuncWithIdx(0x5031, new ScriptFunc("?getOtherActorSound", "unknown", null, p("worker")));
         putUnknownFunc(0x5032, 0);
-        putUnknownFunc(0x5033, 2);
-        putUnknownFunc(0x5034, 1);
+        putFuncWithIdx(0x5033, new ScriptFunc("?setTransparent", "unknown", null, p("?target"), p("?latch")));
+        putFuncWithIdx(0x5034, new ScriptFunc("?setMotionHokan", "unknown", null, p(1)));
         putFuncWithIdx(0x5035, new ScriptFunc("getSequenceFrame", "int", null, true));
         putUnknownFunc(0x5036, 5);
         putUnknownFunc(0x5037, 4);
-        putUnknownFunc(0x5039, 1);
-        putUnknownFunc(0x503A, 1);
-        putUnknownFunc(0x503B, 2);
+        putUnknownFunc(0x5038, 4);
+        putFuncWithIdx(0x5039, new ScriptFunc("setThickness", "float", null, p("thickness", "float")));
+        putFuncWithIdx(0x503A, new ScriptFunc("setClipZ", "float", null, p("clipZ", "float")));
+        putFuncWithIdx(0x503B, new ScriptFunc("disposeOtherActorMotionGroup", "unknown", null, p("btlChr"), p(2)));
         putUnknownFunc(0x503C, 1);
         putUnknownFunc(0x503D, 1);
         putUnknownFunc(0x503E, 2);
-        putUnknownFunc(0x503F, 1);
         putFuncWithIdx(0x503F, new ScriptFunc("playCharMotion4", "unknown", null, p("motion")));
         putFuncWithIdx(0x5040, new ScriptFunc("playCharMotion5", "unknown", null, p("motion")));
         putFuncWithIdx(0x5042, new ScriptFunc(p("motion"), p(2), p(3), p(4), p(5)));
-        putFuncWithIdx(0x5044, new ScriptFunc(p(1), p("motion"), p(3), p(4), p(5), p(6)));
-        putUnknownFunc(0x5046, 6);
-        putUnknownFunc(0x5047, 2);
-        putUnknownFunc(0x5048, 2);
-        putUnknownFunc(0x5049, 1);
-        putUnknownFunc(0x504A, 1);
-        putFuncWithIdx(0x504B, new ScriptFunc("?resetMotion", "unknown", null, p("worker")));
-        putFuncWithIdx(0x504C, new ScriptFunc("?setMotionSpeed", "unknown", null, p("worker"), p(2)));
+        putFuncWithIdx(0x5043, new ScriptFunc(p("worker"), p("motion"), p(3), p(4), p(5), p(6)));
+        putFuncWithIdx(0x5044, new ScriptFunc(p("worker"), p("motion"), p(3), p(4), p(5), p(6)));
+        putFuncWithIdx(0x5045, new ScriptFunc(p("worker"), p("motion"), p(3), p(4), p(5), p(6)));
+        putFuncWithIdx(0x5046, new ScriptFunc(p("worker"), p("motion"), p(3), p(4), p(5), p(6)));
+        putFuncWithIdx(0x5047, new ScriptFunc("playOtherActorMotion", "unknown", null, p("worker"), p("motion")));
+        putFuncWithIdx(0x5048, new ScriptFunc("playOtherActorMotion2", "unknown", null, p("worker"), p("motion")));
+        putFuncWithIdx(0x5049, new ScriptFunc("?awaitOtherActorMotion", "unknown", null, p("worker")));
+        putFuncWithIdx(0x504A, new ScriptFunc("?shouldAwaitOtherActorMotion", "bool", null, p("worker")));
+        putFuncWithIdx(0x504B, new ScriptFunc("resetOtherActorMotion", "unknown", null, p("worker")));
+        putFuncWithIdx(0x504C, new ScriptFunc("setOtherActorMotionSpeed", "unknown", null, p("worker"), p("motionSpeed", "float")));
         putUnknownFunc(0x504D, 1);
         putFuncWithIdx(0x504E, new ScriptFunc("?loadModelAsync", "unknown", null, p("model")));
         putFuncWithIdx(0x504F, new ScriptFunc("?loadModelSync", "unknown", null, p("model")));
-        putUnknownFunc(0x5050, 2);
+        putUnknownFunc(0x5050, null, "unknown", p("worker"), p(2)); // same as 5022 but on target actor
         putFuncWithIdx(0x5051, new ScriptFunc("getMotionFrame", "int", null, true));
         putUnknownFunc(0x5052, 5);
+        putUnknownFunc(0x5053, 2);
         putFuncWithIdx(0x5054, new ScriptFunc("modelSetHide", "unknown", null, p(1), p(2)));
         putFuncWithIdx(0x5055, new ScriptFunc("modelGetHide", "unknown", null, p(1))); // never used by the game
         putFuncWithIdx(0x5056, new ScriptFunc("setCalcNorm", "unknown", null, p("bool")));
         putFuncWithIdx(0x5057, new ScriptFunc("setCalcNorm", "unknown", null, p("worker"), p("bool")));
         putUnknownFunc(0x5058, 1);
+        putUnknownFunc(0x5059, 2);
         putFuncWithIdx(0x505A, new ScriptFunc("textureSetImageBase", "unknown", null, p(1), p(2)));
-        putFuncWithIdx(0x505C, new ScriptFunc("?motionSetNextHokan", "unknown", null, p(1)));
-        putUnknownFunc(0x505D, null, "motion", 0);
+        putFuncWithIdx(0x505B, new ScriptFunc("textureSetClutBase", "unknown", null, p(1), p(2)));
+        putFuncWithIdx(0x505C, new ScriptFunc("?setMotionNextHokan", "unknown", null, p(1)));
+        putUnknownFunc(0x505D, null, "motion", 0); // returns cur_actor->__0x72c
         putFuncWithIdx(0x505E, new ScriptFunc("getChrSpeed", "float", null, true));
         putFuncWithIdx(0x505F, new ScriptFunc("motionSetLoop", "unknown", null, p(1)));
-        putUnknownFunc(0x5060, 1);
+        putFuncWithIdx(0x5060, new ScriptFunc("?idEnableShade", "unknown", null, p("bool")));
         putFuncWithIdx(0x5061, new ScriptFunc("?loadMotionGroups", "unknown", null, p("model"), p(2)));
+        putFuncWithIdx(0x5062, new ScriptFunc(p("model"), p(2), p("bool")));
         putFuncWithIdx(0x5063, new ScriptFunc(p("model"), p(2)));
-        putUnknownFunc(0x5065, 1);
-        putUnknownFunc(0x5066, 1);
-        putUnknownFunc(0x5067, 1);
-        putUnknownFunc(0x5068, 0);
+        putFuncWithIdx(0x5064, new ScriptFunc(p(1), p("bool")));
+        putFuncWithIdx(0x5065, new ScriptFunc("?startReadMotionGroup", "unknown", null, p(1)));
+        putFuncWithIdx(0x5066, new ScriptFunc("?syncReadMotionGroup", "unknown", null, p(1)));
+        putFuncWithIdx(0x5067, new ScriptFunc("?setDrawCull", "unknown", null, p("bool")));
+        putUnknownFunc(0x5068, 0); // doesn't exist
         putFuncWithIdx(0x5069, new ScriptFunc("setKeepFps", "unknown", null, p("bool")));
-        putUnknownFunc(0x506A, 1);
-        putUnknownFunc(0x506D, 2);
-        putUnknownFunc(0x506E, 1);
-        putUnknownFunc(0x506F, 1);
-        putUnknownFunc(0x5071, 1);
-        putUnknownFunc(0x5072, 0);
-        putUnknownFunc(0x5073, 1);
-        putFuncWithIdx(0x5075, new ScriptFunc("getMotionFrame", "int", null, p("worker")));
-        putUnknownFunc(0x5076, 1);
-        putUnknownFunc(0x5078, 2);
-        putUnknownFunc(0x5079, 1);
-        putUnknownFunc(0x507A, 1);
-        putFuncWithIdx(0x507B, new ScriptFunc("facePoint", "unknown", null, p("x", "float"), p("y", "float"), p("z", "float")));
-        putUnknownFunc(0x507C, 0);
-        putUnknownFunc(0x507D, 2);
-        putUnknownFunc(0x507E, 2);
-        putUnknownFunc(0x5080, 1);
-        putUnknownFunc(0x5081, 1);
-        putUnknownFunc(0x5082, 1);
-        putUnknownFunc(0x5083, 1);
-        putUnknownFunc(0x5084, 1);
-        putUnknownFunc(0x5085, 1);
+        putFuncWithIdx(0x506A, new ScriptFunc("setPLight", "unknown", null, p("enabled", "bool")));
+        putFuncWithIdx(0x506B, new ScriptFunc("getPLight", "bool", null, true));
+        putFuncWithIdx(0x506C, new ScriptFunc("setPLightMask", "unknown", null, p("enabled", "bool"), p("mask", "unknown"))); // never used by the game
+        putFuncWithIdx(0x506D, new ScriptFunc("?setPitch", "unknown", null, p(1), p(2)));
+        putFuncWithIdx(0x506E, new ScriptFunc("bindSetScale", "unknown", null, p("scale", "float")));
+        putFuncWithIdx(0x506F, new ScriptFunc("setHideCalc", "unknown", null, p(1)));
+        putUnknownFunc(0x5070, 0);
+        putFuncWithIdx(0x5071, new ScriptFunc("?textureLoadImage", "unknown", null, p(1)));
+        putUnknownFunc(0x5072, 0); // returns cur_actor->__0x824
+        putFuncWithIdx(0x5073, new ScriptFunc("setOverlapHit", "unknown", null, p("enabled", "bool")));
+        putFuncWithIdx(0x5074, new ScriptFunc("getOverlapHit", "bool", null));
+        putFuncWithIdx(0x5075, new ScriptFunc("getOtherActorMotionFrame", "int", null, p("worker")));
+        putUnknownFunc(0x5076, 1); // cur_actor->__0x4d4 = p1
+        putUnknownFunc(0x5077, 0); // returns cur_actor->__0x4d4
+        putFuncWithIdx(0x5078, new ScriptFunc("?textureSetAnim", "unknown", null, p(1), p(2)));
+        putFuncWithIdx(0x5079, new ScriptFunc("setNeck", "unknown", null, p("enabled", "bool")));
+        putFuncWithIdx(0x507A, new ScriptFunc("setNeckFaceActor", "unknown", null, p("worker")));
+        putFuncWithIdx(0x507B, new ScriptFunc("setNeckFacePoint", "unknown", null, p("x", "float"), p("y", "float"), p("z", "float")));
+        putUnknownFunc(0x507C, 0); // resets facing? looks forward? //TODO: test
+        putFuncWithIdx(0x507D, new ScriptFunc("setNeckRotation", "unknown", null, p(1), p(2)));
+        putUnknownFunc(0x507E, 2); // tgt_actor->__0x4d4 = p1
+        putFuncWithIdx(0x507F, new ScriptFunc("setModelAlpha", "unknown", null, p(1), p(2)));
+        putUnknownFunc(0x5080, 1); // cur_actor->__0x51c = p1
+        putUnknownFunc(0x5081, 1); // cur_actor->__0x198 bit 3 = p1
+        putFuncWithIdx(0x5082, new ScriptFunc("setCloth", "unknown", null, p("enabled", "bool")));
+        putFuncWithIdx(0x5083, new ScriptFunc("vulSetClipMode", "unknown", null, p(1)));
+        putFuncWithIdx(0x5084, new ScriptFunc("setNeckSpeed", "unknown", null, p("speed", "float")));
+        putFuncWithIdx(0x5085, new ScriptFunc("setShadowHeight", "unknown", null, p("height", "float")));
         putUnknownFunc(0x5086, 0);
-        putUnknownFunc(0x5087, 0);
-        putUnknownFunc(0x5088, 2);
-        putUnknownFunc(0x5089, 5);
-        putUnknownFunc(0x508B, 5);
-        putUnknownFunc(0x508D, 1);
-        putUnknownFunc(0x508E, 1);
-        putUnknownFunc(0x508F, 1);
-        putUnknownFunc(0x5090, 1);
+        putUnknownFunc(0x5087, 0); // doesn't exist
+        putFuncWithIdx(0x5088, new ScriptFunc("setShadeId", "unknown", null, p(1), p("float")));
+        putFuncWithIdx(0x5089, new ScriptFunc(p("motion"), p(2), p(3), p(4), p(5)));
+        putFuncWithIdx(0x508A, new ScriptFunc(p("worker"), p("motion"), p(2), p(3), p(4), p(5)));
+        putFuncWithIdx(0x508B, new ScriptFunc(p("motion"), p(2), p(3), p(4), p(5)));
+        putFuncWithIdx(0x508C, new ScriptFunc(p("worker"), p("motion"), p(2), p(3), p(4), p(5)));
+        putFuncWithIdx(0x508D, new ScriptFunc("?textureSetAnimTimer", "unknown", null, p(1)));
+        putFuncWithIdx(0x508E, new ScriptFunc("setClothGravity", "unknown", null, p("enabled", "bool")));
+        putUnknownFunc(0x508F, 1); // cur_actor->__0x870 = p1
+        putUnknownFunc(0x5090, 1); // cur_actor->__0x871 = p1
         putUnknownFunc(0x6000, "camSleep", 1);
         putUnknownFunc(0x6001, "camWakeUp", 1);
         putUnknownFunc(0x6002, "camSetPos", 3);
