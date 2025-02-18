@@ -177,6 +177,9 @@ public abstract class StringHelper {
             case 0x01 -> "X";
             case 0x02 -> "CIRCLE";
             case 0x03 -> "SQUARE";
+            case 0x04 -> "L1";
+            case 0x05 -> "R1";
+            case 0x09 -> "SELECT";
             case 0x11 -> "UP";
             case 0x12 -> "RIGHT?";
             case 0x14 -> "DOWN";

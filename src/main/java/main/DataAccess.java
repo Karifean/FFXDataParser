@@ -1,5 +1,6 @@
 package main;
 
+import atel.AtelScriptObject;
 import model.*;
 import model.spheregrid.SphereGridLayoutDataObject;
 import model.spheregrid.SphereGridNodeTypeDataObject;
@@ -16,6 +17,7 @@ public abstract class DataAccess {
     public static Map<String, EventFile> EVENTS = new HashMap<>();
     public static Map<String, EncounterFile> ENCOUNTERS = new HashMap<>();
     public static MonsterFile[] MONSTERS = new MonsterFile[0x1000];
+    public static AtelScriptObject MENUMAIN;
     public static PlayerCharStatDataObject[] PLAYER_CHAR_STATS;
     public static GearAbilityDataObject[] GEAR_ABILITIES;
     public static KeyItemDataObject[] KEY_ITEMS;

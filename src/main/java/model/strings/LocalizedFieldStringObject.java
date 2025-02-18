@@ -37,6 +37,11 @@ public class LocalizedFieldStringObject {
         return contents.get(localization);
     }
 
+    public String getLocalizedString(String localization) {
+        FieldString obj = getLocalizedContent(localization);
+        return obj != null ? obj.getString() : null;
+    }
+
     public FieldString getDefaultContent() {
         return getLocalizedContent(DEFAULT_LOCALIZATION);
     }

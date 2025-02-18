@@ -1,5 +1,6 @@
 package main;
 
+import atel.AtelScriptObject;
 import atel.EncounterFile;
 import atel.EventFile;
 import atel.MonsterFile;
@@ -48,10 +49,6 @@ public class DataReadingManager {
     private static final boolean ALLOW_DAT_FILES = true;
     private static final boolean LOAD_EVENTS_AND_ENCOUNTERS = false;
 
-    public static String getDefaultLocalization() {
-        return DEFAULT_LOCALIZATION;
-    }
-
     public static String getLocalizationRoot(String localization) {
         return PATH_FFX_ROOT + "new_" + localization + "pc/";
     }
@@ -66,6 +63,7 @@ public class DataReadingManager {
     public static void readAndPrepareDataModel() {
         DataAccess.SG_SPHERE_TYPES = readSphereGridSphereTypes("battle/kernel/sphere.bin", false);
         prepareAbilities();
+        DataAccess.MENUMAIN = readDirectAtelScriptObject("menu/menumain.bin", false);
         DataAccess.PLAYER_CHAR_STATS = readPlayerCharStats("battle/kernel/ply_save.bin", false);
         DataAccess.GEAR_ABILITIES = readGearAbilities("battle/kernel/a_ability.bin", false);
         DataAccess.BUYABLE_GEAR = readWeaponPickups(PATH_ORIGINALS_KERNEL + "shop_arms.bin", false);
@@ -86,6 +84,7 @@ public class DataReadingManager {
         DataAccess.STATS_TEXT = readNameDescriptionTexts("battle/kernel/status_txt.bin", false);
         DataAccess.SUMMON_TEXT = readNameDescriptionTexts("battle/kernel/summon_txt.bin", false);
         DataAccess.TREASURES = readTreasures(PATH_ORIGINALS_KERNEL + "takara.bin", false);
+
         readAllMonsters(false);
         if (LOAD_EVENTS_AND_ENCOUNTERS) {
             readAllEvents(false, false);
@@ -206,7 +205,19 @@ public class DataReadingManager {
         return new LocalizedDataFileReader<>(NameDescriptionTextObject::new, i -> new NameDescriptionTextObject[i]).read(path, print);
     }
 
-    public static MonsterFile readMonsterFile(String filename, boolean print) {
+    public static AtelScriptObject readDirectAtelScriptObject(String path, boolean print) {
+        File file = FileAccessorWithMods.resolveFile(PATH_ORIGINALS_ROOT + path, print);
+        AtelScriptObject scriptObject = new AtelScriptObject(ChunkedFileHelper.fileToBytes(file), null);
+        List<LocalizedFieldStringObject> localizedStrings = StringHelper.readLocalizedStringFiles(path);
+        scriptObject.setStrings(localizedStrings);
+        if (print) {
+            scriptObject.parseScript();
+            System.out.println(scriptObject);
+        }
+        return scriptObject;
+    }
+
+    public static MonsterFile readMonsterFile(int monsterIndex, String filename, boolean print) {
         if (!(filename.endsWith(".bin") || (ALLOW_DAT_FILES && filename.endsWith(".dat")))) {
             return null;
         }
@@ -214,10 +225,10 @@ public class DataReadingManager {
         if (chunks == null) {
             return null;
         }
-        return new MonsterFile(chunks);
+        return new MonsterFile(monsterIndex, chunks);
     }
 
-    public static EncounterFile readEncounterFile(String filename, final boolean print, final boolean isInpc) {
+    public static EncounterFile readEncounterFile(String encounterId, String filename, final boolean print, final boolean isInpc) {
         if (!(filename.endsWith(".bin") || (ALLOW_DAT_FILES && filename.endsWith(".dat")))) {
             return null;
         }
@@ -229,10 +240,10 @@ public class DataReadingManager {
         if (chunks == null) {
             return null;
         }
-        return new EncounterFile(chunks, isInpc);
+        return new EncounterFile(encounterId, chunks, isInpc);
     }
 
-    public static EventFile readEventFile(String filename, final boolean print) {
+    public static EventFile readEventFile(String eventId, String filename, final boolean print) {
         if (!(filename.endsWith(".ebp") || (ALLOW_DAT_FILES && filename.endsWith(".dat")))) {
             return null;
         }
@@ -246,14 +257,14 @@ public class DataReadingManager {
         if (chunks == null) {
             return null;
         }
-        return new EventFile(chunks);
+        return new EventFile(eventId, chunks);
     }
 
-    public static MonsterFile readMonsterFull(int index, boolean print) {
-        String mIndex = String.format("m%03d", index);
-        String midPath = '_' + mIndex + '/' + mIndex;
+    public static MonsterFile readMonsterFull(int monsterIndex, boolean print) {
+        String mIndexString = String.format("m%03d", monsterIndex);
+        String midPath = '_' + mIndexString + '/' + mIndexString;
         String originalsPath = PATH_MONSTER_FOLDER + midPath + ".bin";
-        MonsterFile monsterFile = readMonsterFile(originalsPath, print);
+        MonsterFile monsterFile = readMonsterFile(monsterIndex, originalsPath, print);
         if (monsterFile == null) {
             return null;
         }
@@ -299,26 +310,17 @@ public class DataReadingManager {
         }
     }
 
-    public static EncounterFile readEncounterFull(String btl, boolean print) {
-        String endPath = btl + '/' + btl + ".bin";
+    public static EncounterFile readEncounterFull(String encounterId, boolean print) {
+        String endPath = encounterId + '/' + encounterId + ".bin";
         String originalsPath = PATH_ORIGINALS_ENCOUNTER + endPath;
-        EncounterFile encounterFile = readEncounterFile(originalsPath, print, false);
+        EncounterFile encounterFile = readEncounterFile(encounterId, originalsPath, print, false);
         if (encounterFile == null) {
             return null;
         }
         String internationalPath = PATH_INTERNATIONAL_ENCOUNTER + endPath;
-        EncounterFile internationalFile = readEncounterFile(internationalPath, false, true);
-        if (internationalFile != null && internationalFile.strings != null) {
-            if (encounterFile.strings == null) {
-                encounterFile.strings = new ArrayList<>();
-            }
-            for (int i = 0; i < internationalFile.strings.size(); i++) {
-                if (i < encounterFile.strings.size()) {
-                    internationalFile.strings.get(i).copyInto(encounterFile.strings.get(i));
-                } else {
-                    encounterFile.strings.add(internationalFile.strings.get(i));
-                }
-            }
+        EncounterFile internationalFile = readEncounterFile(encounterId, internationalPath, false, true);
+        if (internationalFile != null) {
+            encounterFile.addLocalizations(internationalFile.strings);
         }
         List<LocalizedFieldStringObject> localizedStrings = StringHelper.readLocalizedStringFiles("battle/btl/" + endPath);
         encounterFile.addLocalizations(localizedStrings);
@@ -365,11 +367,11 @@ public class DataReadingManager {
         }
     }
 
-    public static EventFile readEventFull(String event, boolean print) {
-        String shortened = event.substring(0, 2);
-        String midPath = shortened + '/' + event + '/' + event;
+    public static EventFile readEventFull(String eventId, boolean print) {
+        String shortened = eventId.substring(0, 2);
+        String midPath = shortened + '/' + eventId + '/' + eventId;
         String originalsPath = PATH_ORIGINALS_EVENT + midPath + ".ebp";
-        EventFile eventFile = readEventFile(originalsPath, print);
+        EventFile eventFile = readEventFile(eventId, originalsPath, print);
         if (eventFile == null) {
             return null;
         }

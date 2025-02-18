@@ -2,7 +2,10 @@ package atel.model;
 
 import main.StringHelper;
 
+import java.util.ArrayList;
+import java.util.EmptyStackException;
 import java.util.List;
+import java.util.Stack;
 
 public class ScriptInstruction {
     public final int offset;
@@ -59,11 +62,6 @@ public class ScriptInstruction {
     }
 
     public String asAsmString() {
-        String opcodeLabel = String.format("%-10s", getOpcodeLabel() + ' ');
-        if (!hasArgs) {
-            return opcodeLabel;
-        }
-        String argLabel = getArgLabel();
-        return opcodeLabel + argLabel;
+        return String.format("%-10s", getOpcodeLabel() + ' ') + getArgLabel();
     }
 }

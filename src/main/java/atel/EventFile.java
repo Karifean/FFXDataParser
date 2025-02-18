@@ -18,6 +18,7 @@ import static main.StringHelper.MACRO_LOOKUP;
 public class EventFile implements Nameable {
     public static Map<Integer, String> EVENT_BY_MAP_ID;
 
+    public String id;
     public AtelScriptObject eventScript;
     int[] scriptBytes;
     int[] japaneseTextBytes;
@@ -26,7 +27,8 @@ public class EventFile implements Nameable {
     int[] englishTextBytes;
     public List<LocalizedFieldStringObject> strings;
 
-    public EventFile(List<Chunk> chunks) {
+    public EventFile(String id, List<Chunk> chunks) {
+        this.id = id;
         mapChunks(chunks);
         mapObjects();
         mapStrings();
@@ -91,8 +93,8 @@ public class EventFile implements Nameable {
         if (eventScript != null) {
             full.append("- Script Code -").append('\n');
             full.append(eventScript.allLinesString());
-            full.append("- Headers -").append('\n');
-            full.append(eventScript.headersString()).append('\n');
+            full.append("- Script Workers -").append('\n');
+            full.append(eventScript.workersString()).append('\n');
         } else {
             full.append("Event Script missing");
         }
@@ -101,9 +103,10 @@ public class EventFile implements Nameable {
 
     public String getName(String localization) {
         if (eventScript == null || eventScript.areaNameIndexes == null || eventScript.areaNameIndexes.isEmpty()) {
-            return null;
+            return id;
         }
-        return MACRO_LOOKUP.get(0xB00 + eventScript.areaNameIndexes.get(0)).getLocalizedContent(localization).toString();
+        String areaName = MACRO_LOOKUP.get(0xB00 + eventScript.areaNameIndexes.get(0)).getLocalizedString(localization);
+        return id + " (" + areaName + ")";
     }
 
     public static String getMapNameById(int id) {

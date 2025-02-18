@@ -30,19 +30,18 @@ public class StackObject {
     public Integer referenceIndex;
     public String rawType;
 
-    public StackObject(ScriptWorker worker, ScriptInstruction instruction, String type, boolean expression, String content, int value) {
+    public StackObject(ScriptWorker worker, ScriptInstruction instruction, String type, boolean expression, String content) {
         this.parentWorker = worker;
         this.parentInstruction = instruction;
         this.type = type;
         this.expression = expression;
         this.content = content;
-        this.valueSigned = value;
     }
 
     public StackObject(ScriptWorker worker, ScriptInstruction instruction, String rawType, int valueSigned, int valueUnsigned) {
         this.parentWorker = worker;
         this.parentInstruction = instruction;
-        this.type = rawType;
+        this.type = "float".equals(rawType) ? "float" : "unknown";
         this.rawType = rawType;
         this.valueSigned = valueSigned;
         this.valueUnsigned = valueUnsigned;
@@ -52,7 +51,7 @@ public class StackObject {
         this.parentWorker = obj.parentWorker;
         this.parentInstruction = obj.parentInstruction;
         // direct values should never be type-cast to float as the format will just be wrong.
-        this.type = (!isValidType(type) || ("float".equals(type) && !obj.expression)) ? obj.type : type;
+        this.type = (isWeakType(type) || "float".equals(obj.rawType)) ? obj.type : type;
         this.expression = obj.expression;
         this.content = obj.content;
         this.rawType = obj.rawType;
@@ -75,8 +74,8 @@ public class StackObject {
         }
     }
 
-    public static boolean isValidType(String type) {
-        return type != null && !"unknown".equals(type);
+    public static boolean isWeakType(String type) {
+        return type == null || "unknown".equals(type);
     }
 
     public static String asString(String localization, StackObject obj) {
@@ -88,16 +87,13 @@ public class StackObject {
     }
 
     public static String asString(String localization, String type, String rawType, int valueSigned, int valueUnsigned, ScriptWorker parentWorker) {
-        if (!isValidType(type)) {
-            return null;
-        }
-        String format = "int32".equals(rawType) ? "%08X" : (valueSigned >= 0x100 ? "%04X" : "%02X");
+        String format = "int32".equals(rawType) ? "%08X" : ((valueSigned & 0xFFFFFF00) != 0 ? "%04X" : "%02X");
         String hex = String.format(format, valueSigned);
         if (!"int32".equals(rawType) && hex.length() == 8 && hex.startsWith("FFFF")) {
             hex = hex.substring(4);
         }
         String hexSuffix = ScriptField.PRINT_WITH_HEX_SUFFIX ? " [" + hex + "h]" : "";
-        if (type.startsWith("int")) {
+        if (type == null || "unknown".equals(type) || type.startsWith("int")) {
             return valueSigned + hexSuffix;
         }
         if (type.startsWith("uint")) {
@@ -158,13 +154,13 @@ public class StackObject {
                 return "Switch/Summon:" + ScriptConstants.getEnumMap("playerChar").get(valueSigned) + hexSuffix;
             } else {
                 AbilityDataObject ability = DataAccess.getMove(valueSigned);
-                return (ability != null ? '"'+ability.getName(localization)+'"' : "????") + hexSuffix;
+                return (ability != null ? '"'+ability.getName(localization)+'"' : "NullMove") + hexSuffix;
             }
         } else if ("charMove".equals(type)) {
             AbilityDataObject ability = DataAccess.getMove(valueSigned + 0x3000);
-            return (ability != null ? '"'+ability.getName(localization)+'"' : "????") + hexSuffix;
+            return (ability != null ? '"'+ability.getName(localization)+'"' : "NullMove") + hexSuffix;
         }
-        if ("btlActor".equals(type) && valueSigned >= 0x1000 && valueSigned < 0x2000) {
+        if ("btlChr".equals(type) && valueSigned >= 0x1000 && valueSigned < 0x2000) {
             try {
                 MonsterFile monster = DataAccess.getMonster(valueSigned);
                 if (monster != null) {
@@ -178,18 +174,16 @@ public class StackObject {
         if ("system01String".equals(type)) {
             EncounterFile system01 = DataAccess.getEncounter("system_01");
             if (system01 != null && system01.strings != null && system01.strings.size() > valueSigned) {
-                FieldString fieldString = system01.strings.get(valueSigned).getLocalizedContent(localization);
-                String fieldStringValue = fieldString != null ? fieldString.toString() : null;
-                String noLineBreakString = fieldStringValue != null ? fieldStringValue.replace("\n", "{\\n}") : "null";
+                String fieldString = system01.strings.get(valueSigned).getLocalizedString(localization);
+                String noLineBreakString = fieldString != null ? fieldString.replace("\n", "{\\n}") : "null";
                 return '"' + noLineBreakString + '"' + hexSuffix;
             }
         }
         if ("localString".equals(type)) {
             AtelScriptObject parentScript = parentWorker != null ? parentWorker.parentScript : null;
             if (parentScript != null && parentScript.strings != null && parentScript.strings.size() > valueSigned) {
-                FieldString fieldString = parentScript.strings.get(valueSigned).getLocalizedContent(localization);
-                String fieldStringValue = fieldString != null ? fieldString.toString() : null;
-                String noLineBreakString = fieldStringValue != null ? fieldStringValue.replace("\n", "{\\n}") : "null";
+                String fieldString = parentScript.strings.get(valueSigned).getLocalizedString(localization);
+                String noLineBreakString = fieldString != null ? fieldString.replace("\n", "{\\n}") : "null";
                 return '"' + noLineBreakString + '"' + hexSuffix;
             }
         }
@@ -197,7 +191,7 @@ public class StackObject {
             String mapName = EventFile.getMapNameById(valueSigned);
             if (mapName != null) {
                 EventFile event = DataAccess.getEvent(mapName);
-                return mapName + (event != null ? " (" + event.getName(localization) + ")" : "") + hexSuffix;
+                return (event != null ? event.getName(localization) : (mapName + " (Unknown)")) + hexSuffix;
             } else {
                 return "Map#" + valueSigned + hexSuffix;
             }
@@ -224,45 +218,42 @@ public class StackObject {
     }
 
     private static String interpretMenu(int value) {
-        int b1 = (value & 0xFF000000) >> 24;
-        int b2 = (value & 0x00FF0000) >> 16;
-        int b3 = (value & 0x0000FF00) >> 8;
-        int b4 = value & 0x000000FF;
-        String b1s = b1 != 0x40 ? "b1:" + b1 + '.' : "";
-        String inputType = switch (b2) {
-            case 0x00 -> "Menu";
-            case 0x01 -> "BattleRewards.";
-            case 0x02 -> "ItemShop";
-            case 0x04 -> "WeaponShop";
-            case 0x08 -> "EnterName.";
-            case 0x10 -> "LoadGame";
-            case 0x20 -> "SaveGame";
-            case 0x40 -> "SphereMonitor";
-            case 0x80 -> "Tutorial";
-            default -> "b2:?" + b2 + ".";
+        int hb = (value & 0xFFFF0000) >> 16;
+        int lb = value & 0x0000FFFF;
+        String hbs = switch (hb) {
+            case 0x4000 -> "Menu";
+            case 0x4001 -> "BattleRewards";
+            case 0x4002 -> "ItemShop";
+            case 0x4004 -> "WeaponShop";
+            case 0x4008 -> "EnterName";
+            case 0x4010 -> "LoadGame";
+            case 0x4020 -> "SaveGame";
+            case 0x4040 -> "SphereMonitor";
+            case 0x4080 -> "Tutorial";
+            default -> "hb:?" + hb + ".";
         };
-        String b3s = b3 != 0x00 ? "b3:" + b3 + '.' : "";
-        String index = "";
-        if (b2 == 0x08) {
-            if (b4 == 0x20) {
-                index = "AirshipPassword";
-            } else if (b4 <= 0x11) {
-                index = ScriptConstants.getEnumMap("playerChar").get(b4).name;
+        String lbs = "";
+        if (hb == 0x4008) {
+            if (lb == 0x20) {
+                lbs = "AirshipPassword";
+            } else if (lb <= 0x11) {
+                lbs = ScriptConstants.getEnumMap("playerChar").get(lb).name;
             } else {
-                index = "?" + b4;
+                lbs = "?" + lb;
             }
-        } else if (b2 == 0x80) {
-            index = switch (b4) {
+        } else if (hb == 0x4080) {
+            lbs = switch (lb) {
                 case 0x01 -> "SphereGrid";
+                case 0x02 -> "SphereGridLockNodes";
                 case 0x03 -> "Customize";
                 case 0x04 -> "AeonAbilities";
                 case 0x05 -> "AeonAttributes";
-                default -> "b4:?" + b4;
+                default -> "?" + lb;
             };
-        } else if (b4 != 0x00 || b2 == 0x02 || b2 == 0x04) {
-            index = "#" + b4;
+        } else if (lb != 0x00 || hb == 0x4002 || hb == 0x4004) {
+            lbs = ""+lb;
         }
-        return b1s + inputType + b3s + index;
+        return hbs + "#" + lbs;
     }
 
     public static String enumToString(String type, int value) {
@@ -284,11 +275,11 @@ public class StackObject {
 
     public static List<ScriptField> bitfieldToList(String type, int value) {
         List<ScriptField> bits = new ArrayList<>();
-        if (value <= 0) {
+        if (value == 0) {
             return bits;
         }
         Map<Integer, ScriptField> map = type != null ? ScriptConstants.ENUMERATIONS.getOrDefault(type, Collections.emptyMap()) : Collections.emptyMap();
-        String format = value >= 0x10000 ? "b%08X" : "b%04X";
+        String format = (value & 0xFFFF0000) != 0 ? "b%08X" : "b%04X";
         for (int bit = 0x01; bit <= value && bit > 0; bit = bit << 1) {
             if ((value & bit) != 0) {
                 ScriptField field = map.getOrDefault(bit, new ScriptField(String.format(format, bit), type, null, value));
@@ -310,8 +301,8 @@ public class StackObject {
     public static List<ScriptField> negatedBitfieldToList(String type, int valueUnsigned) {
         List<ScriptField> bits = new ArrayList<>();
         Map<Integer, ScriptField> map = type != null ? ScriptConstants.ENUMERATIONS.getOrDefault(type, Collections.emptyMap()) : Collections.emptyMap();
-        String format = valueUnsigned >= 0x10000 ? "b%08X" : "b%04X";
-        int max = valueUnsigned >= 0x10000 ? 0x80000000 : 0x8000;
+        String format = (valueUnsigned & 0xFFFF0000) != 0 ? "b%08X" : "b%04X";
+        int max = (valueUnsigned & 0xFFFF0000) != 0 ? 0x80000000 : 0x8000;
         for (int bit = 0x01; true; bit = bit << 1) {
             if ((valueUnsigned & bit) == 0) {
                 ScriptField field = map.getOrDefault(bit, new ScriptField(String.format(format, bit), type, null, valueUnsigned));

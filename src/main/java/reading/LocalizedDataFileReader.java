@@ -14,8 +14,13 @@ public class LocalizedDataFileReader<T extends Localized<? super T>> extends Dat
 
     public T[] read(String path, boolean print) {
         T[] objects = toArray(getLocalizationRoot(DEFAULT_LOCALIZATION) + path, DEFAULT_LOCALIZATION, print);
-        if (objects == null) {
-            return null;
+        addLocalizations(path, objects);
+        return objects;
+    }
+
+    public void addLocalizations(String path, T[] objects) {
+        if (objects == null || objects.length == 0) {
+            return;
         }
         LOCALIZATIONS.forEach((key, name) -> {
             T[] localizations = toArray(getLocalizationRoot(key) + path, key, false);
@@ -27,6 +32,5 @@ public class LocalizedDataFileReader<T extends Localized<? super T>> extends Dat
                 }
             }
         });
-        return objects;
     }
 }

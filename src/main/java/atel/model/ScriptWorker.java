@@ -18,14 +18,14 @@ public class ScriptWorker {
     public final int refFloatCount;
     public final int entryPointCount;
     public final int jumpCount;
-    public final int alwaysZero1;
+    public final int alwaysZero0C;
     public final int privateDataLength;
     public final int variableStructsTableOffset;
     public final int intTableOffset;
     public final int floatTableOffset;
     public final int scriptEntryPointsOffset;
     public final int jumpsOffset;
-    public final int alwaysZero2;
+    public final int alwaysZero28;
     public final int privateDataOffset;
     public final int sharedDataOffset;
 
@@ -52,14 +52,14 @@ public class ScriptWorker {
         refFloatCount = read2Bytes(bytes, 0x06);
         entryPointCount = read2Bytes(bytes, 0x08);
         jumpCount = read2Bytes(bytes, 0x0A);
-        alwaysZero1 = read4Bytes(bytes, 0x0C);
+        alwaysZero0C = read4Bytes(bytes, 0x0C);
         privateDataLength = read4Bytes(bytes, 0x10);
         variableStructsTableOffset = read4Bytes(bytes, 0x14);
         intTableOffset = read4Bytes(bytes, 0x18);
         floatTableOffset = read4Bytes(bytes, 0x1C);
         scriptEntryPointsOffset = read4Bytes(bytes, 0x20);
         jumpsOffset = read4Bytes(bytes, 0x24);
-        alwaysZero2 = read4Bytes(bytes, 0x28);
+        alwaysZero28 = read4Bytes(bytes, 0x28);
         privateDataOffset = read4Bytes(bytes, 0x2C);
         sharedDataOffset = read4Bytes(bytes, 0x30);
     }
@@ -84,11 +84,10 @@ public class ScriptWorker {
         if (purposeSlot != null) {
             list.add("PurposeSlot=" + purposeSlotToString(purposeSlot) + " [" + StringHelper.formatHex2(purposeSlot) + "h]");
         }
-        list.add("Entrypoints=" + entryPointCount);
-        list.add("Jumps=" + jumpCount);
-        list.add(privateValuesString());
-        list.add(alwaysZero1 != 0 ? "alwaysZero1=" + alwaysZero1 : "");
-        list.add(alwaysZero2 != 0 ? "alwaysZero2=" + alwaysZero2 : "");
+        list.add("Entrypoints=" + StringHelper.hex4WithSuffix(entryPointCount));
+        list.add("Jumps=" + StringHelper.hex4WithSuffix(jumpCount));
+        list.add(alwaysZero0C != 0 ? "alwaysZero0C=" + alwaysZero0C : "");
+        list.add(alwaysZero28 != 0 ? "alwaysZero28=" + alwaysZero28 : "");
         String full = list.stream().filter(s -> s != null && !s.isBlank()).collect(Collectors.joining(", "));
         return "{ " + full + " }";
     }
@@ -161,22 +160,6 @@ public class ScriptWorker {
             return "Ex" + chr;
         }
         return "?" + StringHelper.formatHex2(purposeSlot);
-    }
-
-    private String privateValuesString() {
-        if (privateVars == null || privateVars.isEmpty()) {
-            return "";
-        }
-        String joined = privateVars.stream().filter(v -> !v.values.isEmpty()).map(v -> v.initString()).collect(Collectors.joining(", "));
-        return "privateVars=[" + joined + "]";
-    }
-
-    private String sharedValuesString() {
-        if (sharedVars == null || sharedVars.isEmpty()) {
-            return "";
-        }
-        String joined = sharedVars.stream().filter(v -> !v.values.isEmpty()).map(ScriptVariable::valuesString).collect(Collectors.joining(", "));
-        return "sharedVars=[" + joined + "]";
     }
 
     private static int read2Bytes(int[] bytes, int offset) {

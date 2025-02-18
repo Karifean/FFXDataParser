@@ -14,7 +14,7 @@ public abstract class ScriptConstants {
     public static List<Integer> OPCODE_ENDLINE;
     public static final Map<String, Map<Integer, ScriptField>> ENUMERATIONS = new HashMap<>();
     public static final Map<Integer, ScriptField> COMP_OPERATORS = new HashMap<>();
-    public static final List<String> INDEX_ENUMS_ONLY = List.of("var", "saveData", "commonVar");
+    public static final List<String> INDEX_ENUMS_ONLY = List.of("var", "saveData", "battleVar");
 
     private static boolean initialized = false;
 
@@ -297,7 +297,9 @@ public abstract class ScriptConstants {
         putSaveDataVariable(0x00D0, "BikanelTreasureFlags3", "int");
         putSaveDataVariable(0x0104, "EnergyBlastProgressionFlags", "int");
         putSaveDataVariable(0x0115, "BesaidVillageTreasureFlags", "int");
-        putSaveDataVariable(0x0193, "DebugSkipJechtIntroScenes", "bol");
+        putSaveDataVariable(0x0153, "MusicSpheresOwnedCount", "int");
+        putSaveDataVariable(0x0154, "MovieSpheresOwnedCount", "int");
+        putSaveDataVariable(0x0193, "DebugSkipJechtIntroScenes", "bool");
         putSaveDataVariable(0x014B, "ControllableCharacterInLuca", "playerChar");
         putSaveDataVariable(0x01C0, "KilikaForestTreasureFlags", "int");
         putSaveDataVariable(0x01C5, "BesaidTreasureFlags", "int");
@@ -382,8 +384,8 @@ public abstract class ScriptConstants {
         putSaveDataVariable(0x1910, "?BlitzballPlayerUncoveredTechsPage2", "blitzTechsP2Bitfield", "blitzballPlayer");
         putSaveDataVariable(0x2000, "SphereGridNodeState", "sphereGridNodeState", "int");
 
-        putCommonVariable(0x0170, "BattleDialogLineVoiceFile", "int");
-        putCommonVariable(0x028C, "BattleDialogLineString", "system01String");
+        putBattleVariable(0x0170, "BattleDialogLineVoiceFile", "int");
+        putBattleVariable(0x028C, "BattleDialogLineString", "system01String");
 
         putEnum("deathAnimation", 0x00, "Character (Body remains and targetable)", "death_normal");
         putEnum("deathAnimation", 0x01, "Boss (Body remains but untargetable)", "death_nop");
@@ -427,11 +429,15 @@ public abstract class ScriptConstants {
         putEnum("battleWorkerType", 0x04, "EncounterScripts");
         putEnum("battleWorkerType", 0x06, "StartEndHooks");
 
+        putEnum("controllerButton", 0x02, "L1/R1 (not sure which)");
+        putEnum("controllerButton", 0x04, "Triangle (Menu/Defend)");
         putEnum("controllerButton", 0x05, "X (Confirm)");
-        putEnum("controllerButton", 0x12, "?Up");
-        putEnum("controllerButton", 0x13, "?Right");
-        putEnum("controllerButton", 0x14, "?Down");
-        putEnum("controllerButton", 0x15, "?Left");
+        putEnum("controllerButton", 0x06, "Circle (Cancel)");
+        putEnum("controllerButton", 0x08, "Select");
+        putEnum("controllerButton", 0x0C, "?Up");
+        putEnum("controllerButton", 0x0D, "?Right");
+        putEnum("controllerButton", 0x0E, "?Down");
+        putEnum("controllerButton", 0x0F, "?Left");
 
         putEnum("stringVarType", 0x00, "?Resolved String");
         putEnum("stringVarType", 0x01, "Immediate Integer");
@@ -443,6 +449,8 @@ public abstract class ScriptConstants {
         putEnum("stringVarType", 0x2D, "Immediate Integer (3 Digits?)");
         putEnum("stringVarType", 0x2E, "Immediate Integer (4 Digits?)");
         putEnum("stringVarType", 0x37, "Treasure Label");
+
+        putEnum("textFlagBitfield", 0x4000, "Al Bhed");
 
         for (int i = 0; i <= 60; i++) {
             String name = StringHelper.MACRO_LOOKUP.get(0x800 + i).getDefaultContent().toString();
@@ -539,11 +547,11 @@ public abstract class ScriptConstants {
 
         putEnum("battleDebugFlag", 0x07, "?NeverCrit");
 
-        putEnum("textAlignment", 0x00, "?Left-Up", "MESWIN_POS_LEFTUP");
-        putEnum("textAlignment", 0x01, "?Left-Down", "MESWIN_POS_LEFTDOWN");
-        putEnum("textAlignment", 0x02, "?Right-Up", "MESWIN_POS_RIGHTUP");
-        putEnum("textAlignment", 0x03, "?Right-Down", "MESWIN_POS_RIGHTDOWN");
-        putEnum("textAlignment", 0x04, "?Center", "MESWIN_POS_CENTER");
+        putEnum("textAlignment", 0x00, "Top Left", "MESWIN_POS_LEFTUP");
+        putEnum("textAlignment", 0x01, "Bottom Left", "MESWIN_POS_LEFTDOWN");
+        putEnum("textAlignment", 0x02, "Top Right", "MESWIN_POS_RIGHTUP");
+        putEnum("textAlignment", 0x03, "Bottom Right", "MESWIN_POS_RIGHTDOWN");
+        putEnum("textAlignment", 0x04, "Center", "MESWIN_POS_CENTER");
 
         putEnum("effectType", 0x00, "Position");
         putEnum("effectType", 0x01, "Rotation");
@@ -833,42 +841,42 @@ public abstract class ScriptConstants {
         putEnum("playerChar", -1, "Empty", null); // 0xFFFF
 
         for (int i = 0; i <= 0x0013; i++) {
-            getEnumMap("btlActor").put(i, getEnumMap("playerChar").get(i));
+            getEnumMap("btlChr").put(i, getEnumMap("playerChar").get(i));
         }
         for (int i = 1; i <= 10; i++) {
-            putEnum("btlActor", 0x0013 + i, "Monster#" + i);
+            putEnum("btlChr", 0x0013 + i, "Monster#" + i);
         }
-        putEnum("btlActor", 0x00FF, "Actor:None");
+        putEnum("btlChr", 0x00FF, "Actor:None");
 
         for (int i = 0x1000; i <= 0x1200; i++) {
-            putEnum("btlActor", i, "Actors:MonsterType=m" + String.format("%03d", i - 0x1000));
+            putEnum("btlChr", i, "Actors:MonsterType=m" + String.format("%03d", i - 0x1000));
         }
-        putEnum("btlActor", -26, null, "CHR_OWN_TARGET0"); // 0xFFE6
-        putEnum("btlActor", -25, null, "CHR_ALL_PLY3"); // 0xFFE7
-        putEnum("btlActor", -24, null, "CHR_ALL_PLAYER2"); // 0xFFE8
-        putEnum("btlActor", -23, "AllCharsAndAeons", "CHR_ALL_PLAYER"); // 0xFFE9
-        putEnum("btlActor", -22, null, "CHR_PARENT"); // 0xFFEA
-        putEnum("btlActor", -21, "AllChrs?", "CHR_ALL2"); // 0xFFEB
-        putEnum("btlActor", -20, "AllAeons", "CHR_ALL_SUMMON"); // 0xFFEC
-        putEnum("btlActor", -19, null, "CHR_ALL_PLY2"); // 0xFFED
-        putEnum("btlActor", -18, null, "CHR_INPUT"); // 0xFFEE
-        putEnum("btlActor", -17, "LastAttacker", "CHR_REACTION"); // 0xFFEF
-        putEnum("btlActor", -16, "MatchingGroup", "CHR_OWN_TARGET"); // 0xFFF0
-        putEnum("btlActor", -15, "AllMonsters", "CHR_ALL_MON"); // 0xFFF1
-        putEnum("btlActor", -14, "FrontlineChars", "CHR_ALL_PLY"); // 0xFFF2
-        putEnum("btlActor", -13, "Self", "CHR_OWN"); // 0xFFF3
-        putEnum("btlActor", -12, "CharacterReserve#4", "CHR_PARTY7"); // 0xFFF4
-        putEnum("btlActor", -11, "CharacterReserve#3", "CHR_PARTY6"); // 0xFFF5
-        putEnum("btlActor", -10, "CharacterReserve#2", "CHR_PARTY5"); // 0xFFF6
-        putEnum("btlActor", -9, "CharacterReserve#1", "CHR_PARTY4"); // 0xFFF7
-        putEnum("btlActor", -8, "Character#3", "CHR_PARTY3"); // 0xFFF8
-        putEnum("btlActor", -7, "Character#2", "CHR_PARTY2"); // 0xFFF9
-        putEnum("btlActor", -6, "Character#1", "CHR_PARTY1"); // 0xFFFA
-        putEnum("btlActor", -5, "AllActors", "CHR_ALL"); // 0xFFFB
-        putEnum("btlActor", -4, "?TargetChrsImmediate", "CHR_TARGET_NOW"); // 0xFFFC
-        putEnum("btlActor", -3, "TargetChrs", "CHR_TARGET"); // 0xFFFD
-        putEnum("btlActor", -2, "ActiveChrs", "CHR_ACTIVE"); // 0xFFFE
-        putEnum("btlActor", -1, "Actor:Null", "CHR_NOP"); // 0xFFFF
+        putEnum("btlChr", -26, null, "CHR_OWN_TARGET0"); // 0xFFE6
+        putEnum("btlChr", -25, null, "CHR_ALL_PLY3"); // 0xFFE7
+        putEnum("btlChr", -24, null, "CHR_ALL_PLAYER2"); // 0xFFE8
+        putEnum("btlChr", -23, "AllCharsAndAeons", "CHR_ALL_PLAYER"); // 0xFFE9
+        putEnum("btlChr", -22, null, "CHR_PARENT"); // 0xFFEA
+        putEnum("btlChr", -21, "AllChrs?", "CHR_ALL2"); // 0xFFEB
+        putEnum("btlChr", -20, "AllAeons", "CHR_ALL_SUMMON"); // 0xFFEC
+        putEnum("btlChr", -19, null, "CHR_ALL_PLY2"); // 0xFFED
+        putEnum("btlChr", -18, null, "CHR_INPUT"); // 0xFFEE
+        putEnum("btlChr", -17, "LastAttacker", "CHR_REACTION"); // 0xFFEF
+        putEnum("btlChr", -16, "MatchingGroup", "CHR_OWN_TARGET"); // 0xFFF0
+        putEnum("btlChr", -15, "AllMonsters", "CHR_ALL_MON"); // 0xFFF1
+        putEnum("btlChr", -14, "FrontlineChars", "CHR_ALL_PLY"); // 0xFFF2
+        putEnum("btlChr", -13, "Self", "CHR_OWN"); // 0xFFF3
+        putEnum("btlChr", -12, "CharacterReserve#4", "CHR_PARTY7"); // 0xFFF4
+        putEnum("btlChr", -11, "CharacterReserve#3", "CHR_PARTY6"); // 0xFFF5
+        putEnum("btlChr", -10, "CharacterReserve#2", "CHR_PARTY5"); // 0xFFF6
+        putEnum("btlChr", -9, "CharacterReserve#1", "CHR_PARTY4"); // 0xFFF7
+        putEnum("btlChr", -8, "Character#3", "CHR_PARTY3"); // 0xFFF8
+        putEnum("btlChr", -7, "Character#2", "CHR_PARTY2"); // 0xFFF9
+        putEnum("btlChr", -6, "Character#1", "CHR_PARTY1"); // 0xFFFA
+        putEnum("btlChr", -5, "AllActors", "CHR_ALL"); // 0xFFFB
+        putEnum("btlChr", -4, "?TargetChrsImmediate", "CHR_TARGET_NOW"); // 0xFFFC
+        putEnum("btlChr", -3, "TargetChrs", "CHR_TARGET"); // 0xFFFD
+        putEnum("btlChr", -2, "ActiveChrs", "CHR_ACTIVE"); // 0xFFFE
+        putEnum("btlChr", -1, "Actor:Null", "CHR_NOP"); // 0xFFFF
 
         for (int i = 0; i <= 0x0013; i++) {
             getEnumMap("ctbIconType").put(i, getEnumMap("playerChar").get(i));
@@ -997,7 +1005,7 @@ public abstract class ScriptConstants {
         putBattleActorProperty(0x0056, "PositionToMoveTo", "int", "stat_move_pos");
         putBattleActorProperty(0x0057, null, "int", "stat_efflv");
         putBattleActorProperty(0x0058, null, "unknown", "stat_model");
-        putBattleActorProperty(0x0059, "?Host", "btlActor", "stat_damage_chr");
+        putBattleActorProperty(0x0059, "?Host", "btlChr", "stat_damage_chr");
         putBattleActorProperty(0x005A, null, "unknown", "stat_move_target");
         putBattleActorProperty(0x005B, "AnimationsVariant", "int", "stat_motionlv");
         putBattleActorProperty(0x005C, null, "unknown", "stat_nop");
@@ -1165,7 +1173,7 @@ public abstract class ScriptConstants {
         putBattleActorProperty(0x00FE, null, "unknown", "stat_talk_stat3");
         putBattleActorProperty(0x00FF, null, "unknown", "stat_command_set");
         putBattleActorProperty(0x0100, "RetainsControlWhenProvoked", "bool", "stat_prov_command_flag");
-        putBattleActorProperty(0x0101, "ProvokerActor", "btlActor", "stat_prov_chr");
+        putBattleActorProperty(0x0101, "ProvokerActor", "btlChr", "stat_prov_chr");
         putBattleActorProperty(0x0102, "MP0", "bool", "stat_use_mp0");
         putBattleActorProperty(0x0103, "CTBIconNumber", "int", "stat_icon_number");
         putBattleActorProperty(0x0104, null, "unknown", "stat_sound_hit_num");
@@ -1293,20 +1301,20 @@ public abstract class ScriptConstants {
         putSaveDataVariable(idx, name, type, "unknown");
     }
 
-    private static void putCommonVariable(int idx, String name, String type, String indexType) {
+    private static void putBattleVariable(int idx, String name, String type, String indexType) {
         ScriptField field = new ScriptField(name, type);
         field.idx = idx;
         field.indexType = indexType;
-        getEnumMap("commonVar").put(idx, field);
+        getEnumMap("battleVar").put(idx, field);
     }
 
-    private static void putCommonVariable(int idx, String name, String type) {
-        putCommonVariable(idx, name, type, "unknown");
+    private static void putBattleVariable(int idx, String name, String type) {
+        putBattleVariable(idx, name, type, "unknown");
     }
 
     private static void putBattleActorProperty(int idx, String name, String type, String internalName) {
         ScriptField field = new ScriptField(name, type, internalName, idx);
-        getEnumMap("btlActorProperty").put(idx, field);
+        getEnumMap("btlChrProperty").put(idx, field);
     }
 
     private static void putMotionProperty(int idx, String name, String internalName) {

@@ -12,6 +12,7 @@ import java.util.List;
  * jppc/battle/mon/.../.bin
  */
 public class MonsterFile implements Nameable {
+    public Integer monsterIndex;
     public AtelScriptObject monsterAi;
     public MonsterStatDataObject monsterStatData;
     public MonsterLootDataObject monsterLootData;
@@ -19,10 +20,12 @@ public class MonsterFile implements Nameable {
     int[] audioBytesApparently;
     int[] workerMappingBytes;
     int[] statBytes;
+    int[] chunk3Bytes;
     int[] lootBytes;
     int[] englishTextBytes;
 
-    public MonsterFile(List<Chunk> chunks) {
+    public MonsterFile(int monsterIndex, List<Chunk> chunks) {
+        this.monsterIndex = monsterIndex;
         mapChunks(chunks);
         mapObjects();
     }
@@ -31,6 +34,7 @@ public class MonsterFile implements Nameable {
         scriptBytes = chunks.get(0).bytes;
         workerMappingBytes = chunks.get(1).bytes;
         statBytes = chunks.get(2).bytes;
+        chunk3Bytes = chunks.get(3).bytes;
         lootBytes = chunks.get(4).bytes;
         audioBytesApparently = chunks.get(5).bytes;
         englishTextBytes = chunks.get(6).bytes;
@@ -57,8 +61,8 @@ public class MonsterFile implements Nameable {
         if (monsterAi != null) {
             full.append("- Script Code -").append('\n');
             full.append(monsterAi.allLinesString());
-            full.append("- Headers -").append('\n');
-            full.append(monsterAi.headersString()).append('\n');
+            full.append("- Script Workers -").append('\n');
+            full.append(monsterAi.workersString()).append('\n');
         } else {
             full.append("Monster AI missing");
         }

@@ -87,36 +87,38 @@ public class ScriptVariable {
             return;
         }
         for (int i = 0; i < elementCount; i++) {
-            String type = formatToType();
-            int value = 0;
+            String type = formatToType(format);
+            int valueSigned = 0;
             if (dataOffset > 0) {
-                value += bytes[valueLocation + i * length];
+                int valueOffset = valueLocation + i * length;
+                valueSigned += bytes[valueOffset];
                 if (length > 1) {
-                    value += bytes[valueLocation + 1 + i * length] * 0x100;
+                    valueSigned += bytes[valueOffset + 1] << 8;
                     if (length > 2) {
-                        value += bytes[valueLocation + 2 + i * length] * 0x10000 + bytes[valueLocation + 3 + i * length] * 0x1000000;
+                        valueSigned += (bytes[valueOffset + 2] << 16) + (bytes[valueOffset + 3] << 24);
                     }
                 }
             }
-            if ("int16".equals(type) && value >= 0x8000 && value <= 0xFFFF) {
-                value -= 0x10000;
+            int valueUnsigned = valueSigned;
+            if ("int16".equals(type) && valueSigned >= 0x8000 && valueSigned <= 0xFFFF) {
+                valueUnsigned = valueSigned - 0x10000;
             }
-            if ("int8".equals(type) && value >= 0x80 && value <= 0xFF) {
-                value -= 0x100;
+            if ("int8".equals(type) && valueSigned >= 0x80 && valueSigned <= 0xFF) {
+                valueUnsigned = valueSigned - 0x100;
             }
-            String content = value + " [" + StringHelper.formatHex4(value) + "h]";
-            StackObject obj = new StackObject(parentWorker, null, type, false, content, value);
+            StackObject obj = new StackObject(parentWorker, null, type, valueSigned, valueUnsigned);
             values.add(obj);
         }
     }
 
     @Override
     public String toString() {
-        return "{ " +
-                fullStoreLocation() +
-                ", type=" + fullTypeString() +
-                (!values.isEmpty() ? ", values=" + valuesString() : "") +
-                " }";
+        List<String> list = new ArrayList<>();
+        list.add(fullStoreLocation());
+        list.add("type=" + fullTypeString());
+        list.add(valuesString());
+        String full = list.stream().filter(s -> s != null && !s.isBlank()).collect(Collectors.joining(", "));
+        return "{ " + full + " }";
     }
 
     private String fullStoreLocation() {
@@ -125,14 +127,14 @@ public class ScriptVariable {
             ScriptField scriptField = StackObject.enumToScriptField("saveData", offset);
             return Objects.requireNonNullElse(scriptField.name, "Unknown") + " (" + deref + ")";
         } else if (location == 1) {
-            ScriptField scriptField = StackObject.enumToScriptField("commonVar", offset);
+            ScriptField scriptField = StackObject.enumToScriptField("battleVar", offset);
             return Objects.requireNonNullElse(scriptField.name, "Unknown") + " (" + deref + ")";
         }
         return deref;
     }
 
     private String fullTypeString() {
-        String valueFormat = formatToType();
+        String valueFormat = formatToType(format);
         if (elementCount <= 1) {
             return valueFormat;
         }
@@ -146,16 +148,12 @@ public class ScriptVariable {
             ScriptField scriptField = StackObject.enumToScriptField("saveData", offset);
             if (scriptField.name != null) {
                 return scriptField.name;
-            } else {
-                return getDereference();
             }
         }
         if (location == 1) {
-            ScriptField scriptField = StackObject.enumToScriptField("commonVar", offset);
+            ScriptField scriptField = StackObject.enumToScriptField("battleVar", offset);
             if (scriptField.name != null) {
                 return scriptField.name;
-            } else {
-                return getDereference();
             }
         }
         return getVarLabel();
@@ -179,54 +177,50 @@ public class ScriptVariable {
             }
         }
         if (location == 1) {
-            ScriptField enumTarget = ScriptConstants.getEnumMap("commonVar").get(offset);
+            ScriptField enumTarget = ScriptConstants.getEnumMap("battleVar").get(offset);
             if (enumTarget != null) {
                 return enumTarget.type;
             }
         }
-        return formatToType();
-    }
-
-    public String getVarLabel() {
-        return "var" + StringHelper.formatHex2(index);
-    }
-
-    public String getDereference() {
-        String loc = locationToString();
-        String arrayIndex = "[" + StringHelper.formatHex4(offset) + "]";
-        return loc + arrayIndex;
-    }
-
-    public String initString() {
-        boolean hasInit = values.stream().anyMatch(v -> v.valueSigned != 0);
-        return getVarLabel() + (hasInit ? "=" + valuesString() : "");
-    }
-
-    public String valuesString() {
-        if (values.isEmpty()) {
-            return "";
-        }
-        String joined = values.stream().map(StackObject::toString).collect(Collectors.joining(", "));
-        return values.size() > 1 ? "[" + joined + "]" : joined;
-    }
-
-    public String formatToType() {
         return formatToType(format);
     }
 
-    private String locationToString() {
-        return locationToString(location);
+    public String getVarLabel() {
+        return locationToLabel(location) + StringHelper.formatHex2(location == 3 ? index : offset);
+    }
+
+    public String getDereference() {
+        return locationToString(location) + "[" + StringHelper.formatHex4(offset) + "]";
+    }
+
+    public String valuesString() {
+        if (values.isEmpty() || values.stream().allMatch(o -> o.valueSigned == 0)) {
+            return "";
+        }
+        String joined = values.stream().map(StackObject::toString).collect(Collectors.joining(", "));
+        return values.size() > 1 ? "values=[" + joined + "]" : ("value=" + joined);
     }
 
     public static String locationToString(int location) {
         return switch (location) {
             case 0 -> "saveData";
-            case 1 -> "commonVars";
+            case 1 -> "battleVar";
             case 2 -> "dataOffset";
             case 3 -> "private";
             case 4 -> "sharedOffset";
             case 5 -> "int variables";
             case 6 -> "eventData";
+            default -> "unknown:" + location;
+        };
+    }
+
+    public static String locationToLabel(int location) {
+        return switch (location) {
+            case 0 -> "saveData";
+            case 1 -> "battleVar";
+            case 3 -> "var";
+            case 4 -> "sharedObj";
+            case 6 -> "eventVar";
             default -> "unknown:" + location;
         };
     }

@@ -87,3 +87,6 @@ extraStatusesBitfield,1000,,Guard
 extraStatusesBitfield,2000,,Sentinel
 extraStatusesBitfield,4000,,Doom
 extraStatusesBitfield,8000,,Unused2
+dimensionsBitfield,01,,X
+dimensionsBitfield,02,,Y
+dimensionsBitfield,04,,Z

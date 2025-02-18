@@ -130,6 +130,27 @@ public class AtelScriptObject {
         parseBattleWorkerTypes();
     }
 
+    public void addLocalizations(List<LocalizedFieldStringObject> strings) {
+        if (strings == null) {
+            return;
+        }
+        if (this.strings == null) {
+            this.strings = strings;
+            return;
+        }
+        for (int i = 0; i < strings.size(); i++) {
+            LocalizedFieldStringObject localizationStringObject = strings.get(i);
+            if (i < this.strings.size()) {
+                LocalizedFieldStringObject stringObject = this.strings.get(i);
+                if (stringObject != null && localizationStringObject != null) {
+                    localizationStringObject.copyInto(stringObject);
+                }
+            } else {
+                this.strings.add(localizationStringObject);
+            }
+        }
+    }
+
     public void setStrings(List<LocalizedFieldStringObject> strings) {
         this.strings = strings;
     }
@@ -159,57 +180,58 @@ public class AtelScriptObject {
         variableStructsTableOffset = -1;
         intTableOffset = -1;
         floatTableOffset = -1;
-        for (ScriptWorker w : workers) {
+        for (ScriptWorker worker : workers) {
             if (variableStructsTableOffset < 0) {
-                variableStructsTableOffset = w.variableStructsTableOffset;
-                variableDeclarations = new ScriptVariable[w.variablesCount];
-                for (int i = 0; i < w.variablesCount; i++) {
-                    int lb = read4Bytes(variableStructsTableOffset + i * 8);
-                    int hb = read4Bytes(variableStructsTableOffset + i * 8 + 4);
-                    ScriptVariable scriptVariable = new ScriptVariable(w, i, lb, hb);
+                variableStructsTableOffset = worker.variableStructsTableOffset;
+                variableDeclarations = new ScriptVariable[worker.variablesCount];
+                for (int varIdx = 0; varIdx < worker.variablesCount; varIdx++) {
+                    int lb = read4Bytes(variableStructsTableOffset + varIdx * 8);
+                    int hb = read4Bytes(variableStructsTableOffset + varIdx * 8 + 4);
+                    ScriptVariable scriptVariable = new ScriptVariable(worker, varIdx, lb, hb);
+                    varTypes.put(varIdx, "float".equals(scriptVariable.getType()) ? "float" : "unknown");
                     if (scriptVariable.location == 0) {
                         ScriptField entry = ScriptConstants.getEnumMap("saveData").get(scriptVariable.offset);
                         if (entry != null) {
-                            varTypes.put(i, entry.type);
+                            varTypes.put(varIdx, entry.type);
                         }
                     } else if (scriptVariable.location == 4) {
                         scriptVariable.parseValues();
                     } else if (scriptVariable.location == 6) {
                         scriptVariable.parseValues();
                     }
-                    variableDeclarations[i] = scriptVariable;
+                    variableDeclarations[varIdx] = scriptVariable;
                 }
-                w.variableDeclarations = variableDeclarations;
-                w.setVariableInitialValues();
-            } else if (w.variableStructsTableOffset != variableStructsTableOffset || w.variablesCount != variableDeclarations.length) {
+                worker.variableDeclarations = variableDeclarations;
+                worker.setVariableInitialValues();
+            } else if (worker.variableStructsTableOffset != variableStructsTableOffset || worker.variablesCount != variableDeclarations.length) {
                 System.err.println("WARNING, variables table mismatch!");
             } else {
-                w.variableDeclarations = variableDeclarations;
-                w.setVariableInitialValues();
+                worker.variableDeclarations = variableDeclarations;
+                worker.setVariableInitialValues();
             }
             if (intTableOffset < 0) {
-                intTableOffset = w.intTableOffset;
-                refInts = new int[w.refIntCount];
-                for (int i = 0; i < w.refIntCount; i++) {
+                intTableOffset = worker.intTableOffset;
+                refInts = new int[worker.refIntCount];
+                for (int i = 0; i < worker.refIntCount; i++) {
                     refInts[i] = read4Bytes(intTableOffset + i * 4);
                 }
-                w.refInts = refInts;
-            } else if (w.intTableOffset != intTableOffset || w.refIntCount != refInts.length) {
+                worker.refInts = refInts;
+            } else if (worker.intTableOffset != intTableOffset || worker.refIntCount != refInts.length) {
                 System.err.println("WARNING, int table mismatch!");
             } else {
-                w.refInts = refInts;
+                worker.refInts = refInts;
             }
             if (floatTableOffset < 0) {
-                floatTableOffset = w.floatTableOffset;
-                refFloats = new int[w.refFloatCount];
-                for (int i = 0; i < w.refFloatCount; i++) {
+                floatTableOffset = worker.floatTableOffset;
+                refFloats = new int[worker.refFloatCount];
+                for (int i = 0; i < worker.refFloatCount; i++) {
                     refFloats[i] = read4Bytes(floatTableOffset + i * 4);
                 }
-                w.refFloats = refFloats;
-            } else if (w.floatTableOffset != floatTableOffset || w.refFloatCount != refFloats.length) {
+                worker.refFloats = refFloats;
+            } else if (worker.floatTableOffset != floatTableOffset || worker.refFloatCount != refFloats.length) {
                 System.err.println("WARNING, float table mismatch!");
             } else {
-                w.refFloats = refFloats;
+                worker.refFloats = refFloats;
             }
         }
     }
@@ -237,7 +259,7 @@ public class AtelScriptObject {
             if (i == 0) {
                 firstOffset = sectionOffset;
             } else if (offset >= firstOffset) {
-                System.err.println("WARNING - Offset number mismatch at index " + i + " expected " + notActuallySectionCount);
+                // System.err.println("WARNING - Offset number mismatch at index " + i + " expected " + notActuallySectionCount);
                 break;
             }
             int sectionValueCount = battleWorkerMappingBytes[sectionOffset] + battleWorkerMappingBytes[sectionOffset + 1] * 0x100;
@@ -309,8 +331,8 @@ public class AtelScriptObject {
             lineInstructions.add(instruction);
             instructions.add(instruction);
             if (getLineEnd(opcode)) {
-                ScriptLine scriptLine = new ScriptLine(null, currentScriptLineOffset, lineInstructions);
-                scriptLine.jumps = jumpsOnLine;
+                ScriptLine scriptLine = new ScriptLine(null, currentScriptLineOffset, lineInstructions, instruction);
+                scriptLine.incomingJumps = jumpsOnLine;
                 jumpsOnLine.forEach(j -> j.targetLine = scriptLine);
                 scriptLines.add(scriptLine);
                 lineCount++;
@@ -498,7 +520,7 @@ public class AtelScriptObject {
                     p2s = '(' + p2s + ')';
                 }
                 String content = p1s + ' ' + op.name + ' ' + p2s;
-                StackObject stackObject = new StackObject(currentWorker, ins, resultType, true, content, opcode);
+                StackObject stackObject = new StackObject(currentWorker, ins, resultType, true, content);
                 stackObject.maybeBracketize = true;
                 stack.push(stackObject);
             } else if (opcode == 0x19) { // OPNOT / NOT_LOGIC
@@ -506,28 +528,28 @@ public class AtelScriptObject {
                 if (p1.maybeBracketize) {
                     p1s = '(' + p1s + ')';
                 }
-                stack.push(new StackObject(currentWorker, ins, "bool", true, "!" + p1s, 0x19));
+                stack.push(new StackObject(currentWorker, ins, "bool", true, "!" + p1s));
             } else if (opcode == 0x1A) { // OPUMINUS / NEG
                 String p1s = p1.toString();
                 if (p1.maybeBracketize) {
                     p1s = '(' + p1s + ')';
                 }
-                stack.push(new StackObject(currentWorker, ins, p1.type, true, "-" + p1s, 0x1A));
+                stack.push(new StackObject(currentWorker, ins, p1.type, true, "-" + p1s));
             } else if (opcode == 0x1C) { // OPBNOT / NOT
                 String p1s = p1.toString();
                 if (p1.maybeBracketize) {
                     p1s = '(' + p1s + ')';
                 }
-                stack.push(new StackObject(currentWorker, ins, p1.type, true, "~" + p1s, 0x1C));
+                stack.push(new StackObject(currentWorker, ins, p1.type, true, "~" + p1s));
             } else if (opcode == 0x25) { // POPA / SET_RETURN_VALUE
                 textScriptLine += p1 + ";";
                 currentRAType = resolveType(p1);
             } else if (opcode == 0x26) { // PUSHA / GET_RETURN_VALUE
-                stack.push(new StackObject(currentWorker, ins, currentRAType, true, "LastCallResult", 0x26));
+                stack.push(new StackObject(currentWorker, ins, currentRAType, true, "LastCallResult"));
             } else if (opcode == 0x28) { // PUSHX / GET_TEST
-                stack.push(new StackObject(currentWorker, ins, currentRXType, true, "rX", 0x28));
+                stack.push(new StackObject(currentWorker, ins, currentRXType, true, "rX"));
             } else if (opcode == 0x29) { // PUSHY / GET_CASE
-                stack.push(new StackObject(currentWorker, ins, currentRYType, true, "case", 0x29));
+                stack.push(new StackObject(currentWorker, ins, currentRYType, true, "case"));
             } else if (opcode == 0x2A) { // POPX / SET_TEST
                 textScriptLine += "Set rX = " + p1;
                 currentRXType = resolveType(p1);
@@ -553,10 +575,10 @@ public class AtelScriptObject {
                 String e = p3.expression ? "(" + p3 + ")" : format2Or4Byte(p3.valueSigned);
                 String scriptLabel = direct ? workers[p2.valueSigned].entryPoints[p3.valueSigned].getLabel() : ("w" + s + "e" + e);
                 String content = cmd + " " + scriptLabel + " (Level " + level + ")";
-                stack.push(new StackObject(currentWorker, ins, "worker", true, content, opcode));
+                stack.push(new StackObject(currentWorker, ins, "worker", true, content));
             } else if (opcode == 0x39) { // PREQ
                 String content = "PREQ(" + p1 + ", " + p2 + ", " + p3 + ")";
-                stack.push(new StackObject(currentWorker, ins, "unknown", true, content, 0x39));
+                stack.push(new StackObject(currentWorker, ins, "unknown", true, content));
             } else if (opcode == 0x3C) { // RET / END
                 textScriptLine += "return;";
                 resetRegisterTypes();
@@ -570,7 +592,7 @@ public class AtelScriptObject {
                 resetRegisterTypes();
             } else if (opcode == 0x46) { // TREQ
                 String content = "TREQ(" + p1 + ", " + p2 + ", " + p3 + ")";
-                stack.push(new StackObject(currentWorker, ins, "unknown", true, content, 0x46));
+                stack.push(new StackObject(currentWorker, ins, "unknown", true, content));
             } else if (opcode == 0x54) { // DRET / CLEANUP_ALL_END
                 textScriptLine += "direct return;";
                 resetRegisterTypes();
@@ -589,12 +611,12 @@ public class AtelScriptObject {
                 textScriptLine += "Set tmpF" + tempIndex + " = " + p1 + ";";
             } else if (opcode >= 0x67 && opcode <= 0x6A) { // PUSHI0..3 / GET_INT
                 int tempIndex = opcode - 0x67;
-                StackObject stackObject = new StackObject(currentWorker, ins, "tmpI", true, "tmpI" + tempIndex, tempIndex);
+                StackObject stackObject = new StackObject(currentWorker, ins, "tmpI", true, "tmpI" + tempIndex);
                 stackObject.referenceIndex = tempIndex;
                 stack.push(stackObject);
             } else if (opcode >= 0x6B && opcode <= 0x74) { // PUSHF0..9 / GET_FLOAT
                 int tempIndex = opcode - 0x6B;
-                StackObject stackObject = new StackObject(currentWorker, ins, "float", true, "tmpF" + tempIndex, opcode);
+                StackObject stackObject = new StackObject(currentWorker, ins, "float", true, "tmpF" + tempIndex);
                 stackObject.referenceIndex = tempIndex;
                 stack.push(stackObject);
             } else if (opcode == 0x77) { // REQWAIT / WAIT_DELETE
@@ -619,7 +641,7 @@ public class AtelScriptObject {
                 // textScriptLine += "REQCHG(" + p1 + ", " + p2 + ", " + p3 + ");";
             } else if (opcode == 0x7A) { // Never used: ACTREQ / SET_EDGE_TRIGGER
             } else if (opcode == 0x9F) { // PUSHV / GET_DATUM
-                StackObject stackObject = new StackObject(currentWorker, ins, "var", true, getVariableLabel(argv), argv);
+                StackObject stackObject = new StackObject(currentWorker, ins, "var", true, getVariableLabel(argv));
                 stackObject.referenceIndex = argv;
                 stack.push(stackObject);
             } else if (opcode == 0xA0 || opcode == 0xA1) { // POPV(L) / SET_DATUM_(W/T)
@@ -637,7 +659,7 @@ public class AtelScriptObject {
                 String val = typed(p1, varTypes.get(argv));
                 textScriptLine += getVariableLabel(argv) + " = " + val + ";";
             } else if (opcode == 0xA2) { // PUSHAR / GET_DATUM_INDEX
-                StackObject stackObject = new StackObject(currentWorker, ins, "var", true, ensureVariableValidWithArray(argv, p1), argv);
+                StackObject stackObject = new StackObject(currentWorker, ins, "var", true, ensureVariableValidWithArray(argv, p1));
                 stackObject.referenceIndex = argv;
                 stack.push(stackObject);
             } else if (opcode == 0xA3 || opcode == 0xA4) { // POPAR(L) / SET_DATUM_INDEX_(W/T)
@@ -649,7 +671,7 @@ public class AtelScriptObject {
                 String val = typed(p2, varTypes.get(argv));
                 textScriptLine += ensureVariableValidWithArray(argv, p1) + " = " + val + ";";
             } else if (opcode == 0xA7) { // PUSHARP / GET_DATUM_DESC
-                StackObject stackObject = new StackObject(currentWorker, ins, "pointer", true, "&" + ensureVariableValidWithArray(argv, p1), argv);
+                StackObject stackObject = new StackObject(currentWorker, ins, "pointer", true, "&" + ensureVariableValidWithArray(argv, p1));
                 stackObject.referenceIndex = argv;
                 stack.push(stackObject);
             } else if (opcode == 0xAD) { // PUSHI / CONST_INT
@@ -677,7 +699,7 @@ public class AtelScriptObject {
             } else if (opcode == 0xB5) { // CALL / FUNC_RET
                 List<StackObject> params = popParamsForFunc(argv);
                 ScriptFunc func = getAndTypeFuncCall(argv, params);
-                StackObject stackObject = new StackObject(currentWorker, ins, func.getType(params), true, func.callB5(params), argv);
+                StackObject stackObject = new StackObject(currentWorker, ins, func.getType(params), true, func.callB5(params));
                 stackObject.referenceIndex = argv;
                 stack.push(stackObject);
             } else if (opcode == 0xD6) { // POPXCJMP / SET_BNEZ
@@ -692,6 +714,8 @@ public class AtelScriptObject {
                 currentRAType = func.getType(params);
                 String call = func.callD8(params);
                 textScriptLine += call + ';';
+            } else if (opcode == 0xF6) { // SYSTEM
+                textScriptLine += "System " + StringHelper.formatHex2(argv);
             }
         }
     }
@@ -767,9 +791,6 @@ public class AtelScriptObject {
         if (!gatheringInfo) {
             return;
         }
-        if (!varTypes.containsKey(var) && variableDeclarations != null && var < variableDeclarations.length) {
-            varTypes.put(var, variableDeclarations[var].getType());
-        }
         String prevType = varTypes.get(var);
         if (isWeakType(prevType)) {
             varTypes.put(var, type);
@@ -781,16 +802,16 @@ public class AtelScriptObject {
             return "unknown";
         }
         if ("var".equals(obj.type)) {
-            return varTypes.getOrDefault(obj.valueSigned, "unknown");
+            return varTypes.getOrDefault(obj.referenceIndex, "unknown");
         }
         if ("tmpI".equals(obj.type)) {
-            return currentTempITypes.getOrDefault(obj.valueSigned, "unknown");
+            return currentTempITypes.getOrDefault(obj.referenceIndex, "unknown");
         }
         return obj.type;
     }
 
     protected static boolean isWeakType(String type) {
-        return type == null || "unknown".equals(type) || type.startsWith("int") || type.startsWith("uint");
+        return type == null || "unknown".equals(type);
     }
 
     protected String typed(StackObject obj, String type) {
@@ -798,10 +819,10 @@ public class AtelScriptObject {
             return type + ":null";
         } else {
             if ("var".equals(obj.type)) {
-                addVarType(obj.valueSigned, type);
+                addVarType(obj.referenceIndex, type);
             }
             if ("tmpI".equals(obj.type) && type != null && !"unknown".equals(type)) {
-                currentTempITypes.put(obj.valueSigned, type);
+                currentTempITypes.put(obj.referenceIndex, type);
             }
             if (obj.expression || type == null || "unknown".equals(type)) {
                 return obj.toString();
@@ -826,7 +847,7 @@ public class AtelScriptObject {
         if (isWeakType(indexType) && (variableDeclarations != null && index >= 0 && index < variableDeclarations.length)) {
             indexType = variableDeclarations[index].getArrayIndexType();
         }
-        String arrayIndex = !p1.expression && isWeakType(indexType) ? StringHelper.formatHex4(p1.valueSigned) : typed(p1, indexType);
+        String arrayIndex = !p1.expression && isWeakType(indexType) ? ""+p1.valueSigned : typed(p1, indexType);
         return varLabel + '[' + arrayIndex + ']';
     }
 
@@ -911,6 +932,14 @@ public class AtelScriptObject {
         currentTempITypes.clear();
     }
 
+    @Override
+    public String toString() {
+        return "- Script Code -" + '\n' +
+                allLinesString() +
+                "- Script Workers -" + '\n' +
+                workersString() + '\n';
+    }
+
     public String allLinesString() {
         List<String> lines = new ArrayList<>();
         for (int i = 0; i < lineCount; i++) {
@@ -943,7 +972,7 @@ public class AtelScriptObject {
         return String.join("\n", lines) + '\n';
     }
 
-    public String headersString() {
+    public String workersString() {
         if (workers == null || workers.length == 0) {
             return "No Workers";
         }
@@ -972,7 +1001,7 @@ public class AtelScriptObject {
         if (variableDeclarations.length > 0) {
             List<String> refsStrings = new ArrayList<>();
             for (int i = 0; i < variableDeclarations.length; i++) {
-                refsStrings.add("var" + StringHelper.formatHex2(i) + ": " + variableDeclarations[i] + " [" + String.format("%016X", variableDeclarations[i].fullBytes) + "h] - Inferred " + varTypes.get(i));
+                refsStrings.add(variableDeclarations[i].getVarLabel() + ": " + variableDeclarations[i] + " [" + String.format("%016X", variableDeclarations[i].fullBytes) + "h] - Inferred " + varTypes.get(i));
             }
             lines.add(String.join("\n", refsStrings));
         }

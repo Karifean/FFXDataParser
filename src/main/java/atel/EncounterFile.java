@@ -13,6 +13,8 @@ import java.util.stream.Collectors;
  * jppc/battle/btl/.../.bin
  */
 public class EncounterFile {
+
+    public String id;
     public AtelScriptObject encounterScript;
     public FormationDataObject formation;
     public BattleAreasPositionsDataObject battleAreasPositions;
@@ -27,7 +29,8 @@ public class EncounterFile {
 
     private int chunkCount;
 
-    public EncounterFile(List<Chunk> chunks, boolean isInpc) {
+    public EncounterFile(String id, List<Chunk> chunks, boolean isInpc) {
+        this.id = id;
         chunkCount = chunks.size();
         mapChunks(chunks, isInpc);
         mapObjects();
@@ -39,7 +42,7 @@ public class EncounterFile {
         workerMappingBytes = chunks.get(1).bytes;
         formationBytes = chunks.get(2).bytes;
         battleAreasPositionsBytes = chunks.get(3).bytes;
-        if (chunks.size() > 4) {
+        if (chunks.size() > 4 && chunks.get(4).offset != 0) {
             if (isInpc) {
                 englishTextBytes = chunks.get(4).bytes;
             } else {
@@ -82,6 +85,9 @@ public class EncounterFile {
     }
 
     public void addLocalizations(List<LocalizedFieldStringObject> strings) {
+        if (strings == null) {
+            return;
+        }
         if (this.strings == null) {
             this.strings = strings;
             return;
@@ -121,8 +127,8 @@ public class EncounterFile {
         if (encounterScript != null) {
             full.append("- Script Code -").append('\n');
             full.append(encounterScript.allLinesString());
-            full.append("- Headers -").append('\n');
-            full.append(encounterScript.headersString()).append('\n');
+            full.append("- Script Workers -").append('\n');
+            full.append(encounterScript.workersString()).append('\n');
         } else {
             full.append("Encounter Script missing");
         }

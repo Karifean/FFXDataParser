@@ -37,8 +37,18 @@ public class LocalizedMacroStringObject {
         return contents.get(localization);
     }
 
+    public String getLocalizedString(String localization) {
+        MacroString obj = getLocalizedContent(localization);
+        return obj != null ? obj.getString() : null;
+    }
+
     public MacroString getDefaultContent() {
         return getLocalizedContent(DEFAULT_LOCALIZATION);
+    }
+
+    public String getDefaultString() {
+        String defaultString = getLocalizedString(DEFAULT_LOCALIZATION);
+        return defaultString != null ? defaultString : "";
     }
 
     public void copyInto(LocalizedMacroStringObject other) {

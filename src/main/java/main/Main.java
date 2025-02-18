@@ -133,10 +133,16 @@ public class Main {
                 for (String filename : realArgs) {
                     if (filename.contains("battle/mon")) {
                         System.out.println("Monster file: " + filename);
-                        readMonsterFile(filename, true);
+                        MonsterFile monsterFile = readMonsterFile(-1, filename, true);
+                        if (monsterFile != null) {
+                            monsterFile.parseScript();
+                            System.out.println(monsterFile);
+                        } else {
+                            System.out.println("Null");
+                        }
                     } else if (filename.contains("battle/btl")) {
                         System.out.println("Encounter file: " + filename);
-                        EncounterFile encounterFile = readEncounterFile(filename, true, filename.contains("/inpc/"));
+                        EncounterFile encounterFile = readEncounterFile(null, filename, true, filename.contains("/inpc/"));
                         if (encounterFile != null) {
                             encounterFile.parseScript();
                             System.out.println(encounterFile);
@@ -145,7 +151,7 @@ public class Main {
                         }
                     } else if (filename.contains("event/obj")) {
                         System.out.println("Event file: " + filename);
-                        EventFile eventFile = readEventFile(filename, true);
+                        EventFile eventFile = readEventFile(null, filename, true);
                         if (eventFile != null) {
                             eventFile.parseScript();
                             System.out.println(eventFile);
@@ -225,7 +231,8 @@ public class Main {
                 prepareStringMacros(getLocalizationRoot(DEFAULT_LOCALIZATION) + "menu/macrodic.dcp", DEFAULT_LOCALIZATION, true);
                 break;
             case MODE_CUSTOM:
-                readX2AbilitiesFromFile("ffx_ps2/ffx2/master/new_uspc/battle/kernel/command.bin", "us", true);
+                readDirectAtelScriptObject("menu/menumain.bin", true);
+                // readX2AbilitiesFromFile("ffx_ps2/ffx2/master/new_uspc/battle/kernel/command.bin", "us", true);
                 break;
             case MODE_MAKE_EDITS:
                 System.out.println("--- ATTACKS ---");
