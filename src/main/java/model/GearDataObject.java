@@ -4,6 +4,10 @@ import main.DataAccess;
 import atel.model.StackObject;
 import main.StringHelper;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+
 /**
  * weapon.bin
  * buki_get.bin
@@ -13,16 +17,16 @@ public class GearDataObject {
     private final int[] bytes;
 
     boolean isBukiGet;
-    int alwaysZero3;
-    int alwaysZero4;
-    int alwaysZeroOrOne;
-    int unknownC;
-    int unknownD;
+    int byte00nameIdMaybe;
+    int byte01nameIdMaybe;
+    int byte02existsMaybe;
+    int byte03AlwaysZero;
+    int modelIdx;
     int variousFlags;
     int character;
-    int alwaysZero1;
     int armorByte;
-    int alwaysZero2;
+    int byte06equipperMaybe;
+    int byte07equipperMaybe;
     int formula;
     int power;
     int crit;
@@ -37,6 +41,7 @@ public class GearDataObject {
     boolean hiddenInMenu;
     boolean celestial;
     boolean brotherhood;
+    boolean unknownFlagSet;
 
     public GearDataObject(int[] bytes) {
         this(bytes, null, null);
@@ -54,20 +59,19 @@ public class GearDataObject {
     }
 
     private void mapBytesNormal() {
-        alwaysZero3 = bytes[0x00];
-        alwaysZero4 = bytes[0x01];
-        alwaysZeroOrOne = bytes[0x02];
+        byte00nameIdMaybe = bytes[0x00];
+        byte01nameIdMaybe = bytes[0x01];
+        byte02existsMaybe = bytes[0x02];
         variousFlags = bytes[0x03];
         character = bytes[0x04];
         armorByte = bytes[0x05];
-        alwaysZero1 = bytes[0x06];
-        alwaysZero2 = bytes[0x07];
+        byte06equipperMaybe = bytes[0x06];
+        byte07equipperMaybe = bytes[0x07];
         formula = bytes[0x08];
         power = bytes[0x09];
         crit = bytes[0x0A];
         slots = bytes[0x0B];
-        unknownC = bytes[0x0C];
-        unknownD = bytes[0x0D];
+        modelIdx = read2Bytes(0x0C);
         ability1 = read2Bytes(0x0E);
         ability2 = read2Bytes(0x10);
         ability3 = read2Bytes(0x12);
@@ -75,11 +79,10 @@ public class GearDataObject {
     }
 
     private void mapBytesBukiGet() {
-        alwaysZeroOrOne = 1;
         variousFlags = bytes[0x00];
         character = bytes[0x01];
         armorByte = bytes[0x02];
-        alwaysZero1 = bytes[0x03];
+        byte03AlwaysZero = bytes[0x03];
         formula = bytes[0x04];
         power = bytes[0x05];
         crit = bytes[0x06];
@@ -96,6 +99,7 @@ public class GearDataObject {
         hiddenInMenu = (variousFlags & 0x02) > 0;
         celestial = (variousFlags & 0x04) > 0;
         brotherhood = (variousFlags & 0x08) > 0;
+        unknownFlagSet = variousFlags >= 0x10;
     }
 
     public String compactString() {
@@ -107,26 +111,31 @@ public class GearDataObject {
 
     @Override
     public String toString() {
-        String abilityString = getAbilityString();
-        return "{ " + StackObject.enumToString("playerChar", character) +
-                ", " + (armor ? "Armor" : "Weapon") + StringHelper.hex2Suffix(armorByte) +
-                ", Formula=" + StackObject.enumToString("damageFormula", formula) +
-                ", Power=" + power +
-                ", Crit=" + crit + '%' +
-                ", Slots=" + slots + ' ' +
-                abilityString +
-                (flag1 ? ", Flag1" : "") +
-                (hiddenInMenu ? ", Hidden in Menu" : "") +
-                (celestial ? ", Celestial" : "") +
-                (brotherhood ? ", Brotherhood" : "") +
-                (alwaysZero1 != 0 ? ", 1 not Zero!=" + formatUnknownByte(alwaysZero1) : "") +
-                (alwaysZero2 != 0 ? ", 2 not Zero!=" + formatUnknownByte(alwaysZero2) : "") +
-                (alwaysZero3 != 0 ? ", 3 not Zero!=" + formatUnknownByte(alwaysZero3) : "") +
-                (alwaysZero4 != 0 ? ", 4 not Zero!=" + formatUnknownByte(alwaysZero4) : "") +
-                (alwaysZeroOrOne > 1 ? ", byte 2 greater than 1!=" + formatUnknownByte(alwaysZeroOrOne) : "") +
-                (unknownC != 0 ? ", UC=" + formatUnknownByte(unknownC) : "") +
-                (unknownD != 0 ? ", UD=" + formatUnknownByte(unknownD) : "") +
-                " }";
+        List<String> list = new ArrayList<>();
+        list.add(StackObject.enumToString("playerChar", character));
+        list.add((armor ? "Armor" : "Weapon") + StringHelper.hex2Suffix(armorByte));
+        list.add("Formula=" + StackObject.enumToString("damageFormula", formula));
+        list.add("Power=" + power);
+        list.add("Crit=" + crit + "%");
+        list.add("Slots=" + slots + " " + getAbilityString());
+        list.add(flag1 ? "Flag1" : "");
+        list.add(hiddenInMenu ? "Hidden in Menu" : "");
+        list.add(celestial ? "Celestial" : "");
+        list.add(brotherhood ? "Brotherhood" : "");
+        if (unknownFlagSet) {
+            list.add("UnknownFlags=" + StringHelper.formatHex2(variousFlags));
+        }
+        list.add(modelIdx != 0 ? "model=" + StackObject.enumToString("model", modelIdx) : "");
+        if (isBukiGet) {
+            list.add(byte03AlwaysZero != 0 ? "byte03=" + StringHelper.hex2WithSuffix(byte03AlwaysZero) : "");
+        } else {
+            list.add(byte00nameIdMaybe   != 0 ? "byte00=" + StringHelper.hex2WithSuffix(byte00nameIdMaybe) : "");
+            list.add(byte01nameIdMaybe   != 0 ? "byte01=" + StringHelper.hex2WithSuffix(byte01nameIdMaybe) : "");
+            list.add(byte02existsMaybe   != 0 ? "byte02=" + StringHelper.hex2WithSuffix(byte02existsMaybe) : "");
+            list.add(byte06equipperMaybe != 0 ? "byte06=" + StringHelper.hex2WithSuffix(byte06equipperMaybe) : "");
+            list.add(byte07equipperMaybe != 0 ? "byte07=" + StringHelper.hex2WithSuffix(byte07equipperMaybe) : "");
+        }
+        return "{ " + list.stream().filter(s -> s != null && !s.isBlank()).collect(Collectors.joining(", ")) + " }";
     }
 
     private String getAbilityString() {
@@ -149,10 +158,6 @@ public class GearDataObject {
         }
         abilityString += "}";
         return abilityString;
-    }
-
-    private static String formatUnknownByte(int bt) {
-        return StringHelper.formatHex2(bt) + '=' + String.format("%03d", bt) + '(' + String.format("%8s", Integer.toBinaryString(bt)).replace(' ', '0') + ')';
     }
 
     private static String getGearAbilityLabel(int idx) {

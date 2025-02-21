@@ -21,6 +21,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static reading.ChunkedFileHelper.read4Bytes;
+
 public class DataReadingManager {
 
     public static final String PATH_FFX_ROOT = "ffx_ps2/ffx/master/";
@@ -65,7 +67,7 @@ public class DataReadingManager {
         prepareAbilities();
         DataAccess.MENUMAIN = readDirectAtelScriptObject("menu/menumain.bin", false);
         DataAccess.PLAYER_CHAR_STATS = readPlayerCharStats("battle/kernel/ply_save.bin", false);
-        DataAccess.GEAR_ABILITIES = readGearAbilities("battle/kernel/a_ability.bin", false);
+        DataAccess.GEAR_ABILITIES = readGearAbilities("battle/kernel/a_ability.bin", PATH_ORIGINALS_KERNEL + "arms_rate.bin", false);
         DataAccess.BUYABLE_GEAR = readWeaponPickups(PATH_ORIGINALS_KERNEL + "shop_arms.bin", false);
         DataAccess.WEAPON_PICKUPS = readWeaponPickups(PATH_ORIGINALS_KERNEL + "buki_get.bin", false);
         DataAccess.KEY_ITEMS = readKeyItems("battle/kernel/important.bin", false);
@@ -138,6 +140,16 @@ public class DataReadingManager {
         prepareAbilitiesFromFile("battle/kernel/monmagic1.bin", 4);
         prepareAbilitiesFromFile("battle/kernel/monmagic2.bin", 6);
         prepareAbilitiesFromFile("battle/kernel/item.bin", 2);
+
+        Integer[] prices = new DataFileReader<>((b, sb, locale) -> read4Bytes(b, 0), (i) -> new Integer[i]).toArray(PATH_ORIGINALS_KERNEL + "item_rate.bin", null, false);
+        if (prices != null && prices.length > 0) {
+            for (int i = 0; i < prices.length; i++) {
+                AbilityDataObject item = DataAccess.getMove(0x2000 + i);
+                if (item != null) {
+                    item.gilPrice = prices[i];
+                }
+            }
+        }
     }
 
     private static void prepareAbilitiesFromFile(String path, int group) {
@@ -178,13 +190,19 @@ public class DataReadingManager {
         return new LocalizedDataFileReader<>(PlayerCharStatDataObject::new, i -> new PlayerCharStatDataObject[i]).read(path, print);
     }
 
-    public static GearAbilityDataObject[] readGearAbilities(String path, boolean print) {
+    public static GearAbilityDataObject[] readGearAbilities(String path, String pricesPath, boolean print) {
         GearAbilityDataObject[] abilities = new LocalizedDataFileReader<>(GearAbilityDataObject::new, i -> new GearAbilityDataObject[i]) {
             @Override
             public String indexWriter(int idx) {
                 return "80" + StringHelper.formatHex2(idx);
             }
         }.read(path, print);
+        Integer[] prices = new DataFileReader<>((b, sb, locale) -> read4Bytes(b, 0), (i) -> new Integer[i]).toArray(pricesPath, null, print);
+        if (prices != null && prices.length > 0) {
+            for (int i = 0; i < prices.length && i < abilities.length; i++) {
+                abilities[i].gilPrice = prices[i];
+            }
+        }
         if (print) {
             Set<Integer> groups = new HashSet<>();
             List<Integer> untakenGroups = new ArrayList<>();

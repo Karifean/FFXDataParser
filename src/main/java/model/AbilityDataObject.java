@@ -213,6 +213,8 @@ public class AbilityDataObject extends NameDescriptionTextObject implements Name
     boolean specialBuffUnused;
     boolean considerSphereType;
 
+    public int gilPrice;
+
     public AbilityDataObject(int[] bytes, int[] stringBytes, String localization, int group) {
         super(bytes, stringBytes, localization);
         this.bytes = bytes;
@@ -571,6 +573,7 @@ public class AbilityDataObject extends NameDescriptionTextObject implements Name
                 "/" + StringHelper.formatHex4(anim2));
         list.add(ifG0(alwaysZero5E, "Byte5E=", ""));
         list.add(ifG0(alwaysZero5F, "Byte5F=", ""));
+        list.add(ifG0(gilPrice, "Price=", " gil"));
         if (considerSphereType && sphereTypeForSphereGrid != 0xFF) {
             SphereGridSphereTypeDataObject sgSphereType = DataAccess.SG_SPHERE_TYPES[sphereTypeForSphereGrid];
             list.add("SphereGridRole=" + StringHelper.hex2WithSuffix(sphereTypeForSphereGrid) + " " + (sgSphereType != null ? sgSphereType : "null"));

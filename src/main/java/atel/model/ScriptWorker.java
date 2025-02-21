@@ -8,6 +8,9 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static reading.ChunkedFileHelper.read2Bytes;
+import static reading.ChunkedFileHelper.read4Bytes;
+
 public class ScriptWorker {
     public static final int LENGTH = 0x34;
 
@@ -36,6 +39,7 @@ public class ScriptWorker {
     public int[] refInts;
     public List<ScriptVariable> privateVars;
     public List<ScriptVariable> sharedVars;
+    public ScriptJump[] entryPointBattleSlotArray;
 
     public Integer battleWorkerType;
     public Integer purposeSlot;
@@ -82,10 +86,10 @@ public class ScriptWorker {
             list.add("Type=" + StackObject.enumToString("eventWorkerType", eventWorkerType));
         }
         if (purposeSlot != null) {
-            list.add("PurposeSlot=" + purposeSlotToString(purposeSlot) + " [" + StringHelper.formatHex2(purposeSlot) + "h]");
+            list.add("PurposeSlot=" + purposeSlotToString(purposeSlot));
         }
-        list.add("Entrypoints=" + StringHelper.hex4WithSuffix(entryPointCount));
-        list.add("Jumps=" + StringHelper.hex4WithSuffix(jumpCount));
+        list.add("Entrypoints=" + StringHelper.hex2WithSuffix(entryPointCount));
+        list.add("Jumps=" + StringHelper.hex2WithSuffix(jumpCount));
         list.add(alwaysZero0C != 0 ? "alwaysZero0C=" + alwaysZero0C : "");
         list.add(alwaysZero28 != 0 ? "alwaysZero28=" + alwaysZero28 : "");
         String full = list.stream().filter(s -> s != null && !s.isBlank()).collect(Collectors.joining(", "));
@@ -127,19 +131,16 @@ public class ScriptWorker {
         sharedVars.forEach(s -> s.parseValues());
     }
 
-    public void setBattleWorkerTypes(int battleWorkerType, int valueCount, int[] payload) {
+    public void setBattleWorkerTypes(int battleWorkerType, int slotCount, int[] payload) {
         this.battleWorkerType = battleWorkerType;
-        this.purposeBytes = payload;
-        for (int i = 0; i < valueCount; i++) {
-            int val = read2Bytes(payload, i * 2);
-            if (val == 0xFFFF) {
-                continue;
+        entryPointBattleSlotArray = new ScriptJump[slotCount];
+        for (int i = 0; i < slotCount; i++) {
+            int entryPointIndex = read2Bytes(payload, i * 2);
+            ScriptJump entryPoint = entryPointIndex != 0xFFFF && entryPointIndex < entryPoints.length ? entryPoints[entryPointIndex] : null;
+            entryPointBattleSlotArray[i] = entryPoint;
+            if (entryPoint != null) {
+                entryPoint.setBattleWorkerEntryPointType(i);
             }
-            if (val >= entryPoints.length) {
-                System.err.println("val out of bounds! val=" + val + " eps=" + entryPoints.length);
-                continue;
-            }
-            entryPoints[val].setBattleWorkerEntryPointType(i);
         }
     }
 
@@ -147,26 +148,11 @@ public class ScriptWorker {
         this.purposeSlot = purposeSlot;
     }
 
-    public ScriptField purposeSlotToChar() {
-        if (purposeSlot == null || purposeSlot < 0x2B || purposeSlot > 0x3C) {
-            return null;
-        }
-        return StackObject.enumToScriptField("playerChar", purposeSlot - 0x2B);
-    }
-
     public static String purposeSlotToString(int purposeSlot) {
-        if (purposeSlot >= 0x2B && purposeSlot <= 0x3C) {
-            String chr = StackObject.enumToString("playerChar", purposeSlot - 0x2B);
-            return "Ex" + chr;
+        if (purposeSlot >= 0x29 && purposeSlot <= 0x3A) {
+            String chr = StackObject.enumToString("playerChar", purposeSlot - 0x29);
+            return "Ex" + chr + StringHelper.hex2Suffix(purposeSlot);
         }
-        return "?" + StringHelper.formatHex2(purposeSlot);
-    }
-
-    private static int read2Bytes(int[] bytes, int offset) {
-        return bytes[offset] + bytes[offset+1] * 0x100;
-    }
-
-    private static int read4Bytes(int[] bytes, int offset) {
-        return bytes[offset] + bytes[offset+1] * 0x100 + bytes[offset+2] * 0x10000 + bytes[offset+3] * 0x1000000;
+        return StringHelper.formatHex2(purposeSlot);
     }
 }

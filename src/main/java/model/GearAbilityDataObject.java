@@ -191,6 +191,8 @@ public class GearAbilityDataObject extends NameDescriptionTextObject implements 
     boolean increaseDef;
     boolean increaseMdf;
 
+    public int gilPrice;
+
     private boolean sensor;
     private boolean firstStrike;
     private boolean initiative;
@@ -559,6 +561,7 @@ public class GearAbilityDataObject extends NameDescriptionTextObject implements 
         if (byte68usually14 != 0x14) {
             list.add("Byte68=" + byte68usually14);
         }
+        list.add(ifG0(gilPrice, "Price=", " gil"));
         String full = list.stream().filter(s -> s != null && !s.isBlank()).collect(Collectors.joining(", "));
         String descriptionStr = description.getDefaultString();
         return String.format("%-18s", getName()) + " { " + full + " } " + descriptionStr;

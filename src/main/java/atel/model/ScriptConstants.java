@@ -280,6 +280,9 @@ public abstract class ScriptConstants {
 
         putSaveDataVariable(0x008D, "CalmLandsQuestProgressionFlags", "int");
         putSaveDataVariable(0x0092, "MushroomRockRoadTreasureFlags", "int");
+        putSaveDataVariable(0x009F, "MonsterArenaUnlockQuestProgressionFlags", "int");
+        putSaveDataVariable(0x00A0, "MonsterArenaAreaSpeciesConquestUnlockFlags", "int");
+        putSaveDataVariable(0x00A4, "MonsterArenaOriginalCreationUnlockFlags", "int");
         putSaveDataVariable(0x00A8, "WobblyChocoboRecordMinutes", "int");
         putSaveDataVariable(0x00A9, "WobblyChocoboRecordSeconds", "int");
         putSaveDataVariable(0x00AA, "WobblyChocoboRecordTenths", "int");
@@ -362,6 +365,7 @@ public abstract class ScriptConstants {
         putSaveDataVariable(0x141A, "BlitzballTeamPlayers", "blitzballPlayer");
         putSaveDataVariable(0x1452, "BlitzballMatchPlayerScore", "int");
         putSaveDataVariable(0x1453, "BlitzballMatchOpponentScore", "int");
+        putSaveDataVariable(0x1454, "BlitzballIsSecondHalf?", "bool");
         putSaveDataVariable(0x1455, "BlitzballMarkedPlayerIndex?", "int", "int");
         putSaveDataVariable(0x1465, "BlitzballEnemyTeam", "blitzballTeam");
         putSaveDataVariable(0x1466, "BlitzballCurrentLeagueTeamSeedings", "blitzballTeam", "int");

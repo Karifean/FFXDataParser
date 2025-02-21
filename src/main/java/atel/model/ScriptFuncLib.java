@@ -326,7 +326,7 @@ public abstract class ScriptFuncLib {
         putFuncWithIdx(0x015B, new ScriptFunc("obtainTreasure", "unknown", null, p("textboxIndex", "int"), p("treasure")));
         putUnknownFunc(0x015D, 1);
         putUnknownFunc(0x015E, 1);
-        putFuncWithIdx(0x015F, new ScriptFunc(p("?addKeyItem")));
+        putFuncWithIdx(0x015F, new ScriptFunc("?addKeyItem", "unknown", null, p("keyItem")));
         putFuncWithIdx(0x0160, new ScriptFunc("hasKeyItem", "bool", null, p("keyItem")));
         putFuncWithIdx(0x0161, new ScriptFunc("?removeKeyItem", p("keyItem")));
         putUnknownFunc(0x0166, 1);
@@ -375,9 +375,10 @@ public abstract class ScriptFuncLib {
         putFuncWithIdx(0x01A7, new ScriptFunc("obtainTreasureSilently", "unknown", null, p("treasure")));
         putUnknownFunc(0x01A8, 1);
         putFuncWithIdx(0x01AB, new ScriptFunc("TotalBattlesFought", "int", null, false));
-        putUnknownFunc(0x01AC, 1);
-        putUnknownFunc(0x01AD, 1);
-        putUnknownFunc(0x01AF, 2);
+        putFuncWithIdx(0x01AC, new ScriptFunc("getMonsterArenaCaptures", "int", null, p("monsterArenaIdx", "int")));
+        putFuncWithIdx(0x01AD, new ScriptFunc("incrementMonsterArenaCaptures", "unknown", null, p("monsterArenaIdx", "int")));
+        putFuncWithIdx(0x01AE, new ScriptFunc("decrementMonsterArenaCaptures", "unknown", null, p("monsterArenaIdx", "int"))); // never used in game
+        putFuncWithIdx(0x01AF, new ScriptFunc("changeMonsterArenaCaptures", "unknown", null, p("monsterArenaIdx", "int"), p("add", "int")));
         putUnknownFunc(0x01B0, 2);
         putUnknownFunc(0x01B1, 0);
         putFuncWithIdx(0x01B2, new ScriptFunc("getItemCount", "int", null, p("item", "move")));
@@ -450,6 +451,7 @@ public abstract class ScriptFuncLib {
         putFuncWithIdx(0x0215, new ScriptFunc("grantCelestialUpgrade", "unknown", null, p("playerChar"), p("level", "int")));
         putFuncWithIdx(0x0216, new ScriptFunc("teachAbilityToPartyMemberWithMsg", "unknown", null, p("boxIndex?", "int"), p("playerChar"), p("charMove")));
         putUnknownFunc(0x0217, 0);
+        putFuncWithIdx(0x0219, new ScriptFunc("changeMonsterArenaCaptures2", "unknown", null, p("monsterArenaIdx", "int"), p("add", "int")));
         putUnknownFunc(0x021A, 2);
         putUnknownFunc(0x021B, 2);
         putFuncWithIdx(0x021D, new ScriptFunc("equipBrotherhoodToTidus", "unknown", null, true));
@@ -507,7 +509,7 @@ public abstract class ScriptFuncLib {
         putUnknownFunc(0x0265, 0);
         putUnknownFunc(0x0266, 0);
         putUnknownFunc(0x0267, 7);
-        putUnknownFunc(0x1000, 4);
+        putFuncWithIdx(0x1000, new ScriptFunc(p(1), p(2), p(3), p("pointer")));
         putFuncWithIdx(0x1001, new ScriptFunc("sin", "float", null, p("float")));
         putFuncWithIdx(0x1002, new ScriptFunc("cos", "float", null, p("float")));
         putFuncWithIdx(0x1005, new ScriptFunc("atan2", "float", null, p("y?", "float"), p("x?","float")));

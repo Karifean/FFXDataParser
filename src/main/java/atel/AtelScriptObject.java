@@ -24,6 +24,7 @@ public class AtelScriptObject {
 
     protected int[] actualScriptCodeBytes;
     protected ScriptWorker[] workers;
+    protected ScriptWorker[] workerBattleSlotArray;
     protected int[] refFloats;
     protected int[] refInts;
     protected ScriptVariable[] variableDeclarations;
@@ -240,34 +241,38 @@ public class AtelScriptObject {
         if (battleWorkerMappingBytes == null || battleWorkerMappingBytes.length == 0) {
             return;
         }
-        int notActuallySectionCount = battleWorkerMappingBytes[0];
-        int preSectionLength = battleWorkerMappingBytes[1];
-        // map from section index to purpose slot
-        Map<Integer, Integer> slotMap = new HashMap<>();
-        for (int i = 2; i < preSectionLength + 2; i++) {
-            if (battleWorkerMappingBytes[i] != 0xFF) {
-                slotMap.put(battleWorkerMappingBytes[i], i - 2);
+        int workersToMapSupposedly = battleWorkerMappingBytes[0];
+        int workerSlotCount = battleWorkerMappingBytes[1];
+        workerBattleSlotArray = new ScriptWorker[workerSlotCount];
+        for (int i = 0; i < workerSlotCount; i++) {
+            int workerIndex = battleWorkerMappingBytes[i + 2];
+            ScriptWorker worker = workerIndex != 0xFF ? getWorker(workerIndex) : null;
+            workerBattleSlotArray[i] = worker;
+            if (worker != null) {
+                worker.setPurposeSlot(i);
             }
         }
-        int sectionsLineOffset = preSectionLength + (preSectionLength % 2 == 0 ? 2 : 3);
+        int sectionsLineOffset = workerSlotCount + 2 + (workerSlotCount % 2);
         Integer firstOffset = null;
-        for (int i = 0; i < notActuallySectionCount; i++) {
+        for (int i = 0; i < workersToMapSupposedly; i++) {
             int offset = sectionsLineOffset + i * 4;
-            int header = battleWorkerMappingBytes[offset];
-            int scriptKind = battleWorkerMappingBytes[offset + 1];
+            int workerIndex = battleWorkerMappingBytes[offset];
+            int battleWorkerType = battleWorkerMappingBytes[offset + 1];
             int sectionOffset = battleWorkerMappingBytes[offset + 2] + battleWorkerMappingBytes[offset + 3] * 0x100;
             if (i == 0) {
                 firstOffset = sectionOffset;
             } else if (offset >= firstOffset) {
-                // System.err.println("WARNING - Offset number mismatch at index " + i + " expected " + notActuallySectionCount);
+                // System.err.println("WARNING - Offset number mismatch at index " + i + " expected " + workersToMapSupposedly);
                 break;
             }
-            int sectionValueCount = battleWorkerMappingBytes[sectionOffset] + battleWorkerMappingBytes[sectionOffset + 1] * 0x100;
+            int entryPointSlotCount = battleWorkerMappingBytes[sectionOffset] + battleWorkerMappingBytes[sectionOffset + 1] * 0x100;
             int sectionPayloadOffset = sectionOffset + 2;
-            if (slotMap.containsKey(i)) {
-                workers[header].setPurposeSlot(slotMap.get(i));
+            ScriptWorker worker = getWorker(workerIndex);
+            if (worker != null) {
+                worker.setBattleWorkerTypes(battleWorkerType, entryPointSlotCount, Arrays.copyOfRange(battleWorkerMappingBytes, sectionPayloadOffset, sectionPayloadOffset + entryPointSlotCount * 2));
+            } else {
+                System.err.println("WARNING - no worker with index " + workerIndex + " at section " + i + "!");
             }
-            workers[header].setBattleWorkerTypes(scriptKind, sectionValueCount, Arrays.copyOfRange(battleWorkerMappingBytes, sectionPayloadOffset, sectionPayloadOffset + sectionValueCount * 2));
         }
     }
 
