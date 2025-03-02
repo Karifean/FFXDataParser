@@ -810,6 +810,6 @@ public class MonsterStatDataObject implements Nameable, Writable, Localized<Mons
     }
 
     private static String asMove(int move) {
-        return DataAccess.getMove(move).getName() + StringHelper.hex4Suffix(move);
+        return DataAccess.getCommand(move).getName() + StringHelper.hex4Suffix(move);
     }
 }

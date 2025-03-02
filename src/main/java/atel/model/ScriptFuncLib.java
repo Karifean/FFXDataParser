@@ -70,7 +70,7 @@ public abstract class ScriptFuncLib {
         putUnknownFunc(0x0012, 2);
         putFuncWithIdx(0x0013, new ScriptFunc("setPosition", "unknown", null, p("x", "float"), p("y", "float"), p("z", "float")));
         putFuncWithIdx(0x0015, new ScriptFunc("setDestination", "unknown", null, p("x", "float"), p("y", "float"), p("z", "float")));
-        putFuncWithIdx(0x0016, new ScriptFunc("setMotionSpeed", "unknown", null, p("speed", "float")));
+        putFuncWithIdx(0x0016, new ScriptFunc("setMovementSpeed", "unknown", null, p("speed", "float")));
         putUnknownFunc(0x0017, 1); // noclip: set motion threshold/radius, used for collision and checking if a destination is reached
         putFuncWithIdx(0x0018, new ScriptFunc("startMotion", "unknown", null, p("activeBits", "int"), p("flags", "bitfield"), p("targetWorker", "worker")));
         putFuncWithIdx(0x0019, new ScriptFunc("startRotation", "unknown", null, p("activeBits", "int"), p("flags", "bitfield"), p("targetWorker", "worker"))); // see noclip for flags
@@ -78,8 +78,8 @@ public abstract class ScriptFuncLib {
         putFuncWithIdx(0x001B, new ScriptFunc("waitForRotation", "unknown", null));
         putFuncWithIdx(0x001C, new ScriptFunc("setMotionTiming", "unknown", null, p("currTime?", "float"), p("duration?", "int")));
         putFuncWithIdx(0x001D, new ScriptFunc("setRotationTiming", "unknown", null, p("currTime?", "float"), p("duration?", "int")));
-        putFuncWithIdx(0x001F, new ScriptFunc("yawToDestination", "float", null));
-        putFuncWithIdx(0x0020, new ScriptFunc("pitchToDestination", "float", null));
+        putFuncWithIdx(0x001F, new ScriptFunc("destinationToYaw", "float", null));
+        putFuncWithIdx(0x0020, new ScriptFunc("destinationToPitch", "float", null));
         putUnknownFunc(0x0021, 1);
         putFuncWithIdx(0x0023, new ScriptFunc("setVelocityYaw", "unknown", null, p("angle", "float"))); // Never used by the game
         putFuncWithIdx(0x0024, new ScriptFunc("setVelocityPitch", "unknown", null, p("angle", "float"))); // Never used by the game
@@ -106,7 +106,7 @@ public abstract class ScriptFuncLib {
         putFuncWithIdx(0x0042, new ScriptFunc("linkWorkerToChr", "unknown", null, p("btlChr")));
         putUnknownFunc(0x0043, 0);
         putUnknownFunc(0x0044, 0);
-        putUnknownFunc(0x0046, 0);
+        putFuncWithIdx(0x0046, new ScriptFunc("HeldButtonsBitfield", "bitfieldFrom_controllerButton", null, false));
         putUnknownFunc(0x0047, 0);
         putUnknownFunc(0x004C, 1);
         putFuncWithIdx(0x004D, new ScriptFunc("controllerButtonPressed1?", "bool", null, p("controllerButton")));
@@ -122,11 +122,11 @@ public abstract class ScriptFuncLib {
         putFuncWithIdx(0x005C, new ScriptFunc("setCollisionShapeActive", "unknown", null, p("active", "bool"))); // same as 006C
         putFuncWithIdx(0x005D, new ScriptFunc("enablePlayerControl?", "unknown", null, true));
         putFuncWithIdx(0x005E, new ScriptFunc("disablePlayerControl?", "unknown", null, true));
-        putFuncWithIdx(0x005F, new ScriptFunc("halt", "unknown", null, true));
+        putFuncWithIdx(0x005F, new ScriptFunc("halt", "unknown", "halt", true));
         putUnknownFunc(0x0060, 1);
-        putFuncWithIdx(0x0061, new ScriptFunc("setTalkRange?", "unknown", null, p("range", "float")));
+        putFuncWithIdx(0x0061, new ScriptFunc("setTalkRange", "unknown", null, p("range", "float")));
         putUnknownFunc(0x0062, 1); // noclip: collision detection
-        putUnknownFunc(0x0063, 1); // noclip: collision detection
+        putFuncWithIdx(0x0063, new ScriptFunc("setTalkAngleTolerance", "unknown", null, p("tolerance", "float"))); // noclip: collision detection
         putFuncWithIdx(0x0064, new ScriptFunc("displayFieldString", "unknown", null, p("boxIndex", "int"), p("string", "localString")));
         putFuncWithIdx(0x0065, new ScriptFunc("positionText", "unknown", null, p("boxIndex", "int"), p("x", "int"), p("y", "int"), p("align", "textAlignment")));
         putFuncWithIdx(0x0066, new ScriptFunc("setTextHasTransparentBackdrop", "unknown", null, p("boxIndex", "int"), p("transparent", "bool")));
@@ -147,16 +147,16 @@ public abstract class ScriptFuncLib {
         putFuncWithIdx(0x007C, new ScriptFunc("waitForText", "unknown", null, p("boxIndex", "int"))); // equivalent to 0x0084 with second param 0
         putFuncWithIdx(0x007D, new ScriptFunc("?awaitPlayerDialogueChoice", "int", null, p("boxIndex", "int")));
         putUnknownFunc(0x007F, 1);
-        putUnknownFunc(0x0080, 0); // noclip: getMapPointPosition1()
-        putUnknownFunc(0x0081, 0); // noclip: getMapPointPosition2()
-        putUnknownFunc(0x0082, 0); // noclip: getMapPointPosition3()
-        putUnknownFunc(0x0083, 0); // noclip: getMapPointHeading()
+        putFuncWithIdx(0x0080, new ScriptFunc("getCurrentEntranceX", "float", null, true));
+        putFuncWithIdx(0x0081, new ScriptFunc("getCurrentEntranceY", "float", null, true));
+        putFuncWithIdx(0x0082, new ScriptFunc("getCurrentEntranceZ", "float", null, true));
+        putFuncWithIdx(0x0083, new ScriptFunc("getCurrentEntranceRotation", "float", null, true));
         putFuncWithIdx(0x0084, new ScriptFunc("waitForText", "unknown", null, p("boxIndex", "int"), p(2)));
         putUnknownFunc(0x0085, 1); // noclip: setCollisionRadius()
         putUnknownFunc(0x0086, 0);
-        putFuncWithIdx(0x0087, new ScriptFunc("?CurrentMap", "int", null, false));
+        putFuncWithIdx(0x0087, new ScriptFunc("CurrentMap", "map", null, false));
         putUnknownFunc(0x0088, 0);
-        putUnknownFunc(0x0089, 0);
+        putFuncWithIdx(0x0089, new ScriptFunc("?LastMap", "map", null, false));
         putUnknownFunc(0x008B, 0); // noclip: checking line crossing
         putUnknownFunc(0x008D, 1);
         putUnknownFunc(0x008E, 1); // noclip: setCollisionHeight()
@@ -166,8 +166,8 @@ public abstract class ScriptFuncLib {
         putUnknownFunc(0x0092, 1); // noclip: getYaw2()
         putUnknownFunc(0x0093, 1);
         putFuncWithIdx(0x0094, new ScriptFunc("setGravity", "unknown", null, p("g", "int")));
-        putFuncWithIdx(0x0095, new ScriptFunc(p("float"))); // noclip: setRotationYaw()
-        putUnknownFunc(0x0096, 1); // noclip: setRotationPitch()
+        putFuncWithIdx(0x0095, new ScriptFunc("setRotationYaw", "unknown", null, p("float")));
+        putFuncWithIdx(0x0096, new ScriptFunc("setRotationPitch", "unknown", null, p("float")));
         putFuncWithIdx(0x0097, new ScriptFunc("getTextState", "textState", null, p("boxIndex", "int")));
         putUnknownFunc(0x0098, 2);
         putUnknownFunc(0x009A, 1);
@@ -194,10 +194,10 @@ public abstract class ScriptFuncLib {
         putUnknownFunc(0x00BC, 1);
         putUnknownFunc(0x00BD, 1);
         putUnknownFunc(0x00BE, 1);
-        putUnknownFunc(0x00BF, 1); // \
-        putUnknownFunc(0x00C0, 1); // -- Technically these aren't certain (zkrn0300)
-        putUnknownFunc(0x00C1, 1); // /
-        putUnknownFunc(0x00C2, 1); // noclip: getHeading()
+        putFuncWithIdx(0x00BF, new ScriptFunc("getEntranceX", "float", null, p("entranceIndex")));
+        putFuncWithIdx(0x00C0, new ScriptFunc("getEntranceY", "float", null, p("entranceIndex")));
+        putFuncWithIdx(0x00C1, new ScriptFunc("getEntranceZ", "float", null, p("entranceIndex")));
+        putFuncWithIdx(0x00C2, new ScriptFunc("getEntranceRotation", "float", null, p("entranceIndex")));
         putUnknownFunc(0x00C4, 0);
         putFuncWithIdx(0x00C5, new ScriptFunc("registerTurnMotions?", "unknown", null, p("p1", "motion"), p("p2", "motion"), p("p3", "motion"), p("p4", "motion")));
         putUnknownFunc(0x00C6, 0);
@@ -222,7 +222,7 @@ public abstract class ScriptFuncLib {
         putFuncWithIdx(0x00DC, new ScriptFunc("awaitLoadingOfMoveAnimation", "unknown", null, true));
         putUnknownFunc(0x00DE, 0);
         putFuncWithIdx(0x00DF, new ScriptFunc("playSfx", "unknown", null, p("sfx")));
-        putUnknownFunc(0x00E0, 1);
+        putFuncWithIdx(0x00E0, new ScriptFunc(p("sfx")));
         putUnknownFunc(0x00E1, 0);
         putUnknownFunc(0x00E2, 1);
         putUnknownFunc(0x00E3, 1);
@@ -245,7 +245,7 @@ public abstract class ScriptFuncLib {
         putUnknownFunc(0x00F9, 0);
         putUnknownFunc(0x00FA, 1);
         putFuncWithIdx(0x00FB, new ScriptFunc("getCurrentHoveredDialogueChoice", "int", null, p("boxIndex", "int")));
-        putUnknownFunc(0x00FD, 3);
+        putFuncWithIdx(0x00FD, new ScriptFunc("playSfxWithParams?", "unknown", null, p("sfx"), p(2), p(3)));
         putUnknownFunc(0x00FE, 2);
         putUnknownFunc(0x0100, 3);
         putFuncWithIdx(0x0102, new ScriptFunc("setBgmToLoad?", "unknown", null, p("bgm")));
@@ -375,10 +375,10 @@ public abstract class ScriptFuncLib {
         putFuncWithIdx(0x01A7, new ScriptFunc("obtainTreasureSilently", "unknown", null, p("treasure")));
         putUnknownFunc(0x01A8, 1);
         putFuncWithIdx(0x01AB, new ScriptFunc("TotalBattlesFought", "int", null, false));
-        putFuncWithIdx(0x01AC, new ScriptFunc("getMonsterArenaCaptures", "int", null, p("monsterArenaIdx", "int")));
-        putFuncWithIdx(0x01AD, new ScriptFunc("incrementMonsterArenaCaptures", "unknown", null, p("monsterArenaIdx", "int")));
-        putFuncWithIdx(0x01AE, new ScriptFunc("decrementMonsterArenaCaptures", "unknown", null, p("monsterArenaIdx", "int"))); // never used in game
-        putFuncWithIdx(0x01AF, new ScriptFunc("changeMonsterArenaCaptures", "unknown", null, p("monsterArenaIdx", "int"), p("add", "int")));
+        putFuncWithIdx(0x01AC, new ScriptFunc("getMonsterArenaCaptures", "int", null, p("monsterArenaIndex", "int")));
+        putFuncWithIdx(0x01AD, new ScriptFunc("incrementMonsterArenaCaptures", "unknown", null, p("monsterArenaIndex", "int")));
+        putFuncWithIdx(0x01AE, new ScriptFunc("decrementMonsterArenaCaptures", "unknown", null, p("monsterArenaIndex", "int"))); // never used in game
+        putFuncWithIdx(0x01AF, new ScriptFunc("changeMonsterArenaCaptures", "unknown", null, p("monsterArenaIndex", "int"), p("add", "int")));
         putUnknownFunc(0x01B0, 2);
         putUnknownFunc(0x01B1, 0);
         putFuncWithIdx(0x01B2, new ScriptFunc("getItemCount", "int", null, p("item", "move")));
@@ -451,7 +451,7 @@ public abstract class ScriptFuncLib {
         putFuncWithIdx(0x0215, new ScriptFunc("grantCelestialUpgrade", "unknown", null, p("playerChar"), p("level", "int")));
         putFuncWithIdx(0x0216, new ScriptFunc("teachAbilityToPartyMemberWithMsg", "unknown", null, p("boxIndex?", "int"), p("playerChar"), p("charMove")));
         putUnknownFunc(0x0217, 0);
-        putFuncWithIdx(0x0219, new ScriptFunc("changeMonsterArenaCaptures2", "unknown", null, p("monsterArenaIdx", "int"), p("add", "int")));
+        putFuncWithIdx(0x0219, new ScriptFunc("changeMonsterArenaCaptures2", "unknown", null, p("monsterArenaIndex", "int"), p("add", "int")));
         putUnknownFunc(0x021A, 2);
         putUnknownFunc(0x021B, 2);
         putFuncWithIdx(0x021D, new ScriptFunc("equipBrotherhoodToTidus", "unknown", null, true));
@@ -608,9 +608,9 @@ public abstract class ScriptFuncLib {
         putFuncWithIdx(0x502A, new ScriptFunc("?setClip", "unknown", null, p("bool")));
         putUnknownFunc(0x502B, 0);
         putUnknownFunc(0x502C, 2);
-        putFuncWithIdx(0x502D, new ScriptFunc("setAttachedToWorker", "unknown", null, p("worker"), p("?attachmentPoint", "int")));
-        putFuncWithIdx(0x5030, new ScriptFunc("?getSound", "unknown", null, true));
-        putFuncWithIdx(0x5031, new ScriptFunc("?getOtherActorSound", "unknown", null, p("worker")));
+        putFuncWithIdx(0x502D, new ScriptFunc("setAttachedToWorker", "unknown", null, p("worker"), p("attachmentPoint", "int")));
+        putFuncWithIdx(0x5030, new ScriptFunc("?getSound", "unknown", null, true)); // Never used by the game so not sure how it would be used with other functions
+        putFuncWithIdx(0x5031, new ScriptFunc("?getOtherActorSound", "unknown", null, p("worker"))); // Never used by the game so not sure how it would be used with other functions
         putUnknownFunc(0x5032, 0);
         putFuncWithIdx(0x5033, new ScriptFunc("?setTransparent", "unknown", null, p("?target"), p("?latch")));
         putFuncWithIdx(0x5034, new ScriptFunc("?setMotionHokan", "unknown", null, p(1)));
@@ -1144,7 +1144,7 @@ public abstract class ScriptFuncLib {
         putUnknownFunc(0x8006, 1);
         putFuncWithIdx(0x8007, new ScriptFunc("setAllGfxActive", "unknown", null, true));
         putFuncWithIdx(0x8008, new ScriptFunc("stopAllGfx", "unknown", null, true));
-        putFuncWithIdx(0x8009, new ScriptFunc("bindGfxToTarget", "unknown", null, p("gfxIndex", "int"), p("target", "int"))); // for actors, target is a bone index
+        putFuncWithIdx(0x8009, new ScriptFunc("bindGfxToTarget", "unknown", null, p("gfxIndex", "int"), p("attachmentPoint", "int"))); // for actors, target is a bone index
         putFuncWithIdx(0x800A, new ScriptFunc("bindGfxPosition", "unknown", "mpfpbindpos", p("gfxIndex", "int"), p("x", "float"), p("y", "float"), p("z", "float")));
         putFuncWithIdx(0x800B, new ScriptFunc("unbindGfx", "unknown", null, p("gfxIndex", "int")));
         putFuncWithIdx(0x800C, new ScriptFunc("setGfxEnabledGlobal", "unknown", null, p("enabled", "bool"))); // controls all gfx rendering/updates 

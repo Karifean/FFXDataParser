@@ -62,7 +62,7 @@ public class CustomizationDataObject implements Writable {
         String customizeTarget = customizeTargetByte == 0x01 ? "Weapon" : customizeTargetByte == 0x02 ? "Armor " : customizeTargetByte == 0x7F ? "Aeon" : "Target Unknown";
         if (customizedAbility >= 0x1000) {
             GearAbilityDataObject gearAbility = DataAccess.getGearAbility(customizedAbility);
-            AbilityDataObject move = DataAccess.getMove(customizedAbility);
+            CommandDataObject move = DataAccess.getCommand(customizedAbility);
             Nameable relevantNameable = gearAbility != null ? gearAbility : move != null ? move : (l) -> "null";
             String result = relevantNameable.getName() + StringHelper.hex4Suffix(customizedAbility);
             String costString = requiredItemQuantity + "x " + asMove(requiredItemType);
@@ -91,7 +91,7 @@ public class CustomizationDataObject implements Writable {
     }
 
     private static String asMove(int idx) {
-        AbilityDataObject move = DataAccess.getMove(idx);
+        CommandDataObject move = DataAccess.getCommand(idx);
         return (move != null ? move.name : "null") + StringHelper.hex4Suffix(idx);
     }
 

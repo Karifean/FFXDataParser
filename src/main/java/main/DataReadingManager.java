@@ -20,11 +20,13 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static reading.ChunkedFileHelper.read4Bytes;
 
 public class DataReadingManager {
 
+    public static final int MONSTER_MAX_INDEX = 360;
     public static final String PATH_FFX_ROOT = "ffx_ps2/ffx/master/";
     public static final String ORIGINALS_FOLDER = "jppc/";
     public static final String PATH_ORIGINALS_ROOT = PATH_FFX_ROOT + ORIGINALS_FOLDER;
@@ -34,6 +36,7 @@ public class DataReadingManager {
     public static final String PATH_INTERNATIONAL_ENCOUNTER = PATH_FFX_ROOT + "inpc/battle/btl/";
     public static final String PATH_ORIGINALS_EVENT = PATH_ORIGINALS_ROOT + "event/obj/";
     public static final String PATH_ABMAP = PATH_ORIGINALS_ROOT + "menu/abmap/";
+    public static final String PATH_TEXT_OUTPUT_ROOT = "target/text/";
 
     public static final String DEFAULT_LOCALIZATION = "us";
     public static final Map<String, String> LOCALIZATIONS = Map.of(
@@ -49,7 +52,7 @@ public class DataReadingManager {
     public static final List<String> CHARSETS = List.of("ch", "cn", "jp", "kr", "us");
 
     private static final boolean ALLOW_DAT_FILES = true;
-    private static final boolean LOAD_EVENTS_AND_ENCOUNTERS = false;
+    private static final boolean LOAD_EVENTS_AND_ENCOUNTERS = true;
 
     public static String getLocalizationRoot(String localization) {
         return PATH_FFX_ROOT + "new_" + localization + "pc/";
@@ -64,7 +67,7 @@ public class DataReadingManager {
 
     public static void readAndPrepareDataModel() {
         DataAccess.SG_SPHERE_TYPES = readSphereGridSphereTypes("battle/kernel/sphere.bin", false);
-        prepareAbilities();
+        prepareCommands();
         DataAccess.MENUMAIN = readDirectAtelScriptObject("menu/menumain.bin", false);
         DataAccess.PLAYER_CHAR_STATS = readPlayerCharStats("battle/kernel/ply_save.bin", false);
         DataAccess.GEAR_ABILITIES = readGearAbilities("battle/kernel/a_ability.bin", PATH_ORIGINALS_KERNEL + "arms_rate.bin", false);
@@ -86,6 +89,7 @@ public class DataReadingManager {
         DataAccess.STATS_TEXT = readNameDescriptionTexts("battle/kernel/status_txt.bin", false);
         DataAccess.SUMMON_TEXT = readNameDescriptionTexts("battle/kernel/summon_txt.bin", false);
         DataAccess.TREASURES = readTreasures(PATH_ORIGINALS_KERNEL + "takara.bin", false);
+        DataAccess.MIX_COMBINATIONS = readMixCombinations(PATH_ORIGINALS_KERNEL + "prepare.bin", false);
 
         readAllMonsters(false);
         if (LOAD_EVENTS_AND_ENCOUNTERS) {
@@ -124,7 +128,7 @@ public class DataReadingManager {
     }
 
     public static void prepareStringMacros(String filename, String localization, boolean print) {
-        List<Chunk> chunks = ChunkedFileHelper.readGenericChunkedFile(filename, false, null, 16);
+        List<Chunk> chunks = ChunkedFileHelper.readGenericChunkedFile(filename, false, 16);
         if (chunks == null) {
             return;
         }
@@ -135,16 +139,16 @@ public class DataReadingManager {
         }
     }
 
-    public static void prepareAbilities() {
-        prepareAbilitiesFromFile("battle/kernel/command.bin", 3);
-        prepareAbilitiesFromFile("battle/kernel/monmagic1.bin", 4);
-        prepareAbilitiesFromFile("battle/kernel/monmagic2.bin", 6);
-        prepareAbilitiesFromFile("battle/kernel/item.bin", 2);
+    public static void prepareCommands() {
+        prepareCommandsFromFile("battle/kernel/command.bin", 3);
+        prepareCommandsFromFile("battle/kernel/monmagic1.bin", 4);
+        prepareCommandsFromFile("battle/kernel/monmagic2.bin", 6);
+        prepareCommandsFromFile("battle/kernel/item.bin", 2);
 
         Integer[] prices = new DataFileReader<>((b, sb, locale) -> read4Bytes(b, 0), (i) -> new Integer[i]).toArray(PATH_ORIGINALS_KERNEL + "item_rate.bin", null, false);
         if (prices != null && prices.length > 0) {
             for (int i = 0; i < prices.length; i++) {
-                AbilityDataObject item = DataAccess.getMove(0x2000 + i);
+                CommandDataObject item = DataAccess.getCommand(0x2000 + i);
                 if (item != null) {
                     item.gilPrice = prices[i];
                 }
@@ -152,8 +156,8 @@ public class DataReadingManager {
         }
     }
 
-    private static void prepareAbilitiesFromFile(String path, int group) {
-        AbilityDataObject[] abilities = new LocalizedDataFileReader<>((b, sb, l) -> new AbilityDataObject(b, sb, l, group), i -> new AbilityDataObject[i]) {
+    private static void prepareCommandsFromFile(String path, int group) {
+        CommandDataObject[] abilities = new LocalizedDataFileReader<>((b, sb, l) -> new CommandDataObject(b, sb, l, group), i -> new CommandDataObject[i]) {
             @Override
             public String indexWriter(int idx) {
                 return StringHelper.formatHex4(idx + group * 0x1000);
@@ -239,7 +243,7 @@ public class DataReadingManager {
         if (!(filename.endsWith(".bin") || (ALLOW_DAT_FILES && filename.endsWith(".dat")))) {
             return null;
         }
-        List<Chunk> chunks = ChunkedFileHelper.readGenericChunkedFile(filename, print, null, true);
+        List<Chunk> chunks = ChunkedFileHelper.readGenericChunkedFile(filename, print, true);
         if (chunks == null) {
             return null;
         }
@@ -250,11 +254,7 @@ public class DataReadingManager {
         if (!(filename.endsWith(".bin") || (ALLOW_DAT_FILES && filename.endsWith(".dat")))) {
             return null;
         }
-        List<Integer> knownLengths = new ArrayList<>();
-        knownLengths.add(null);
-        knownLengths.add(null);
-        knownLengths.add(FormationDataObject.LENGTH);
-        List<Chunk> chunks = ChunkedFileHelper.readGenericChunkedFile(filename, print, knownLengths, true);
+        List<Chunk> chunks = ChunkedFileHelper.readGenericChunkedFile(filename, print, true);
         if (chunks == null) {
             return null;
         }
@@ -265,13 +265,7 @@ public class DataReadingManager {
         if (!(filename.endsWith(".ebp") || (ALLOW_DAT_FILES && filename.endsWith(".dat")))) {
             return null;
         }
-        /* List<Integer> knownLengths = new ArrayList<>();
-        knownLengths.add(null);
-        knownLengths.add(null);
-        knownLengths.add(0x8C);
-        knownLengths.add(null);
-        knownLengths.add(0x12C); */
-        List<Chunk> chunks = ChunkedFileHelper.readGenericChunkedFile(filename, print, null, false);
+        List<Chunk> chunks = ChunkedFileHelper.readGenericChunkedFile(filename, print, false);
         if (chunks == null) {
             return null;
         }
@@ -288,17 +282,18 @@ public class DataReadingManager {
         }
         if (print) {
             monsterFile.parseScript();
-            System.out.println(monsterFile);
+            String textOutputPath = PATH_TEXT_OUTPUT_ROOT + "battle/mon/" + '/' + mIndexString + ".txt";
+            String monsterFileString = monsterFile.toString();
+            FileAccessorWithMods.writeStringToFile(textOutputPath, monsterFileString);
+            System.out.println(monsterFileString);
         }
         return monsterFile;
     }
 
     public static void readAllMonsters(final boolean print) {
-        for (int index = 0; index <= 360; index++) {
+        for (int index = 0; index <= MONSTER_MAX_INDEX; index++) {
             MonsterFile monsterFile = readMonsterFull(index, print);
-            if (monsterFile != null) {
-                DataAccess.MONSTERS[index] = monsterFile;
-            }
+            DataAccess.MONSTERS[index] = monsterFile;
         }
     }
 
@@ -307,14 +302,10 @@ public class DataReadingManager {
         if (encountersFolder.isDirectory()) {
             String[] contents = encountersFolder.list();
             if (contents != null) {
-                /* if (print) {
-                    System.out.println("Found encounters: " + String.join(", ", contents));
-                } */
-                Arrays.stream(contents).filter(sf -> !sf.startsWith(".")).sorted().forEach(sf -> {
-                    EncounterFile encounterFile = readEncounterFull(sf, print);
-                    if (encounterFile != null) {
-                        DataAccess.ENCOUNTERS.put(sf, encounterFile);
-                    }
+                Stream<String> encounterFiles = Arrays.stream(contents).filter(sf -> !sf.startsWith(".")).sorted();
+                encounterFiles.forEach(encounterId -> {
+                    EncounterFile encounterFile = readEncounterFull(encounterId, print);
+                    DataAccess.ENCOUNTERS.put(encounterId, encounterFile);
                 });
             } else {
                 if (print) {
@@ -344,7 +335,10 @@ public class DataReadingManager {
         encounterFile.addLocalizations(localizedStrings);
         if (print) {
             encounterFile.parseScript();
-            System.out.println(encounterFile);
+            String textOutputPath = PATH_TEXT_OUTPUT_ROOT + "battle/btl/" + encounterId + ".txt";
+            String encounterFileString = encounterFile.toString();
+            FileAccessorWithMods.writeStringToFile(textOutputPath, encounterFileString);
+            System.out.println(encounterFileString);
         }
         return encounterFile;
     }
@@ -354,24 +348,16 @@ public class DataReadingManager {
         if (eventsFolder.isDirectory()) {
             String[] contents = eventsFolder.list();
             if (contents != null) {
-                /* if (print) {
-                    System.out.println("Found folders: " + String.join(", ", contents));
-                } */
-                List<String> eventFiles = Arrays.stream(contents)
+                Stream<String> eventFiles = Arrays.stream(contents)
                         .filter(sf -> !sf.startsWith(".") && (!skipBlitzballEvents || !sf.equals("bl")))
-                        .sorted()
                         .map(path -> FileAccessorWithMods.getRealFile(PATH_ORIGINALS_EVENT + path))
                         .filter(f -> f.isDirectory())
-                        .flatMap(f -> Arrays.stream(Objects.requireNonNull(f.list())))
+                        .flatMap(f -> Arrays.stream(Objects.requireNonNullElse(f.list(), new String[0])))
                         .filter(sf -> !sf.startsWith("."))
-                        .sorted()
-                        .collect(Collectors.toList());
-                /* if (print) {
-                    System.out.println("Found events: " + String.join(", ", eventFiles));
-                } */
-                eventFiles.forEach(ev -> {
-                    EventFile eventFile = readEventFull(ev, print);
-                    DataAccess.EVENTS.put(ev, eventFile);
+                        .sorted();
+                eventFiles.forEach(eventId -> {
+                    EventFile eventFile = readEventFull(eventId, print);
+                    DataAccess.EVENTS.put(eventId, eventFile);
                 });
             } else {
                 if (print) {
@@ -397,13 +383,29 @@ public class DataReadingManager {
         eventFile.addLocalizations(localizedStrings);
         if (print) {
             eventFile.parseScript();
-            System.out.println(eventFile);
+            String textOutputPath = PATH_TEXT_OUTPUT_ROOT + "event/obj/" + shortened + '/' + eventId + ".txt";
+            String eventFileString = eventFile.toString();
+            FileAccessorWithMods.writeStringToFile(textOutputPath, eventFileString);
+            System.out.println(eventFileString);
         }
         return eventFile;
     }
 
     public static TreasureDataObject[] readTreasures(String filename, boolean print) {
         return new DataFileReader<>(TreasureDataObject::new, i -> new TreasureDataObject[i]).toArray(filename, null, print);
+    }
+
+    public static MixCombinationDataObject[] readMixCombinations(String filename, boolean print) {
+        MixCombinationDataObject[] objects = new DataFileReader<>(MixCombinationDataObject::new, i -> new MixCombinationDataObject[i]).toArray(filename, null, false);
+        if (objects != null) {
+            for (int i = 0; i < objects.length; i++) {
+                objects[i].mixOrigin = i + 0x2000;
+                if (print) {
+                    System.out.println(objects[i]);
+                }
+            }
+        }
+        return objects;
     }
 
     public static GearDataObject[] readWeaponPickups(String filename, boolean print) {

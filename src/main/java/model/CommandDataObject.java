@@ -4,9 +4,7 @@ import atel.model.StackObject;
 import main.DataAccess;
 import main.DataReadingManager;
 import main.StringHelper;
-import model.Localized;
 import model.spheregrid.SphereGridSphereTypeDataObject;
-import model.strings.KeyedString;
 import model.strings.LocalizedKeyedStringObject;
 
 import java.util.ArrayList;
@@ -14,10 +12,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static reading.ChunkedFileHelper.write2Bytes;
-import static reading.ChunkedFileHelper.write4Bytes;
 
 /**
  * command.bin
@@ -25,7 +21,7 @@ import static reading.ChunkedFileHelper.write4Bytes;
  * monmagic2.bin
  * item.bin
  */
-public class AbilityDataObject extends NameDescriptionTextObject implements Nameable, Writable {
+public class CommandDataObject extends NameDescriptionTextObject implements Nameable, Writable {
     public static final int COM_LENGTH = 0x5C;
     public static final int PCCOM_LENGTH = 0x60;
     static Map<Integer, String> submenus;
@@ -126,7 +122,7 @@ public class AbilityDataObject extends NameDescriptionTextObject implements Name
     boolean targetEnemies;
     boolean targetMulti;
     boolean targetSelfOnly;
-    boolean targetFlag5;
+    boolean targetFlag5MaybeAbleToChooseWithinTeam;
     boolean targetEitherTeam;
     boolean targetDead;
     boolean targetFlagLongRange;
@@ -215,7 +211,7 @@ public class AbilityDataObject extends NameDescriptionTextObject implements Name
 
     public int gilPrice;
 
-    public AbilityDataObject(int[] bytes, int[] stringBytes, String localization, int group) {
+    public CommandDataObject(int[] bytes, int[] stringBytes, String localization, int group) {
         super(bytes, stringBytes, localization);
         this.bytes = bytes;
         isCharacterAbility = group <= 3;
@@ -314,7 +310,7 @@ public class AbilityDataObject extends NameDescriptionTextObject implements Name
     }
 
     public int[] toBytes(String localization) {
-        int[] array = new int[isCharacterAbility ? AbilityDataObject.PCCOM_LENGTH : AbilityDataObject.COM_LENGTH];
+        int[] array = new int[isCharacterAbility ? CommandDataObject.PCCOM_LENGTH : CommandDataObject.COM_LENGTH];
         System.arraycopy(super.toBytes(localization), 0, array, 0, 0x10);
         write2Bytes(array, 0x10, anim1);
         write2Bytes(array, 0x12, anim2);
@@ -401,7 +397,7 @@ public class AbilityDataObject extends NameDescriptionTextObject implements Name
         targetEnemies = (targetingFlags & 0x02) > 0;
         targetMulti = (targetingFlags & 0x04) > 0;
         targetSelfOnly = (targetingFlags & 0x08) > 0;
-        targetFlag5 = (targetingFlags & 0x10) > 0;
+        targetFlag5MaybeAbleToChooseWithinTeam = (targetingFlags & 0x10) > 0;
         targetEitherTeam = (targetingFlags & 0x20) > 0;
         targetDead = (targetingFlags & 0x40) > 0;
         targetFlagLongRange = (targetingFlags & 0x80) > 0;
@@ -611,7 +607,7 @@ public class AbilityDataObject extends NameDescriptionTextObject implements Name
             if (characterUser == 0xFF) {
                 return "Usable by anyone";
             } else {
-                return "Usable by " + StackObject.enumToScriptField("playerChar", characterUser).name;
+                return "Usable by " + StackObject.enumToString("playerChar", characterUser);
             }
         } else {
             return "";
@@ -687,14 +683,11 @@ public class AbilityDataObject extends NameDescriptionTextObject implements Name
             if (targetMulti) {
                 target = (randomTargets ? "Random " : "All ") + target + "ies";
             } else {
-                target = "1 " + (randomTargets ? "random " : "") + target + "y";
+                target = (targetFlag5MaybeAbleToChooseWithinTeam ? "Choose" : "Fixed") + " " + (randomTargets ? "random " : "") + target + "y";
             }
             if (!targetEitherTeam) {
                 target += "!!";
             }
-        }
-        if (targetFlag5) {
-            target += "/5";
         }
         if (targetFlagLongRange) {
             target += "/Ranged";

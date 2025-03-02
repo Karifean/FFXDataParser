@@ -13,7 +13,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public abstract class DataAccess {
-    public static AbilityDataObject[] MOVES = new AbilityDataObject[0x10000];
+    public static CommandDataObject[] MOVES = new CommandDataObject[0x10000];
     public static Map<String, EventFile> EVENTS = new HashMap<>();
     public static Map<String, EncounterFile> ENCOUNTERS = new HashMap<>();
     public static MonsterFile[] MONSTERS = new MonsterFile[0x1000];
@@ -22,6 +22,7 @@ public abstract class DataAccess {
     public static GearAbilityDataObject[] GEAR_ABILITIES;
     public static KeyItemDataObject[] KEY_ITEMS;
     public static TreasureDataObject[] TREASURES;
+    public static MixCombinationDataObject[] MIX_COMBINATIONS;
     public static GearDataObject[] WEAPON_PICKUPS;
     public static GearDataObject[] BUYABLE_GEAR;
     public static GearShopDataObject[] GEAR_SHOPS;
@@ -51,7 +52,7 @@ public abstract class DataAccess {
 
     public static Nameable getNameableObject(String type, int idx) {
         Nameable object = switch (type) {
-            case "move" -> getMove(idx);
+            case "move" -> getCommand(idx);
             case "monster" -> getMonster(idx);
             case "keyItem" -> getKeyItem(idx);
             case "treasure" -> getTreasure(idx);
@@ -75,7 +76,7 @@ public abstract class DataAccess {
         return ENCOUNTERS.get(id);
     }
 
-    public static AbilityDataObject getMove(int idx) {
+    public static CommandDataObject getCommand(int idx) {
         if (MOVES == null) {
             throw new UnsupportedOperationException();
         }

@@ -8,20 +8,20 @@ public abstract class ChunkedFileHelper {
     public static final int DEFAULT_ASSUMED_CHUNK_COUNT = 10;
     public static final int DEFAULT_ASSUMED_CHUNK_OFFSET = 4;
 
-    public static List<Chunk> readGenericChunkedFile(String filename, boolean print, List<Integer> knownLengths, boolean readChunkCount) {
+    public static List<Chunk> readGenericChunkedFile(String filename, boolean print, boolean readChunkCount) {
         File file = FileAccessorWithMods.resolveFile(filename, print);
         if (!file.isDirectory()) {
             int[] bytes = fileToBytes(file);
-            return bytesToChunks(bytes, readChunkCount ? read4Bytes(bytes, 0x00) - 1 : DEFAULT_ASSUMED_CHUNK_COUNT, DEFAULT_ASSUMED_CHUNK_OFFSET, knownLengths);
+            return bytesToChunks(bytes, readChunkCount ? read4Bytes(bytes, 0x00) - 1 : DEFAULT_ASSUMED_CHUNK_COUNT, DEFAULT_ASSUMED_CHUNK_OFFSET);
         }
         return null;
     }
 
-    public static List<Chunk> readGenericChunkedFile(String filename, boolean print, List<Integer> knownLengths, int chunkCount) {
+    public static List<Chunk> readGenericChunkedFile(String filename, boolean print, int chunkCount) {
         File file = FileAccessorWithMods.resolveFile(filename, print);
         if (!file.isDirectory()) {
             int[] bytes = fileToBytes(file);
-            return bytesToChunks(bytes, chunkCount, 0, knownLengths);
+            return bytesToChunks(bytes, chunkCount, 0);
         }
         return null;
     }
@@ -42,7 +42,7 @@ public abstract class ChunkedFileHelper {
         return bytes;
     }
 
-    public static List<Chunk> bytesToChunks(int[] bytes, int assumedChunkCount, int chunkOffset, List<Integer> knownLengths) {
+    public static List<Chunk> bytesToChunks(int[] bytes, int assumedChunkCount, int chunkOffset) {
         if (bytes == null) {
             return null;
         }
@@ -62,22 +62,17 @@ public abstract class ChunkedFileHelper {
             if (offset == 0) {
                 chunks.add(new Chunk());
             } else {
-                if (knownLengths != null && knownLengths.size() > i && knownLengths.get(i) != null) {
-                    int length = knownLengths.get(i);
-                    chunks.add(new Chunk(bytes, offset, offset + length));
-                } else {
-                    int to = -1;
-                    for (int j = i + 1; j <= chunkCount; j++) {
-                        if (offsets[j] >= offset) {
-                            to = offsets[j];
-                            break;
-                        }
+                int to = -1;
+                for (int j = i + 1; j <= chunkCount; j++) {
+                    if (offsets[j] >= offset) {
+                        to = offsets[j];
+                        break;
                     }
-                    if (to == -1) {
-                        to = bytes.length;
-                    }
-                    chunks.add(new Chunk(bytes, offset, to));
                 }
+                if (to == -1) {
+                    to = bytes.length;
+                }
+                chunks.add(new Chunk(bytes, offset, to));
             }
         }
         return chunks;

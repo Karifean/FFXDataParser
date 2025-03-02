@@ -1,5 +1,6 @@
 package model;
 
+import atel.model.StackObject;
 import main.DataAccess;
 import main.StringHelper;
 import model.strings.KeyedString;
@@ -59,24 +60,17 @@ public class PlayerCharStatDataObject implements Nameable, Writable, Localized<P
     int overdriveCurrent;
     int overdriveMax;
     int slvAvailable;
-    int slvTotal;
+    int slvUsed;
 
     int unknownByte3D;
-    int abilityByte3E;
-    int abilityByte3F;
-    int abilityByte40;
-    int abilityByte41;
-    int abilityByte42;
-    int abilityByte43;
-    int abilityByte44;
-    int abilityByte45;
-    int abilityByte46;
-    int abilityByte47;
-    int abilityByte48;
-    int abilityByte49;
+    int abilityField3E;
+    int abilityField42;
+    int abilityField46;
 
     int encounterCount;
     int killCount;
+
+    List<Integer> commandIds;
 
     public PlayerCharStatDataObject(int[] bytes, int[] stringBytes, String localization) {
         this.bytes = bytes;
@@ -125,28 +119,22 @@ public class PlayerCharStatDataObject implements Nameable, Writable, Localized<P
         overdriveCurrent = bytes[0x39];
         overdriveMax = bytes[0x3A];
         slvAvailable = bytes[0x3B];
-        slvTotal = bytes[0x3C];
+        slvUsed = bytes[0x3C];
 
         unknownByte3D = bytes[0x3D];
-        abilityByte3E = bytes[0x3E];
-        abilityByte3F = bytes[0x3F];
-        abilityByte40 = bytes[0x40];
-        abilityByte41 = bytes[0x41];
-        abilityByte42 = bytes[0x42];
-        abilityByte43 = bytes[0x43];
-        abilityByte44 = bytes[0x44];
-        abilityByte45 = bytes[0x45];
-        abilityByte46 = bytes[0x46];
-        abilityByte47 = bytes[0x47];
-        abilityByte48 = bytes[0x48];
-        abilityByte49 = bytes[0x49];
+        abilityField3E = read4Bytes(bytes, 0x3E);
+        abilityField42 = read4Bytes(bytes, 0x42);
+        abilityField46 = read4Bytes(bytes, 0x46);
 
         encounterCount = read4Bytes(bytes, 0x50);
         killCount = read4Bytes(bytes, 0x54);
     }
 
     private void mapFlags() {
-        // TODO
+        commandIds = new ArrayList<>();
+        commandIds.addAll(StackObject.bitfieldToIntList(abilityField3E).stream().map(i -> i + 0x3000).toList());
+        commandIds.addAll(StackObject.bitfieldToIntList(abilityField42).stream().map(i -> i + 0x3020).toList());
+        commandIds.addAll(StackObject.bitfieldToIntList(abilityField46).stream().map(i -> i + 0x3040).toList());
     }
 
     private void mapStrings(int[] stringBytes, String localization) {
@@ -170,10 +158,55 @@ public class PlayerCharStatDataObject implements Nameable, Writable, Localized<P
 
     @Override
     public int[] toBytes(String localization) {
-        int[] array = new int[CustomizationDataObject.LENGTH];
+        int[] array = new int[PlayerCharStatDataObject.LENGTH];
         write4Bytes(array, 0x00, name.getLocalizedContent(localization).toHeaderBytes());
         write4Bytes(array, 0x04, baseHp);
         write4Bytes(array, 0x08, baseMp);
+
+        array[0x0C] = baseStr;
+        array[0x0D] = baseDef;
+        array[0x0E] = baseMag;
+        array[0x0F] = baseMdf;
+        array[0x10] = baseAgi;
+        array[0x11] = baseLck;
+        array[0x12] = baseEva;
+        array[0x13] = baseAcc;
+
+        write4Bytes(array, 0x18, currentAp);
+        write4Bytes(array, 0x1C, currentHp);
+        write4Bytes(array, 0x20, currentMp);
+        write4Bytes(array, 0x24, maxHp);
+        write4Bytes(array, 0x28, maxMp);
+
+        write2Bytes(array, 0x14, unknownBytes1415);
+        write2Bytes(array, 0x16, unknownBytes1617);
+
+        array[0x2C] = miscFlags;
+        array[0x2D] = equippedWeaponIndex;
+        array[0x2E] = equippedArmorIndex;
+        array[0x2F] = str;
+        array[0x30] = def;
+        array[0x31] = mag;
+        array[0x32] = mdf;
+        array[0x33] = agi;
+        array[0x34] = lck;
+        array[0x35] = eva;
+        array[0x36] = acc;
+
+        array[0x37] = poisonDamage;
+        array[0x38] = overdriveMode;
+        array[0x39] = overdriveCurrent;
+        array[0x3A] = overdriveMax;
+        array[0x3B] = slvAvailable;
+        array[0x3C] = slvUsed;
+
+        array[0x3D] = unknownByte3D;
+        write4Bytes(array, 0x3E, abilityField3E);
+        write4Bytes(array, 0x42, abilityField42);
+        write4Bytes(array, 0x46, abilityField46);
+
+        write4Bytes(array, 0x50, encounterCount);
+        write4Bytes(array, 0x54, killCount);
         // TODO
         return array;
     }
@@ -186,7 +219,7 @@ public class PlayerCharStatDataObject implements Nameable, Writable, Localized<P
     public String buildStrings() {
         List<String> list = new ArrayList<>();
         list.add("Name at Offset " + StringHelper.formatHex4(nameOffset) + ":");
-        list.add(name.getDefaultContent().getString());
+        list.add(name.getDefaultString());
         // TODO
         String full = list.stream().filter(s -> s != null && !s.isBlank()).collect(Collectors.joining("\n"));
         return full;
@@ -195,17 +228,24 @@ public class PlayerCharStatDataObject implements Nameable, Writable, Localized<P
     @Override
     public String toString() {
         List<String> list = new ArrayList<>();
+        list.add(name.getDefaultString());
+        list.add("--- Base ---");
+        list.add("HP=" + baseHp + " MP=" + baseMp);
+        list.add("STR=" + baseStr + " DEF=" + baseDef + " MAG=" + baseMag + " MDF=" + baseMdf);
+        list.add("AGI=" + baseAgi + " LCK=" + baseLck + " EVA=" + baseEva + " ACC=" + baseAcc);
+        list.add("--- Current ---");
         list.add("HP=" + hp + " MP=" + mp);
         list.add("STR=" + str + " DEF=" + def + " MAG=" + mag + " MDF=" + mdf);
         list.add("AGI=" + agi + " LCK=" + lck + " EVA=" + eva + " ACC=" + acc);
         list.add("Poison Damage=" + poisonDamage + "%");
+        list.add("Abilities=[" + commandIds.stream().map(a -> asMove(a)).collect(Collectors.joining(", ")) + "]");
 
         String full = list.stream().filter(s -> s != null && !s.isBlank()).collect(Collectors.joining("\n"));
         return full;
     }
 
     private static String asMove(int move) {
-        return DataAccess.getMove(move).getName() + StringHelper.hex4Suffix(move);
+        return DataAccess.getCommand(move).getName() + StringHelper.hex4Suffix(move);
     }
 
     @Override

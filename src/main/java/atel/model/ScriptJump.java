@@ -161,7 +161,7 @@ public class ScriptJump {
             case 5 -> "onMove";
             case 6 -> "postTurn"; // prePoison
             case 7 -> "postMove?";
-            case 8 -> "postPoison?";
+            case 8 -> "postPoison";
             case 9 -> "YojiPay";
             case 0xA -> "YojiDismiss";
             case 0xB -> "YojiDeath";

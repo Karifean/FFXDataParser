@@ -4,17 +4,13 @@ import atel.model.StackObject;
 import main.DataAccess;
 import main.StringHelper;
 import model.*;
-import model.strings.KeyedString;
-import model.strings.LocalizedKeyedStringObject;
 import reading.ChunkedFileHelper;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static reading.ChunkedFileHelper.write2Bytes;
-import static reading.ChunkedFileHelper.write4Bytes;
 
 /**
  * panel.bin
@@ -74,7 +70,7 @@ public class SphereGridNodeTypeDataObject extends NameDescriptionTextObject impl
     }
 
     private static String asMove(int idx) {
-        AbilityDataObject move = DataAccess.getMove(idx);
+        CommandDataObject move = DataAccess.getCommand(idx);
         return (move != null ? move.name : "null") + StringHelper.hex4Suffix(idx);
     }
 

@@ -43,7 +43,6 @@ public class ScriptWorker {
 
     public Integer battleWorkerType;
     public Integer purposeSlot;
-    private int[] purposeBytes;
 
     public AtelScriptObject parentScript;
 
@@ -90,6 +89,7 @@ public class ScriptWorker {
         }
         list.add("Entrypoints=" + StringHelper.hex2WithSuffix(entryPointCount));
         list.add("Jumps=" + StringHelper.hex2WithSuffix(jumpCount));
+        list.add("privateData addr=" + StringHelper.hex2WithSuffix(privateDataOffset) + " len=" + StringHelper.hex2WithSuffix(privateDataLength));
         list.add(alwaysZero0C != 0 ? "alwaysZero0C=" + alwaysZero0C : "");
         list.add(alwaysZero28 != 0 ? "alwaysZero28=" + alwaysZero28 : "");
         String full = list.stream().filter(s -> s != null && !s.isBlank()).collect(Collectors.joining(", "));
@@ -149,8 +149,8 @@ public class ScriptWorker {
     }
 
     public static String purposeSlotToString(int purposeSlot) {
-        if (purposeSlot >= 0x29 && purposeSlot <= 0x3A) {
-            String chr = StackObject.enumToString("playerChar", purposeSlot - 0x29);
+        if (purposeSlot >= 0x25 && purposeSlot < 0x38) {
+            String chr = StackObject.enumToString("playerChar", purposeSlot - (purposeSlot >= 0x29 ? 0x29 : 0x17));
             return "Ex" + chr + StringHelper.hex2Suffix(purposeSlot);
         }
         return StringHelper.formatHex2(purposeSlot);

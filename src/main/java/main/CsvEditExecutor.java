@@ -21,7 +21,7 @@ public abstract class CsvEditExecutor {
     private static final String EDIT_CSV_ROOT = FileAccessorWithMods.RESOURCES_ROOT + "edits/";
 
     public static boolean editAttacks(final boolean print) {
-        return editItems("attacks", (id) -> DataAccess.getMove(id), print);
+        return editItems("attacks", (id) -> DataAccess.getCommand(id), print);
     }
 
     public static boolean editGearAbilities(final boolean print) {

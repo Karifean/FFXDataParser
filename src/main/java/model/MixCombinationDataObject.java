@@ -1,6 +1,7 @@
 package model;
 
 import main.DataAccess;
+import main.StringHelper;
 import model.strings.KeyedString;
 import model.strings.LocalizedKeyedStringObject;
 
@@ -11,28 +12,27 @@ import java.util.stream.Stream;
 import static reading.ChunkedFileHelper.write2Bytes;
 
 /**
- * item_shop.bin
+ * prepare.bin
  */
-public class ItemShopDataObject implements Writable {
-    public static final int LENGTH = 0x22;
+public class MixCombinationDataObject implements Writable {
+    public static final int LENGTH = 0xE0;
     private final int[] bytes;
 
-    private int unusedPrices;
-    private int[] offeredItemIndexes = new int[0x10];
+    public int mixOrigin;
+    private final int[] mixResults = new int[0x70];
 
-    public ItemShopDataObject(int[] bytes, int[] stringBytes, String localization) {
+    public MixCombinationDataObject(int[] bytes, int[] stringBytes, String localization) {
         this.bytes = bytes;
         mapBytes();
     }
 
-    public ItemShopDataObject(int[] bytes) {
+    public MixCombinationDataObject(int[] bytes) {
         this(bytes, null, null);
     }
 
     private void mapBytes() {
-        unusedPrices = read2Bytes(0x00);
-        for (int i = 0; i < 0x10; i++) {
-            offeredItemIndexes[i] = read2Bytes(i * 2 + 2);
+        for (int i = 0; i < 0x70; i++) {
+            mixResults[i] = read2Bytes(i * 2);
         }
     }
 
@@ -48,10 +48,9 @@ public class ItemShopDataObject implements Writable {
 
     @Override
     public int[] toBytes(String localization) {
-        int[] array = new int[ItemShopDataObject.LENGTH];
-        write2Bytes(array, 0x00, unusedPrices);
-        for (int i = 0; i < 0x10; i++) {
-            write2Bytes(array, i * 2 + 2, offeredItemIndexes[i]);
+        int[] array = new int[MixCombinationDataObject.LENGTH];
+        for (int i = 0; i < 0x70; i++) {
+            write2Bytes(array, i * 2, mixResults[i]);
         }
         return array;
     }
@@ -59,15 +58,18 @@ public class ItemShopDataObject implements Writable {
     @Override
     public String toString() {
         List<String> list = new ArrayList<>();
-        list.add("Price (unused): " + unusedPrices + "%");
-        for (int i = 0; i < 0x10; i++) {
-            int idx = offeredItemIndexes[i];
-            if (idx != 0x00) {
-                CommandDataObject item = DataAccess.getCommand(idx);
-                list.add("Slot #" + i + ": " + (item != null ? item.getName() : "null"));
+        for (int i = 0; i < 0x70; i++) {
+            int result = mixResults[i];
+            if (result != 0x00) {
+                list.add(asMove(mixOrigin) + " + " + asMove(i + 0x2000) + " = " + asMove(result));
             }
         }
         return String.join("\n", list);
+    }
+
+    private static String asMove(int idx) {
+        CommandDataObject move = DataAccess.getCommand(idx);
+        return (move != null ? move.name : "null") + StringHelper.hex4Suffix(idx);
     }
 
     private int read2Bytes(int offset) {

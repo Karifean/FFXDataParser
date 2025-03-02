@@ -141,7 +141,7 @@ public class SphereGridSphereTypeDataObject implements Writable, Localized<Spher
     }
 
     private static String asMove(int idx) {
-        AbilityDataObject move = DataAccess.getMove(idx);
+        CommandDataObject move = DataAccess.getCommand(idx);
         return (move != null ? move.name : "null") + StringHelper.hex4Suffix(idx);
     }
 

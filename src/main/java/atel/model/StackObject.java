@@ -4,8 +4,7 @@ import atel.EncounterFile;
 import atel.EventFile;
 import main.DataAccess;
 import main.StringHelper;
-import model.AbilityDataObject;
-import model.strings.FieldString;
+import model.CommandDataObject;
 import model.strings.LocalizedMacroStringObject;
 import model.Nameable;
 import atel.MonsterFile;
@@ -50,8 +49,8 @@ public class StackObject {
     public StackObject(String type, StackObject obj) {
         this.parentWorker = obj.parentWorker;
         this.parentInstruction = obj.parentInstruction;
-        // direct values should never be type-cast to float as the format will just be wrong.
-        this.type = (isWeakType(type) || "float".equals(obj.rawType)) ? obj.type : type;
+        // float type should be preserved, as the format will just be wrong if typecast to something else.
+        this.type = (isWeakType(type) || "float".equals(type) || "float".equals(obj.rawType)) ? obj.type : type;
         this.expression = obj.expression;
         this.content = obj.content;
         this.rawType = obj.rawType;
@@ -145,20 +144,20 @@ public class StackObject {
             return interpretMenu(valueSigned) + hexSuffix;
         }
         if ("sphereGridNodeState".equals(type)) {
-            return compositeUint16ToString(localization, "sgNodeActivationBitfield", "sgNodeType", valueUnsigned, "(Activation: %s, Content: %s)") + hexSuffix;
+            return compositeUint16ToString(localization, "bitfieldFrom_playerChar", "sgNodeType", valueUnsigned, "(Activation: %s, Content: %s)") + hexSuffix;
         }
         if ("move".equals(type)) {
             if (valueSigned == 0) {
-                return "Null Move" + hexSuffix;
+                return "Null Command" + hexSuffix;
             } else if (valueSigned <= 0x11) {
                 return "Switch/Summon:" + ScriptConstants.getEnumMap("playerChar").get(valueSigned) + hexSuffix;
             } else {
-                AbilityDataObject ability = DataAccess.getMove(valueSigned);
-                return (ability != null ? '"'+ability.getName(localization)+'"' : "NullMove") + hexSuffix;
+                CommandDataObject ability = DataAccess.getCommand(valueSigned);
+                return (ability != null ? '"'+ability.getName(localization)+'"' : "NullCmd") + hexSuffix;
             }
         } else if ("charMove".equals(type)) {
-            AbilityDataObject ability = DataAccess.getMove(valueSigned + 0x3000);
-            return (ability != null ? '"'+ability.getName(localization)+'"' : "NullMove") + hexSuffix;
+            CommandDataObject ability = DataAccess.getCommand(valueSigned + 0x3000);
+            return (ability != null ? '"'+ability.getName(localization)+'"' : "NullCmd") + hexSuffix;
         }
         if ("btlChr".equals(type) && valueSigned >= 0x1000 && valueSigned < 0x2000) {
             try {
@@ -169,7 +168,7 @@ public class StackObject {
             } catch (UnsupportedOperationException ignored) {}
         }
         if ("macroString".equals(type)) {
-            return StringHelper.MACRO_LOOKUP.computeIfAbsent(valueSigned, k -> new LocalizedMacroStringObject()).getLocalizedContent(localization).toString();
+            return StringHelper.MACRO_LOOKUP.computeIfAbsent(valueSigned, k -> new LocalizedMacroStringObject()).getLocalizedString(localization);
         }
         if ("system01String".equals(type)) {
             EncounterFile system01 = DataAccess.getEncounter("system_01");
@@ -196,9 +195,18 @@ public class StackObject {
                 return "Map#" + valueSigned + hexSuffix;
             }
         }
+        if ("blitzTech".equals(type) || "blitzTechP1".equals(type)) {
+            return StringHelper.MACRO_LOOKUP.get(0x800 + valueSigned).getLocalizedString(localization) + hexSuffix;
+        } else if ("blitzTechP2".equals(type)) {
+            return StringHelper.MACRO_LOOKUP.get(0x81E + valueSigned).getLocalizedString(localization) + hexSuffix;
+        }
         Nameable object = DataAccess.getNameableObject(type, valueSigned);
         if (object != null) {
             return object.getName(localization) + hexSuffix;
+        }
+        if (type.startsWith("bitfieldFrom_")) {
+            String enumType = type.substring(13);
+            return "[" + bitfieldToIntList(valueUnsigned).stream().map(i -> StackObject.asString(localization, enumType, i)).collect(Collectors.joining(", ")) + "]" + hexSuffix;
         }
         if (type.endsWith("Bitfield")) {
             return bitfieldToString(type, valueUnsigned) + hexSuffix;
@@ -271,6 +279,21 @@ public class StackObject {
         ScriptField field = new ScriptField(null, ScriptConstants.INDEX_ENUMS_ONLY.contains(type) ? "unknown" : type);
         field.idx = value;
         return field;
+    }
+
+    public static List<Integer> bitfieldToIntList(int value) {
+        List<Integer> bits = new ArrayList<>();
+        if (value == 0) {
+            return bits;
+        }
+        int max = (value & 0xFFFF0000) != 0 ? 0x20 : 0x10;
+        for (int i = 0; i < max; i++) {
+            int bit = 1 << i;
+            if ((value & bit) != 0) {
+                bits.add(i);
+            }
+        }
+        return bits;
     }
 
     public static List<ScriptField> bitfieldToList(String type, int value) {

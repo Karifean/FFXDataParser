@@ -28,7 +28,7 @@ You can then run the parser with the following command:
 |--------------------------------------|:--------------------------------------|------------------------------------------------------------|
 | `GREP`                          | `plain text string` | Convert a string into FFX byte encoding and prints command lines for GREP-ing for them |
 | `TRANSLATE`                     | `bytes` | Converts FFX encoded string bytes into a plain text string |
-| `READ_ALL_ABILITIES`            | | Prints information on all abilities (from `command.bin`, `monmagic1.bin`, `monmagic2.bin` and `item.bin`) |
+| `READ_ALL_COMMANDS`            | | Prints information on all commands (from `command.bin`, `monmagic1.bin`, `monmagic2.bin` and `item.bin`) |
 | `READ_KEY_ITEMS`                | | Prints information on key items (from `important.bin`) |
 | `READ_GEAR_ABILITIES`           | | Prints information on auto-abilities for gear (from `a_ability.bin`) |
 | `READ_TREASURES`                | | Prints information on treasure pickups in the game (from `takara.bin`) |

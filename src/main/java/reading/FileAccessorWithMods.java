@@ -1,6 +1,7 @@
 package reading;
 
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -62,12 +63,7 @@ public class FileAccessorWithMods {
     }
 
     public static void writeByteArrayToFile(String path, int[] bytes) {
-        try {
-            Files.createDirectories(Paths.get(path.substring(0, path.lastIndexOf('/'))));
-        } catch (IOException e) {
-            System.err.println("Failed to create directories");
-            e.printStackTrace();
-        }
+        createDirectories(path);
         try (FileOutputStream fileOutputStream = new FileOutputStream(path)) {
             for (int aByte : bytes) {
                 fileOutputStream.write(aByte);
@@ -77,5 +73,30 @@ public class FileAccessorWithMods {
             System.err.println("Failed to write file");
             e.printStackTrace();
         }
+    }
+
+    public static void writeStringToFile(String path, String string) {
+        createDirectories(path);
+        try (FileOutputStream fileOutputStream = new FileOutputStream(path)) {
+            fileOutputStream.write(string.getBytes(StandardCharsets.UTF_8));
+            fileOutputStream.flush();
+        } catch (IOException e) {
+            System.err.println("Failed to write file");
+            e.printStackTrace();
+        }
+    }
+
+    private static void createDirectories(String path) {
+        int lastSlash = path.lastIndexOf('/');
+        if (lastSlash == -1) {
+            return;
+        }
+        try {
+            Files.createDirectories(Paths.get(path.substring(0, lastSlash)));
+        } catch (IOException e) {
+            System.err.println("Failed to create directories");
+            e.printStackTrace();
+        }
+
     }
 }

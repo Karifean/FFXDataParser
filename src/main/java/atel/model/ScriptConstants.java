@@ -278,8 +278,16 @@ public abstract class ScriptConstants {
 
         addEnumsFromAllCsvsInFolder(new File(ENUM_CSV_ROOT));
 
+        putSaveDataVariable(0x0003, "MoonflowTreasureProgressionFlags1", "int");
+        putSaveDataVariable(0x0004, "MoonflowTreasureProgressionFlags2", "int");
+        putSaveDataVariable(0x0005, "ViaPurificoTreasureProgressionFlags1", "int");
+        putSaveDataVariable(0x0006, "ViaPurificoTreasureProgressionFlags2", "int"); // Also Besaid Falls treasure at &0x80 for some reason
+        putSaveDataVariable(0x0007, "MoonflowTreasureProgressionFlags3", "int");
+        putSaveDataVariable(0x0080, "RidingChocoboFlags", "int");
         putSaveDataVariable(0x008D, "CalmLandsQuestProgressionFlags", "int");
         putSaveDataVariable(0x0092, "MushroomRockRoadTreasureFlags", "int");
+        putSaveDataVariable(0x0095, "CalmLandsTreasureFlags", "int");
+        putSaveDataVariable(0x009B, "BelgemineFightProgressionFlags", "int");
         putSaveDataVariable(0x009F, "MonsterArenaUnlockQuestProgressionFlags", "int");
         putSaveDataVariable(0x00A0, "MonsterArenaAreaSpeciesConquestUnlockFlags", "int");
         putSaveDataVariable(0x00A4, "MonsterArenaOriginalCreationUnlockFlags", "int");
@@ -299,6 +307,7 @@ public abstract class ScriptConstants {
         putSaveDataVariable(0x00CF, "BikanelTreasureFlags2", "int");
         putSaveDataVariable(0x00D0, "BikanelTreasureFlags3", "int");
         putSaveDataVariable(0x0104, "EnergyBlastProgressionFlags", "int");
+        putSaveDataVariable(0x0114, "RemiemTempleProgressionFlags", "int");
         putSaveDataVariable(0x0115, "BesaidVillageTreasureFlags", "int");
         putSaveDataVariable(0x0153, "MusicSpheresOwnedCount", "int");
         putSaveDataVariable(0x0154, "MovieSpheresOwnedCount", "int");
@@ -321,10 +330,15 @@ public abstract class ScriptConstants {
         putSaveDataVariable(0x0A34, "GilLentToOAka", "int");
         putSaveDataVariable(0x0A38, "MacalaniaPricesChosenForOAka", "int");
         putSaveDataVariable(0x0A3C, "JechtShotMinigameCleared", "bool");
+        putSaveDataVariable(0x0A3D, "BelgemineFamiliarity", "int");
+        putSaveDataVariable(0x0A44, "RemiemAeonsDefeated", "int");
         putSaveDataVariable(0x0A49, "WorldChampionPrerequisitesCleared", "bool");
         putSaveDataVariable(0x0A4A, "SaveSphereInstructionsSeen", "int");
         putSaveDataVariable(0x0A4C, "CelestialMirrorObtained", "bool");
         putSaveDataVariable(0x0A4D, "CelestialsObtainedFlags", "int");
+        putSaveDataVariable(0x0A50, "CalmLandsChocoboPositionX", "float");
+        putSaveDataVariable(0x0A54, "CalmLandsChocoboPositionY", "float");
+        putSaveDataVariable(0x0A58, "CalmLandsChocoboPositionZ", "float");
         putSaveDataVariable(0x0A60, "AlBhedPrimersCollectedCount", "int");
         putSaveDataVariable(0x0A68, "BlitzballMenuReturnMap", "int");
         putSaveDataVariable(0x0A6C, "BlitzballMenuReturnEntrance", "int");
@@ -333,8 +347,11 @@ public abstract class ScriptConstants {
         putSaveDataVariable(0x0A81, "CelestialsFullPoweredFlags", "int");
         putSaveDataVariable(0x0A83, "isRedButterflyEncounter", "bool");
         putSaveDataVariable(0x0A88, "BlitzballTeamPlayerCount", "int", "blitzballTeam");
+        putSaveDataVariable(0x0A8F, "OptionalAeonsRecruitedFlags", "int");
         putSaveDataVariable(0x0A93, "JechtSpheresCollectedCount", "int");
+        putSaveDataVariable(0x0A94, "AeonBoostingKeyItemsObtainedFlags", "int");
         putSaveDataVariable(0x0A95, "AirshipDestinationUnlocks", "int");
+        putSaveDataVariable(0x0A97, "?CactuarGuardiansQuestProgress", "int");
         putSaveDataVariable(0x0A98, "IsBetweenDjoseFaythTalkAndAirshipBoarding", "bool");
         putSaveDataVariable(0x0A99, "CactuarGuardiansBeaten", "int");
         putSaveDataVariable(0x0A9A, "AlBhedPrimersInstructionsSeen", "bool");
@@ -356,8 +373,8 @@ public abstract class ScriptConstants {
         putSaveDataVariable(0x0B67, "?RikkuBattleTalkativeness", "int");
         putSaveDataVariable(0x0B68, "?AuronBattleTalkativeness", "int");
         putSaveDataVariable(0x0B69, "Unused?KimahriBattleTalkativeness", "int");
-        putSaveDataVariable(0x1000, "BlitzballPlayerLearnedTechsPage1", "blitzTechsP1Bitfield", "blitzballPlayer");
-        putSaveDataVariable(0x10F0, "BlitzballPlayerLearnedTechsPage2", "blitzTechsP2Bitfield", "blitzballPlayer");
+        putSaveDataVariable(0x1000, "BlitzballPlayerLearnedTechsPage1", "bitfieldFrom_blitzTechP1", "blitzballPlayer");
+        putSaveDataVariable(0x10F0, "BlitzballPlayerLearnedTechsPage2", "bitfieldFrom_blitzTechP2", "blitzballPlayer");
         putSaveDataVariable(0x1266, "BlitzballPlayerEquippedTechs", "blitzTech"); // index = blitzballPlayer * 5 + 0..4
         putSaveDataVariable(0x1392, "BlitzballPlayerUnlockedTechSlots", "int", "blitzballPlayer");
         putSaveDataVariable(0x13CE, "BlitzballPlayerCurrentLevel", "int", "blitzballPlayer");
@@ -384,8 +401,8 @@ public abstract class ScriptConstants {
         putSaveDataVariable(0x1816, "BlitzballTournamentPrizeIndex", "int");
         putSaveDataVariable(0x181C, "BlitzballLeagueTopScorerPrizeIndex", "int");
         putSaveDataVariable(0x181E, "BlitzballTournamentTopScorerPrizeIndex", "int");
-        putSaveDataVariable(0x1820, "?BlitzballPlayerUncoveredTechsPage1", "blitzTechsP1Bitfield", "blitzballPlayer");
-        putSaveDataVariable(0x1910, "?BlitzballPlayerUncoveredTechsPage2", "blitzTechsP2Bitfield", "blitzballPlayer");
+        putSaveDataVariable(0x1820, "?BlitzballPlayerUncoveredTechsPage1", "bitfieldFrom_blitzTechP1", "blitzballPlayer");
+        putSaveDataVariable(0x1910, "?BlitzballPlayerUncoveredTechsPage2", "bitfieldFrom_blitzTechP2", "blitzballPlayer");
         putSaveDataVariable(0x2000, "SphereGridNodeState", "sphereGridNodeState", "int");
 
         putBattleVariable(0x0170, "BattleDialogLineVoiceFile", "int");
@@ -423,7 +440,7 @@ public abstract class ScriptConstants {
         putEnum("eventWorkerType", 0x01, "FieldObject");
         putEnum("eventWorkerType", 0x02, "PlayerEdge");
         putEnum("eventWorkerType", 0x03, "PlayerZone");
-        putEnum("eventWorkerType", 0x04, "Cutscene");
+        putEnum("eventWorkerType", 0x04, "Scenario");
         putEnum("eventWorkerType", 0x05, "Edge");
         putEnum("eventWorkerType", 0x06, "Zone");
 
@@ -433,11 +450,16 @@ public abstract class ScriptConstants {
         putEnum("battleWorkerType", 0x04, "EncounterScripts");
         putEnum("battleWorkerType", 0x06, "StartEndHooks");
 
-        putEnum("controllerButton", 0x02, "L1/R1 (not sure which)");
+        putEnum("controllerButton", 0x00, "?L2 (Scroll Up)");
+        putEnum("controllerButton", 0x01, "?R2 (Scroll Down)");
+        putEnum("controllerButton", 0x02, "?L1 (Switch)");
+        putEnum("controllerButton", 0x03, "?R1 (CTB Preview Down)");
         putEnum("controllerButton", 0x04, "Triangle (Menu/Defend)");
         putEnum("controllerButton", 0x05, "X (Confirm)");
         putEnum("controllerButton", 0x06, "Circle (Cancel)");
+        putEnum("controllerButton", 0x07, "Square (Scout)");
         putEnum("controllerButton", 0x08, "Select");
+        putEnum("controllerButton", 0x0B, "?Start (Pause)");
         putEnum("controllerButton", 0x0C, "?Up");
         putEnum("controllerButton", 0x0D, "?Right");
         putEnum("controllerButton", 0x0E, "?Down");
@@ -455,18 +477,6 @@ public abstract class ScriptConstants {
         putEnum("stringVarType", 0x37, "Treasure Label");
 
         putEnum("textFlagBitfield", 0x4000, "Al Bhed");
-
-        for (int i = 0; i <= 60; i++) {
-            String name = StringHelper.MACRO_LOOKUP.get(0x800 + i).getDefaultContent().toString();
-            putEnum("blitzTech", i, name);
-            if (i > 0) {
-                if (i < 31) {
-                    putEnum("blitzTechsP1Bitfield", 1 << i, name);
-                } else {
-                    putEnum("blitzTechsP2Bitfield", 1 << (i - 30), name);
-                }
-            }
-        }
 
         putEnum("blitzballPlayer", 0x00, "Tidus");
         putEnum("blitzballPlayer", 0x01, "Wakka");
@@ -549,7 +559,8 @@ public abstract class ScriptConstants {
         putEnum("blitzballGameMode", 0x05, "Cancel");
         putEnum("blitzballGameMode", 0x06, "Reset Data");
 
-        putEnum("battleDebugFlag", 0x07, "?NeverCrit");
+        putEnum("battleDebugFlag", 0x03, "ControlMonsters");
+        putEnum("battleDebugFlag", 0x07, "NeverCrit");
 
         putEnum("textAlignment", 0x00, "Top Left", "MESWIN_POS_LEFTUP");
         putEnum("textAlignment", 0x01, "Bottom Left", "MESWIN_POS_LEFTDOWN");
@@ -713,7 +724,10 @@ public abstract class ScriptConstants {
         putEnum("sfx", 0x80000047, "AirshipCursorMove");
         putEnum("sfx", 0x80000048, "BoardAirship");
         putEnum("sfx", 0x8000004A, "InstructionsChime");
+        putEnum("sfx", 0x00014C19, "BelgemineHealAeons");
         putEnum("sfx", 0x00015403, "LightningBoltHit");
+        putEnum("sfx", 0x00015C01, "DestructionSphereChestSealUnlock");
+        putEnum("sfx", 0x00016411, "SphereGridNodeActivation");
 
         putEnum("bgm", 0x000A, "Unwavering Determination");
         putEnum("bgm", 0x000B, "Secret Maneuvers");
@@ -726,13 +740,18 @@ public abstract class ScriptConstants {
         putEnum("bgm", 0x001D, "Thunder Plains");
         putEnum("bgm", 0x001F, "?Underwater Ruins");
         putEnum("bgm", 0x0025, "People of the North Pole");
+        putEnum("bgm", 0x0026, "Brass de Chocobo");
         putEnum("bgm", 0x0029, "Truth Revealed");
         putEnum("bgm", 0x002A, "Seymour Battle");
         putEnum("bgm", 0x002B, "Pursuit");
+        putEnum("bgm", 0x002C, "?Eerie");
         putEnum("bgm", 0x0030, "Prelude");
         putEnum("bgm", 0x0031, "Otherworld (BFA)");
         putEnum("bgm", 0x0032, "Decisive Battle");
         putEnum("bgm", 0x0082, "To Zanarkand");
+        putEnum("bgm", 0x0086, "?Yuna's Decision");
+        putEnum("bgm", 0x008A, "?Victory Fanfare");
+        putEnum("bgm", 0x008D, "?A Fleeting Dream");
         putEnum("bgm", 0x0088, "?Yuna's Theme");
         putEnum("bgm", 0x0091, "Challenge");
         putEnum("bgm", 0x00A5, "Run!!");
@@ -951,7 +970,7 @@ public abstract class ScriptConstants {
         putBattleActorProperty(0x001C, "Area", "int", "stat_area");
         putBattleActorProperty(0x001D, "Position", "int", "stat_pos");
         putBattleActorProperty(0x001E, "BattleDistance", "int", "stat_far");
-        putBattleActorProperty(0x001F, null, "int", "stat_group");
+        putBattleActorProperty(0x001F, "EnemyGroup", "int", "stat_group");
         putBattleActorProperty(0x0020, "Armored", "bool", "stat_sp_hard");
         putBattleActorProperty(0x0021, "?ImmuneToFractionalDmg", "bool", "stat_sp_ratio");
         putBattleActorProperty(0x0022, "?ImmuneToLife", "bool", "stat_sp_zombie");
@@ -965,19 +984,19 @@ public abstract class ScriptConstants {
         putBattleActorProperty(0x002A, "StatusBerserk", "bool", "stat_berserk");
         putBattleActorProperty(0x002B, "StatusProvoke", "bool", "stat_prov");
         putBattleActorProperty(0x002C, "StatusThreaten", "bool", "stat_threat");
-        putBattleActorProperty(0x002D, "StatusDurationSleep", "int", "stat_sleep");
-        putBattleActorProperty(0x002E, "StatusDurationSilence", "int", "stat_silence");
-        putBattleActorProperty(0x002F, "StatusDurationDarkness", "int", "stat_dark");
-        putBattleActorProperty(0x0030, "StatusDurationShell", "int", "stat_shell");
-        putBattleActorProperty(0x0031, "StatusDurationProtect", "int", "stat_protess");
-        putBattleActorProperty(0x0032, "StatusDurationReflect", "int", "stat_reflect");
-        putBattleActorProperty(0x0033, "StatusBlocksNulTide", "int", "stat_bawater");
-        putBattleActorProperty(0x0034, "StatusBlocksNulBlaze", "int", "stat_bafire");
-        putBattleActorProperty(0x0035, "StatusBlocksNulShock", "int", "stat_bathunder");
-        putBattleActorProperty(0x0036, "StatusBlocksNulFrost", "int", "stat_bacold");
-        putBattleActorProperty(0x0037, "StatusDurationRegen", "int", "stat_regen");
-        putBattleActorProperty(0x0038, "StatusDurationHaste", "int", "stat_haste");
-        putBattleActorProperty(0x0039, "StatusDurationSlow", "int", "stat_slow");
+        putBattleActorProperty(0x002D, "StatusSleep", "int", "stat_sleep");
+        putBattleActorProperty(0x002E, "StatusSilence", "int", "stat_silence");
+        putBattleActorProperty(0x002F, "StatusDarkness", "int", "stat_dark");
+        putBattleActorProperty(0x0030, "StatusShell", "int", "stat_shell");
+        putBattleActorProperty(0x0031, "StatusProtect", "int", "stat_protess");
+        putBattleActorProperty(0x0032, "StatusReflect", "int", "stat_reflect");
+        putBattleActorProperty(0x0033, "StatusNulTide", "int", "stat_bawater");
+        putBattleActorProperty(0x0034, "StatusNulBlaze", "int", "stat_bafire");
+        putBattleActorProperty(0x0035, "StatusNulShock", "int", "stat_bathunder");
+        putBattleActorProperty(0x0036, "StatusNulFrost", "int", "stat_bacold");
+        putBattleActorProperty(0x0037, "StatusRegen", "int", "stat_regen");
+        putBattleActorProperty(0x0038, "StatusHaste", "int", "stat_haste");
+        putBattleActorProperty(0x0039, "StatusSlow", "int", "stat_slow");
         putBattleActorProperty(0x003A, "?Sensor", "bool", "ability_see");
         putBattleActorProperty(0x003B, "FirstStrike", "bool", "ability_lead");
         putBattleActorProperty(0x003C, "?Initiative", "bool", "ability_first");
@@ -1080,7 +1099,7 @@ public abstract class ScriptConstants {
         putBattleActorProperty(0x009D, "StatusDoom", "bool", "stat_death_sentence");
         putBattleActorProperty(0x009E, null, "motionTypeBitfield", "stat_motion_type");
         putBattleActorProperty(0x009F, "DoomCounterInitial", "int", "stat_death_sentence_start");
-        putBattleActorProperty(0x00A0, "?DoomCounterCurrent", "int", "stat_death_sentence_count");
+        putBattleActorProperty(0x00A0, "DoomCounterCurrent", "int", "stat_death_sentence_count");
         putBattleActorProperty(0x00A1, null, "unknown", "stat_dmg_dir");
         putBattleActorProperty(0x00A2, null, "unknown", "stat_direction_change_flag");
         putBattleActorProperty(0x00A3, null, "unknown", "stat_direction_change_effect");
@@ -1120,22 +1139,22 @@ public abstract class ScriptConstants {
         putBattleActorProperty(0x00C5, "StatusResistanceRegen", "int", "stat_def_regen");
         putBattleActorProperty(0x00C6, "StatusResistanceHaste", "int", "stat_def_haste");
         putBattleActorProperty(0x00C7, "StatusResistanceSlow", "int", "stat_def_slow");
-        putBattleActorProperty(0x00C8, "?StatusImmunityScan", "bool", "stat_def_live");
-        putBattleActorProperty(0x00C9, "?StatusImmunityDistillPower", "bool", "stat_def_str_memory");
-        putBattleActorProperty(0x00CA, "?StatusImmunityDistillMana", "bool", "stat_def_mag_memory");
-        putBattleActorProperty(0x00CB, "?StatusImmunityDistillSpeed", "bool", "stat_def_dex_memory");
-        putBattleActorProperty(0x00CC, "?StatusImmunityUnusedDash", "bool", "stat_def_move_memory");
-        putBattleActorProperty(0x00CD, "?StatusImmunityDistillAbility", "bool", "stat_def_ability_memory");
-        putBattleActorProperty(0x00CE, "?StatusImmunityShield", "bool", "stat_def_dodge");
-        putBattleActorProperty(0x00CF, "?StatusImmunityBoost", "bool", "stat_def_defend");
-        putBattleActorProperty(0x00D0, "?StatusImmunityAutoLife", "bool", "stat_def_relife");
+        putBattleActorProperty(0x00C8, "StatusImmunityScan", "bool", "stat_def_live");
+        putBattleActorProperty(0x00C9, "StatusImmunityDistillPower", "bool", "stat_def_str_memory");
+        putBattleActorProperty(0x00CA, "StatusImmunityDistillMana", "bool", "stat_def_mag_memory");
+        putBattleActorProperty(0x00CB, "StatusImmunityDistillSpeed", "bool", "stat_def_dex_memory");
+        putBattleActorProperty(0x00CC, "StatusImmunityUnusedDash", "bool", "stat_def_move_memory");
+        putBattleActorProperty(0x00CD, "StatusImmunityDistillAbility", "bool", "stat_def_ability_memory");
+        putBattleActorProperty(0x00CE, "StatusImmunityShield", "bool", "stat_def_dodge");
+        putBattleActorProperty(0x00CF, "StatusImmunityBoost", "bool", "stat_def_defend");
+        putBattleActorProperty(0x00D0, "StatusImmunityAutoLife", "bool", "stat_def_relife");
         putBattleActorProperty(0x00D1, "StatusImmunityEject", "bool", "stat_def_blow");
-        putBattleActorProperty(0x00D2, "?StatusImmunityCurse", "bool", "stat_def_curse");
-        putBattleActorProperty(0x00D3, "?StatusImmunityDefend", "bool", "stat_def_defense");
-        putBattleActorProperty(0x00D4, "?StatusImmunityGuard", "bool", "stat_def_protect");
-        putBattleActorProperty(0x00D5, "?StatusImmunitySentinel", "bool", "stat_def_iron");
-        putBattleActorProperty(0x00D6, "?StatusImmunityDoom", "bool", "stat_def_death_sentence");
-        putBattleActorProperty(0x00D7, "?VisibleOnFrontlinePartyList", "bool", "stat_hp_list");
+        putBattleActorProperty(0x00D2, "StatusImmunityCurse", "bool", "stat_def_curse");
+        putBattleActorProperty(0x00D3, "StatusImmunityDefend", "bool", "stat_def_defense");
+        putBattleActorProperty(0x00D4, "StatusImmunityGuard", "bool", "stat_def_protect");
+        putBattleActorProperty(0x00D5, "StatusImmunitySentinel", "bool", "stat_def_iron");
+        putBattleActorProperty(0x00D6, "StatusImmunityDoom", "bool", "stat_def_death_sentence");
+        putBattleActorProperty(0x00D7, "VisibleOnFrontlinePartyList", "bool", "stat_hp_list");
         putBattleActorProperty(0x00D8, null, "unknown", "stat_visible_cam");
         putBattleActorProperty(0x00D9, null, "unknown", "stat_visible_out");
         putBattleActorProperty(0x00DA, null, "unknown", "stat_round");
@@ -1203,12 +1222,12 @@ public abstract class ScriptConstants {
         putBattleActorProperty(0x0118, null, "unknown", "stat_limit_gauge_add");
         putBattleActorProperty(0x0119, "NearDeath", "bool", "stat_hp_half");
         putBattleActorProperty(0x011A, "?OverdriveAvailable", "int", "stat_limit_gauge_check");
-        putBattleActorProperty(0x011B, null, "unknown", "stat_hp_check");
-        putBattleActorProperty(0x011C, null, "unknown", "stat_mp_check");
-        putBattleActorProperty(0x011D, null, "unknown", "stat_ba_all_check");
-        putBattleActorProperty(0x011E, null, "unknown", "stat_shell_reflect");
-        putBattleActorProperty(0x011F, null, "unknown", "stat_protess_reflect");
-        putBattleActorProperty(0x0120, null, "unknown", "stat_haste_reflect");
+        putBattleActorProperty(0x011B, "HpFull", "unknown", "stat_hp_check");
+        putBattleActorProperty(0x011C, "MpFull", "unknown", "stat_mp_check");
+        putBattleActorProperty(0x011D, "HasAllNuls", "unknown", "stat_ba_all_check");
+        putBattleActorProperty(0x011E, "HasShellOrReflect", "unknown", "stat_shell_reflect");
+        putBattleActorProperty(0x011F, "HasProtectOrReflect", "unknown", "stat_protess_reflect");
+        putBattleActorProperty(0x0120, "HasHasteOrReflect", "unknown", "stat_haste_reflect");
         putBattleActorProperty(0x0121, null, "unknown", "stat_weak_motion");
         putBattleActorProperty(0x0122, "?BribeImmunity", "unknown", "stat_sp_wairo");
         putBattleActorProperty(0x0123, null, "unknown", "stat_attack_motion_frame");
@@ -1254,13 +1273,17 @@ public abstract class ScriptConstants {
         putBattleActorProperty(0x014B, null, "unknown", "stat_linear_move_reset");
         putBattleActorProperty(0x014C, null, "unknown", "stat_bodyhit_direct");
         putBattleActorProperty(0x014D, "?recruited (Aeon)", "bool", "stat_join");
-        putBattleActorProperty(0x014E, "permanentAutoLife", "bool", "stat_eternal_relife");
+        putBattleActorProperty(0x014E, "PermanentAutoLife", "bool", "stat_eternal_relife");
         putBattleActorProperty(0x014F, null, "unknown", "stat_neck_target_flag");
         putBattleActorProperty(0x0150, null, "unknown", "stat_visible_out_on");
         putBattleActorProperty(0x0151, null, "unknown", "stat_regen_damage_flag");
         putBattleActorProperty(0x0152, null, "unknown", "stat_num_print_element");
         putBattleActorProperty(0x0153, "?disableLowHealthSlump", "bool", null);
+        // 0x0154 is missing
+        putBattleActorProperty(0x0155, "?inBattleNotPetrifiedOrEjected", "bool", null);
         putBattleActorProperty(0x0156, "?wasCaptured", "bool", null);
+        // 0x0157 is missing
+        // 0x0158 is missing
         putBattleActorProperty(0x0159, "?onlyTargetableBy", "move", null);
 
         putMoveProperty(0x0000, "damageFormula", "damageFormula");

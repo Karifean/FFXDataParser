@@ -1,6 +1,6 @@
 package main;
 
-import model.AbilityDataObject;
+import model.CommandDataObject;
 import model.GearAbilityDataObject;
 import atel.EncounterFile;
 import atel.EventFile;
@@ -18,7 +18,7 @@ public class Main {
 
     private static final String MODE_GREP = "GREP";
     private static final String MODE_TRANSLATE = "TRANSLATE";
-    private static final String MODE_READ_ALL_ABILITIES = "READ_ALL_ABILITIES";
+    private static final String MODE_READ_ALL_COMMANDS = "READ_ALL_COMMANDS";
     private static final String MODE_READ_KEY_ITEMS = "READ_KEY_ITEMS";
     private static final String MODE_READ_GEAR_ABILITIES = "READ_GEAR_ABILITIES";
     private static final String MODE_READ_TREASURES = "READ_TREASURES";
@@ -62,36 +62,36 @@ public class Main {
                 String concat = String.join("", realArgs);
                 translate(concat);
                 break;
-            case MODE_READ_ALL_ABILITIES:
+            case MODE_READ_ALL_COMMANDS:
                 System.out.println("--- command.bin ---");
                 for (int i = 0x3000; i < 0x3200; i++) {
-                    AbilityDataObject move = DataAccess.getMove(i);
+                    CommandDataObject move = DataAccess.getCommand(i);
                     if (move != null) {
-                        int offset = 0x14 + (i - 0x3000) * 0x60;
+                        int offset = 0x14 + (i - 0x3000) * CommandDataObject.PCCOM_LENGTH;
                         System.out.println(String.format("%04X (Offset %04X) - ", i, offset) + move);
                     }
                 }
                 System.out.println("--- monmagic1.bin ---");
                 for (int i = 0x4000; i < 0x4200; i++) {
-                    AbilityDataObject move = DataAccess.getMove(i);
+                    CommandDataObject move = DataAccess.getCommand(i);
                     if (move != null) {
-                        int offset = 0x14 + (i - 0x4000) * 0x5C;
+                        int offset = 0x14 + (i - 0x4000) * CommandDataObject.COM_LENGTH;
                         System.out.println(String.format("%04X (Offset %04X) - ", i, offset) + move);
                     }
                 }
                 System.out.println("--- monmagic2.bin ---");
                 for (int i = 0x6000; i < 0x6200; i++) {
-                    AbilityDataObject move = DataAccess.getMove(i);
+                    CommandDataObject move = DataAccess.getCommand(i);
                     if (move != null) {
-                        int offset = 0x14 + (i - 0x6000) * 0x5C;
+                        int offset = 0x14 + (i - 0x6000) * CommandDataObject.COM_LENGTH;
                         System.out.println(String.format("%04X (Offset %04X) - ", i, offset) + move);
                     }
                 }
                 System.out.println("--- item.bin ---");
                 for (int i = 0x2000; i < 0x2200; i++) {
-                    AbilityDataObject move = DataAccess.getMove(i);
+                    CommandDataObject move = DataAccess.getCommand(i);
                     if (move != null) {
-                        int offset = 0x14 + (i - 0x2000) * 0x60;
+                        int offset = 0x14 + (i - 0x2000) * CommandDataObject.PCCOM_LENGTH;
                         System.out.println(String.format("%04X (Offset %04X) - ", i, offset) + move);
                     }
                 }
@@ -231,24 +231,26 @@ public class Main {
                 prepareStringMacros(getLocalizationRoot(DEFAULT_LOCALIZATION) + "menu/macrodic.dcp", DEFAULT_LOCALIZATION, true);
                 break;
             case MODE_CUSTOM:
-                readDirectAtelScriptObject("menu/menumain.bin", true);
+                readPlayerCharStats("battle/kernel/ply_save.bin", true);
+                // readMixCombinations(PATH_ORIGINALS_KERNEL + "prepare.bin", true);
+                // readDirectAtelScriptObject("menu/menumain.bin", true);
                 // readX2AbilitiesFromFile("ffx_ps2/ffx2/master/new_uspc/battle/kernel/command.bin", "us", true);
                 break;
             case MODE_MAKE_EDITS:
                 System.out.println("--- ATTACKS ---");
                 if (CsvEditExecutor.editAttacks(true)) {
                     System.out.println("--- command.bin ---");
-                    AbilityDataObject[] commands = Arrays.copyOfRange(DataAccess.MOVES, 0x3000, 0x3140);
-                    DataWritingManager.writeDataObjectsInAllLocalizations("battle/kernel/command.bin", commands, AbilityDataObject.PCCOM_LENGTH, false);
+                    CommandDataObject[] commands = Arrays.copyOfRange(DataAccess.MOVES, 0x3000, 0x3140);
+                    DataWritingManager.writeDataObjectsInAllLocalizations("battle/kernel/command.bin", commands, CommandDataObject.PCCOM_LENGTH, false);
                     System.out.println("--- monmagic1.bin ---");
-                    AbilityDataObject[] monmagics1 = Arrays.copyOfRange(DataAccess.MOVES, 0x4000, 0x412C);
-                    DataWritingManager.writeDataObjectsInAllLocalizations("battle/kernel/monmagic1.bin", monmagics1, AbilityDataObject.COM_LENGTH, false);
+                    CommandDataObject[] monmagics1 = Arrays.copyOfRange(DataAccess.MOVES, 0x4000, 0x412C);
+                    DataWritingManager.writeDataObjectsInAllLocalizations("battle/kernel/monmagic1.bin", monmagics1, CommandDataObject.COM_LENGTH, false);
                     System.out.println("--- monmagic2.bin ---");
-                    AbilityDataObject[] monmagics2 = Arrays.copyOfRange(DataAccess.MOVES, 0x6000, 0x60F7);
-                    DataWritingManager.writeDataObjectsInAllLocalizations("battle/kernel/monmagic2.bin", monmagics2, AbilityDataObject.COM_LENGTH, false);
+                    CommandDataObject[] monmagics2 = Arrays.copyOfRange(DataAccess.MOVES, 0x6000, 0x60F7);
+                    DataWritingManager.writeDataObjectsInAllLocalizations("battle/kernel/monmagic2.bin", monmagics2, CommandDataObject.COM_LENGTH, false);
                     System.out.println("--- item.bin ---");
-                    AbilityDataObject[] items = Arrays.copyOfRange(DataAccess.MOVES, 0x2000, 0x2070);
-                    DataWritingManager.writeDataObjectsInAllLocalizations("battle/kernel/item.bin", items, AbilityDataObject.PCCOM_LENGTH, false);
+                    CommandDataObject[] items = Arrays.copyOfRange(DataAccess.MOVES, 0x2000, 0x2070);
+                    DataWritingManager.writeDataObjectsInAllLocalizations("battle/kernel/item.bin", items, CommandDataObject.PCCOM_LENGTH, false);
                 }
                 System.out.println("--- GEAR ABILITIES ---");
                 if (CsvEditExecutor.editGearAbilities(true)) {

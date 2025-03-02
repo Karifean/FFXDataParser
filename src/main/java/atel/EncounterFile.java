@@ -60,11 +60,11 @@ public class EncounterFile {
 
     private void mapObjects() {
         encounterScript = new AtelScriptObject(scriptBytes, workerMappingBytes);
-        if (formationBytes != null && formationBytes.length > 0) {
-            formation = new FormationDataObject(formationBytes);
-        }
         if (chunkCount == 4) {
             return;
+        }
+        if (formationBytes != null && formationBytes.length > 0) {
+            formation = new FormationDataObject(formationBytes);
         }
         if (battleAreasPositionsBytes != null && battleAreasPositionsBytes.length > 0) {
             battleAreasPositions = new BattleAreasPositionsDataObject(battleAreasPositionsBytes);

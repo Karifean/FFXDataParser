@@ -21,6 +21,7 @@ public class ScriptVariable {
     public final List<StackObject> values = new ArrayList<>();
 
     public ScriptWorker parentWorker;
+    public String inferredType = "unknown";
 
     public static int[] byteStructFromDescriptor(ScriptWorker parentWorker, int value, int length) {
         if (parentWorker == null || parentWorker.parentScript == null) {
@@ -40,7 +41,7 @@ public class ScriptVariable {
         this.lb = lb;
         this.hb = hb;
         this.fullBytes = hb * 0x100000000L + lb;
-        this.offset = lb & 0xFFFFFF;
+        this.offset = lb & 0x00FFFFFF;
         this.format = (lb & 0xF0000000) >> 28;
         this.location = (lb & 0x0F000000) >> 25;
         this.elementCount = hb & 0xFFFF;
@@ -49,6 +50,7 @@ public class ScriptVariable {
 
     public ScriptVariable(ScriptVariable vr) {
         this.parentWorker = vr.parentWorker;
+        this.inferredType = vr.inferredType;
         this.index = vr.index;
         this.lb = vr.lb;
         this.hb = vr.hb;
@@ -73,6 +75,12 @@ public class ScriptVariable {
             return parentWorker.parentScript.eventDataOffset;
         }
         return -1;
+    }
+
+    public void inferType(String type) {
+        if (isWeakType(inferredType)) {
+            inferredType = type;
+        }
     }
 
     public void parseValues() {
@@ -114,33 +122,22 @@ public class ScriptVariable {
     @Override
     public String toString() {
         List<String> list = new ArrayList<>();
-        list.add(fullStoreLocation());
+        list.add(getDereference());
         list.add("type=" + fullTypeString());
         list.add(valuesString());
         String full = list.stream().filter(s -> s != null && !s.isBlank()).collect(Collectors.joining(", "));
-        return "{ " + full + " }";
-    }
-
-    private String fullStoreLocation() {
-        String deref = getDereference();
-        if (location == 0) {
-            ScriptField scriptField = StackObject.enumToScriptField("saveData", offset);
-            return Objects.requireNonNullElse(scriptField.name, "Unknown") + " (" + deref + ")";
-        } else if (location == 1) {
-            ScriptField scriptField = StackObject.enumToScriptField("battleVar", offset);
-            return Objects.requireNonNullElse(scriptField.name, "Unknown") + " (" + deref + ")";
-        }
-        return deref;
+        return getLabel() + " { " + full + " }";
     }
 
     private String fullTypeString() {
-        String valueFormat = formatToType(format);
+        String rawType = formatToType(format);
+        String rawTypeSuffix = !rawType.equals(inferredType) ? " (" + rawType + ")" : "";
         if (elementCount <= 1) {
-            return valueFormat;
+            return inferredType + rawTypeSuffix;
         }
         String elements = elementSize > 1 ? elementCount + "=" + (elementCount / elementSize) + "*" + elementSize + "bytes" : ""+elementCount;
         String arrayIndex = "[" + elements + "]";
-        return valueFormat + arrayIndex;
+        return inferredType + arrayIndex + rawTypeSuffix;
     }
 
     public String getLabel() {
@@ -204,11 +201,11 @@ public class ScriptVariable {
     public static String locationToString(int location) {
         return switch (location) {
             case 0 -> "saveData";
-            case 1 -> "battleVar";
+            case 1 -> "battleVars";
             case 2 -> "dataOffset";
             case 3 -> "private";
             case 4 -> "sharedOffset";
-            case 5 -> "int variables";
+            case 5 -> "rI";
             case 6 -> "eventData";
             default -> "unknown:" + location;
         };
@@ -236,5 +233,9 @@ public class ScriptVariable {
             case 6 -> "float";
             default -> "unknown";
         };
+    }
+
+    private static boolean isWeakType(String type) {
+        return type == null || "unknown".equals(type);
     }
 }

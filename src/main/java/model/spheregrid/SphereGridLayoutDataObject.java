@@ -2,7 +2,7 @@ package model.spheregrid;
 
 import main.DataAccess;
 import main.StringHelper;
-import model.AbilityDataObject;
+import model.CommandDataObject;
 import model.Nameable;
 
 import java.util.ArrayList;
@@ -121,7 +121,7 @@ public class SphereGridLayoutDataObject implements Nameable {
     }
 
     private static String asMove(int idx) {
-        AbilityDataObject move = DataAccess.getMove(idx);
+        CommandDataObject move = DataAccess.getCommand(idx);
         return (move != null ? move.name : "null") + StringHelper.hex4Suffix(idx);
     }
 }

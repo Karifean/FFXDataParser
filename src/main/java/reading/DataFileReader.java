@@ -18,7 +18,7 @@ public class DataFileReader<T> {
     }
 
     public String indexWriter(int idx) {
-        return "Index " + idx + " [" + StringHelper.formatHex2(idx) + "h]";
+        return "Index " + StringHelper.hex2WithSuffix(idx);
     }
 
     public List<T> toList(String filename, String localization, boolean print) {

@@ -21,7 +21,7 @@ public class FieldString {
                 int simplifiedHeader = ChunkedFileHelper.read4Bytes(bytes, i * 0x08 + 0x04);
                 FieldString out = new FieldString(charset, regularHeader, simplifiedHeader, bytes);
                 if (print) {
-                    System.out.printf("String " + StringHelper.hex2WithSuffix(i) + ": %s%n", out);
+                    System.out.printf("String %s: %s%n", StringHelper.hex2WithSuffix(i), out);
                 }
                 strings.add(out);
             }

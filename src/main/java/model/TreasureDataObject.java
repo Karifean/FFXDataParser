@@ -33,7 +33,7 @@ public class TreasureDataObject implements Nameable {
         String typeHexSuffix = StringHelper.hex2Suffix(type);
         String typeString = type + typeHexSuffix;
         if (kind == 0x02) {
-            return "Item: " + quantity + "x " + DataAccess.getMove(type).name + typeHexSuffix;
+            return "Item: " + quantity + "x " + DataAccess.getCommand(type).name + typeHexSuffix;
         } else if (kind == 0x00) {
             return "Gil: " + quantity * 100 + (type != 0 ? "T=" + typeString : "") + StringHelper.hex2Suffix(quantity);
         } else if (kind == 0x05) {
