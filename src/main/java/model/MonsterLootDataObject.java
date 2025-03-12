@@ -54,6 +54,7 @@ public class MonsterLootDataObject {
     int[][] gearAbilitiesOnArmorsByChar = new int[7][8];
     int zanmatoLevelByte;
     int gilStealByte;
+    int arenaPrice;
 
     public MonsterLootDataObject(int[] bytes) {
         this.bytes = bytes;
@@ -107,6 +108,7 @@ public class MonsterLootDataObject {
         }
         zanmatoLevelByte = bytes[0x112];
         gilStealByte = bytes[0x113];
+        arenaPrice = read4Bytes(bytes, 0x114);
     }
 
     @Override
@@ -159,6 +161,7 @@ public class MonsterLootDataObject {
         } else {
             list.add("No Gil to steal");
         }
+        list.add("Monster Arena Price: " + arenaPrice);
         String full = list.stream().filter(s -> s != null && !s.isBlank()).collect(Collectors.joining("\n"));
         return full;
     }
@@ -222,6 +225,10 @@ public class MonsterLootDataObject {
 
     private static int read2Bytes(int[] bytes, int offset) {
         return bytes[offset] + bytes[offset+1] * 0x100;
+    }
+
+    private static int read4Bytes(int[] bytes, int offset) {
+        return bytes[offset] + bytes[offset+1] * 0x100 + bytes[offset+2] * 0x10000 + bytes[offset+3] * 0x1000000;
     }
 
     private static String asGearAbility(int idx) {
