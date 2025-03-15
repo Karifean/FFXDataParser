@@ -252,13 +252,11 @@ public class AtelScriptObject {
         }
         int workersToMapSupposedly = battleWorkerMappingBytes[0];
         int workerSlotCount = battleWorkerMappingBytes[1];
-        workerBattleSlotArray = new ScriptWorker[workerSlotCount];
+        // map from section index to purpose slot
+        Map<Integer, Integer> slotMap = new HashMap<>();
         for (int i = 0; i < workerSlotCount; i++) {
-            int workerIndex = battleWorkerMappingBytes[i + 2];
-            ScriptWorker worker = workerIndex != 0xFF ? getWorker(workerIndex) : null;
-            workerBattleSlotArray[i] = worker;
-            if (worker != null) {
-                worker.setPurposeSlot(i);
+            if (battleWorkerMappingBytes[i + 2] != 0xFF) {
+                slotMap.put(battleWorkerMappingBytes[i + 2], i);
             }
         }
         int sectionsLineOffset = workerSlotCount + 2 + (workerSlotCount % 2);
@@ -278,6 +276,9 @@ public class AtelScriptObject {
             int sectionPayloadOffset = sectionOffset + 2;
             ScriptWorker worker = getWorker(workerIndex);
             if (worker != null) {
+                if (slotMap.containsKey(i)) {
+                    worker.setPurposeSlot(slotMap.get(i));
+                }
                 worker.setBattleWorkerTypes(battleWorkerType, entryPointSlotCount, Arrays.copyOfRange(battleWorkerMappingBytes, sectionPayloadOffset, sectionPayloadOffset + entryPointSlotCount * 2));
             } else {
                 System.err.println("WARNING - no worker with index " + workerIndex + " at section " + i + "!");
