@@ -1,5 +1,6 @@
 package atel.model;
 
+import main.DataAccess;
 import main.StringHelper;
 
 import java.util.List;
@@ -21,7 +22,7 @@ public class ScriptJump {
     public ScriptLine targetLine;
 
     private String label;
-    private int battleWorkerEntryPointType;
+    private int battleWorkerEntryPointSlot;
 
     public ScriptJump(ScriptWorker scriptWorker, int addr, int jumpIndex, boolean isEntryPoint) {
         this.scriptWorker = scriptWorker;
@@ -73,27 +74,51 @@ public class ScriptJump {
         } */
     }
 
-    public void setBattleWorkerEntryPointType(int entryPointType) {
-        battleWorkerEntryPointType = entryPointType;
+    public void setBattleWorkerEntryPointSlot(int entryPointSlot) {
+        battleWorkerEntryPointSlot = entryPointSlot;
     }
 
     private String battleWorkerEntryPointToString() {
-        int battleWorkerType = scriptWorker.battleWorkerType;
+        int battleWorkerType = scriptWorker.battleWorkerType != null ? scriptWorker.battleWorkerType : -1;
+        int battleWorkerSlot = scriptWorker.purposeSlot != null ? scriptWorker.purposeSlot : -1;
         if (battleWorkerType == 2) {
-            String s = ctbPurposeSlotToString(battleWorkerEntryPointType);
+            String s = ctbPurposeSlotToString(battleWorkerEntryPointSlot);
             if (s != null) {
-                return s;
+                String prefix = "";
+                if (battleWorkerSlot >= 0x25 && battleWorkerSlot <= 0x28) {
+                    String chr = StackObject.enumToScriptField("playerChar", battleWorkerSlot - 0x17).getName();
+                    prefix = "Base" + chr;
+                }
+                if (battleWorkerSlot >= 0x29 && battleWorkerSlot <= 0x3A) {
+                    prefix = StackObject.enumToScriptField("playerChar", battleWorkerSlot - 0x29).getName();
+                }
+                return prefix + s;
             }
         } else if (battleWorkerType == 4) {
-            return "encScript" + battleWorkerEntryPointType;
+            return "btlScene" + StringHelper.hex2WithSuffix(battleWorkerEntryPointSlot);
         } else if (battleWorkerType == 6) {
-            String s = startEndHookPurposeSlotToString(battleWorkerEntryPointType);
+            String s = startEndHookPurposeSlotToString(battleWorkerEntryPointSlot);
             if (s != null) {
                 return s;
             }
         }
+        if (battleWorkerSlot == 0x00) {
+            return "?BattleCam" + StringHelper.formatHex2(battleWorkerEntryPointSlot);
+        } else if (battleWorkerSlot == 0x41 || battleWorkerSlot == 0x42 || battleWorkerSlot == 0x43) {
+            int cmd = 0x3000 + battleWorkerEntryPointSlot;
+            return "MagicCam:" + DataAccess.getCommand(cmd).getName() + StringHelper.hex4Suffix(cmd);
+        } else if (battleWorkerSlot == 0x44 || battleWorkerSlot == 0x45 || battleWorkerSlot == 0x46) {
+            int cmd = 0x2000 + battleWorkerEntryPointSlot;
+            return "MagicCam:" + DataAccess.getCommand(cmd).getName() + StringHelper.hex4Suffix(cmd);
+        } else if (battleWorkerSlot == 0x47 || battleWorkerSlot == 0x48 || battleWorkerSlot == 0x49) {
+            int cmd = 0x4000 + battleWorkerEntryPointSlot;
+            return "MagicCam:" + DataAccess.getCommand(cmd).getName() + StringHelper.hex4Suffix(cmd);
+        } else if (battleWorkerSlot == 0x4A || battleWorkerSlot == 0x4B || battleWorkerSlot == 0x4C) {
+            int cmd = 0x6000 + battleWorkerEntryPointSlot;
+            return "MagicCam:" + DataAccess.getCommand(cmd).getName() + StringHelper.hex4Suffix(cmd);
+        }
         String strBattleWorkerType = "t" + StringHelper.formatHex2(battleWorkerType);
-        String strBattleWorkerEntryPointType = "p" + StringHelper.formatHex2(battleWorkerEntryPointType);
+        String strBattleWorkerEntryPointType = "p" + StringHelper.formatHex2(battleWorkerEntryPointSlot);
         String strWorkerPurposeSlot = "s" + StringHelper.formatHex2(scriptWorker.purposeSlot);
         return strWorkerPurposeSlot + strBattleWorkerType + strBattleWorkerEntryPointType;
     }

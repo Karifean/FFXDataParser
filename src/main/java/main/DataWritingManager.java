@@ -30,10 +30,22 @@ public class DataWritingManager {
         add2Bytes(bytes, objects.length * length);
         bytes.addAll(List.of(0x14, 0x00, 0x00, 0x00));
         for (Writable obj : objects) {
-            int[] abilityBytes = obj.toBytes(localization);
-            bytes.addAll(Arrays.stream(abilityBytes).boxed().collect(Collectors.toList()));
+            int[] objectBytes = obj.toBytes(localization);
+            bytes.addAll(Arrays.stream(objectBytes).boxed().toList());
         }
-        bytes.addAll(Arrays.stream(stringBytes).boxed().collect(Collectors.toList()));
+        bytes.addAll(Arrays.stream(stringBytes).boxed().toList());
+        int[] fullBytes = new int[bytes.size()];
+        for (int i = 0; i < bytes.size(); i++) {
+            fullBytes[i] = bytes.get(i);
+        }
+        return fullBytes;
+    }
+
+    public static int[] dataObjectWithStringsToBytes(Writable object, String localization) {
+        Stream<KeyedString> stringStream = object.streamKeyedStrings(localization);
+        int[] stringBytes = KeyedString.rebuildKeyedStrings(stringStream, StringHelper.localizationToCharset(localization), false);
+        List<Integer> bytes = new ArrayList<>(Arrays.stream(object.toBytes(localization)).boxed().toList());
+        bytes.addAll(Arrays.stream(stringBytes).boxed().toList());
         int[] fullBytes = new int[bytes.size()];
         for (int i = 0; i < bytes.size(); i++) {
             fullBytes[i] = bytes.get(i);

@@ -7,12 +7,14 @@ import atel.EventFile;
 import atel.MonsterFile;
 import model.KeyItemDataObject;
 import model.MonsterStatDataObject;
+import reading.FileAccessorWithMods;
 
 import java.util.Arrays;
 import java.util.List;
 
 import static main.DataReadingManager.*;
 import static reading.FileAccessorWithMods.GAME_FILES_ROOT;
+import static reading.FileAccessorWithMods.MODS_FOLDER;
 
 public class Main {
 
@@ -40,6 +42,7 @@ public class Main {
     private static final String MODE_READ_CUSTOMIZATIONS = "READ_CUSTOMIZATIONS";
     private static final String MODE_READ_MACROS = "READ_MACROS";
     private static final String MODE_MAKE_EDITS = "MAKE_EDITS";
+    private static final String MODE_MAKE_AUTOHASTE_MOD = "MAKE_AUTOHASTE_MOD";
     private static final String MODE_CUSTOM = "CUSTOM";
 
     private static final boolean SKIP_BLITZBALL_EVENTS_FOLDER = true;
@@ -229,6 +232,17 @@ public class Main {
                 break;
             case MODE_READ_MACROS:
                 prepareStringMacros(getLocalizationRoot(DEFAULT_LOCALIZATION) + "menu/macrodic.dcp", DEFAULT_LOCALIZATION, true);
+                break;
+            case MODE_MAKE_AUTOHASTE_MOD:
+                for (int monsterIndex = 0; monsterIndex < MONSTER_MAX_INDEX; monsterIndex++) {
+                    String mIndexString = String.format("m%03d", monsterIndex);
+                    MonsterFile monster = DataAccess.getMonster(monsterIndex  + 0x1000);
+                    if (monster != null) {
+                        monster.monsterStatData.autoStatusesTemporal |= 0x0800;
+                        String path = GAME_FILES_ROOT + MODS_FOLDER + PATH_MONSTER_FOLDER + '_' + mIndexString + '/' + mIndexString + ".bin";
+                        FileAccessorWithMods.writeByteArrayToFile(path, monster.toBytes());
+                    }
+                }
                 break;
             case MODE_CUSTOM:
                 readPlayerCharStats("battle/kernel/ply_save.bin", true);

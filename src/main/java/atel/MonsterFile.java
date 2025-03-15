@@ -1,10 +1,13 @@
 package atel;
 
+import main.DataWritingManager;
 import model.Nameable;
 import reading.Chunk;
 import model.MonsterLootDataObject;
 import model.MonsterStatDataObject;
+import reading.ChunkedFileHelper;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -52,6 +55,18 @@ public class MonsterFile implements Nameable {
         if (monsterAi != null) {
             monsterAi.parseScript();
         }
+    }
+
+    public int[] toBytes() {
+        List<int[]> chunks = new ArrayList<>();
+        chunks.add(scriptBytes);
+        chunks.add(workerMappingBytes);
+        chunks.add(DataWritingManager.dataObjectWithStringsToBytes(monsterStatData, "jp"));
+        chunks.add(chunk3Bytes);
+        chunks.add(monsterLootData.toBytes(null));
+        chunks.add(audioBytesApparently);
+        chunks.add(DataWritingManager.dataObjectWithStringsToBytes(monsterStatData, "us"));
+        return ChunkedFileHelper.chunksToBytes(chunks, 0x08, 0x30, 0x10);
     }
 
     @Override

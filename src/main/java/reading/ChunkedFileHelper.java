@@ -1,7 +1,10 @@
 package reading;
 
-import java.io.*;
+import java.io.DataInputStream;
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public abstract class ChunkedFileHelper {
@@ -24,6 +27,66 @@ public abstract class ChunkedFileHelper {
             return bytesToChunks(bytes, chunkCount, 0);
         }
         return null;
+    }
+
+    public static int[] chunksToBytes(List<int[]> chunks, int chunkCount, int chunkInitialOffset, int chunkAlignment) {
+        if (chunks.size() > ((chunkInitialOffset - 0x08) / 0x04)) {
+            throw new IllegalArgumentException("Too many chunks for initial offset");
+        }
+        int[] header = new int[chunkInitialOffset];
+        boolean terminateWithFFs = false;
+        if (chunkCount < 0) {
+            write4Bytes(header, 0x00, 0x31305645);
+            chunkCount = chunks.size();
+            terminateWithFFs = true;
+        } else {
+            write4Bytes(header, 0x00, chunkCount);
+            chunkCount--;
+        }
+        int endOffset = chunkInitialOffset;
+        int[] paddings = new int[chunkCount];
+        for (int i = 0; i < chunkCount; i++) {
+            int addressTargetOffset = 0x04 + 0x04 * i;
+            int[] chunk = chunks.get(i);
+            int padding = 0;
+            if (chunk == null || chunk.length == 0) {
+                write4Bytes(header, addressTargetOffset, 0);
+            } else {
+                write4Bytes(header, addressTargetOffset, endOffset);
+                endOffset += chunk.length;
+                if (chunkAlignment > 1) {
+                    int misalignment = endOffset % chunkAlignment;
+                    if (misalignment > 0) {
+                        padding = chunkAlignment - misalignment;
+                        endOffset += padding;
+                    }
+                }
+            }
+            paddings[i] = padding;
+        }
+        int chunkListEndOffset = 0x04 + 0x04 * chunkCount;
+        write4Bytes(header, chunkListEndOffset, endOffset);
+        if (terminateWithFFs) {
+            write4Bytes(header, chunkListEndOffset + 0x04, 0xFFFFFFFF);
+        }
+        List<Integer> bytes = new ArrayList<>(Arrays.stream(header).boxed().toList());
+        for (int i = 0; i < chunkCount; i++) {
+            int[] chunk = chunks.get(i);
+            if (chunk != null && chunk.length > 0) {
+                bytes.addAll(Arrays.stream(chunk).boxed().toList());
+            }
+            if (paddings[i] > 0) {
+                for (int j = 0; j < paddings[i]; j++) {
+                    bytes.add(0);
+                }
+            }
+        }
+
+        int[] fullBytes = new int[endOffset];
+        for (int i = 0; i < bytes.size(); i++) {
+            fullBytes[i] = bytes.get(i);
+        }
+        return fullBytes;
     }
 
     public static int[] fileToBytes(File file) {

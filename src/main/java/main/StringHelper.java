@@ -444,7 +444,7 @@ public abstract class StringHelper {
         } else if (cmd.startsWith("COLOR:")) {
             return List.of(0x0A, colorToByte(cmd.substring(6)));
         } else if (cmd.startsWith("CTRL:")) {
-            int ctrlIdx = Integer.parseInt(cmd.substring(5), 16) + 0x30;
+            int ctrlIdx = Integer.parseInt(cmd.substring(5, 7), 16) + 0x30;
             return List.of(0x0B, ctrlIdx);
         } else if (cmd.equals("CHOICE-END")) {
             return List.of(0x10, 0xFF);

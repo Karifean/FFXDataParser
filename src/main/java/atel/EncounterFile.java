@@ -1,11 +1,14 @@
 package atel;
 
+import main.DataWritingManager;
 import model.BattleAreasPositionsDataObject;
 import model.FormationDataObject;
 import model.strings.FieldString;
 import model.strings.LocalizedFieldStringObject;
 import reading.Chunk;
+import reading.ChunkedFileHelper;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -110,6 +113,18 @@ public class EncounterFile {
             encounterScript.setStrings(strings);
             encounterScript.parseScript();
         }
+    }
+
+    public int[] toBytes() {
+        List<int[]> chunks = new ArrayList<>();
+        chunks.add(scriptBytes);
+        chunks.add(workerMappingBytes);
+        chunks.add(formationBytes);
+        chunks.add(battleAreasPositionsBytes);
+        chunks.add(DataWritingManager.stringsToStringFileBytes(strings, "jp"));
+        chunks.add(ftcxBytes);
+        chunks.add(DataWritingManager.stringsToStringFileBytes(strings, "us"));
+        return ChunkedFileHelper.chunksToBytes(chunks, 0x08, 0x40, 0x10);
     }
 
     @Override

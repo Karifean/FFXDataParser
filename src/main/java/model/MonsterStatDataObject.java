@@ -85,9 +85,9 @@ public class MonsterStatDataObject implements Nameable, Writable, Localized<Mons
     int statusResistChanceNTide;
     int statusResistChanceHaste;
     int statusResistChanceSlow;
-    int autoStatusesPermanent;
-    int autoStatusesTemporal;
-    int autoStatusesExtra;
+    public int autoStatusesPermanent;
+    public int autoStatusesTemporal;
+    public int autoStatusesExtra;
 
     int extraStatusImmunities;
 

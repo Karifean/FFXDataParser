@@ -449,6 +449,10 @@ public abstract class ScriptConstants {
         putEnum("battleWorkerType", 0x02, "CombatHandler");
         putEnum("battleWorkerType", 0x04, "EncounterScripts");
         putEnum("battleWorkerType", 0x06, "StartEndHooks");
+        putEnum("battleWorkerType", 0x07, "MagicCameraHandler-Command");
+        putEnum("battleWorkerType", 0x08, "MagicCameraHandler-Item");
+        putEnum("battleWorkerType", 0x09, "MagicCameraHandler-Monmagic1");
+        putEnum("battleWorkerType", 0x0A, "MagicCameraHandler-Monmagic2");
 
         putEnum("controllerButton", 0x00, "?L2 (Scroll Up)");
         putEnum("controllerButton", 0x01, "?R2 (Scroll Down)");

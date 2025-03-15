@@ -1,10 +1,14 @@
 package atel;
 
+import main.DataWritingManager;
+import model.Nameable;
 import model.strings.FieldString;
 import model.strings.LocalizedFieldStringObject;
-import model.Nameable;
 import reading.Chunk;
+import reading.ChunkedFileHelper;
 
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -84,6 +88,17 @@ public class EventFile implements Nameable {
             eventScript.setStrings(strings);
             eventScript.parseScript();
         }
+    }
+
+    public int[] toBytes() {
+        // Note: this is untested and probably doesn't work!
+        List<int[]> chunks = new ArrayList<>();
+        chunks.add(scriptBytes);
+        chunks.add(DataWritingManager.stringsToStringFileBytes(strings, "jp"));
+        chunks.add(unknownChunk2Bytes);
+        chunks.add(ftcxBytes);
+        chunks.add(DataWritingManager.stringsToStringFileBytes(strings, "us"));
+        return ChunkedFileHelper.chunksToBytes(chunks, -1, 0x40, 0x10);
     }
 
     @Override

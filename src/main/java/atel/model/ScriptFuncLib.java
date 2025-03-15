@@ -214,7 +214,7 @@ public abstract class ScriptFuncLib {
         putUnknownFunc(0x00D2, 0);
         putFuncWithIdx(0x00D5, new ScriptFunc("playFieldVoiceLine", "unknown", null, p("voiceFileIndex", "int")));
         putUnknownFunc(0x00D6, 0);
-        putUnknownFunc(0x00D7, 0);
+        putFuncWithIdx(0x00D7, new ScriptFunc("?abortFieldVoiceLine", "unknown", null, true));
         putUnknownFunc(0x00D8, 0);
         putUnknownFunc(0x00D9, 0);
         putUnknownFunc(0x00DA, 0);
@@ -357,14 +357,14 @@ public abstract class ScriptFuncLib {
         putUnknownFunc(0x018B, 1);
         putUnknownFunc(0x018F, 2);
         putUnknownFunc(0x0192, 1);
-        putUnknownFunc(0x0193, 1);
+        putFuncWithIdx(0x0193, new ScriptFunc(p("sfx")));
         putUnknownFunc(0x0194, 1);
         putUnknownFunc(0x0195, 0);
         putFuncWithIdx(0x0196, new ScriptFunc("bindGfxToSelf", "unknown", null, p("gfxIndex", "int"))); // only works for level geometry
         putUnknownFunc(0x0197, 1);
         putFuncWithIdx(0x0198, new ScriptFunc("enableVisualEffectIndex", "unknown", null, p("levelPartIndex", "int"), p("effectType"), p("runOnce", "bool")));
         putFuncWithIdx(0x0199, new ScriptFunc("enableOwnVisualEffectIndex", "unknown", null, p("effectType"), p("runOnce", "bool")));
-        putUnknownFunc(0x019C, 0);
+        putFuncWithIdx(0x019C, new ScriptFunc("True", "bool", null, false));
         putFuncWithIdx(0x019D, new ScriptFunc("detach", "unknown", null, p("unloadModel", "bool")));
         putUnknownFunc(0x019E, 0);
         putUnknownFunc(0x019F, 1);
@@ -902,7 +902,7 @@ public abstract class ScriptFuncLib {
         putUnknownFunc(0x7039, "btlTerminateDeath", 0);
         putUnknownFunc(0x703A, "btlSetSpeed", 1);
         putFuncWithIdx(0x703B, new ScriptFunc("setMoveDisabled", "unknown", "btlSetCommandUse", p("btlChr"), p("move"), p("disabled", "bool")));
-        putFuncWithIdx(0x703C, new ScriptFunc("runEncounterScriptA", "unknown", "btlOff", p("encScript", "int")));
+        putFuncWithIdx(0x703C, new ScriptFunc("runBtlSceneA", "unknown", "btlOff", p("btlScene", "int")));
         putUnknownFunc(0x703D, "btlOn", 0);
         putUnknownFunc(0x703E, "btlWait", 0);
         putUnknownFunc(0x703F, "camReq", 2);
@@ -993,7 +993,7 @@ public abstract class ScriptFuncLib {
         putUnknownFunc(0x7094, "btlSetTransVisible", 3);
         putUnknownFunc(0x7095, "btlGetMoveFrameRest", 0);
         putUnknownFunc(0x7096, "btlGetReflect", 0);
-        putFuncWithIdx(0x7097, new ScriptFunc("runEncounterScriptB", "unknown", "btlOff2", p("encScript", "int")));
+        putFuncWithIdx(0x7097, new ScriptFunc("runBtlSceneB", "unknown", "btlOff2", p("btlScene", "int")));
         putUnknownFunc(0x7098, "btlCheckDefenseMotion", "bool", 0);
         putUnknownFunc(0x7099, "btlSetCursorType", 1);
         putUnknownFunc(0x709A, "btlCheckPoison", 0);
@@ -1096,7 +1096,7 @@ public abstract class ScriptFuncLib {
         putFuncWithIdx(0x70FB, new ScriptFunc(null, "btlChr", "btlGetCommandTargetSearch", p("move"), p("targeting", "magusTarget"), p("property", "btlChrProperty"), p("selector"), p("chance", "int")));
         putUnknownFunc(0x70FC, "btlGetMegasRandomCommand", 0);
         putFuncWithIdx(0x70FD, new ScriptFunc("increaseMagusMotivationAndOverdrive", "unknown", "btlSetUpLimit", p("overdrive", "int"), p("motivation", "int")));
-        putFuncWithIdx(0x70FE, new ScriptFunc(null, "unknown", "btlSetUpLimit2", p(1), p(2), p("overdrive", "int"), p("motivation", "int")));
+        putFuncWithIdx(0x70FE, new ScriptFunc("setMagusMotivationAndOverdriveChangeInPositiveOrNegativeCase", "unknown", "btlSetUpLimit2", p("overdrivePos", "int"), p("motivationPos", "int"), p("overdriveNeg", "int"), p("motivationNeg", "int")));
         putUnknownFunc(0x70FF, "btlSetDeltaTarget", 0);
         putUnknownFunc(0x7100, "btlCheckReqMotion", 1);
         putFuncWithIdx(0x7101, new ScriptFunc("isDebugBattleStart", "unknown", "btlGetFullCommand", true));

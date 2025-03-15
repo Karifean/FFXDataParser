@@ -3,15 +3,20 @@ package model;
 import main.DataAccess;
 import atel.model.StackObject;
 import main.StringHelper;
+import model.strings.KeyedString;
+import model.strings.LocalizedKeyedStringObject;
 
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import static reading.ChunkedFileHelper.*;
 
 /**
  * Part of MonsterFile
  */
-public class MonsterLootDataObject {
-    public static final int LENGTH = 0x11C;
+public class MonsterLootDataObject implements Writable {
+    public static final int LENGTH = 0x118;
 
     private final int[] bytes;
 
@@ -54,7 +59,7 @@ public class MonsterLootDataObject {
     int[][] gearAbilitiesOnArmorsByChar = new int[7][8];
     int zanmatoLevelByte;
     int gilStealByte;
-    int arenaPrice;
+    int monsterArenaPrice;
 
     public MonsterLootDataObject(int[] bytes) {
         this.bytes = bytes;
@@ -108,7 +113,70 @@ public class MonsterLootDataObject {
         }
         zanmatoLevelByte = bytes[0x112];
         gilStealByte = bytes[0x113];
-        arenaPrice = read4Bytes(bytes, 0x114);
+        monsterArenaPrice = read4Bytes(bytes, 0x114);
+    }
+
+    @Override
+    public Stream<KeyedString> streamKeyedStrings(String localization) {
+        return Stream.of();
+    }
+
+    @Override
+    public LocalizedKeyedStringObject getKeyedString(String title) {
+        return null;
+    }
+
+    @Override
+    public int[] toBytes(String localization) {
+        int[] array = new int[MonsterLootDataObject.LENGTH];
+        write2Bytes(array, 0x00, gil);
+        write2Bytes(array, 0x02, apNormal);
+        write2Bytes(array, 0x04, apOverkill);
+        write2Bytes(array, 0x06, ronsoRage);
+        array[0x08] = dropChancePrimary;
+        array[0x09] = dropChanceSecondary;
+        array[0x0A] = stealChance;
+        array[0x0B] = dropChanceGear;
+        write2Bytes(array, 0x0C, dropNormalTypePrimaryCommon);
+        write2Bytes(array, 0x0E, dropNormalTypePrimaryRare);
+        write2Bytes(array, 0x10, dropNormalTypeSecondaryCommon);
+        write2Bytes(array, 0x12, dropNormalTypeSecondaryRare);
+        array[0x14] = dropNormalQuantityPrimaryCommon;
+        array[0x15] = dropNormalQuantityPrimaryRare;
+        array[0x16] = dropNormalQuantitySecondaryCommon;
+        array[0x17] = dropNormalQuantitySecondaryRare;
+        write2Bytes(array, 0x18, dropOverkillTypePrimaryCommon);
+        write2Bytes(array, 0x1A, dropOverkillTypePrimaryRare);
+        write2Bytes(array, 0x1C, dropOverkillTypeSecondaryCommon);
+        write2Bytes(array, 0x1E, dropOverkillTypeSecondaryRare);
+        array[0x20] = dropOverkillQuantityPrimaryCommon;
+        array[0x21] = dropOverkillQuantityPrimaryRare;
+        array[0x22] = dropOverkillQuantitySecondaryCommon;
+        array[0x23] = dropOverkillQuantitySecondaryRare;
+        write2Bytes(array, 0x24, stealItemTypeCommon);
+        write2Bytes(array, 0x26, stealItemTypeRare);
+        array[0x28] = stealItemQuantityCommon;
+        array[0x29] = stealItemQuantityRare;
+        write2Bytes(array, 0x2A, bribeItem);
+        array[0x2C] = bribeItemQuantity;
+        array[0x2D] = gearSlotCountByte;
+        array[0x2E] = gearDamageFormula;
+        array[0x2F] = gearCritBonus;
+        array[0x30] = gearAttackPower;
+        array[0x31] = gearAbilityCountByte;
+        for (int chr = 0; chr < 7; chr++) {
+            int baseOffset = 0x32 + chr * 0x20;
+            for (int i = 0; i < 8; i++) {
+                write2Bytes(array, baseOffset + i * 2, gearAbilitiesOnWeaponsByChar[chr][i]);
+            }
+            for (int i = 0; i < 8; i++) {
+                write2Bytes(array, baseOffset + 0x10 + i * 2, gearAbilitiesOnArmorsByChar[chr][i]);
+            }
+        }
+        array[0x112] = zanmatoLevelByte;
+        array[0x113] = gilStealByte;
+        write4Bytes(array, 0x114, monsterArenaPrice);
+        return array;
     }
 
     @Override
@@ -161,7 +229,7 @@ public class MonsterLootDataObject {
         } else {
             list.add("No Gil to steal");
         }
-        list.add("Monster Arena Price: " + arenaPrice);
+        list.add("Monster Arena Price (Unused): " + monsterArenaPrice);
         String full = list.stream().filter(s -> s != null && !s.isBlank()).collect(Collectors.joining("\n"));
         return full;
     }
@@ -221,14 +289,6 @@ public class MonsterLootDataObject {
         String randomAbilityStr = randomAbilities.entrySet().stream().map(e -> asGearAbility(e.getKey()) + " (" + e.getValue() + "/7)").collect(Collectors.joining(", "));
         abilityStr.append(randomAbilityStr);
         return abilityStr.toString();
-    }
-
-    private static int read2Bytes(int[] bytes, int offset) {
-        return bytes[offset] + bytes[offset+1] * 0x100;
-    }
-
-    private static int read4Bytes(int[] bytes, int offset) {
-        return bytes[offset] + bytes[offset+1] * 0x100 + bytes[offset+2] * 0x10000 + bytes[offset+3] * 0x1000000;
     }
 
     private static String asGearAbility(int idx) {
