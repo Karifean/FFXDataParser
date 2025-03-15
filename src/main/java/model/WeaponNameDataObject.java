@@ -1,6 +1,7 @@
 package model;
 
 import atel.model.StackObject;
+import main.StringHelper;
 import model.strings.KeyedString;
 import model.strings.LocalizedKeyedStringObject;
 
@@ -21,8 +22,10 @@ public class WeaponNameDataObject implements Writable, Localized<WeaponNameDataO
 
     private final int[] bytes;
 
-    public LocalizedKeyedStringObject[] names = new LocalizedKeyedStringObject[0x0E];
-    public int[] models = new int[0x08];
+    public LocalizedKeyedStringObject[] names = new LocalizedKeyedStringObject[7];
+    public LocalizedKeyedStringObject[] unusedStrings = new LocalizedKeyedStringObject[7];
+    public int[] models = new int[7];
+    public int finalBytes;
 
     public WeaponNameDataObject(int[] bytes, int[] stringBytes, String localization) {
         this.bytes = bytes;
@@ -35,6 +38,7 @@ public class WeaponNameDataObject implements Writable, Localized<WeaponNameDataO
         for (int i = 0; i < models.length; i++) {
             models[i] = read2Bytes(bytes, 0x38 + i * 0x02);
         }
+        finalBytes = read2Bytes(bytes, 0x46);
     }
 
     private void mapFlags() {
@@ -45,12 +49,19 @@ public class WeaponNameDataObject implements Writable, Localized<WeaponNameDataO
         if (stringBytes == null || stringBytes.length == 0) {
             return;
         }
-        for (int i = 0; i < names.length; i++) {
+        for (int i = 0; i < 7; i++) {
             LocalizedKeyedStringObject name = new LocalizedKeyedStringObject();
             int offset = read2Bytes(bytes, i * 0x04);
             int key = read2Bytes(bytes, i * 0x04 + 0x02);
             name.readAndSetLocalizedContent(localization, stringBytes, offset, key);
             names[i] = name;
+        }
+        for (int i = 0; i < 7; i++) {
+            LocalizedKeyedStringObject str = new LocalizedKeyedStringObject();
+            int offset = read2Bytes(bytes, i * 0x04 + 0x1C);
+            int key = read2Bytes(bytes, i * 0x04 + 0x1E);
+            str.readAndSetLocalizedContent(localization, stringBytes, offset, key);
+            unusedStrings[i] = str;
         }
     }
 
@@ -59,11 +70,14 @@ public class WeaponNameDataObject implements Writable, Localized<WeaponNameDataO
         for (int i = 0; i < names.length; i++) {
             localization.names[i].copyInto(names[i]);
         }
+        for (int i = 0; i < names.length; i++) {
+            localization.unusedStrings[i].copyInto(unusedStrings[i]);
+        }
     }
 
     @Override
     public Stream<KeyedString> streamKeyedStrings(String localization) {
-        return Arrays.stream(names).map(n -> n.getLocalizedContent(localization));
+        return Stream.concat(Arrays.stream(names), Arrays.stream(unusedStrings)).map(n -> n.getLocalizedContent(localization));
     }
 
     @Override
@@ -76,7 +90,6 @@ public class WeaponNameDataObject implements Writable, Localized<WeaponNameDataO
             case "W" -> names[4];
             case "L" -> names[5];
             case "R" -> names[6];
-            case "S" -> names[7];
             default -> null;
         };
     }
@@ -92,12 +105,15 @@ public class WeaponNameDataObject implements Writable, Localized<WeaponNameDataO
     public String toString() {
         List<String> list = new ArrayList<>();
         for (int i = 0; i < names.length; i++) {
-            list.add(StackObject.enumToScriptField("playerChar", i).name + " Name: " + names[i].getDefaultString());
+            list.add(StackObject.enumToScriptField("playerChar", i).name.charAt(0) + " Name: " + names[i].getDefaultString());
+        }
+        for (int i = 0; i < unusedStrings.length; i++) {
+            list.add(StackObject.enumToScriptField("playerChar", i).name.charAt(0) + " Unused: " + unusedStrings[i].getDefaultString());
         }
         for (int i = 0; i < models.length; i++) {
-            list.add(StackObject.enumToScriptField("playerChar", i).name + " Model: " + StackObject.enumToString("model", models[i]));
+            list.add(StackObject.enumToScriptField("playerChar", i).name.charAt(0) + " Model: " + StackObject.enumToString("model", models[i]));
         }
-
+        list.add("Unknown46=" + StringHelper.formatHex4(finalBytes));
         String full = list.stream().filter(s -> s != null && !s.isBlank()).collect(Collectors.joining("\n"));
         return full;
     }
