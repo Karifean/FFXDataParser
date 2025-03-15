@@ -90,3 +90,7 @@ extraStatusesBitfield,8000,,Unused2
 dimensionsBitfield,01,,X
 dimensionsBitfield,02,,Y
 dimensionsBitfield,04,,Z
+genreBitfield,01,,Male
+genreBitfield,02,,Female
+genreBitfield,04,,Summon
+genreBitfield,08,,?Monster

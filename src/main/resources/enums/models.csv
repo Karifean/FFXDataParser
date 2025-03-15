@@ -472,6 +472,14 @@ model,301A,MEGAS4
 model,301B,MEGAS5
 model,301C,MEGAS6
 model,301F,,Shuriken (Yojimbo?)
+model,4001,,Brotherhood
+model,4007,,Caladbolg
+model,4010,,Nirvana
+model,4019,,Masamune
+model,4024,,Spirit Lance
+model,402E,,World Champion
+model,4038,,Onion Knight
+model,4041,,Godhand
 model,5001,SAVESPHERE001,SaveSphere
 model,5002,TAKARABOX002,TreasureChest
 model,5006,BALL006

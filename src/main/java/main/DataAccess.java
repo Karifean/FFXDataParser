@@ -19,6 +19,8 @@ public abstract class DataAccess {
     public static MonsterFile[] MONSTERS = new MonsterFile[0x1000];
     public static AtelScriptObject MENUMAIN;
     public static PlayerCharStatDataObject[] PLAYER_CHAR_STATS;
+    public static PlayerRomDataObject[] PLAYER_ROM;
+    public static WeaponNameDataObject[] WEAPON_NAMES;
     public static GearAbilityDataObject[] GEAR_ABILITIES;
     public static KeyItemDataObject[] KEY_ITEMS;
     public static TreasureDataObject[] TREASURES;

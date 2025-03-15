@@ -245,7 +245,9 @@ public class Main {
                 }
                 break;
             case MODE_CUSTOM:
-                readPlayerCharStats("battle/kernel/ply_save.bin", true);
+                // readPlayerCharStats("battle/kernel/ply_save.bin", true);
+                // readPlayerCharRom("battle/kernel/ply_rom.bin", true);
+                readWeaponNames("battle/kernel/w_name.bin", true);
                 // readMixCombinations(PATH_ORIGINALS_KERNEL + "prepare.bin", true);
                 // readDirectAtelScriptObject("menu/menumain.bin", true);
                 // readX2AbilitiesFromFile("ffx_ps2/ffx2/master/new_uspc/battle/kernel/command.bin", "us", true);

@@ -70,6 +70,8 @@ public class DataReadingManager {
         prepareCommands();
         DataAccess.MENUMAIN = readDirectAtelScriptObject("menu/menumain.bin", false);
         DataAccess.PLAYER_CHAR_STATS = readPlayerCharStats("battle/kernel/ply_save.bin", false);
+        DataAccess.PLAYER_ROM = readPlayerCharRom("battle/kernel/ply_rom.bin", false);
+        DataAccess.WEAPON_NAMES = readWeaponNames("battle/kernel/w_name.bin", false);
         DataAccess.GEAR_ABILITIES = readGearAbilities("battle/kernel/a_ability.bin", PATH_ORIGINALS_KERNEL + "arms_rate.bin", false);
         DataAccess.BUYABLE_GEAR = readWeaponPickups(PATH_ORIGINALS_KERNEL + "shop_arms.bin", false);
         DataAccess.WEAPON_PICKUPS = readWeaponPickups(PATH_ORIGINALS_KERNEL + "buki_get.bin", false);
@@ -145,7 +147,7 @@ public class DataReadingManager {
         prepareCommandsFromFile("battle/kernel/monmagic2.bin", 6);
         prepareCommandsFromFile("battle/kernel/item.bin", 2);
 
-        Integer[] prices = new DataFileReader<>((b, sb, locale) -> read4Bytes(b, 0), (i) -> new Integer[i]).toArray(PATH_ORIGINALS_KERNEL + "item_rate.bin", null, false);
+        Integer[] prices = new DataFileReader<>((b, sb, locale) -> read4Bytes(b, 0), Integer[]::new).toArray(PATH_ORIGINALS_KERNEL + "item_rate.bin", null, false);
         if (prices != null && prices.length > 0) {
             for (int i = 0; i < prices.length; i++) {
                 CommandDataObject item = DataAccess.getCommand(0x2000 + i);
@@ -157,7 +159,7 @@ public class DataReadingManager {
     }
 
     private static void prepareCommandsFromFile(String path, int group) {
-        CommandDataObject[] abilities = new LocalizedDataFileReader<>((b, sb, l) -> new CommandDataObject(b, sb, l, group), i -> new CommandDataObject[i]) {
+        CommandDataObject[] abilities = new LocalizedDataFileReader<>((b, sb, l) -> new CommandDataObject(b, sb, l, group), CommandDataObject[]::new) {
             @Override
             public String indexWriter(int idx) {
                 return StringHelper.formatHex4(idx + group * 0x1000);
@@ -167,7 +169,7 @@ public class DataReadingManager {
     }
 
     public static X2AbilityDataObject[] readX2AbilitiesFromFile(String filename, String localization, boolean print) {
-        DataFileReader<X2AbilityDataObject> reader = new DataFileReader<>(X2AbilityDataObject::new, i -> new X2AbilityDataObject[i]) {
+        DataFileReader<X2AbilityDataObject> reader = new DataFileReader<>(X2AbilityDataObject::new, X2AbilityDataObject[]::new) {
             @Override
             public String indexWriter(int idx) {
                 return StringHelper.formatHex4(idx);
@@ -182,7 +184,7 @@ public class DataReadingManager {
     }
 
     public static KeyItemDataObject[] readKeyItems(String path, boolean print) {
-        return new LocalizedDataFileReader<>(KeyItemDataObject::new, i -> new KeyItemDataObject[i]) {
+        return new LocalizedDataFileReader<>(KeyItemDataObject::new, KeyItemDataObject[]::new) {
             @Override
             public String indexWriter(int idx) {
                 return "A0" + StringHelper.formatHex2(idx);
@@ -191,17 +193,25 @@ public class DataReadingManager {
     }
 
     public static PlayerCharStatDataObject[] readPlayerCharStats(String path, boolean print) {
-        return new LocalizedDataFileReader<>(PlayerCharStatDataObject::new, i -> new PlayerCharStatDataObject[i]).read(path, print);
+        return new LocalizedDataFileReader<>(PlayerCharStatDataObject::new, PlayerCharStatDataObject[]::new).read(path, print);
+    }
+
+    public static PlayerRomDataObject[] readPlayerCharRom(String path, boolean print) {
+        return new LocalizedDataFileReader<>(PlayerRomDataObject::new, PlayerRomDataObject[]::new).read(path, print);
+    }
+
+    public static WeaponNameDataObject[] readWeaponNames(String path, boolean print) {
+        return new LocalizedDataFileReader<>(WeaponNameDataObject::new, WeaponNameDataObject[]::new).read(path, print);
     }
 
     public static GearAbilityDataObject[] readGearAbilities(String path, String pricesPath, boolean print) {
-        GearAbilityDataObject[] abilities = new LocalizedDataFileReader<>(GearAbilityDataObject::new, i -> new GearAbilityDataObject[i]) {
+        GearAbilityDataObject[] abilities = new LocalizedDataFileReader<>(GearAbilityDataObject::new, GearAbilityDataObject[]::new) {
             @Override
             public String indexWriter(int idx) {
                 return "80" + StringHelper.formatHex2(idx);
             }
         }.read(path, print);
-        Integer[] prices = new DataFileReader<>((b, sb, locale) -> read4Bytes(b, 0), (i) -> new Integer[i]).toArray(pricesPath, null, print);
+        Integer[] prices = new DataFileReader<>((b, sb, locale) -> read4Bytes(b, 0), Integer[]::new).toArray(pricesPath, null, print);
         if (prices != null && prices.length > 0) {
             for (int i = 0; i < prices.length && i < abilities.length; i++) {
                 abilities[i].gilPrice = prices[i];
@@ -224,7 +234,7 @@ public class DataReadingManager {
     }
 
     public static NameDescriptionTextObject[] readNameDescriptionTexts(String path, boolean print) {
-        return new LocalizedDataFileReader<>(NameDescriptionTextObject::new, i -> new NameDescriptionTextObject[i]).read(path, print);
+        return new LocalizedDataFileReader<>(NameDescriptionTextObject::new, NameDescriptionTextObject[]::new).read(path, print);
     }
 
     public static AtelScriptObject readDirectAtelScriptObject(String path, boolean print) {
@@ -392,11 +402,11 @@ public class DataReadingManager {
     }
 
     public static TreasureDataObject[] readTreasures(String filename, boolean print) {
-        return new DataFileReader<>(TreasureDataObject::new, i -> new TreasureDataObject[i]).toArray(filename, null, print);
+        return new DataFileReader<>(TreasureDataObject::new, TreasureDataObject[]::new).toArray(filename, null, print);
     }
 
     public static MixCombinationDataObject[] readMixCombinations(String filename, boolean print) {
-        MixCombinationDataObject[] objects = new DataFileReader<>(MixCombinationDataObject::new, i -> new MixCombinationDataObject[i]).toArray(filename, null, false);
+        MixCombinationDataObject[] objects = new DataFileReader<>(MixCombinationDataObject::new, MixCombinationDataObject[]::new).toArray(filename, null, false);
         if (objects != null) {
             for (int i = 0; i < objects.length; i++) {
                 objects[i].mixOrigin = i + 0x2000;
@@ -409,19 +419,19 @@ public class DataReadingManager {
     }
 
     public static GearDataObject[] readWeaponPickups(String filename, boolean print) {
-        return new DataFileReader<>(GearDataObject::new, i -> new GearDataObject[i]).toArray(filename, null, print);
+        return new DataFileReader<>(GearDataObject::new, GearDataObject[]::new).toArray(filename, null, print);
     }
 
     public static GearShopDataObject[] readWeaponShops(String filename, boolean print) {
-        return new DataFileReader<>(GearShopDataObject::new, i -> new GearShopDataObject[i]).toArray(filename, null, print);
+        return new DataFileReader<>(GearShopDataObject::new, GearShopDataObject[]::new).toArray(filename, null, print);
     }
 
     public static ItemShopDataObject[] readItemShops(String filename, boolean print) {
-        return new DataFileReader<>(ItemShopDataObject::new, i -> new ItemShopDataObject[i]).toArray(filename, null, print);
+        return new DataFileReader<>(ItemShopDataObject::new, ItemShopDataObject[]::new).toArray(filename, null, print);
     }
 
     public static CustomizationDataObject[] readCustomizations(String filename, boolean print) {
-        return new DataFileReader<>(CustomizationDataObject::new, i -> new CustomizationDataObject[i]).toArray(filename, null, print);
+        return new DataFileReader<>(CustomizationDataObject::new, CustomizationDataObject[]::new).toArray(filename, null, print);
     }
 
     public static MonsterStatDataObject[] readMonsterLocalizations(String localization, boolean print) {
@@ -430,7 +440,7 @@ public class DataReadingManager {
             public String toString() {
                 return buildStrings(localization);
             }
-        }, i -> new MonsterStatDataObject[i]);
+        }, MonsterStatDataObject[]::new);
         int fileIndex = 0;
         File file;
         List<MonsterStatDataObject> fullList = new ArrayList<>();
@@ -450,11 +460,11 @@ public class DataReadingManager {
     }
 
     public static SphereGridSphereTypeDataObject[] readSphereGridSphereTypes(String path, boolean print) {
-        return new LocalizedDataFileReader<>(SphereGridSphereTypeDataObject::new, i -> new SphereGridSphereTypeDataObject[i]).read(path, print);
+        return new LocalizedDataFileReader<>(SphereGridSphereTypeDataObject::new, SphereGridSphereTypeDataObject[]::new).read(path, print);
     }
 
     public static SphereGridNodeTypeDataObject[] readSphereGridNodeTypes(String path, boolean print) {
-        return new LocalizedDataFileReader<>(SphereGridNodeTypeDataObject::new, i -> new SphereGridNodeTypeDataObject[i]).read(path, print);
+        return new LocalizedDataFileReader<>(SphereGridNodeTypeDataObject::new, SphereGridNodeTypeDataObject[]::new).read(path, print);
     }
 
     public static SphereGridLayoutDataObject readSphereGridLayout(String layout, String contents, boolean print) {
