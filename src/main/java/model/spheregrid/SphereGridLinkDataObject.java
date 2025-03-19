@@ -8,7 +8,7 @@ import java.util.List;
 /**
  * Part of SphereGridLayoutDataObject
  */
-public class SphereGridLinkDataObject implements Nameable {
+public class SphereGridLinkDataObject {
     public static final int LENGTH = 0x8;
     private final int[] bytes;
 
@@ -48,11 +48,6 @@ public class SphereGridLinkDataObject implements Nameable {
         }
         String full = String.join(", ", list);
         return "{ " +  full + " }";
-    }
-
-    @Override
-    public String getName(String localization) {
-        return this.toString();
     }
 
     private int read2Bytes(int offset) {

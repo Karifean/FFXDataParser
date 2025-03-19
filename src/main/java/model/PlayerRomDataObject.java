@@ -1,15 +1,13 @@
 package model;
 
 import atel.model.StackObject;
-import main.DataAccess;
-import main.StringHelper;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import static main.DataReadingManager.DEFAULT_LOCALIZATION;
-import static reading.ChunkedFileHelper.*;
+import static reading.BytesHelper.*;
 
 /**
  * ply_rom.bin

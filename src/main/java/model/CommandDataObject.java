@@ -13,7 +13,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import static reading.ChunkedFileHelper.write2Bytes;
+import static reading.BytesHelper.write2Bytes;
+import static reading.BytesHelper.read2Bytes;
 
 /**
  * command.bin
@@ -27,7 +28,6 @@ public class CommandDataObject extends NameDescriptionTextObject implements Name
     static Map<Integer, String> submenus;
 
     private final boolean isCharacterAbility;
-    private final int[] bytes;
 
     int anim1;
     int anim2;
@@ -213,11 +213,10 @@ public class CommandDataObject extends NameDescriptionTextObject implements Name
 
     public CommandDataObject(int[] bytes, int[] stringBytes, String localization, int group) {
         super(bytes, stringBytes, localization);
-        this.bytes = bytes;
         isCharacterAbility = group <= 3;
         considerSphereType = group == 2;
         prepareMaps();
-        mapBytes();
+        mapBytes(bytes);
         mapFlags();
     }
 
@@ -229,9 +228,9 @@ public class CommandDataObject extends NameDescriptionTextObject implements Name
         return name.getLocalizedString(localization);
     }
 
-    private void mapBytes() {
-        anim1 = read2Bytes(0x10);
-        anim2 = read2Bytes(0x12);
+    private void mapBytes(int[] bytes) {
+        anim1 = read2Bytes(bytes, 0x10);
+        anim2 = read2Bytes(bytes, 0x12);
         icon = bytes[0x14];
         casterAnimation = bytes[0x15];
         menuProperties16 = bytes[0x16];
@@ -296,11 +295,11 @@ public class CommandDataObject extends NameDescriptionTextObject implements Name
         statusDurationRegen = bytes[0x51];
         statusDurationHaste = bytes[0x52];
         statusDurationSlow = bytes[0x53];
-        extraStatusInflict = read2Bytes(0x54);
-        statBuffFlags = read2Bytes(0x56);
+        extraStatusInflict = read2Bytes(bytes, 0x54);
+        statBuffFlags = read2Bytes(bytes, 0x56);
         overdriveCategorizationByte = bytes[0x58];
         statBuffValue = bytes[0x59];
-        specialBuffInflict = read2Bytes(0x5A);
+        specialBuffInflict = read2Bytes(bytes, 0x5A);
         if (isCharacterAbility) {
             orderingIndexInMenu = bytes[0x5C];
             sphereTypeForSphereGrid = bytes[0x5D];
@@ -889,9 +888,5 @@ public class CommandDataObject extends NameDescriptionTextObject implements Name
             submenus.put(0x15, "Gil (Bribe/SC)");
             submenus.put(0x16, "Gil (Pay Yoji)");
         }
-    }
-
-    private int read2Bytes(int offset) {
-        return bytes[offset] + bytes[offset+1] * 0x100;
     }
 }

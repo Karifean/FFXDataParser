@@ -4,10 +4,11 @@ import main.DataAccess;
 import main.StringHelper;
 import model.strings.KeyedString;
 import model.strings.LocalizedKeyedStringObject;
+import reading.BytesHelper;
 
 import java.util.stream.Stream;
 
-import static reading.ChunkedFileHelper.write2Bytes;
+import static reading.BytesHelper.write2Bytes;
 
 /**
  * kaizou.bin
@@ -15,7 +16,6 @@ import static reading.ChunkedFileHelper.write2Bytes;
  */
 public class CustomizationDataObject implements Writable {
     public static final int LENGTH = 0x08;
-    private final int[] bytes;
 
     private int customizeTargetByte;
     private int customizedAbility;
@@ -24,14 +24,13 @@ public class CustomizationDataObject implements Writable {
     private int requiredItemQuantityBase;
 
     public CustomizationDataObject(int[] bytes, int[] stringBytes, String localization) {
-        this.bytes = bytes;
-        mapBytes();
+        mapBytes(bytes);
     }
 
-    private void mapBytes() {
-        customizeTargetByte = read2Bytes(0x00);
-        customizedAbility = read2Bytes(0x02);
-        requiredItemType = read2Bytes(0x04);
+    private void mapBytes(int[] bytes) {
+        customizeTargetByte = BytesHelper.read2Bytes(bytes, 0x00);
+        customizedAbility = BytesHelper.read2Bytes(bytes, 0x02);
+        requiredItemType = BytesHelper.read2Bytes(bytes, 0x04);
         requiredItemQuantity = bytes[0x06];
         requiredItemQuantityBase = bytes[0x07];
     }
@@ -93,9 +92,5 @@ public class CustomizationDataObject implements Writable {
     private static String asMove(int idx) {
         CommandDataObject move = DataAccess.getCommand(idx);
         return (move != null ? move.name : "null") + StringHelper.hex4Suffix(idx);
-    }
-
-    private int read2Bytes(int offset) {
-        return bytes[offset] + bytes[offset+1] * 0x100;
     }
 }

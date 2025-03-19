@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
 
-import static reading.ChunkedFileHelper.write2Bytes;
+import static reading.BytesHelper.write2Bytes;
 
 /**
  * item_shop.bin

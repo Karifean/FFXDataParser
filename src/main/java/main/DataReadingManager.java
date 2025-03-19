@@ -22,7 +22,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static reading.ChunkedFileHelper.read4Bytes;
+import static reading.BytesHelper.read4Bytes;
 
 public class DataReadingManager {
 
@@ -92,13 +92,15 @@ public class DataReadingManager {
         DataAccess.SUMMON_TEXT = readNameDescriptionTexts("battle/kernel/summon_txt.bin", false);
         DataAccess.TREASURES = readTreasures(PATH_ORIGINALS_KERNEL + "takara.bin", false);
         DataAccess.MIX_COMBINATIONS = readMixCombinations(PATH_ORIGINALS_KERNEL + "prepare.bin", false);
+        DataAccess.CTB_BASE = readCtbBase(PATH_ORIGINALS_KERNEL + "ctb_base.bin", false);
 
         readAllMonsters(false);
         if (LOAD_EVENTS_AND_ENCOUNTERS) {
             readAllEvents(false, false);
             readAllEncounters(false);
         }
-        LOCALIZATIONS.forEach((key, name) -> DataAccess.addMonsterLocalizations(readMonsterLocalizations(key,false)));
+        DataAccess.ENCOUNTER_TABLE = readEncounterTables(PATH_ORIGINALS_KERNEL + "btl.bin", false);
+        addAllMonsterLocalizations();
         DataAccess.SG_NODE_TYPES = readSphereGridNodeTypes("battle/kernel/panel.bin", false);
         DataAccess.OSG_LAYOUT = readSphereGridLayout(PATH_ABMAP + "dat01.dat", PATH_ABMAP + "dat09.dat", false);
         DataAccess.SSG_LAYOUT = readSphereGridLayout(PATH_ABMAP + "dat02.dat", PATH_ABMAP + "dat10.dat", false);
@@ -130,11 +132,11 @@ public class DataReadingManager {
     }
 
     public static void prepareStringMacros(String filename, String localization, boolean print) {
-        List<Chunk> chunks = ChunkedFileHelper.readGenericChunkedFile(filename, false, 16);
-        if (chunks == null) {
+        int[] bytes = BytesHelper.fileToBytes(filename, false);
+        if (bytes == null) {
             return;
         }
-        MacroDictionaryFile macroDictionaryFile = new MacroDictionaryFile(chunks, localization);
+        MacroDictionaryFile macroDictionaryFile = new MacroDictionaryFile(bytes, localization);
         macroDictionaryFile.publishStrings();
         if (print) {
             System.out.println(macroDictionaryFile);
@@ -238,8 +240,7 @@ public class DataReadingManager {
     }
 
     public static AtelScriptObject readDirectAtelScriptObject(String path, boolean print) {
-        File file = FileAccessorWithMods.resolveFile(PATH_ORIGINALS_ROOT + path, print);
-        AtelScriptObject scriptObject = new AtelScriptObject(ChunkedFileHelper.fileToBytes(file), null);
+        AtelScriptObject scriptObject = new AtelScriptObject(BytesHelper.fileToBytes(PATH_ORIGINALS_ROOT + path, print), null);
         List<LocalizedFieldStringObject> localizedStrings = StringHelper.readLocalizedStringFiles(path);
         scriptObject.setStrings(localizedStrings);
         if (print) {
@@ -249,37 +250,49 @@ public class DataReadingManager {
         return scriptObject;
     }
 
+    public static EncounterTablesDataObject readEncounterTables(String filename, boolean print) {
+        int[] bytes = BytesHelper.fileToBytes(filename, print);
+        if (bytes == null) {
+            return null;
+        }
+        EncounterTablesDataObject btlFile = new EncounterTablesDataObject(bytes);
+        if (print) {
+            System.out.println(btlFile);
+        }
+        return btlFile;
+    }
+
     public static MonsterFile readMonsterFile(int monsterIndex, String filename, boolean print) {
         if (!(filename.endsWith(".bin") || (ALLOW_DAT_FILES && filename.endsWith(".dat")))) {
             return null;
         }
-        List<Chunk> chunks = ChunkedFileHelper.readGenericChunkedFile(filename, print, true);
-        if (chunks == null) {
+        int[] bytes = BytesHelper.fileToBytes(filename, print);
+        if (bytes == null) {
             return null;
         }
-        return new MonsterFile(monsterIndex, chunks);
+        return new MonsterFile(monsterIndex, bytes);
     }
 
     public static EncounterFile readEncounterFile(String encounterId, String filename, final boolean print, final boolean isInpc) {
         if (!(filename.endsWith(".bin") || (ALLOW_DAT_FILES && filename.endsWith(".dat")))) {
             return null;
         }
-        List<Chunk> chunks = ChunkedFileHelper.readGenericChunkedFile(filename, print, true);
-        if (chunks == null) {
+        int[] bytes = BytesHelper.fileToBytes(filename, print);
+        if (bytes == null) {
             return null;
         }
-        return new EncounterFile(encounterId, chunks, isInpc);
+        return new EncounterFile(encounterId, bytes, isInpc);
     }
 
     public static EventFile readEventFile(String eventId, String filename, final boolean print) {
         if (!(filename.endsWith(".ebp") || (ALLOW_DAT_FILES && filename.endsWith(".dat")))) {
             return null;
         }
-        List<Chunk> chunks = ChunkedFileHelper.readGenericChunkedFile(filename, print, false);
-        if (chunks == null) {
+        int[] bytes = BytesHelper.fileToBytes(filename, print);
+        if (bytes == null) {
             return null;
         }
-        return new EventFile(eventId, chunks);
+        return new EventFile(eventId, bytes);
     }
 
     public static MonsterFile readMonsterFull(int monsterIndex, boolean print) {
@@ -418,6 +431,15 @@ public class DataReadingManager {
         return objects;
     }
 
+    public static CtbBaseDataObject[] readCtbBase(String filename, boolean print) {
+        return new DataFileReader<>(CtbBaseDataObject::new, CtbBaseDataObject[]::new) {
+            @Override
+            public String indexWriter(int idx) {
+                return "Agility " + (idx + 1);
+            }
+        }.toArray(filename, null, print);
+    }
+
     public static GearDataObject[] readWeaponPickups(String filename, boolean print) {
         return new DataFileReader<>(GearDataObject::new, GearDataObject[]::new).toArray(filename, null, print);
     }
@@ -459,6 +481,10 @@ public class DataReadingManager {
         return fullList.toArray(array);
     }
 
+    public static void addAllMonsterLocalizations() {
+        LOCALIZATIONS.forEach((key, name) -> DataAccess.addMonsterLocalizations(readMonsterLocalizations(key,false)));
+    }
+
     public static SphereGridSphereTypeDataObject[] readSphereGridSphereTypes(String path, boolean print) {
         return new LocalizedDataFileReader<>(SphereGridSphereTypeDataObject::new, SphereGridSphereTypeDataObject[]::new).read(path, print);
     }
@@ -468,9 +494,9 @@ public class DataReadingManager {
     }
 
     public static SphereGridLayoutDataObject readSphereGridLayout(String layout, String contents, boolean print) {
-        int[] fullContentBytes = ChunkedFileHelper.fileToBytes(FileAccessorWithMods.resolveFile(contents, false));
+        int[] fullContentBytes = BytesHelper.fileToBytes(FileAccessorWithMods.resolveFile(contents, false));
         int[] contentBytes = fullContentBytes != null ? Arrays.copyOfRange(fullContentBytes, 0x8, fullContentBytes.length) : null;
-        int[] layoutBytes = ChunkedFileHelper.fileToBytes(FileAccessorWithMods.resolveFile(layout, false));
+        int[] layoutBytes = BytesHelper.fileToBytes(FileAccessorWithMods.resolveFile(layout, false));
         if (layoutBytes == null || contentBytes == null) {
             return null;
         }

@@ -1,7 +1,7 @@
 package model.strings;
 
 import main.StringHelper;
-import reading.ChunkedFileHelper;
+import reading.BytesHelper;
 
 import java.util.*;
 import java.util.stream.Stream;
@@ -17,8 +17,8 @@ public class FieldString {
         List<FieldString> strings = new ArrayList<>(count);
         try {
             for (int i = 0; i < count; i++) {
-                int regularHeader = ChunkedFileHelper.read4Bytes(bytes, i * 0x08);
-                int simplifiedHeader = ChunkedFileHelper.read4Bytes(bytes, i * 0x08 + 0x04);
+                int regularHeader = BytesHelper.read4Bytes(bytes, i * 0x08);
+                int simplifiedHeader = BytesHelper.read4Bytes(bytes, i * 0x08 + 0x04);
                 FieldString out = new FieldString(charset, regularHeader, simplifiedHeader, bytes);
                 if (print) {
                     System.out.printf("String %s: %s%n", StringHelper.hex2WithSuffix(i), out);

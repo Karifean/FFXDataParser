@@ -7,27 +7,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public abstract class ChunkedFileHelper {
-    public static final int DEFAULT_ASSUMED_CHUNK_COUNT = 10;
-    public static final int DEFAULT_ASSUMED_CHUNK_OFFSET = 4;
-
-    public static List<Chunk> readGenericChunkedFile(String filename, boolean print, boolean readChunkCount) {
-        File file = FileAccessorWithMods.resolveFile(filename, print);
-        if (!file.isDirectory()) {
-            int[] bytes = fileToBytes(file);
-            return bytesToChunks(bytes, readChunkCount ? read4Bytes(bytes, 0x00) - 1 : DEFAULT_ASSUMED_CHUNK_COUNT, DEFAULT_ASSUMED_CHUNK_OFFSET);
-        }
-        return null;
-    }
-
-    public static List<Chunk> readGenericChunkedFile(String filename, boolean print, int chunkCount) {
-        File file = FileAccessorWithMods.resolveFile(filename, print);
-        if (!file.isDirectory()) {
-            int[] bytes = fileToBytes(file);
-            return bytesToChunks(bytes, chunkCount, 0);
-        }
-        return null;
-    }
+public abstract class BytesHelper {
 
     public static int[] chunksToBytes(List<int[]> chunks, int chunkCount, int chunkInitialOffset, int chunkAlignment) {
         if (chunks.size() > ((chunkInitialOffset - 0x08) / 0x04)) {
@@ -103,6 +83,11 @@ public abstract class ChunkedFileHelper {
             bytes[j] = Byte.toUnsignedInt(allBytes[j]);
         }
         return bytes;
+    }
+
+    public static int[] fileToBytes(String path, boolean print) {
+        File file = FileAccessorWithMods.resolveFile(path, print);
+        return fileToBytes(file);
     }
 
     public static List<Chunk> bytesToChunks(int[] bytes, int assumedChunkCount, int chunkOffset) {

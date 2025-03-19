@@ -6,11 +6,13 @@ import model.FormationDataObject;
 import model.strings.FieldString;
 import model.strings.LocalizedFieldStringObject;
 import reading.Chunk;
-import reading.ChunkedFileHelper;
+import reading.BytesHelper;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import static reading.BytesHelper.read4Bytes;
 
 /**
  * jppc/battle/btl/.../.bin
@@ -32,9 +34,13 @@ public class EncounterFile {
 
     private int chunkCount;
 
-    public EncounterFile(String id, List<Chunk> chunks, boolean isInpc) {
+    public EncounterFile(String id, int[] bytes, boolean isInpc) {
         this.id = id;
-        chunkCount = chunks.size();
+        chunkCount = read4Bytes(bytes, 0x00) - 1;
+        List<Chunk> chunks = BytesHelper.bytesToChunks(bytes, chunkCount, 4);
+        if (chunkCount != chunks.size()) {
+            System.err.println("mismatch!!");
+        }
         mapChunks(chunks, isInpc);
         mapObjects();
         mapStrings();
@@ -124,7 +130,7 @@ public class EncounterFile {
         chunks.add(DataWritingManager.stringsToStringFileBytes(strings, "jp"));
         chunks.add(ftcxBytes);
         chunks.add(DataWritingManager.stringsToStringFileBytes(strings, "us"));
-        return ChunkedFileHelper.chunksToBytes(chunks, 0x08, 0x40, 0x10);
+        return BytesHelper.chunksToBytes(chunks, 0x08, 0x40, 0x10);
     }
 
     @Override

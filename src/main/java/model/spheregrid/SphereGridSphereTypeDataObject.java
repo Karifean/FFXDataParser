@@ -6,15 +6,15 @@ import model.*;
 import atel.model.StackObject;
 import model.strings.KeyedString;
 import model.strings.LocalizedKeyedStringObject;
-import reading.ChunkedFileHelper;
+import reading.BytesHelper;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static reading.ChunkedFileHelper.write2Bytes;
-import static reading.ChunkedFileHelper.write4Bytes;
+import static reading.BytesHelper.write2Bytes;
+import static reading.BytesHelper.write4Bytes;
 
 /**
  * sphere.bin
@@ -137,7 +137,7 @@ public class SphereGridSphereTypeDataObject implements Writable, Localized<Spher
     }
 
     private int read2Bytes(int offset) {
-        return ChunkedFileHelper.read2Bytes(bytes, offset);
+        return BytesHelper.read2Bytes(bytes, offset);
     }
 
     private static String asMove(int idx) {

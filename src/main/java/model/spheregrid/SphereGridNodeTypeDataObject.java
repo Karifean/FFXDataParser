@@ -4,13 +4,13 @@ import atel.model.StackObject;
 import main.DataAccess;
 import main.StringHelper;
 import model.*;
-import reading.ChunkedFileHelper;
+import reading.BytesHelper;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static reading.ChunkedFileHelper.write2Bytes;
+import static reading.BytesHelper.write2Bytes;
 
 /**
  * panel.bin
@@ -40,7 +40,7 @@ public class SphereGridNodeTypeDataObject extends NameDescriptionTextObject impl
 
     @Override
     public int[] toBytes(String localization) {
-        int[] array = new int[SphereGridNodeDataObject.LENGTH];
+        int[] array = new int[SphereGridNodeTypeDataObject.LENGTH];
         System.arraycopy(super.toBytes(localization), 0, array, 0, 0x10);
         write2Bytes(array, 0x10, nodeEffectBitfield);
         write2Bytes(array, 0x12, learnedMove);
@@ -66,15 +66,11 @@ public class SphereGridNodeTypeDataObject extends NameDescriptionTextObject impl
     }
 
     private int read2Bytes(int offset) {
-        return ChunkedFileHelper.read2Bytes(bytes, offset);
+        return BytesHelper.read2Bytes(bytes, offset);
     }
 
     private static String asMove(int idx) {
         CommandDataObject move = DataAccess.getCommand(idx);
         return (move != null ? move.name : "null") + StringHelper.hex4Suffix(idx);
-    }
-
-    private static String formatUnknownByte(int bt) {
-        return StringHelper.formatHex2(bt) + '=' + String.format("%03d", bt) + '(' + String.format("%8s", Integer.toBinaryString(bt)).replace(' ', '0') + ')';
     }
 }

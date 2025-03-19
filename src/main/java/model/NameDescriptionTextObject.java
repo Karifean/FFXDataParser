@@ -5,7 +5,7 @@ import model.strings.LocalizedKeyedStringObject;
 
 import java.util.stream.Stream;
 
-import static reading.ChunkedFileHelper.write4Bytes;
+import static reading.BytesHelper.write4Bytes;
 
 /**
  * status_txt.bin

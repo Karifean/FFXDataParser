@@ -5,9 +5,8 @@ import model.Nameable;
 import model.strings.FieldString;
 import model.strings.LocalizedFieldStringObject;
 import reading.Chunk;
-import reading.ChunkedFileHelper;
+import reading.BytesHelper;
 
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -20,6 +19,7 @@ import static main.StringHelper.MACRO_LOOKUP;
  * jppc/event/.../.ebp
  */
 public class EventFile implements Nameable {
+    public static final int DEFAULT_ASSUMED_CHUNK_COUNT = 10;
     public static Map<Integer, String> EVENT_BY_MAP_ID;
 
     public String id;
@@ -31,8 +31,9 @@ public class EventFile implements Nameable {
     int[] englishTextBytes;
     public List<LocalizedFieldStringObject> strings;
 
-    public EventFile(String id, List<Chunk> chunks) {
+    public EventFile(String id, int[] bytes) {
         this.id = id;
+        List<Chunk> chunks = BytesHelper.bytesToChunks(bytes, DEFAULT_ASSUMED_CHUNK_COUNT, 4);
         mapChunks(chunks);
         mapObjects();
         mapStrings();
@@ -98,7 +99,7 @@ public class EventFile implements Nameable {
         chunks.add(unknownChunk2Bytes);
         chunks.add(ftcxBytes);
         chunks.add(DataWritingManager.stringsToStringFileBytes(strings, "us"));
-        return ChunkedFileHelper.chunksToBytes(chunks, -1, 0x40, 0x10);
+        return BytesHelper.chunksToBytes(chunks, -1, 0x40, 0x10);
     }
 
     @Override

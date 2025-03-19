@@ -1,13 +1,12 @@
 package model.spheregrid;
 
-import main.DataAccess;
-import main.StringHelper;
-import model.CommandDataObject;
 import model.Nameable;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+
+import static reading.BytesHelper.read2Bytes;
 
 /**
  * dat01.dat (Original Sphere Grid)
@@ -46,19 +45,19 @@ public class SphereGridLayoutDataObject implements Nameable {
     }
 
     private void mapBytes() {
-        unknown1 = read2Bytes(0x00);
-        clusterCount = read2Bytes(0x02);
-        nodeCount = read2Bytes(0x04);
-        linkCount = read2Bytes(0x06);
-        unknown5 = read2Bytes(0x08);
-        unknown6 = read2Bytes(0x0A);
-        unknown7 = read2Bytes(0x0C);
-        unknown8 = read2Bytes(0x0E);
+        unknown1 = read2Bytes(bytes,0x00);
+        clusterCount = read2Bytes(bytes,0x02);
+        nodeCount = read2Bytes(bytes,0x04);
+        linkCount = read2Bytes(bytes,0x06);
+        unknown5 = read2Bytes(bytes,0x08);
+        unknown6 = read2Bytes(bytes,0x0A);
+        unknown7 = read2Bytes(bytes,0x0C);
+        unknown8 = read2Bytes(bytes,0x0E);
         int endOfClusterBytes = 0x10 + clusterCount * SphereGridClusterDataObject.LENGTH;
         clusterBytes = Arrays.copyOfRange(bytes, 0x10, endOfClusterBytes);
-        int endOfNodesBytes = endOfClusterBytes + nodeCount * 0x0C;
+        int endOfNodesBytes = endOfClusterBytes + nodeCount * SphereGridNodeDataObject.LENGTH;
         nodesBytes = Arrays.copyOfRange(bytes, endOfClusterBytes, endOfNodesBytes);
-        int endOfLinksBytes = endOfNodesBytes + linkCount * 0x08;
+        int endOfLinksBytes = endOfNodesBytes + linkCount * SphereGridLinkDataObject.LENGTH;
         linkBytes = Arrays.copyOfRange(bytes, endOfNodesBytes, endOfLinksBytes);
     }
 
@@ -114,14 +113,5 @@ public class SphereGridLayoutDataObject implements Nameable {
         for (int i = 0; i < nodeContents.length && i < nodeObjects.length; i++) {
             nodeObjects[i].setContent(nodeContents[i]);
         }
-    }
-
-    private int read2Bytes(int offset) {
-        return bytes[offset] + bytes[offset+1] * 0x100;
-    }
-
-    private static String asMove(int idx) {
-        CommandDataObject move = DataAccess.getCommand(idx);
-        return (move != null ? move.name : "null") + StringHelper.hex4Suffix(idx);
     }
 }

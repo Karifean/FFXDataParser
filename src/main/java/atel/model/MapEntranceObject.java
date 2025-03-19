@@ -6,8 +6,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static reading.ChunkedFileHelper.read2Bytes;
-import static reading.ChunkedFileHelper.read4Bytes;
+import static reading.BytesHelper.read2Bytes;
+import static reading.BytesHelper.read4Bytes;
 
 /**
  * Part of AtelScriptObject

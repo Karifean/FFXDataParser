@@ -18,6 +18,7 @@ public abstract class DataAccess {
     public static Map<String, EncounterFile> ENCOUNTERS = new HashMap<>();
     public static MonsterFile[] MONSTERS = new MonsterFile[0x1000];
     public static AtelScriptObject MENUMAIN;
+    public static EncounterTablesDataObject ENCOUNTER_TABLE;
     public static PlayerCharStatDataObject[] PLAYER_CHAR_STATS;
     public static PlayerRomDataObject[] PLAYER_ROM;
     public static WeaponNameDataObject[] WEAPON_NAMES;
@@ -25,6 +26,7 @@ public abstract class DataAccess {
     public static KeyItemDataObject[] KEY_ITEMS;
     public static TreasureDataObject[] TREASURES;
     public static MixCombinationDataObject[] MIX_COMBINATIONS;
+    public static CtbBaseDataObject[] CTB_BASE;
     public static GearDataObject[] WEAPON_PICKUPS;
     public static GearDataObject[] BUYABLE_GEAR;
     public static GearShopDataObject[] GEAR_SHOPS;

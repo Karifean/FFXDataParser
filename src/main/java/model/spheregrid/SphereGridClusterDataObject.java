@@ -9,7 +9,7 @@ import java.util.List;
 /**
  * Part of SphereGridLayoutDataObject
  */
-public class SphereGridClusterDataObject implements Nameable {
+public class SphereGridClusterDataObject {
     public static final int LENGTH = 0x10;
     private final int[] bytes;
 
@@ -65,11 +65,6 @@ public class SphereGridClusterDataObject implements Nameable {
         }
         String full = String.join(", ", list);
         return "{ " +  full + " }";
-    }
-
-    @Override
-    public String getName(String localization) {
-        return this.toString();
     }
 
     private int read2Bytes(int offset, boolean signed) {

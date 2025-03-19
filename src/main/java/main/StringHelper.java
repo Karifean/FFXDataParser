@@ -4,7 +4,7 @@ import model.KeyItemDataObject;
 import model.strings.FieldString;
 import model.strings.LocalizedFieldStringObject;
 import model.strings.LocalizedMacroStringObject;
-import reading.ChunkedFileHelper;
+import reading.BytesHelper;
 import reading.FileAccessorWithMods;
 
 import java.io.File;
@@ -219,7 +219,7 @@ public abstract class StringHelper {
             }
             return null;
         }
-        int[] bytes = ChunkedFileHelper.fileToBytes(FileAccessorWithMods.resolveFile(filename, print));
+        int[] bytes = BytesHelper.fileToBytes(FileAccessorWithMods.resolveFile(filename, print));
         return FieldString.fromStringData(bytes, print, localization);
     }
 

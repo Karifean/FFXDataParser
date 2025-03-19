@@ -13,7 +13,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static reading.ChunkedFileHelper.*;
+import static reading.BytesHelper.*;
 
 /**
  * Part of MonsterFile

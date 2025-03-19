@@ -51,10 +51,10 @@ You can then run the parser with the following command:
 
 #### Example usages:
 
-`java -jar target/FFXDataParser-1.0-SNAPSHOT.jar . GREP Time to go, escargot!`
+`java -jar target/FFXDataParser-1.1-SNAPSHOT.jar . GREP Time to go, escargot!`
 
-`java -jar target/FFXDataParser-1.0-SNAPSHOT.jar . READ_ALL_ABILITIES`
+`java -jar target/FFXDataParser-1.1-SNAPSHOT.jar . READ_ALL_ABILITIES`
 
-`java -jar target/FFXDataParser-1.0-SNAPSHOT.jar . PARSE_ATEL_FILE ffx_ps2/ffx/master/jppc/event/obj/do/dome0600/dome0600.ebp`
+`java -jar target/FFXDataParser-1.1-SNAPSHOT.jar . PARSE_ATEL_FILE ffx_ps2/ffx/master/jppc/event/obj/do/dome0600/dome0600.ebp`
 
-`java -jar target/FFXDataParser-1.0-SNAPSHOT.jar . PARSE_MONSTER 105`
+`java -jar target/FFXDataParser-1.1-SNAPSHOT.jar . PARSE_MONSTER 105`

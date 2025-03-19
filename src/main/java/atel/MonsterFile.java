@@ -5,11 +5,13 @@ import model.Nameable;
 import reading.Chunk;
 import model.MonsterLootDataObject;
 import model.MonsterStatDataObject;
-import reading.ChunkedFileHelper;
+import reading.BytesHelper;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+
+import static reading.BytesHelper.read4Bytes;
 
 /**
  * jppc/battle/mon/.../.bin
@@ -27,8 +29,10 @@ public class MonsterFile implements Nameable {
     int[] lootBytes;
     int[] englishTextBytes;
 
-    public MonsterFile(int monsterIndex, List<Chunk> chunks) {
+    public MonsterFile(int monsterIndex, int[] bytes) {
         this.monsterIndex = monsterIndex;
+        int chunkCount = read4Bytes(bytes, 0x00) - 1;
+        List<Chunk> chunks = BytesHelper.bytesToChunks(bytes, chunkCount, 4);
         mapChunks(chunks);
         mapObjects();
     }
@@ -66,7 +70,7 @@ public class MonsterFile implements Nameable {
         chunks.add(monsterLootData.toBytes(null));
         chunks.add(audioBytesApparently);
         chunks.add(DataWritingManager.dataObjectWithStringsToBytes(monsterStatData, "us"));
-        return ChunkedFileHelper.chunksToBytes(chunks, 0x08, 0x30, 0x10);
+        return BytesHelper.chunksToBytes(chunks, 0x08, 0x30, 0x10);
     }
 
     @Override

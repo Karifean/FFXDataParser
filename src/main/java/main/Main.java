@@ -247,7 +247,9 @@ public class Main {
             case MODE_CUSTOM:
                 // readPlayerCharStats("battle/kernel/ply_save.bin", true);
                 // readPlayerCharRom("battle/kernel/ply_rom.bin", true);
-                readWeaponNames("battle/kernel/w_name.bin", true);
+                // readWeaponNames("battle/kernel/w_name.bin", true);
+                // readCtbBase(PATH_ORIGINALS_KERNEL + "ctb_base.bin", true);
+                readEncounterTables(PATH_ORIGINALS_KERNEL + "btl.bin", true);
                 // readMixCombinations(PATH_ORIGINALS_KERNEL + "prepare.bin", true);
                 // readDirectAtelScriptObject("menu/menumain.bin", true);
                 // readX2AbilitiesFromFile("ffx_ps2/ffx2/master/new_uspc/battle/kernel/command.bin", "us", true);

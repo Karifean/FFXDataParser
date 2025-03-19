@@ -10,7 +10,7 @@ import java.util.List;
 /**
  * Part of SphereGridLayoutDataObject
  */
-public class SphereGridNodeDataObject implements Nameable {
+public class SphereGridNodeDataObject {
     public static final int LENGTH = 0xC;
     private final int[] bytes;
 
@@ -56,11 +56,6 @@ public class SphereGridNodeDataObject implements Nameable {
         String full = String.join(", ", list);
         String prefix = hasContent() ? getContentLabel(content) : ("[" + getContentLabel(redundantContent) + "]");
         return prefix + " { " + full + " }";
-    }
-
-    @Override
-    public String getName(String localization) {
-        return this.toString();
     }
 
     public void setContent(int content) {

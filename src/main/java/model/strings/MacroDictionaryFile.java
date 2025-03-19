@@ -2,6 +2,7 @@ package model.strings;
 
 import main.StringHelper;
 import reading.Chunk;
+import reading.BytesHelper;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,8 +15,9 @@ public class MacroDictionaryFile {
 
     private final String localization;
 
-    public MacroDictionaryFile(List<Chunk> chunks, String localization) {
+    public MacroDictionaryFile(int[] bytes, String localization) {
         this.localization = localization;
+        List<Chunk> chunks = BytesHelper.bytesToChunks(bytes, 16, 0);
         for (Chunk chunk : chunks) {
             allStrings.add(mapStringsForChunk(chunk));
         }

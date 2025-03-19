@@ -12,17 +12,14 @@ import java.util.stream.Collectors;
  * Part of EncounterFile
  */
 public class BattleAreasPositionsDataObject {
-    private final int[] bytes;
-
     int areaCount;
     BattleArea[] areas;
 
     public BattleAreasPositionsDataObject(int[] bytes) {
-        this.bytes = bytes;
-        mapBytes();
+        mapBytes(bytes);
     }
 
-    private void mapBytes() {
+    private void mapBytes(int[] bytes) {
         BattleArea first = new BattleArea(bytes, 0);
         areaCount = first.header.areaCount;
         areas = new BattleArea[areaCount];

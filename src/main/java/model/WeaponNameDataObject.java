@@ -11,8 +11,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static main.DataReadingManager.DEFAULT_LOCALIZATION;
-import static reading.ChunkedFileHelper.*;
+import static reading.BytesHelper.*;
 
 /**
  * w_name.bin
