@@ -99,7 +99,7 @@ public class DataReadingManager {
             readAllEvents(false, false);
             readAllEncounters(false);
         }
-        DataAccess.ENCOUNTER_TABLE = readEncounterTables(PATH_ORIGINALS_KERNEL + "btl.bin", false);
+        readEncounterTables(PATH_ORIGINALS_KERNEL + "btl.bin", false);
         addAllMonsterLocalizations();
         DataAccess.SG_NODE_TYPES = readSphereGridNodeTypes("battle/kernel/panel.bin", false);
         DataAccess.OSG_LAYOUT = readSphereGridLayout(PATH_ABMAP + "dat01.dat", PATH_ABMAP + "dat09.dat", false);
@@ -250,16 +250,23 @@ public class DataReadingManager {
         return scriptObject;
     }
 
-    public static EncounterTablesDataObject readEncounterTables(String filename, boolean print) {
+    public static void readEncounterTables(String filename, boolean print) {
         int[] bytes = BytesHelper.fileToBytes(filename, print);
         if (bytes == null) {
-            return null;
+            return;
         }
-        EncounterTablesDataObject btlFile = new EncounterTablesDataObject(bytes);
-        if (print) {
-            System.out.println(btlFile);
+        List<Chunk> chunks = BytesHelper.bytesToChunks(bytes, 2, 4);
+        int[] headerBytes = chunks.get(0).bytes;
+        int[] payloadBytes = chunks.get(1).bytes;
+        int tableCount = headerBytes.length / FieldEncounterTableDataObject.HEADER_LENGTH;
+        FieldEncounterTableDataObject[] fieldTables = new FieldEncounterTableDataObject[tableCount];
+        for (int i = 0; i < tableCount; i++) {
+            fieldTables[i] = new FieldEncounterTableDataObject(headerBytes, payloadBytes, i * FieldEncounterTableDataObject.HEADER_LENGTH);
+            if (print) {
+                System.out.println("Table " + StringHelper.formatHex2(i) + ": " + fieldTables[i]);
+            }
         }
-        return btlFile;
+        DataAccess.ENCOUNTER_TABLES = fieldTables;
     }
 
     public static MonsterFile readMonsterFile(int monsterIndex, String filename, boolean print) {
