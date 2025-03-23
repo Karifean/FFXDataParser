@@ -93,7 +93,7 @@ public class FormationDataObject {
         for (int i = 0; i < 8; i++) {
             int monsterIndex = monsters[i];
             if (monsterIndex != 0xFFFF) {
-                list.add("Monster " + StringHelper.formatHex2(i) + ": " + writeMonster(monsterIndex));
+                list.add("Monster#" + StringHelper.formatHex2(i) + ": " + writeMonster(monsterIndex));
             }
         }
         list.add("Voice lines " + (commonVoiceLinesEnabled ? "enabled" : "disabled"));

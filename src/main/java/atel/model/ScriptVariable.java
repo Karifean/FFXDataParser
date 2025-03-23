@@ -23,18 +23,6 @@ public class ScriptVariable {
     public ScriptWorker parentWorker;
     public String inferredType = "unknown";
 
-    public static int[] byteStructFromDescriptor(ScriptWorker parentWorker, int value, int length) {
-        if (parentWorker == null || parentWorker.parentScript == null) {
-            return null;
-        }
-        ScriptVariable scriptVariable = new ScriptVariable(parentWorker, 0, value, 1);
-        int offset = scriptVariable.getDataOffset();
-        if (offset < 0) {
-            return null;
-        }
-        return Arrays.copyOfRange(parentWorker.parentScript.getBytes(), offset, offset + length);
-    }
-
     public ScriptVariable(ScriptWorker parentWorker, int index, int lb, int hb) {
         this.parentWorker = parentWorker;
         this.index = index;
@@ -126,7 +114,7 @@ public class ScriptVariable {
         list.add("type=" + fullTypeString());
         list.add(valuesString());
         String full = list.stream().filter(s -> s != null && !s.isBlank()).collect(Collectors.joining(", "));
-        return getLabel() + " { " + full + " }";
+        return getLabel(null) + " { " + full + " }";
     }
 
     private String fullTypeString() {
@@ -140,7 +128,7 @@ public class ScriptVariable {
         return inferredType + arrayIndex + rawTypeSuffix;
     }
 
-    public String getLabel() {
+    public String getLabel(ScriptWorker worker) {
         if (location == 0) {
             ScriptField scriptField = StackObject.enumToScriptField("saveData", offset);
             if (scriptField.name != null) {
@@ -153,7 +141,7 @@ public class ScriptVariable {
                 return scriptField.name;
             }
         }
-        return getVarLabel();
+        return getVarLabel(worker);
     }
 
     public String getArrayIndexType() {
@@ -182,8 +170,10 @@ public class ScriptVariable {
         return formatToType(format);
     }
 
-    public String getVarLabel() {
-        return locationToLabel(location) + StringHelper.formatHex2(location == 3 ? index : offset);
+    public String getVarLabel(ScriptWorker worker) {
+        int offsetBonus = location == 3 && worker != null ? worker.privateDataOffset : 0;
+        String offsetStr = (location == 3 && worker == null ? "+" : "") + StringHelper.formatHex2(offset + offsetBonus);
+        return locationToLabel(location) + offsetStr;
     }
 
     public String getDereference() {
@@ -215,7 +205,7 @@ public class ScriptVariable {
         return switch (location) {
             case 0 -> "saveData";
             case 1 -> "battleVar";
-            case 3 -> "var";
+            case 3 -> "priv";
             case 4 -> "sharedObj";
             case 6 -> "eventVar";
             default -> "unknown:" + location;

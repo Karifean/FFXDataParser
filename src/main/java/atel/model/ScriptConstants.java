@@ -278,14 +278,14 @@ public abstract class ScriptConstants {
 
         addEnumsFromAllCsvsInFolder(new File(ENUM_CSV_ROOT));
 
-        putSaveDataVariable(0x0003, "MoonflowTreasureProgressionFlags1", "int");
-        putSaveDataVariable(0x0004, "MoonflowTreasureProgressionFlags2", "int");
-        putSaveDataVariable(0x0005, "ViaPurificoTreasureProgressionFlags1", "int");
-        putSaveDataVariable(0x0006, "ViaPurificoTreasureProgressionFlags2", "int"); // Also Besaid Falls treasure at &0x80 for some reason
-        putSaveDataVariable(0x0007, "MoonflowTreasureProgressionFlags3", "int");
+        putSaveDataVariable(0x0003, "MoonflowFlags1", "int");
+        putSaveDataVariable(0x0004, "MoonflowFlags2", "int");
+        putSaveDataVariable(0x0005, "ViaPurificoFlags1", "int");
+        putSaveDataVariable(0x0006, "ViaPurificoFlags2", "int"); // Also Besaid Falls treasure at &0x80 for some reason
+        putSaveDataVariable(0x0007, "MoonflowFlags3", "int");
         putSaveDataVariable(0x0080, "RidingChocoboFlags", "int");
         putSaveDataVariable(0x008D, "CalmLandsQuestProgressionFlags", "int");
-        putSaveDataVariable(0x0092, "MushroomRockRoadTreasureFlags", "int");
+        putSaveDataVariable(0x0092, "MushroomRockRoadFlags", "int");
         putSaveDataVariable(0x0095, "CalmLandsTreasureFlags", "int");
         putSaveDataVariable(0x009B, "BelgemineFightProgressionFlags", "int");
         putSaveDataVariable(0x009F, "MonsterArenaUnlockQuestProgressionFlags", "int");
@@ -343,9 +343,11 @@ public abstract class ScriptConstants {
         putSaveDataVariable(0x0A68, "BlitzballMenuReturnMap", "int");
         putSaveDataVariable(0x0A6C, "BlitzballMenuReturnEntrance", "int");
         putSaveDataVariable(0x0A70, "AnimaSealsUnlocked", "int");
+        putSaveDataVariable(0x0A7C, "BattleInfoStorage", "int"); // Some usages: Evrae Altana's remaining HP, which Sahagin remains alive before Geosgaeno.
         putSaveDataVariable(0x0A80, "CelestialsHalfPoweredFlags", "int");
         putSaveDataVariable(0x0A81, "CelestialsFullPoweredFlags", "int");
         putSaveDataVariable(0x0A83, "isRedButterflyEncounter", "bool");
+        putSaveDataVariable(0x0A84, "MusicTempStorageForResting", "bgm");
         putSaveDataVariable(0x0A88, "BlitzballTeamPlayerCount", "int", "blitzballTeam");
         putSaveDataVariable(0x0A8F, "OptionalAeonsRecruitedFlags", "int");
         putSaveDataVariable(0x0A93, "JechtSpheresCollectedCount", "int");
@@ -660,6 +662,7 @@ public abstract class ScriptConstants {
         putEnum("bgm", 0x008A, "?Victory Fanfare");
         putEnum("bgm", 0x008D, "?A Fleeting Dream");
         putEnum("bgm", 0x0088, "?Yuna's Theme");
+        putEnum("bgm", 0x008F, "Good Night");
         putEnum("bgm", 0x0091, "Challenge");
         putEnum("bgm", 0x00A5, "Run!!");
         putEnum("bgm", 0x00AB, "Lulu's Theme");
@@ -773,8 +776,8 @@ public abstract class ScriptConstants {
         for (int i = 0; i <= 0x0013; i++) {
             getEnumMap("btlChr").put(i, getEnumMap("playerChar").get(i));
         }
-        for (int i = 1; i <= 10; i++) {
-            putEnum("btlChr", 0x0013 + i, "Monster#" + i);
+        for (int i = 0; i < 8; i++) {
+            putEnum("btlChr", 0x14 + i, "Monster#" + StringHelper.formatHex2(i));
         }
         putEnum("btlChr", 0x00FF, "Actor:None");
 

@@ -1,5 +1,7 @@
 package main;
 
+import atel.model.ScriptConstants;
+import atel.model.StackObject;
 import model.CommandDataObject;
 import model.GearAbilityDataObject;
 import atel.EncounterFile;
@@ -9,6 +11,7 @@ import model.KeyItemDataObject;
 import model.MonsterStatDataObject;
 import reading.FileAccessorWithMods;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -43,6 +46,7 @@ public class Main {
     private static final String MODE_READ_MACROS = "READ_MACROS";
     private static final String MODE_MAKE_EDITS = "MAKE_EDITS";
     private static final String MODE_MAKE_AUTOHASTE_MOD = "MAKE_AUTOHASTE_MOD";
+    private static final String MODE_READ_BLITZBALL_STATS = "READ_BLITZBALL_STATS";
     private static final String MODE_CUSTOM = "CUSTOM";
 
     private static final boolean SKIP_BLITZBALL_EVENTS_FOLDER = true;
@@ -244,6 +248,45 @@ public class Main {
                     }
                 }
                 break;
+            case MODE_READ_BLITZBALL_STATS:
+                EventFile event = DataAccess.getEvent("bltz0002");
+                event.parseScript();
+                List<StackObject> hpValues = event.eventScript.variableDeclarations[0x126].values;
+                List<StackObject> atValues = event.eventScript.variableDeclarations[0x128].values;
+                List<StackObject> enValues = event.eventScript.variableDeclarations[0x129].values;
+                List<StackObject> paValues = event.eventScript.variableDeclarations[0x12A].values;
+                List<StackObject> shValues = event.eventScript.variableDeclarations[0x12B].values;
+                List<StackObject> blValues = event.eventScript.variableDeclarations[0x12C].values;
+                List<StackObject> caValues = event.eventScript.variableDeclarations[0x12D].values;
+                List<StackObject> spValues = event.eventScript.variableDeclarations[0x12E].values;
+                for (int i = 0; i < 0x3C; i++) {
+                    System.out.println("- " + StackObject.enumToString("blitzballPlayer", i) + " -");
+                    int baseOffset = i * 4;
+                    System.out.println("HP: " + blitzballGrowthToString(hpValues, baseOffset));
+                    System.out.println("SP: " + blitzballGrowthToString(spValues, baseOffset));
+                    System.out.println("AT: " + blitzballGrowthToString(atValues, baseOffset));
+                    System.out.println("EN: " + blitzballGrowthToString(enValues, baseOffset));
+                    System.out.println("PA: " + blitzballGrowthToString(paValues, baseOffset));
+                    System.out.println("SH: " + blitzballGrowthToString(shValues, baseOffset));
+                    System.out.println("BL: " + blitzballGrowthToString(blValues, baseOffset));
+                    System.out.println("CA: " + blitzballGrowthToString(caValues, baseOffset));
+                }
+                System.out.println("Events");
+                DataAccess.EVENTS.values().stream().filter(e -> {
+                    e.parseScript();
+                    return Arrays.stream(e.eventScript.variableDeclarations).anyMatch(d -> {
+                        if (d.values.isEmpty() || d.values.size() < 100) {
+                            return false;
+                        }
+                        for (int i = 0; i < 100; i++) {
+                            if (d.values.get(i).valueSigned != hpValues.get(i).valueSigned) {
+                                return false;
+                            }
+                        }
+                        return true;
+                    });
+                }).forEach(e -> System.out.println(e.getName()));
+                break;
             case MODE_CUSTOM:
                 // readPlayerCharStats("battle/kernel/ply_save.bin", true);
                 // readPlayerCharRom("battle/kernel/ply_rom.bin", true);
@@ -335,5 +378,36 @@ public class Main {
         }
         bytes[str.length() / 2] = 0x00;
         System.out.println(StringHelper.bytesToString(bytes, DEFAULT_LOCALIZATION));
+    }
+
+    private static String blitzballGrowthToString(List<StackObject> values, int baseOffset) {
+        float a = Float.intBitsToFloat(values.get(baseOffset).valueSigned);
+        float b = Float.intBitsToFloat(values.get(baseOffset + 1).valueSigned);
+        float c = Float.intBitsToFloat(values.get(baseOffset + 2).valueSigned);
+        float growthType = Float.intBitsToFloat(values.get(baseOffset + 3).valueSigned);
+        if (growthType == -1) {
+            return "1";
+        }
+        List<String> parts = new ArrayList<>();
+        if (a != 0) {
+            parts.add(""+a);
+        }
+        if (b != 0) {
+            String lv = growthType == 1 ? "Lv^(" + c + ")" : "Lv";
+            if (b == 1.0) {
+                parts.add(lv);
+            } else {
+                parts.add(lv + " * " + b);
+            }
+        }
+        if (c != 0 && (growthType == 2 || growthType == 3)) {
+            String sq = "Lv^2 * " + c;
+            if (growthType == 3) {
+                parts.add(sq);
+            } else {
+                return String.join(" + ", parts) + " - " + sq;
+            }
+        }
+        return String.join(" + ", parts);
     }
 }

@@ -24,10 +24,9 @@ public class AtelScriptObject {
 
     protected int[] actualScriptCodeBytes;
     protected ScriptWorker[] workers;
-    protected ScriptWorker[] workerBattleSlotArray;
-    protected int[] refFloats;
-    protected int[] refInts;
-    protected ScriptVariable[] variableDeclarations;
+    public int[] refFloats;
+    public int[] refInts;
+    public ScriptVariable[] variableDeclarations;
     protected int variableStructsTableOffset;
     protected int intTableOffset;
     protected int floatTableOffset;
@@ -854,7 +853,7 @@ public class AtelScriptObject {
 
     public String getVariableLabel(int index) {
         if (variableDeclarations != null && index >= 0 && index < variableDeclarations.length) {
-            return variableDeclarations[index].getLabel();
+            return variableDeclarations[index].getLabel(getWorker(currentWorkerIndex));
         }
         String hexIdx = StringHelper.formatHex2(index);
         warningsOnLine.add("Variable index " + hexIdx + " out of bounds!");

@@ -89,7 +89,7 @@ public class ScriptWorker {
         }
         list.add("Entrypoints=" + StringHelper.hex2WithSuffix(entryPointCount));
         list.add("Jumps=" + StringHelper.hex2WithSuffix(jumpCount));
-        list.add("privateData addr=" + StringHelper.hex2WithSuffix(privateDataOffset) + " len=" + StringHelper.hex2WithSuffix(privateDataLength));
+        list.add("privateData addr=" + StringHelper.formatHex4(privateDataOffset) + " len=" + StringHelper.formatHex2(privateDataLength));
         list.add(alwaysZero0C != 0 ? "alwaysZero0C=" + alwaysZero0C : "");
         list.add(alwaysZero28 != 0 ? "alwaysZero28=" + alwaysZero28 : "");
         String full = list.stream().filter(s -> s != null && !s.isBlank()).collect(Collectors.joining(", "));

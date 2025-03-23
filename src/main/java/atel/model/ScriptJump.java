@@ -87,10 +87,11 @@ public class ScriptJump {
                 String prefix = "";
                 if (battleWorkerSlot >= 0x25 && battleWorkerSlot <= 0x28) {
                     String chr = StackObject.enumToScriptField("playerChar", battleWorkerSlot - 0x17).getName();
-                    prefix = "Base" + chr;
+                    prefix = "Base" + chr + ".";
                 }
                 if (battleWorkerSlot >= 0x29 && battleWorkerSlot <= 0x3A) {
-                    prefix = StackObject.enumToScriptField("playerChar", battleWorkerSlot - 0x29).getName();
+                    String chr = StackObject.enumToScriptField("playerChar", battleWorkerSlot - 0x29).getName();
+                    prefix = chr + ".";
                 }
                 return prefix + s;
             }
