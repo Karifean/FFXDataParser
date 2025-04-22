@@ -398,8 +398,8 @@ public class MonsterStatDataObject implements Nameable, Writable, Localized<Mons
         write2Bytes(array, 0x74, modelIdx);
         array[0x76] = ctbIconType;
         array[0x77] = doomCounter;
-        write2Bytes(bytes, 0x78, monsterArenaIdx);
-        write2Bytes(bytes, 0x7A, modelIdxOther);
+        write2Bytes(array, 0x78, monsterArenaIdx);
+        write2Bytes(array, 0x7A, modelIdxOther);
         array[0x7C] = alwaysZero7C;
         array[0x7D] = alwaysZero7D;
         array[0x7E] = alwaysZero7E;
