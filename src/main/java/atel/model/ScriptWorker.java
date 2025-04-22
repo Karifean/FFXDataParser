@@ -177,6 +177,10 @@ public class ScriptWorker {
         } else if (battleWorkerSlot == 0x4A || battleWorkerSlot == 0x4B || battleWorkerSlot == 0x4C) {
             return "MagicCam6-" + (battleWorkerSlot - 0x4A);
         }
+        if (battleWorkerSlot >= 0x6D && battleWorkerSlot <= 0x7E) {
+            String chr = StackObject.enumToScriptField("playerChar", battleWorkerSlot - 0x6D).getName();
+            return "VoiceHandlesFor" + chr;
+        }
         return StringHelper.formatHex2(battleWorkerSlot);
     }
 }

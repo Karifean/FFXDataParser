@@ -449,7 +449,9 @@ public abstract class ScriptConstants {
         putEnum("battleWorkerType", 0x00, "CameraHandler");
         putEnum("battleWorkerType", 0x01, "MotionHandler");
         putEnum("battleWorkerType", 0x02, "CombatHandler");
+        putEnum("battleWorkerType", 0x03, "BattleGruntHandler");
         putEnum("battleWorkerType", 0x04, "EncounterScripts");
+        putEnum("battleWorkerType", 0x05, "VoiceHandler");
         putEnum("battleWorkerType", 0x06, "StartEndHooks");
         putEnum("battleWorkerType", 0x07, "MagicCameraHandler-Command");
         putEnum("battleWorkerType", 0x08, "MagicCameraHandler-Item");
@@ -978,9 +980,9 @@ public abstract class ScriptConstants {
         putBattleActorProperty(0x007E, "?Heavy (No lift off ground)", "bool", "stat_disable_jump_flag");
         putBattleActorProperty(0x007F, null, "bool", "stat_bodyhit_flag");
         putBattleActorProperty(0x0080, null, "unknown", "stat_effvar");
-        putBattleActorProperty(0x0081, "StealItemCommonType", "move", "stat_item");
+        putBattleActorProperty(0x0081, "StealItemCommonType", "command", "stat_item");
         putBattleActorProperty(0x0082, "StealItemCommonAmount", "int", "stat_item_num");
-        putBattleActorProperty(0x0083, "StealItemRareType", "move", "stat_rareitem");
+        putBattleActorProperty(0x0083, "StealItemRareType", "command", "stat_rareitem");
         putBattleActorProperty(0x0084, "StealItemRareAmount", "int", "stat_rareitem_num");
         putBattleActorProperty(0x0085, null, "unknown", "stat_magiclv");
         putBattleActorProperty(0x0086, "BirthAnimation", "appearMotion", "stat_appear_motion_flag");
@@ -1070,9 +1072,9 @@ public abstract class ScriptConstants {
         putBattleActorProperty(0x00DA, null, "unknown", "stat_round");
         putBattleActorProperty(0x00DB, null, "unknown", "stat_round_return");
         putBattleActorProperty(0x00DC, null, "unknown", "stat_win_pose");
-        putBattleActorProperty(0x00DD, null, "unknown", "stat_vigor");
+        putBattleActorProperty(0x00DD, "notDeadPetrifiedOrLowHp", "unknown", "stat_vigor", true);
         putBattleActorProperty(0x00DE, null, "unknown", "stat_fast_model_flag");
-        putBattleActorProperty(0x00DF, null, "unknown", "stat_alive_not_stone");
+        putBattleActorProperty(0x00DF, "notDeadOrPetrified", "unknown", "stat_alive_not_stone", true);
         putBattleActorProperty(0x00E0, null, "unknown", "stat_command_type");
         putBattleActorProperty(0x00E1, null, "unknown", "stat_effect_target_flag");
         putBattleActorProperty(0x00E2, null, "unknown", "stat_magic_effect_ground");
@@ -1097,13 +1099,13 @@ public abstract class ScriptConstants {
         putBattleActorProperty(0x00F5, null, "unknown", "stat_win_se");
         putBattleActorProperty(0x00F6, null, "unknown", "stat_attack_num");
         putBattleActorProperty(0x00F7, null, "unknown", "stat_near_motion");
-        putBattleActorProperty(0x00F8, null, "unknown", "stat_talk_stat1");
-        putBattleActorProperty(0x00F9, null, "unknown", "stat_talk_stat2");
+        putBattleActorProperty(0x00F8, "presentWithoutDthPtfSlpSil", "unknown", "stat_talk_stat1", true);
+        putBattleActorProperty(0x00F9, "presentWithoutDthPtfSlpSilCnfBsk", "unknown", "stat_talk_stat2", true);
         putBattleActorProperty(0x00FA, "?ForceCloseRangeAttackAnim", "bool", "stat_near_motion_set");
         putBattleActorProperty(0x00FB, null, "unknown", "stat_motion_speed_normal");
         putBattleActorProperty(0x00FC, null, "unknown", "stat_motion_speed_normal_start");
         putBattleActorProperty(0x00FD, null, "unknown", "stat_own_attack_near");
-        putBattleActorProperty(0x00FE, null, "unknown", "stat_talk_stat3");
+        putBattleActorProperty(0x00FE, "presentWithoutDthPtfSlpSilCnfBskYellowHp", "unknown", "stat_talk_stat3", true);
         putBattleActorProperty(0x00FF, null, "unknown", "stat_command_set");
         putBattleActorProperty(0x0100, "RetainsControlWhenProvoked", "bool", "stat_prov_command_flag");
         putBattleActorProperty(0x0101, "ProvokerActor", "btlChr", "stat_prov_chr");
@@ -1115,7 +1117,7 @@ public abstract class ScriptConstants {
         putBattleActorProperty(0x0107, "NullDamage", "bool", "stat_sp_invincible");
         putBattleActorProperty(0x0108, "NullMagic", "bool", "stat_sp_inv_magic");
         putBattleActorProperty(0x0109, "NullPhysical", "bool", "stat_sp_inv_physic");
-        putBattleActorProperty(0x010A, "LearnableRonsoRage", "move", "stat_blue_magic");
+        putBattleActorProperty(0x010A, "LearnableRonsoRage", "command", "stat_blue_magic");
         putBattleActorProperty(0x010B, "?NullSlice", "unknown", "stat_sp_disable_zan");
         putBattleActorProperty(0x010C, "OverkillThreshold", "int", "stat_over_kill_hp");
         putBattleActorProperty(0x010D, null, "unknown", "stat_return_motion_type");
@@ -1163,14 +1165,14 @@ public abstract class ScriptConstants {
         putBattleActorProperty(0x0137, null, "unknown", "stat_use_limit");
         putBattleActorProperty(0x0138, null, "unknown", "stat_use_limit_all");
         putBattleActorProperty(0x0139, "isDoublecasting", "bool", "stat_continue_magic");
-        putBattleActorProperty(0x013A, "Item1CommonType", "move", "stat_item1_com");
-        putBattleActorProperty(0x013B, "Item1RareType", "move", "stat_item1_rare");
-        putBattleActorProperty(0x013C, "Item2CommonType", "move", "stat_item2_com");
-        putBattleActorProperty(0x013D, "Item2RareType", "move", "stat_item2_rare");
-        putBattleActorProperty(0x013E, "Item1CommonTypeOverkill", "move", "stat_item1_com_over_kill");
-        putBattleActorProperty(0x013F, "Item1RareTypeOverkill", "move", "stat_item1_rare_over_kill");
-        putBattleActorProperty(0x0140, "Item2CommonTypeOverkill", "move", "stat_item2_com_over_kill");
-        putBattleActorProperty(0x0141, "Item2RareTypeOverkill", "move", "stat_item2_rare_over_kill");
+        putBattleActorProperty(0x013A, "Item1CommonType", "command", "stat_item1_com");
+        putBattleActorProperty(0x013B, "Item1RareType", "command", "stat_item1_rare");
+        putBattleActorProperty(0x013C, "Item2CommonType", "command", "stat_item2_com");
+        putBattleActorProperty(0x013D, "Item2RareType", "command", "stat_item2_rare");
+        putBattleActorProperty(0x013E, "Item1CommonTypeOverkill", "command", "stat_item1_com_over_kill");
+        putBattleActorProperty(0x013F, "Item1RareTypeOverkill", "command", "stat_item1_rare_over_kill");
+        putBattleActorProperty(0x0140, "Item2CommonTypeOverkill", "command", "stat_item2_com_over_kill");
+        putBattleActorProperty(0x0141, "Item2RareTypeOverkill", "command", "stat_item2_rare_over_kill");
         putBattleActorProperty(0x0142, "Item1CommonAmount", "int", "stat_item1_com_num");
         putBattleActorProperty(0x0143, "Item1RareAmount", "int", "stat_item1_rare_num");
         putBattleActorProperty(0x0144, "Item2CommonAmount", "int", "stat_item2_com_num");
@@ -1194,19 +1196,19 @@ public abstract class ScriptConstants {
         putBattleActorProperty(0x0156, "?wasCaptured", "bool", null);
         // 0x0157 is missing
         // 0x0158 is missing
-        putBattleActorProperty(0x0159, "?onlyTargetableBy", "move", null);
+        putBattleActorProperty(0x0159, "?onlyTargetableBy", "command", null);
 
-        putMoveProperty(0x0000, "damageFormula", "damageFormula");
-        putMoveProperty(0x0001, "damageType", "damageType");
-        putMoveProperty(0x0002, "affectHP", "bool");
-        putMoveProperty(0x0003, "affectMP", "bool");
-        putMoveProperty(0x0004, "affectCTB", "bool");
-        putMoveProperty(0x0005, "elementHoly", "bool");
-        putMoveProperty(0x0006, "elementWater", "bool");
-        putMoveProperty(0x0007, "elementThunder", "bool");
-        putMoveProperty(0x0008, "elementIce", "bool");
-        putMoveProperty(0x0009, "elementFire", "bool");
-        putMoveProperty(0x000A, "targetType", "targetType");
+        putCommandProperty(0x0000, "damageFormula", "damageFormula");
+        putCommandProperty(0x0001, "damageType", "damageType");
+        putCommandProperty(0x0002, "affectHP", "bool");
+        putCommandProperty(0x0003, "affectMP", "bool");
+        putCommandProperty(0x0004, "affectCTB", "bool");
+        putCommandProperty(0x0005, "elementHoly", "bool");
+        putCommandProperty(0x0006, "elementWater", "bool");
+        putCommandProperty(0x0007, "elementThunder", "bool");
+        putCommandProperty(0x0008, "elementIce", "bool");
+        putCommandProperty(0x0009, "elementFire", "bool");
+        putCommandProperty(0x000A, "targetType", "targetType");
     }
 
     public static Map<Integer, ScriptField> getEnumMap(String type) {
@@ -1249,6 +1251,11 @@ public abstract class ScriptConstants {
         putBattleVariable(idx, name, type, "unknown");
     }
 
+    private static void putBattleActorProperty(int idx, String name, String type, String internalName, boolean getterOnly) {
+        ScriptField field = new ScriptField(name, type, internalName, idx);
+        getEnumMap("btlChrProperty").put(idx, field);
+    }
+
     private static void putBattleActorProperty(int idx, String name, String type, String internalName) {
         ScriptField field = new ScriptField(name, type, internalName, idx);
         getEnumMap("btlChrProperty").put(idx, field);
@@ -1259,10 +1266,10 @@ public abstract class ScriptConstants {
         getEnumMap("motionProperty").put(idx, field);
     }
 
-    private static void putMoveProperty(int idx, String name, String type) {
+    private static void putCommandProperty(int idx, String name, String type) {
         ScriptField field = new ScriptField(name, type);
         field.idx = idx;
-        getEnumMap("moveProperty").put(idx, field);
+        getEnumMap("commandProperty").put(idx, field);
     }
 
     private static void putFields(int offset, String name, int endIdx) {

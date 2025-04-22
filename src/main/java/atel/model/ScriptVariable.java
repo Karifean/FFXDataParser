@@ -172,7 +172,7 @@ public class ScriptVariable {
 
     public String getVarLabel(ScriptWorker worker) {
         int offsetBonus = location == 3 && worker != null ? worker.privateDataOffset : 0;
-        String offsetStr = (location == 3 && worker == null ? "+" : "") + StringHelper.formatHex2(offset + offsetBonus);
+        String offsetStr = (location == 3 && worker == null ? "+" : "") + StringHelper.formatHex4(offset + offsetBonus);
         return locationToLabel(location) + offsetStr;
     }
 

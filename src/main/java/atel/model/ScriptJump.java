@@ -95,8 +95,21 @@ public class ScriptJump {
                 }
                 return prefix + s;
             }
+        } else if (battleWorkerType == 3) {
+            String s = battleGruntPurposeSlotToString(battleWorkerEntryPointSlot);
+            if (s != null) {
+                return "Grunt" + s;
+            }
         } else if (battleWorkerType == 4) {
-            return "btlScene" + StringHelper.hex2WithSuffix(battleWorkerEntryPointSlot);
+            return "btlScene" + StringHelper.formatHex2(battleWorkerEntryPointSlot);
+        } else if (battleWorkerType == 5) {
+            if (battleWorkerSlot >= 0x6D && battleWorkerSlot <= 0x7E) {
+                String chr = StackObject.enumToScriptField("playerChar", battleWorkerSlot - 0x6D).getName();
+                String s = voicePurposeSlotToString(battleWorkerEntryPointSlot);
+                if (s != null) {
+                    return chr + "Voice" + s;
+                }
+            }
         } else if (battleWorkerType == 6) {
             String s = startEndHookPurposeSlotToString(battleWorkerEntryPointSlot);
             if (s != null) {
@@ -118,10 +131,10 @@ public class ScriptJump {
             int cmd = 0x6000 + battleWorkerEntryPointSlot;
             return "MagicCam:" + DataAccess.getCommand(cmd).getName() + StringHelper.hex4Suffix(cmd);
         }
-        String strBattleWorkerType = "t" + StringHelper.formatHex2(battleWorkerType);
-        String strBattleWorkerEntryPointType = "p" + StringHelper.formatHex2(battleWorkerEntryPointSlot);
-        String strWorkerPurposeSlot = "s" + StringHelper.formatHex2(scriptWorker.purposeSlot);
-        return strWorkerPurposeSlot + strBattleWorkerType + strBattleWorkerEntryPointType;
+        String strWorkerPurposeSlot = "s" + StringHelper.formatHex2(battleWorkerSlot);
+        String strWorkerType = "t" + StringHelper.formatHex2(battleWorkerType);
+        String strEntryPointPurposeSlot = "p" + StringHelper.formatHex2(battleWorkerEntryPointSlot);
+        return strWorkerPurposeSlot + strWorkerType + strEntryPointPurposeSlot;
     }
 
     private static String eventWorkerEntryPointToStringWithFallback(int eventWorkerType, int eventWorkerEntryPoint) {
@@ -208,6 +221,28 @@ public class ScriptJump {
         return switch (slot) {
             case 4 -> "battleEnd";
             case 5 -> "battleStart";
+            default -> null;
+        };
+    }
+
+    private static String voicePurposeSlotToString(int slot) {
+        return switch (slot) {
+            case 0x09 -> "Command";
+            case 0x0A -> "Revived";
+            case 0x0B -> "Switched";
+            case 0x0C -> "Summoned";
+            case 0x0D -> "Provoke";
+            case 0x0E -> "Threaten";
+            case 0x0F -> "Flee?";
+            default -> null;
+        };
+    }
+
+    private static String battleGruntPurposeSlotToString(int slot) {
+        return switch (slot) {
+            case 0x09 -> "PreAttack?";
+            case 0x0A -> "PostAttack?";
+            case 0x0B -> "OnHit";
             default -> null;
         };
     }

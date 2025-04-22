@@ -312,7 +312,7 @@ public class DataReadingManager {
         }
         if (print) {
             monsterFile.parseScript();
-            String textOutputPath = PATH_TEXT_OUTPUT_ROOT + "battle/mon/" + '/' + mIndexString + ".txt";
+            String textOutputPath = PATH_TEXT_OUTPUT_ROOT + "battle/mon/" + mIndexString + ".txt";
             String monsterFileString = monsterFile.toString();
             FileAccessorWithMods.writeStringToFile(textOutputPath, monsterFileString);
             System.out.println(monsterFileString);

@@ -2,13 +2,10 @@ package main;
 
 import atel.model.ScriptConstants;
 import atel.model.StackObject;
-import model.CommandDataObject;
-import model.GearAbilityDataObject;
+import model.*;
 import atel.EncounterFile;
 import atel.EventFile;
 import atel.MonsterFile;
-import model.KeyItemDataObject;
-import model.MonsterStatDataObject;
 import reading.FileAccessorWithMods;
 
 import java.util.ArrayList;
@@ -16,6 +13,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import static main.DataReadingManager.*;
+import static main.DataWritingManager.writeDataObjectsInAllLocalizations;
 import static reading.FileAccessorWithMods.GAME_FILES_ROOT;
 import static reading.FileAccessorWithMods.MODS_FOLDER;
 
@@ -288,11 +286,12 @@ public class Main {
                 }).forEach(e -> System.out.println(e.getName()));
                 break;
             case MODE_CUSTOM:
+                // writeDataObjectsInAllLocalizations("battle/kernel/ply_save.bin", DataAccess.PLAYER_CHAR_STATS, PlayerCharStatDataObject.LENGTH, false);
                 // readPlayerCharStats("battle/kernel/ply_save.bin", true);
                 // readPlayerCharRom("battle/kernel/ply_rom.bin", true);
                 // readWeaponNames("battle/kernel/w_name.bin", true);
-                // readCtbBase(PATH_ORIGINALS_KERNEL + "ctb_base.bin", true);
-                readEncounterTables(PATH_ORIGINALS_KERNEL + "btl.bin", true);
+                readCtbBase(PATH_ORIGINALS_KERNEL + "ctb_base.bin", true);
+                // readEncounterTables(PATH_ORIGINALS_KERNEL + "btl.bin", true);
                 // readMixCombinations(PATH_ORIGINALS_KERNEL + "prepare.bin", true);
                 // readDirectAtelScriptObject("menu/menumain.bin", true);
                 // readX2AbilitiesFromFile("ffx_ps2/ffx2/master/new_uspc/battle/kernel/command.bin", "us", true);
@@ -302,36 +301,36 @@ public class Main {
                 if (CsvEditExecutor.editAttacks(true)) {
                     System.out.println("--- command.bin ---");
                     CommandDataObject[] commands = Arrays.copyOfRange(DataAccess.MOVES, 0x3000, 0x3140);
-                    DataWritingManager.writeDataObjectsInAllLocalizations("battle/kernel/command.bin", commands, CommandDataObject.PCCOM_LENGTH, false);
+                    writeDataObjectsInAllLocalizations("battle/kernel/command.bin", commands, CommandDataObject.PCCOM_LENGTH, false);
                     System.out.println("--- monmagic1.bin ---");
                     CommandDataObject[] monmagics1 = Arrays.copyOfRange(DataAccess.MOVES, 0x4000, 0x412C);
-                    DataWritingManager.writeDataObjectsInAllLocalizations("battle/kernel/monmagic1.bin", monmagics1, CommandDataObject.COM_LENGTH, false);
+                    writeDataObjectsInAllLocalizations("battle/kernel/monmagic1.bin", monmagics1, CommandDataObject.COM_LENGTH, false);
                     System.out.println("--- monmagic2.bin ---");
                     CommandDataObject[] monmagics2 = Arrays.copyOfRange(DataAccess.MOVES, 0x6000, 0x60F7);
-                    DataWritingManager.writeDataObjectsInAllLocalizations("battle/kernel/monmagic2.bin", monmagics2, CommandDataObject.COM_LENGTH, false);
+                    writeDataObjectsInAllLocalizations("battle/kernel/monmagic2.bin", monmagics2, CommandDataObject.COM_LENGTH, false);
                     System.out.println("--- item.bin ---");
                     CommandDataObject[] items = Arrays.copyOfRange(DataAccess.MOVES, 0x2000, 0x2070);
-                    DataWritingManager.writeDataObjectsInAllLocalizations("battle/kernel/item.bin", items, CommandDataObject.PCCOM_LENGTH, false);
+                    writeDataObjectsInAllLocalizations("battle/kernel/item.bin", items, CommandDataObject.PCCOM_LENGTH, false);
                 }
                 System.out.println("--- GEAR ABILITIES ---");
                 if (CsvEditExecutor.editGearAbilities(true)) {
                     System.out.println("--- a_ability.bin ---");
-                    DataWritingManager.writeDataObjectsInAllLocalizations("battle/kernel/a_ability.bin", DataAccess.GEAR_ABILITIES, GearAbilityDataObject.LENGTH, false);
+                    writeDataObjectsInAllLocalizations("battle/kernel/a_ability.bin", DataAccess.GEAR_ABILITIES, GearAbilityDataObject.LENGTH, false);
                 }
                 System.out.println("--- KEY ITEMS ---");
                 if (CsvEditExecutor.editKeyItems(true)) {
                     System.out.println("--- important.bin ---");
-                    DataWritingManager.writeDataObjectsInAllLocalizations("battle/kernel/important.bin", DataAccess.KEY_ITEMS, KeyItemDataObject.LENGTH, false);
+                    writeDataObjectsInAllLocalizations("battle/kernel/important.bin", DataAccess.KEY_ITEMS, KeyItemDataObject.LENGTH, false);
                 }
                 System.out.println("--- MONSTERS ---");
                 if (CsvEditExecutor.editMonsters(true)) {
                     MonsterStatDataObject[] statData = (MonsterStatDataObject[]) Arrays.stream(DataAccess.MONSTERS).map(mf -> mf.monsterStatData).toArray();
                     System.out.println("--- monster1.bin ---");
-                    DataWritingManager.writeDataObjectsInAllLocalizations("battle/kernel/monster1.bin", statData, MonsterStatDataObject.LENGTH, 0, 100, false);
+                    writeDataObjectsInAllLocalizations("battle/kernel/monster1.bin", statData, MonsterStatDataObject.LENGTH, 0, 100, false);
                     System.out.println("--- monster2.bin ---");
-                    DataWritingManager.writeDataObjectsInAllLocalizations("battle/kernel/monster2.bin", statData, MonsterStatDataObject.LENGTH, 101, 180, false);
+                    writeDataObjectsInAllLocalizations("battle/kernel/monster2.bin", statData, MonsterStatDataObject.LENGTH, 101, 180, false);
                     System.out.println("--- monster3.bin ---");
-                    DataWritingManager.writeDataObjectsInAllLocalizations("battle/kernel/monster3.bin", statData, MonsterStatDataObject.LENGTH, 181, 365, false);
+                    writeDataObjectsInAllLocalizations("battle/kernel/monster3.bin", statData, MonsterStatDataObject.LENGTH, 181, 365, false);
                 }
                 System.out.println("--- EVENTS ---");
                 CsvEditExecutor.editAndSaveEventStrings(true);

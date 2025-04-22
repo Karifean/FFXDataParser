@@ -146,7 +146,7 @@ public class StackObject {
         if ("sphereGridNodeState".equals(type)) {
             return compositeUint16ToString(localization, "bitfieldFrom_playerChar", "sgNodeType", valueUnsigned, "(Activation: %s, Content: %s)") + hexSuffix;
         }
-        if ("move".equals(type)) {
+        if ("command".equals(type)) {
             if (valueSigned == 0) {
                 return "Null Command" + hexSuffix;
             } else if (valueSigned <= 0x11) {
@@ -155,7 +155,7 @@ public class StackObject {
                 CommandDataObject ability = DataAccess.getCommand(valueSigned);
                 return (ability != null ? '"'+ability.getName(localization)+'"' : "NullCmd") + hexSuffix;
             }
-        } else if ("charMove".equals(type)) {
+        } else if ("charCommand".equals(type)) {
             CommandDataObject ability = DataAccess.getCommand(valueSigned + 0x3000);
             return (ability != null ? '"'+ability.getName(localization)+'"' : "NullCmd") + hexSuffix;
         }

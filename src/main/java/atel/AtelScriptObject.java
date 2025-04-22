@@ -993,6 +993,7 @@ public class AtelScriptObject {
             return "No Workers";
         }
         List<String> lines = new ArrayList<>();
+        lines.add("Script Code Start Address: " + StringHelper.formatHex4(scriptCodeStartAddress));
         if (mainScriptIndex != 0xFFFF) {
             lines.add("Main Worker: w" + StringHelper.formatHex2(mainScriptIndex));
         }

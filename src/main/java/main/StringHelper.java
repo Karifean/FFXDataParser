@@ -173,17 +173,19 @@ public abstract class StringHelper {
 
     public static String getControllerInput(int ctrlIdx) {
         return switch (ctrlIdx) {
-            case 0x00 -> "TRIANGLE";
-            case 0x01 -> "X";
-            case 0x02 -> "CIRCLE";
-            case 0x03 -> "SQUARE";
-            case 0x04 -> "L1";
-            case 0x05 -> "R1";
-            case 0x09 -> "SELECT";
-            case 0x11 -> "UP";
-            case 0x12 -> "RIGHT";
-            case 0x14 -> "DOWN";
-            case 0x18 -> "LEFT";
+            case 0x20 -> "?L1 (SWITCH)";
+            case 0x30 -> "TRIANGLE";
+            case 0x31 -> "X";
+            case 0x32 -> "CIRCLE";
+            case 0x33 -> "SQUARE";
+            case 0x34 -> "L1";
+            case 0x35 -> "R1";
+            case 0x37 -> "?R2";
+            case 0x39 -> "SELECT";
+            case 0x41 -> "UP";
+            case 0x42 -> "RIGHT";
+            case 0x44 -> "DOWN";
+            case 0x48 -> "LEFT";
             default -> "?";
         };
     }
@@ -313,7 +315,7 @@ public abstract class StringHelper {
                 anyColorization = true;
             } else if (idx == 0x0B) {
                 offset++;
-                int ctrlIdx = table[offset] - 0x30;
+                int ctrlIdx = table[offset];
                 out.append("{CTRL:").append(formatHex2(ctrlIdx)).append(':').append(getControllerInput(ctrlIdx)).append('}');
             } else if (idx == 0x10) {
                 offset++;
@@ -444,7 +446,7 @@ public abstract class StringHelper {
         } else if (cmd.startsWith("COLOR:")) {
             return List.of(0x0A, colorToByte(cmd.substring(6)));
         } else if (cmd.startsWith("CTRL:")) {
-            int ctrlIdx = Integer.parseInt(cmd.substring(5, 7), 16) + 0x30;
+            int ctrlIdx = Integer.parseInt(cmd.substring(5, 7), 16);
             return List.of(0x0B, ctrlIdx);
         } else if (cmd.equals("CHOICE-END")) {
             return List.of(0x10, 0xFF);

@@ -207,6 +207,7 @@ public class PlayerCharStatDataObject implements Nameable, Writable, Localized<P
 
         write4Bytes(array, 0x50, encounterCount);
         write4Bytes(array, 0x54, killCount);
+        System.arraycopy(bytes, 0x58, array, 0x58, 0x3C);
         // TODO
         return array;
     }

@@ -56,7 +56,7 @@ public abstract class DataAccess {
 
     public static Nameable getNameableObject(String type, int idx) {
         Nameable object = switch (type) {
-            case "move" -> getCommand(idx);
+            case "command" -> getCommand(idx);
             case "monster" -> getMonster(idx);
             case "keyItem" -> getKeyItem(idx);
             case "treasure" -> getTreasure(idx);
