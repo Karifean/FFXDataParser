@@ -23,7 +23,7 @@ public class LocalizedFieldStringObject {
     }
 
     public void readAndSetLocalizedContent(String localization, int[] bytes, int regularHeader, int simplifiedHeader) {
-        if (bytes == null || bytes.length == 0) {
+        if (bytes == null) {
             return;
         }
         contents.put(localization, new FieldString(StringHelper.localizationToCharset(localization), regularHeader, simplifiedHeader, bytes));

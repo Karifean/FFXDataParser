@@ -96,7 +96,13 @@ public class DataWritingManager {
     }
 
     public static int[] stringsToStringFileBytes(List<LocalizedFieldStringObject> localizedStrings, String localization) {
-        List<FieldString> strings = localizedStrings.stream().map(so -> so.getLocalizedContent(localization)).toList();
+        List<FieldString> strings = localizedStrings.stream().map(so -> {
+            FieldString localizedContent = so.getLocalizedContent(localization);
+            if (localizedContent == null) {
+                System.err.println("null content");
+            }
+            return localizedContent;
+        }).toList();
         int[] stringBytes = FieldString.rebuildFieldStrings(strings, StringHelper.localizationToCharset(localization), false);
         List<Integer> bytes = new ArrayList<>();
         strings.forEach(str -> {

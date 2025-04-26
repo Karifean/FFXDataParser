@@ -21,28 +21,28 @@ public abstract class CsvEditExecutor {
     private static final String EDIT_CSV_ROOT = FileAccessorWithMods.RESOURCES_ROOT + "edits/";
 
     public static boolean editAttacks(final boolean print) {
-        return editItems("attacks", (id) -> DataAccess.getCommand(id), print);
+        return editItems("attacks", 16, (id) -> DataAccess.getCommand(id), print);
     }
 
     public static boolean editGearAbilities(final boolean print) {
-        return editItems("gearAbilities", (id) -> DataAccess.getGearAbility(id), print);
+        return editItems("gearAbilities", 16, (id) -> DataAccess.getGearAbility(id), print);
     }
 
     public static boolean editKeyItems(final boolean print) {
-        return editItems("keyItems", (id) -> DataAccess.getKeyItem(id), print);
+        return editItems("keyItems", 16, (id) -> DataAccess.getKeyItem(id), print);
     }
 
     public static boolean editMonsters(final boolean print) {
         Function<Integer, Writable> monsterGetter = (id) -> {
-            MonsterFile monster = DataAccess.getMonster(id);
+            MonsterFile monster = DataAccess.getMonster(id + 0x1000);
             return monster != null ? monster.monsterStatData : null;
         };
-        boolean sensorChanges = editItems("monsterNameSensor", monsterGetter, print);
-        boolean scanChanges = editItems("monsterScan", monsterGetter, print);
+        boolean sensorChanges = editItems("monsterNameSensor", 10, monsterGetter, print);
+        boolean scanChanges = editItems("monsterScan", 10, monsterGetter, print);
         return sensorChanges || scanChanges;
     }
 
-    private static boolean editItems(String file, Function<Integer, Writable> getter, final boolean print) {
+    private static boolean editItems(String file, int idRadix, Function<Integer, Writable> getter, final boolean print) {
         String path = EDIT_CSV_ROOT + file + ".csv";
         List<String[]> lines;
         try {
@@ -78,14 +78,14 @@ public abstract class CsvEditExecutor {
         }
         List<String[]> values = lines.subList(1, lines.size());
         for (String[] cells : values) {
-            int id = Integer.parseInt(cells[idCol], 16);
+            int id = Integer.parseInt(cells[idCol], idRadix);
             String type = cells[typeCol].toLowerCase(Locale.ROOT);
             Writable itemToEdit = getter.apply(id);
             if (itemToEdit != null) {
                 LocalizedKeyedStringObject objToEdit = itemToEdit.getKeyedString(type);
                 if (objToEdit != null) {
                     if (copyCol >= 0 && cells[copyCol] != null && !cells[copyCol].isBlank()) {
-                        int copyId = Integer.parseInt(cells[copyCol], 16);
+                        int copyId = Integer.parseInt(cells[copyCol], idRadix);
                         Writable itemToCopyFrom = getter.apply(copyId);
                         if (itemToCopyFrom != null) {
                             LocalizedKeyedStringObject objToCopyFrom = itemToCopyFrom.getKeyedString(type);
@@ -132,7 +132,8 @@ public abstract class CsvEditExecutor {
         Map<Integer, String> colToLocalization = new HashMap<>();
         for (int i = 0; i < header.length; i++) {
             String col = header[i].toLowerCase(Locale.ROOT);
-            String locale = col.substring(0, col.indexOf(' '));
+            int spaceIndex = col.indexOf(' ');
+            String locale = spaceIndex > 0 ? col.substring(0, spaceIndex) : "";
             if ("id".equals(col)) {
                 idCol = i;
             } else if ("string index".equals(col)) {
@@ -186,7 +187,8 @@ public abstract class CsvEditExecutor {
         Map<Integer, String> colToLocalization = new HashMap<>();
         for (int i = 0; i < header.length; i++) {
             String col = header[i].toLowerCase(Locale.ROOT);
-            String locale = col.substring(0, col.indexOf(' '));
+            int spaceIndex = col.indexOf(' ');
+            String locale = spaceIndex > 0 ? col.substring(0, spaceIndex) : "";
             if ("id".equals(col)) {
                 idCol = i;
             } else if ("string index".equals(col)) {

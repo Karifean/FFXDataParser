@@ -10,7 +10,7 @@ public class FieldString {
 
     public static List<FieldString> fromStringData(int[] bytes, boolean print, String charset) {
         if (bytes == null || bytes.length <= 0) {
-            return null;
+            return new ArrayList<>();
         }
         int first = bytes[0x00] + bytes[0x01] * 0x100;
         int count = first / 0x08;
@@ -32,6 +32,8 @@ public class FieldString {
     }
 
     public static int[] rebuildFieldStrings(List<FieldString> strings, String charset, final boolean optimize) {
+        final int count = strings.size();
+        final int contentOffset = count * 8;
         final Map<String, Integer> offsetMap = new HashMap<>();
         final List<Integer> byteList = new ArrayList<>();
         byteList.add(0);
@@ -41,22 +43,22 @@ public class FieldString {
             String regularString = fieldString.getRegularString();
             fieldString.regularChoices = StringHelper.getChoicesInString(regularString);
             if (regularString == null || regularString.isEmpty()) {
-                fieldString.regularOffset = 0;
+                fieldString.regularOffset = contentOffset;
             } else if (offsetMap.containsKey(regularString)) {
-                fieldString.regularOffset = offsetMap.get(regularString);
+                fieldString.regularOffset = contentOffset + offsetMap.get(regularString);
             } else {
-                fieldString.regularOffset = byteList.size();
+                fieldString.regularOffset = contentOffset + byteList.size();
                 offsetMap.put(regularString, byteList.size());
                 StringHelper.fillByteList(regularString, byteList, charset);
             }
             String simplifiedString = fieldString.getSimplifiedString();
             fieldString.simplifiedChoices = StringHelper.getChoicesInString(simplifiedString);
             if (simplifiedString == null || simplifiedString.isEmpty()) {
-                fieldString.simplifiedOffset = 0;
+                fieldString.simplifiedOffset = contentOffset;
             } else if (offsetMap.containsKey(simplifiedString)) {
-                fieldString.simplifiedOffset = offsetMap.get(simplifiedString);
+                fieldString.simplifiedOffset = contentOffset + offsetMap.get(simplifiedString);
             } else {
-                fieldString.simplifiedOffset = byteList.size();
+                fieldString.simplifiedOffset = contentOffset + byteList.size();
                 offsetMap.put(simplifiedString, byteList.size());
                 StringHelper.fillByteList(simplifiedString, byteList, charset);
             }
@@ -81,11 +83,11 @@ public class FieldString {
     public FieldString(String charset, int regularHeader, int simplifiedHeader, int[] bytes) {
         this.charset = charset;
         this.regularOffset = regularHeader & 0x0000FFFF;
-        this.regularFlags = regularHeader & 0x00FF0000 >> 16;
-        this.regularChoices = regularHeader & 0xFF000000 >> 24;
+        this.regularFlags = (regularHeader & 0x00FF0000) >> 16;
+        this.regularChoices = (regularHeader & 0xFF000000) >> 24;
         this.simplifiedOffset = simplifiedHeader & 0x0000FFFF;
-        this.simplifiedFlags = simplifiedHeader & 0x00FF0000 >> 16;
-        this.simplifiedChoices = simplifiedHeader & 0xFF000000 >> 24;
+        this.simplifiedFlags = (simplifiedHeader & 0x00FF0000) >> 16;
+        this.simplifiedChoices = (simplifiedHeader & 0xFF000000) >> 24;
         this.regularBytes = StringHelper.getStringBytesAtLookupOffset(bytes, regularOffset);
         this.simplifiedBytes = regularOffset == simplifiedOffset ? regularBytes : StringHelper.getStringBytesAtLookupOffset(bytes, simplifiedOffset);
     }

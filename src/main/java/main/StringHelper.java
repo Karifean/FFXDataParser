@@ -59,6 +59,9 @@ public abstract class StringHelper {
     }
 
     public static List<Integer> charToBytes(char chr, String charset) {
+        if (chr == '\n') {
+            return List.of(0x03);
+        }
         Integer indexValue = CHAR_TO_BYTE_MAPS.get(charset).get(chr);
         if (indexValue == null) {
             return null;
@@ -203,9 +206,7 @@ public abstract class StringHelper {
                     if (i >= localized.size()) {
                         localized.add(new LocalizedFieldStringObject());
                     }
-                    if (!localizedStrings.get(i).isEmpty()) {
-                        localized.get(i).setLocalizedContent(key, localizedStrings.get(i));
-                    }
+                    localized.get(i).setLocalizedContent(key, localizedStrings.get(i));
                 }
             }
         });
@@ -222,7 +223,7 @@ public abstract class StringHelper {
             return null;
         }
         int[] bytes = BytesHelper.fileToBytes(FileAccessorWithMods.resolveFile(filename, print));
-        return FieldString.fromStringData(bytes, print, localization);
+        return FieldString.fromStringData(bytes, print, StringHelper.localizationToCharset(localization));
     }
 
     public static void fillByteList(String string, List<Integer> byteList, String charset) {
@@ -436,10 +437,10 @@ public abstract class StringHelper {
         } else if (cmd.equals("CMD04")) {
             return List.of(0x04);
         } else if (cmd.startsWith("SPACE:")) {
-            int pixels = Integer.parseInt(cmd.substring(9), 16) + 0x30;
+            int pixels = Integer.parseInt(cmd.substring(6), 16) + 0x30;
             return List.of(0x07, pixels);
         } else if (cmd.startsWith("TIME:")) {
-            int boxType = Integer.parseInt(cmd.substring(4), 16) + 0x30;
+            int boxType = Integer.parseInt(cmd.substring(5), 16) + 0x30;
             return List.of(0x09, boxType);
         } else if (cmd.startsWith("CLR:")) {
             return List.of(0x0A, colorToByte(cmd.substring(4)));
@@ -486,7 +487,7 @@ public abstract class StringHelper {
         int choices = 0;
         int choiceOffset = 0;
         while (choiceOffset != -1) {
-            choiceOffset = string.indexOf("{CHOICE" + formatHex2(choices) + "}");
+            choiceOffset = string.indexOf("{CHOICE:" + formatHex2(choices) + "}");
             if (choiceOffset != -1) {
                 choices++;
             }

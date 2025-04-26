@@ -93,13 +93,13 @@ public class MonsterStatDataObject implements Nameable, Writable, Localized<Mons
 
     int[] abilityList;
 
-    int forcedAction;
-    int monsterIdx;
-    int modelIdx;
-    int ctbIconType;
-    int doomCounter;
-    int monsterArenaIdx;
-    int modelIdxOther;
+    public int forcedAction;
+    public int monsterIdx;
+    public int modelIdx;
+    public int ctbIconType;
+    public int doomCounter;
+    public int monsterArenaIdx;
+    public int modelIdxOther;
 
     int alwaysZero7C;
     int alwaysZero7D;

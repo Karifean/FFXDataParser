@@ -11,6 +11,7 @@ import reading.FileAccessorWithMods;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.IntStream;
 
 import static main.DataReadingManager.*;
 import static main.DataWritingManager.writeDataObjectsInAllLocalizations;
@@ -236,9 +237,9 @@ public class Main {
                 prepareStringMacros(getLocalizationRoot(DEFAULT_LOCALIZATION) + "menu/macrodic.dcp", DEFAULT_LOCALIZATION, true);
                 break;
             case MODE_MAKE_AUTOHASTE_MOD:
-                for (int monsterIndex = 0; monsterIndex < MONSTER_MAX_INDEX; monsterIndex++) {
+                for (int monsterIndex = 1; monsterIndex <= 346; monsterIndex++) {
                     String mIndexString = String.format("m%03d", monsterIndex);
-                    MonsterFile monster = DataAccess.getMonster(monsterIndex  + 0x1000);
+                    MonsterFile monster = DataAccess.getMonster(monsterIndex + 0x1000);
                     if (monster != null) {
                         monster.monsterStatData.autoStatusesTemporal |= 0x0800;
                         String path = GAME_FILES_ROOT + MODS_FOLDER + PATH_MONSTER_FOLDER + '_' + mIndexString + '/' + mIndexString + ".bin";
@@ -286,17 +287,17 @@ public class Main {
                 }).forEach(e -> System.out.println(e.getName()));
                 break;
             case MODE_CUSTOM:
-                // writeDataObjectsInAllLocalizations("battle/kernel/ply_save.bin", DataAccess.PLAYER_CHAR_STATS, PlayerCharStatDataObject.LENGTH, false);
-                // readPlayerCharStats("battle/kernel/ply_save.bin", true);
+                readPlayerCharStats("battle/kernel/ply_save.bin", true);
                 // readPlayerCharRom("battle/kernel/ply_rom.bin", true);
                 // readWeaponNames("battle/kernel/w_name.bin", true);
-                readCtbBase(PATH_ORIGINALS_KERNEL + "ctb_base.bin", true);
+                // readCtbBase(PATH_ORIGINALS_KERNEL + "ctb_base.bin", true);
                 // readEncounterTables(PATH_ORIGINALS_KERNEL + "btl.bin", true);
                 // readMixCombinations(PATH_ORIGINALS_KERNEL + "prepare.bin", true);
                 // readDirectAtelScriptObject("menu/menumain.bin", true);
                 // readX2AbilitiesFromFile("ffx_ps2/ffx2/master/new_uspc/battle/kernel/command.bin", "us", true);
                 break;
             case MODE_MAKE_EDITS:
+                writeDataObjectsInAllLocalizations("battle/kernel/ply_save.bin", DataAccess.PLAYER_CHAR_STATS, PlayerCharStatDataObject.LENGTH, false);
                 System.out.println("--- ATTACKS ---");
                 if (CsvEditExecutor.editAttacks(true)) {
                     System.out.println("--- command.bin ---");
@@ -324,13 +325,14 @@ public class Main {
                 }
                 System.out.println("--- MONSTERS ---");
                 if (CsvEditExecutor.editMonsters(true)) {
-                    MonsterStatDataObject[] statData = (MonsterStatDataObject[]) Arrays.stream(DataAccess.MONSTERS).map(mf -> mf.monsterStatData).toArray();
+                    List<MonsterStatDataObject> list = IntStream.range(0, 366).mapToObj(i -> DataAccess.getMonster(Math.min(i, 360) + 0x1000).monsterStatData).toList();
+                    MonsterStatDataObject[] statData = list.toArray(i -> new MonsterStatDataObject[i]);
                     System.out.println("--- monster1.bin ---");
-                    writeDataObjectsInAllLocalizations("battle/kernel/monster1.bin", statData, MonsterStatDataObject.LENGTH, 0, 100, false);
+                    writeDataObjectsInAllLocalizations("battle/kernel/monster1.bin", statData, MonsterStatDataObject.LENGTH, 0, 101, false);
                     System.out.println("--- monster2.bin ---");
-                    writeDataObjectsInAllLocalizations("battle/kernel/monster2.bin", statData, MonsterStatDataObject.LENGTH, 101, 180, false);
+                    writeDataObjectsInAllLocalizations("battle/kernel/monster2.bin", statData, MonsterStatDataObject.LENGTH, 101, 181, false);
                     System.out.println("--- monster3.bin ---");
-                    writeDataObjectsInAllLocalizations("battle/kernel/monster3.bin", statData, MonsterStatDataObject.LENGTH, 181, 365, false);
+                    writeDataObjectsInAllLocalizations("battle/kernel/monster3.bin", statData, MonsterStatDataObject.LENGTH, 181, 366, false);
                 }
                 System.out.println("--- EVENTS ---");
                 CsvEditExecutor.editAndSaveEventStrings(true);
