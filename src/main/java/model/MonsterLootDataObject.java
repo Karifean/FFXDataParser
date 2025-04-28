@@ -292,7 +292,7 @@ public class MonsterLootDataObject implements Writable {
     }
 
     private static String asGearAbility(int idx) {
-        GearAbilityDataObject abil = DataAccess.getGearAbility(idx);
+        AutoAbilityDataObject abil = DataAccess.getAutoAbility(idx);
         return (abil != null ? abil.getName() : "null") + StringHelper.hex4Suffix(idx);
     }
 

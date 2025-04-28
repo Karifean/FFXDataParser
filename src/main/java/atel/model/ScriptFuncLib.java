@@ -1026,7 +1026,7 @@ public abstract class ScriptFuncLib {
         putUnknownFunc(0x70B5, "btlResetMotionSpeed", 0);
         putFuncWithIdx(0x70B6, new ScriptFunc(null, "unknown", "btlDistTargetFrameSpd", p("btlChr")));
         putUnknownFunc(0x70B7, "btlmesa", 2);
-        putUnknownFunc(0x70B8, "btlSetSkipMode", 1);
+        putFuncWithIdx(0x70B8, new ScriptFunc("setDefendingEnabled", "unknown", "btlSetSkipMode", p("enabled", "bool")));
         putUnknownFunc(0x70B9, "btlGetCamWidth2", "float", 1);
         putUnknownFunc(0x70BA, "btlGetCamHeight2", "float", 1);
         putUnknownFunc(0x70BB, "btlMoveLeave", 1);

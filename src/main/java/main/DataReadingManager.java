@@ -72,7 +72,7 @@ public class DataReadingManager {
         DataAccess.PLAYER_CHAR_STATS = readPlayerCharStats("battle/kernel/ply_save.bin", false);
         DataAccess.PLAYER_ROM = readPlayerCharRom("battle/kernel/ply_rom.bin", false);
         DataAccess.WEAPON_NAMES = readWeaponNames("battle/kernel/w_name.bin", false);
-        DataAccess.GEAR_ABILITIES = readGearAbilities("battle/kernel/a_ability.bin", PATH_ORIGINALS_KERNEL + "arms_rate.bin", false);
+        DataAccess.AUTO_ABILITIES = readGearAbilities("battle/kernel/a_ability.bin", PATH_ORIGINALS_KERNEL + "arms_rate.bin", false);
         DataAccess.BUYABLE_GEAR = readWeaponPickups(PATH_ORIGINALS_KERNEL + "shop_arms.bin", false);
         DataAccess.WEAPON_PICKUPS = readWeaponPickups(PATH_ORIGINALS_KERNEL + "buki_get.bin", false);
         DataAccess.KEY_ITEMS = readKeyItems("battle/kernel/important.bin", false);
@@ -206,8 +206,8 @@ public class DataReadingManager {
         return new LocalizedDataFileReader<>(WeaponNameDataObject::new, WeaponNameDataObject[]::new).read(path, print);
     }
 
-    public static GearAbilityDataObject[] readGearAbilities(String path, String pricesPath, boolean print) {
-        GearAbilityDataObject[] abilities = new LocalizedDataFileReader<>(GearAbilityDataObject::new, GearAbilityDataObject[]::new) {
+    public static AutoAbilityDataObject[] readGearAbilities(String path, String pricesPath, boolean print) {
+        AutoAbilityDataObject[] abilities = new LocalizedDataFileReader<>(AutoAbilityDataObject::new, AutoAbilityDataObject[]::new) {
             @Override
             public String indexWriter(int idx) {
                 return "80" + StringHelper.formatHex2(idx);
@@ -222,7 +222,7 @@ public class DataReadingManager {
         if (print) {
             Set<Integer> groups = new HashSet<>();
             List<Integer> untakenGroups = new ArrayList<>();
-            for (GearAbilityDataObject gearAbility : abilities) {
+            for (AutoAbilityDataObject gearAbility : abilities) {
                 groups.add(gearAbility.groupIndex);
             }
             for (int i = 0; i <= 0x82; i++) {

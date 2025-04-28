@@ -20,12 +20,12 @@ import static main.DataReadingManager.LOCALIZATIONS;
 public abstract class CsvEditExecutor {
     private static final String EDIT_CSV_ROOT = FileAccessorWithMods.RESOURCES_ROOT + "edits/";
 
-    public static boolean editAttacks(final boolean print) {
-        return editItems("attacks", 16, (id) -> DataAccess.getCommand(id), print);
+    public static boolean editCommands(final boolean print) {
+        return editItems("commands", 16, (id) -> DataAccess.getCommand(id), print);
     }
 
-    public static boolean editGearAbilities(final boolean print) {
-        return editItems("gearAbilities", 16, (id) -> DataAccess.getGearAbility(id), print);
+    public static boolean editAutoAbilities(final boolean print) {
+        return editItems("autoAbilities", 16, (id) -> DataAccess.getAutoAbility(id), print);
     }
 
     public static boolean editKeyItems(final boolean print) {

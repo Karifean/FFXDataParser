@@ -22,7 +22,7 @@ public abstract class DataAccess {
     public static PlayerCharStatDataObject[] PLAYER_CHAR_STATS;
     public static PlayerRomDataObject[] PLAYER_ROM;
     public static WeaponNameDataObject[] WEAPON_NAMES;
-    public static GearAbilityDataObject[] GEAR_ABILITIES;
+    public static AutoAbilityDataObject[] AUTO_ABILITIES;
     public static KeyItemDataObject[] KEY_ITEMS;
     public static TreasureDataObject[] TREASURES;
     public static MixCombinationDataObject[] MIX_COMBINATIONS;
@@ -87,16 +87,16 @@ public abstract class DataAccess {
         return MOVES[idx];
     }
 
-    public static GearAbilityDataObject getGearAbility(int idx) {
+    public static AutoAbilityDataObject getAutoAbility(int idx) {
         if (idx == 0x00FF) {
             return null;
         }
-        if (GEAR_ABILITIES == null) {
+        if (AUTO_ABILITIES == null) {
             throw new UnsupportedOperationException();
         }
         int actual = idx - 0x8000;
-        if (actual >= 0 && actual < GEAR_ABILITIES.length) {
-            return GEAR_ABILITIES[actual];
+        if (actual >= 0 && actual < AUTO_ABILITIES.length) {
+            return AUTO_ABILITIES[actual];
         } else {
             return null;
         }

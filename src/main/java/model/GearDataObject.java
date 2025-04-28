@@ -164,7 +164,7 @@ public class GearDataObject {
         if (idx == 0x00FF) {
             return "Empty";
         } else {
-            GearAbilityDataObject obj = DataAccess.getGearAbility(idx);
+            AutoAbilityDataObject obj = DataAccess.getAutoAbility(idx);
             if (obj == null) {
                 return "null";
             } else {

@@ -11,7 +11,7 @@ import java.util.stream.Collectors;
 /**
  * a_ability.bin
  */
-public class GearAbilityDataObject extends NameDescriptionTextObject implements Nameable, Writable {
+public class AutoAbilityDataObject extends NameDescriptionTextObject implements Nameable, Writable {
     public static final int LENGTH = 0x6C;
     private final int[] bytes;
 
@@ -184,6 +184,14 @@ public class GearAbilityDataObject extends NameDescriptionTextObject implements 
     boolean resistSentinel;
     boolean resistUnused2;
 
+    boolean increaseStrStat;
+    boolean increaseDefStat;
+    boolean increaseMagStat;
+    boolean increaseMdfStat;
+    boolean increaseAgiStat;
+    boolean increaseLckStat;
+    boolean increaseEvaStat;
+    boolean increaseAccStat;
     boolean increaseHp;
     boolean increaseMp;
     boolean increaseStr;
@@ -235,7 +243,7 @@ public class GearAbilityDataObject extends NameDescriptionTextObject implements 
     private boolean byte66bit40;
     private boolean byte66bit80;
 
-    public GearAbilityDataObject(int[] bytes, int[] stringBytes, String localization) {
+    public AutoAbilityDataObject(int[] bytes, int[] stringBytes, String localization) {
         super(bytes, stringBytes, localization);
         this.bytes = bytes;
         mapBytes();
@@ -333,7 +341,7 @@ public class GearAbilityDataObject extends NameDescriptionTextObject implements 
 
     @Override
     public int[] toBytes(String localization) {
-        int[] array = new int[GearAbilityDataObject.LENGTH];
+        int[] array = new int[AutoAbilityDataObject.LENGTH];
         System.arraycopy(super.toBytes(localization), 0, array, 0, 0x10);
         array[0x10] = sosFlagByte;
         array[0x11] = elementStrike;
@@ -499,12 +507,20 @@ public class GearAbilityDataObject extends NameDescriptionTextObject implements 
         resistSentinel = (extraStatusImmunities & 0x2000) > 0;
         resistDoom = (extraStatusImmunities & 0x4000) > 0;
         resistUnused2 = (extraStatusImmunities & 0x8000) > 0;
-        increaseHp = (statIncreaseFlags & 0x0001) > 0;
-        increaseMp = (statIncreaseFlags & 0x0002) > 0;
-        increaseStr = (statIncreaseFlags & 0x0004) > 0;
-        increaseMag = (statIncreaseFlags & 0x0008) > 0;
-        increaseDef = (statIncreaseFlags & 0x0010) > 0;
-        increaseMdf = (statIncreaseFlags & 0x0020) > 0;
+        increaseStrStat = (statIncreaseFlags & 0x0001) > 0;
+        increaseDefStat = (statIncreaseFlags & 0x0002) > 0;
+        increaseMagStat = (statIncreaseFlags & 0x0004) > 0;
+        increaseMdfStat = (statIncreaseFlags & 0x0008) > 0;
+        increaseAgiStat = (statIncreaseFlags & 0x0010) > 0;
+        increaseLckStat = (statIncreaseFlags & 0x0020) > 0;
+        increaseEvaStat = (statIncreaseFlags & 0x0040) > 0;
+        increaseAccStat = (statIncreaseFlags & 0x0080) > 0;
+        increaseHp = (statIncreaseFlags & 0x0100) > 0;
+        increaseMp = (statIncreaseFlags & 0x0200) > 0;
+        increaseStr = (statIncreaseFlags & 0x0400) > 0;
+        increaseMag = (statIncreaseFlags & 0x0800) > 0;
+        increaseDef = (statIncreaseFlags & 0x1000) > 0;
+        increaseMdf = (statIncreaseFlags & 0x2000) > 0;
         sensor = (abilityFlags62 & 0x01) > 0;
         firstStrike = (abilityFlags62 & 0x02) > 0;
         initiative = (abilityFlags62 & 0x04) > 0;
@@ -790,24 +806,48 @@ public class GearAbilityDataObject extends NameDescriptionTextObject implements 
 
     private String statIncrease() {
         String increaseSuffix = " +" + statIncreaseAmount + "%";
-        StringBuilder stats = new StringBuilder();
+        List<String> stats = new ArrayList<>();
+        if (increaseStrStat) {
+            stats.add("STR");
+        }
+        if (increaseDefStat) {
+            stats.add("DEF");
+        }
+        if (increaseMagStat) {
+            stats.add("MAG");
+        }
+        if (increaseMdfStat) {
+            stats.add("MDF");
+        }
+        if (increaseAgiStat) {
+            stats.add("AGI");
+        }
+        if (increaseLckStat) {
+            stats.add("LCK");
+        }
+        if (increaseEvaStat) {
+            stats.add("EVA");
+        }
+        if (increaseAccStat) {
+            stats.add("ACC");
+        }
         if (increaseHp) {
-            stats.append("HP/");
+            stats.add("HP");
         }
         if (increaseMp) {
-            stats.append("MP/");
+            stats.add("MP");
         }
         if (increaseStr) {
-            stats.append("STR/");
+            stats.add("Phys Dealt");
         }
         if (increaseMag) {
-            stats.append("MAG/");
+            stats.add("Mag Dealt");
         }
         if (increaseDef) {
-            stats.append("DEF/");
+            stats.add("Phys Reduc");
         }
         if (increaseMdf) {
-            stats.append("MDF/");
+            stats.add("Mag Reduc");
         }
         if (stats.isEmpty() && statIncreaseAmount <= 0) {
             return "";
@@ -815,7 +855,7 @@ public class GearAbilityDataObject extends NameDescriptionTextObject implements 
         if (stats.isEmpty()) {
             return "Null" + increaseSuffix;
         } else {
-            return stats.substring(0, stats.length() - 1) + increaseSuffix;
+            return String.join("/", stats) + increaseSuffix;
         }
     }
 

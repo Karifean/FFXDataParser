@@ -1,6 +1,5 @@
 package main;
 
-import atel.model.ScriptConstants;
 import atel.model.StackObject;
 import model.*;
 import atel.EncounterFile;
@@ -213,8 +212,8 @@ public class Main {
                 break;
             case MODE_READ_GEAR_ABILITIES:
                 // readGearAbilitiesFromFile(PATH_LOCALIZED_KERNEL + "a_ability.bin", "us", true);
-                for (int i = 0; i < DataAccess.GEAR_ABILITIES.length; i++) {
-                    System.out.println(String.format("%04X (Offset %04X) - ", 0x8000 + i, 0x14 + i * GearAbilityDataObject.LENGTH) + DataAccess.GEAR_ABILITIES[i].toString());
+                for (int i = 0; i < DataAccess.AUTO_ABILITIES.length; i++) {
+                    System.out.println(String.format("%04X (Offset %04X) - ", 0x8000 + i, 0x14 + i * AutoAbilityDataObject.LENGTH) + DataAccess.AUTO_ABILITIES[i].toString());
                 }
                 break;
             case MODE_READ_SPHERE_GRID_NODE_TYPES:
@@ -287,10 +286,10 @@ public class Main {
                 }).forEach(e -> System.out.println(e.getName()));
                 break;
             case MODE_CUSTOM:
-                readPlayerCharStats("battle/kernel/ply_save.bin", true);
+                // readPlayerCharStats("battle/kernel/ply_save.bin", true);
                 // readPlayerCharRom("battle/kernel/ply_rom.bin", true);
                 // readWeaponNames("battle/kernel/w_name.bin", true);
-                // readCtbBase(PATH_ORIGINALS_KERNEL + "ctb_base.bin", true);
+                readCtbBase(PATH_ORIGINALS_KERNEL + "ctb_base.bin", true);
                 // readEncounterTables(PATH_ORIGINALS_KERNEL + "btl.bin", true);
                 // readMixCombinations(PATH_ORIGINALS_KERNEL + "prepare.bin", true);
                 // readDirectAtelScriptObject("menu/menumain.bin", true);
@@ -299,7 +298,7 @@ public class Main {
             case MODE_MAKE_EDITS:
                 writeDataObjectsInAllLocalizations("battle/kernel/ply_save.bin", DataAccess.PLAYER_CHAR_STATS, PlayerCharStatDataObject.LENGTH, false);
                 System.out.println("--- ATTACKS ---");
-                if (CsvEditExecutor.editAttacks(true)) {
+                if (CsvEditExecutor.editCommands(true)) {
                     System.out.println("--- command.bin ---");
                     CommandDataObject[] commands = Arrays.copyOfRange(DataAccess.MOVES, 0x3000, 0x3140);
                     writeDataObjectsInAllLocalizations("battle/kernel/command.bin", commands, CommandDataObject.PCCOM_LENGTH, false);
@@ -313,10 +312,10 @@ public class Main {
                     CommandDataObject[] items = Arrays.copyOfRange(DataAccess.MOVES, 0x2000, 0x2070);
                     writeDataObjectsInAllLocalizations("battle/kernel/item.bin", items, CommandDataObject.PCCOM_LENGTH, false);
                 }
-                System.out.println("--- GEAR ABILITIES ---");
-                if (CsvEditExecutor.editGearAbilities(true)) {
+                System.out.println("--- AUTO ABILITIES ---");
+                if (CsvEditExecutor.editAutoAbilities(true)) {
                     System.out.println("--- a_ability.bin ---");
-                    writeDataObjectsInAllLocalizations("battle/kernel/a_ability.bin", DataAccess.GEAR_ABILITIES, GearAbilityDataObject.LENGTH, false);
+                    writeDataObjectsInAllLocalizations("battle/kernel/a_ability.bin", DataAccess.AUTO_ABILITIES, AutoAbilityDataObject.LENGTH, false);
                 }
                 System.out.println("--- KEY ITEMS ---");
                 if (CsvEditExecutor.editKeyItems(true)) {

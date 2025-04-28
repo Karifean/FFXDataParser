@@ -60,9 +60,9 @@ public class CustomizationDataObject implements Writable {
     public String toString() {
         String customizeTarget = customizeTargetByte == 0x01 ? "Weapon" : customizeTargetByte == 0x02 ? "Armor " : customizeTargetByte == 0x7F ? "Aeon" : "Target Unknown";
         if (customizedAbility >= 0x1000) {
-            GearAbilityDataObject gearAbility = DataAccess.getGearAbility(customizedAbility);
+            AutoAbilityDataObject autoAbility = DataAccess.getAutoAbility(customizedAbility);
             CommandDataObject move = DataAccess.getCommand(customizedAbility);
-            Nameable relevantNameable = gearAbility != null ? gearAbility : move != null ? move : (l) -> "null";
+            Nameable relevantNameable = autoAbility != null ? autoAbility : move != null ? move : (l) -> "null";
             String result = relevantNameable.getName() + StringHelper.hex4Suffix(customizedAbility);
             String costString = requiredItemQuantity + "x " + asMove(requiredItemType);
             return customizeTarget + " - " + result + ": " + costString;
