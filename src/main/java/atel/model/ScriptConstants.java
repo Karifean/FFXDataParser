@@ -288,6 +288,7 @@ public abstract class ScriptConstants {
         putSaveDataVariable(0x0092, "MushroomRockRoadFlags", "int");
         putSaveDataVariable(0x0095, "CalmLandsTreasureFlags", "int");
         putSaveDataVariable(0x009B, "BelgemineFightProgressionFlags", "int");
+        putSaveDataVariable(0x009C, "YojimboHireAnswerNumber", "int"); // Only used/referenced within nagi0600
         putSaveDataVariable(0x009F, "MonsterArenaUnlockQuestProgressionFlags", "int");
         putSaveDataVariable(0x00A0, "MonsterArenaAreaSpeciesConquestUnlockFlags", "int");
         putSaveDataVariable(0x00A4, "MonsterArenaOriginalCreationUnlockFlags", "int");
@@ -484,6 +485,7 @@ public abstract class ScriptConstants {
         putEnum("stringVarType", 0x2E, "Immediate Integer (4 Digits?)");
         putEnum("stringVarType", 0x37, "Treasure Label");
 
+        putEnum("textFlagBitfield", 0x0002, "?HasSpeakerLine");
         putEnum("textFlagBitfield", 0x4000, "Al Bhed");
 
         putEnum("blitzballPlayer", 0x00, "Tidus");
@@ -567,8 +569,16 @@ public abstract class ScriptConstants {
         putEnum("blitzballGameMode", 0x05, "Cancel");
         putEnum("blitzballGameMode", 0x06, "Reset Data");
 
+        putEnum("battleDebugFlag", 0x01, "?MonstersInvincible");
+        putEnum("battleDebugFlag", 0x02, "?AllInvincible");
         putEnum("battleDebugFlag", 0x03, "ControlMonsters");
+        putEnum("battleDebugFlag", 0x04, "?NoMagicEffects");
+        putEnum("battleDebugFlag", 0x05, "?NoMpCost");
+        putEnum("battleDebugFlag", 0x06, "?NoDamageVariance");
         putEnum("battleDebugFlag", 0x07, "NeverCrit");
+        putEnum("battleDebugFlag", 0x08, "?AttacksStatusesAlwaysHit");
+        putEnum("battleDebugFlag", 0x09, "?OverdriveAlwaysAvailable");
+        putEnum("battleDebugFlag", 0x0A, "?AlwaysCrit");
 
         putEnum("textAlignment", 0x00, "Top Left", "MESWIN_POS_LEFTUP");
         putEnum("textAlignment", 0x01, "Bottom Left", "MESWIN_POS_LEFTDOWN");

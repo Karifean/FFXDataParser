@@ -4,6 +4,7 @@ import atel.model.*;
 import main.StringHelper;
 import model.strings.LocalizedFieldStringObject;
 
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -52,6 +53,7 @@ public class AtelScriptObject {
     public List<LocalizedFieldStringObject> strings;
     public List<Integer> areaNameIndexes;
     public MapEntranceObject[] mapEntrances;
+    public String creatorTag;
     Stack<StackObject> stack = new Stack<>();
     Map<Integer, String> currentTempITypes = new HashMap<>();
     Map<Integer, List<StackObject>> varEnums = new HashMap<>();
@@ -102,6 +104,15 @@ public class AtelScriptObject {
         scriptCodeStartAddress = read4Bytes(0x30);
         namespaceCount = read2Bytes(0x34);
         actorCount = read2Bytes(0x36);
+
+        int[] creatorTagSubBytes;
+        if (creatorTagAddress > 0 && (creatorTagSubBytes = getStringBytesAtLookupOffset(bytes, creatorTagAddress)) != null) {
+            byte[] creatorStringBytes = new byte[creatorTagSubBytes.length];
+            for (int i = 0; i < creatorTagSubBytes.length; i++) {
+                creatorStringBytes[i] = (byte) creatorTagSubBytes[i];
+            }
+            creatorTag = new String(creatorStringBytes, StandardCharsets.UTF_8);
+        }
 
         if (map_start > 0 && map_start < creatorTagAddress) {
             int mapStartLength = (creatorTagAddress - map_start);
@@ -462,11 +473,13 @@ public class AtelScriptObject {
         if (jumps == null || jumps.isEmpty()) {
             return;
         }
-        jumps.stream().filter(j -> j.isEntryPoint).findFirst().ifPresent(j -> currentWorkerIndex = j.workerIndex);
+        jumps.stream().filter(j -> j.isEntryPoint).findFirst().ifPresent(j -> {
+            currentWorkerIndex = j.workerIndex;
+            currentTempITypes = j.tempITypes;
+        });
         jumps.stream().filter(j -> j.rAType != null && !"unknown".equals(j.rAType)).findFirst().ifPresent(j -> currentRAType = j.rAType);
         jumps.stream().filter(j -> j.rXType != null && !"unknown".equals(j.rXType)).findFirst().ifPresent(j -> currentRXType = j.rXType);
         jumps.stream().filter(j -> j.rYType != null && !"unknown".equals(j.rYType)).findFirst().ifPresent(j -> currentRYType = j.rYType);
-        jumps.stream().filter(j -> j.tempITypes != null).flatMap(j -> j.tempITypes.entrySet().stream()).filter(s -> s.getValue() != null && !"unknown".equals(s.getValue())).forEach(s -> currentTempITypes.put(s.getKey(), s.getValue()));
     }
 
     protected void processInstruction(ScriptInstruction ins) {
@@ -613,12 +626,12 @@ public class AtelScriptObject {
             } else if (opcode >= 0x59 && opcode <= 0x5C) { // POPI0..3 / SET_INT
                 String p1t = resolveType(p1);
                 int tempIndex = opcode - 0x59;
-                if (p1t != null && !"unknown".equals(p1t)) {
+                String tmpIType = currentTempITypes.get(tempIndex);
+                if (isWeakType(tmpIType)) {
+                    tmpIType = p1t;
                     currentTempITypes.put(tempIndex, p1t);
-                } else {
-                    currentTempITypes.remove(tempIndex);
                 }
-                String val = typed(p1, currentTempITypes.get(tempIndex));
+                String val = typed(p1, tmpIType);
                 textScriptLine += "Set tmpI" + tempIndex + " = " + val + ";";
             } else if (opcode >= 0x5D && opcode <= 0x66) { // POPF0..9 / SET_FLOAT
                 int tempIndex = opcode - 0x5D;
@@ -945,7 +958,6 @@ public class AtelScriptObject {
         currentRAType = "unknown";
         currentRXType = "unknown";
         currentRYType = "unknown";
-        currentTempITypes.clear();
     }
 
     @Override
@@ -994,6 +1006,9 @@ public class AtelScriptObject {
         }
         List<String> lines = new ArrayList<>();
         lines.add("Script Code Start Address: " + StringHelper.formatHex4(scriptCodeStartAddress));
+        if (creatorTag != null) {
+            lines.add("Creator: " + creatorTag);
+        }
         if (mainScriptIndex != 0xFFFF) {
             lines.add("Main Worker: w" + StringHelper.formatHex2(mainScriptIndex));
         }

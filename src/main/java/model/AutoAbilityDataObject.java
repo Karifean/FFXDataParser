@@ -102,7 +102,7 @@ public class AutoAbilityDataObject extends NameDescriptionTextObject implements 
     private int abilityFlags66;
     int unknownByte67;
 
-    int byte68usually14;
+    int icon;
     public int groupIndex;
     public int groupLevel;
     int internationalBonusIndex; // 1/2/3/4 on Distil Pw/Mn/Sp/Ab, 255 on Ribbon, 254 on everything superceded by Ribbon
@@ -333,7 +333,7 @@ public class AutoAbilityDataObject extends NameDescriptionTextObject implements 
         abilityFlags65 = bytes[0x65];
         abilityFlags66 = bytes[0x66];
         unknownByte67 = bytes[0x67];
-        byte68usually14 = bytes[0x68];
+        icon = bytes[0x68];
         groupIndex = bytes[0x69];
         groupLevel = bytes[0x6A];
         internationalBonusIndex = bytes[0x6B];
@@ -425,7 +425,7 @@ public class AutoAbilityDataObject extends NameDescriptionTextObject implements 
         array[0x65] = abilityFlags65;
         array[0x66] = abilityFlags66;
         array[0x67] = unknownByte67;
-        array[0x68] = byte68usually14;
+        array[0x68] = icon;
         array[0x69] = groupIndex;
         array[0x6A] = groupLevel;
         array[0x6B] = internationalBonusIndex;
@@ -574,8 +574,8 @@ public class AutoAbilityDataObject extends NameDescriptionTextObject implements 
         list.add(autoBuffs());
         list.add(grouping());
         list.add(ifG0(internationalBonusIndex, "InternationalBonus?=", ""));
-        if (byte68usually14 != 0x14) {
-            list.add("Byte68=" + byte68usually14);
+        if (icon != 0x14) {
+            list.add("Byte68=" + icon);
         }
         list.add(ifG0(gilPrice, "Price=", " gil"));
         String full = list.stream().filter(s -> s != null && !s.isBlank()).collect(Collectors.joining(", "));

@@ -173,7 +173,7 @@ public abstract class ScriptFuncLib {
         putUnknownFunc(0x009A, 1);
         putUnknownFunc(0x009B, 2);
         putFuncWithIdx(0x009D, new ScriptFunc("setTextFlags", "unknown", null, p("boxIndex", "int"), p("textFlags", "textFlagBitfield")));
-        putFuncWithIdx(0x009E, new ScriptFunc("prepareStringIntVariable", "unknown", null, p("boxIndex", "int"), p("varIndex", "int"), p("stringVarType"), p("value", "int")));
+        putFuncWithIdx(0x009E, new ScriptFunc("prepareStringIntVariable", "unknown", null, p("boxIndex", "int"), p("varIndex", "int"), p("stringVarType"), p("value", "unknown")));
         putUnknownFunc(0x00A2, 5);
         putFuncWithIdx(0x00A3, new ScriptFunc("getWorkerPosition", "unknown", null, p("worker"), p("xDest", "pointer"), p("yDest", "pointer"), p("zDest", "pointer")));
         putUnknownFunc(0x00A4, 2);
@@ -302,7 +302,7 @@ public abstract class ScriptFuncLib {
         putFuncWithIdx(0x013B, new ScriptFunc("displayFieldChoice", "int", null, p("boxIndex", "int"), p("string", "localString"), p(3), p(4), p("x", "int"), p("y", "int"), p("align", "textAlignment")));
         putUnknownFunc(0x013D, 1);
         putUnknownFunc(0x013E, 1);
-        putFuncWithIdx(0x013F, new ScriptFunc("resolveStringMacro", "macroString", null, p("section", "stringVarType"), p("entryIndex", "int")));
+        putFuncWithIdx(0x013F, new ScriptFunc("resolveStringMacro", "macroString", null, p("section", "stringVarType"), p("entryIndex", "unknown")));
         putUnknownFunc(0x0140, 6);
         putFuncWithIdx(0x0141, new ScriptFunc("?setBoxToConstructedString", "unknown", null, p("boxIndex", "int"), p("constructedString", "unknown"), p("pointer?", "pointer")));
         putUnknownFunc(0x0142, 2);
@@ -968,7 +968,7 @@ public abstract class ScriptFuncLib {
         putFuncWithIdx(0x707B, new ScriptFunc(null, "unknown", "btlSoundEffect", p("btlChr"), p(2)));
         putUnknownFunc(0x707C, "btlWaitSound", 0);
         putFuncWithIdx(0x707D, new ScriptFunc("setDebugFlag", "unknown", "btlSetDebug", p("battleDebugFlag"), p("active", "bool")));
-        putUnknownFunc(0x707E, "btlGetDebug", 1);
+        putFuncWithIdx(0x707E, new ScriptFunc("?checkDebugFlagEnabled", "bool", "btlGetDebug", p("battleDebugFlag")));
         putFuncWithIdx(0x707F, new ScriptFunc(null, "unknown", "btlSetBtlPos", p("btlChr")));
         putUnknownFunc(0x7080, "btlChangeAuron", 1);
         putUnknownFunc(0x7081, "btlWaitExe", 0);

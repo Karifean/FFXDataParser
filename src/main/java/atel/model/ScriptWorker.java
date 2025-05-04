@@ -166,7 +166,7 @@ public class ScriptWorker {
         if (battleWorkerSlot == 0x3E) {
             return "BtlScene0-7";
         } else if (battleWorkerSlot == 0x3F) {
-            return "BtlScene8+";
+            return "BtlScene8+ (Voice)";
         }
         if (battleWorkerSlot == 0x41 || battleWorkerSlot == 0x42 || battleWorkerSlot == 0x43) {
             return "MagicCam3-" + (battleWorkerSlot - 0x41);

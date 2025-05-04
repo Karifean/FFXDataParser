@@ -3,6 +3,7 @@ package atel.model;
 import main.DataAccess;
 import main.StringHelper;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -16,7 +17,7 @@ public class ScriptJump {
     public String rAType;
     public String rXType;
     public String rYType;
-    public Map<Integer, String> tempITypes;
+    public Map<Integer, String> tempITypes = new HashMap<>();
     public List<ScriptJump> reachableFrom;
     public boolean hardMisaligned = false;
     public ScriptLine targetLine;
@@ -68,7 +69,7 @@ public class ScriptJump {
         this.rAType = rAType;
         this.rXType = rXType;
         this.rYType = rYType;
-        this.tempITypes = tempITypes;
+        // this.tempITypes = tempITypes;
         /* if (reachableFrom != null && !reachableFrom.isEmpty()) {
             reachableFrom.forEach(rf -> rf.setTypes(rAType, rXType, rYType, tempITypes));
         } */
@@ -81,7 +82,12 @@ public class ScriptJump {
     private String battleWorkerEntryPointToString() {
         int battleWorkerType = scriptWorker.battleWorkerType != null ? scriptWorker.battleWorkerType : -1;
         int battleWorkerSlot = scriptWorker.purposeSlot != null ? scriptWorker.purposeSlot : -1;
-        if (battleWorkerType == 2) {
+        if (battleWorkerType == 0) {
+            String s = cameraPurposeSlotToString(battleWorkerEntryPointSlot);
+            if (s != null) {
+                return "CAMERA_" + s;
+            }
+        } else if (battleWorkerType == 2) {
             String s = ctbPurposeSlotToString(battleWorkerEntryPointSlot);
             if (s != null) {
                 String prefix = "";
@@ -238,11 +244,33 @@ public class ScriptJump {
         };
     }
 
+    private static String cameraPurposeSlotToString(int slot) {
+        return switch (slot) {
+            case 0x18 -> "ENTER";
+            case 0x19 -> "SELECT";
+            case 0x1B -> "MAGIC_START";
+            case 0x1C -> "NORMAL";
+            case 0x2C -> "MON_MAGIC_START";
+            case 0x2D -> "MON_MAGIC_LAUNCH";
+            case 0x2E -> "MON_ITEM_START";
+            case 0x2F -> "MON_ITEM_LAUNCH";
+            case 0x33 -> "ITEM_LAUNCH";
+            case 0x34 -> "MAGIC_LAUNCH";
+            case 0x36 -> "SWAP";
+            case 0x3C -> "SKILL_ACTIVATION";
+            case 0x42 -> "PLAYER_VICTORY";
+            case 0x43 -> "PLAYER_DEFEAT";
+            case 0x79 -> "SUMMON_MAGIC_FIRING";
+            case 0x83 -> "SUMMON";
+            default -> null;
+        };
+    }
+
     private static String battleGruntPurposeSlotToString(int slot) {
         return switch (slot) {
-            case 0x09 -> "PreAttack?";
-            case 0x0A -> "PostAttack?";
-            case 0x0B -> "OnHit";
+            case 0x09 -> "PreAttack?"; // VOICE_ATTACK
+            case 0x0A -> "PostAttack?"; // VOICE_AFTER_ATTACK
+            case 0x0B -> "OnHit"; // VOICE_DAMAGE
             default -> null;
         };
     }

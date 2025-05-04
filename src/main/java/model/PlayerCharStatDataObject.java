@@ -1,5 +1,6 @@
 package model;
 
+import atel.model.ScriptField;
 import atel.model.StackObject;
 import main.DataAccess;
 import main.StringHelper;
@@ -11,6 +12,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static main.DataReadingManager.DEFAULT_LOCALIZATION;
 import static reading.BytesHelper.*;
 
 /**
@@ -70,7 +72,17 @@ public class PlayerCharStatDataObject implements Nameable, Writable, Localized<P
     int encounterCount;
     int killCount;
 
+    int unknownInt58;
+    int unknownInt5C;
+
+    int[] overdriveModeCounters;
+    int overdriveModeFlags;
+
+    int unknownInt8C;
+    int unknownInt90;
+
     List<Integer> commandIds;
+    List<ScriptField> learnedOverdriveModes;
 
     public PlayerCharStatDataObject(int[] bytes, int[] stringBytes, String localization) {
         this.bytes = bytes;
@@ -93,14 +105,14 @@ public class PlayerCharStatDataObject implements Nameable, Writable, Localized<P
         baseEva = bytes[0x12];
         baseAcc = bytes[0x13];
 
+        unknownBytes1415 = read2Bytes(bytes, 0x14);
+        unknownBytes1617 = read2Bytes(bytes, 0x16);
+
         currentAp = read4Bytes(bytes, 0x18);
         currentHp = read4Bytes(bytes, 0x1C);
         currentMp = read4Bytes(bytes, 0x20);
         maxHp = read4Bytes(bytes, 0x24);
         maxMp = read4Bytes(bytes, 0x28);
-
-        unknownBytes1415 = read2Bytes(bytes, 0x14);
-        unknownBytes1617 = read2Bytes(bytes, 0x16);
 
         miscFlags = bytes[0x2C];
         equippedWeaponIndex = bytes[0x2D];
@@ -128,6 +140,15 @@ public class PlayerCharStatDataObject implements Nameable, Writable, Localized<P
 
         encounterCount = read4Bytes(bytes, 0x50);
         killCount = read4Bytes(bytes, 0x54);
+        unknownInt58 = read4Bytes(bytes, 0x58);
+        unknownInt5C = read4Bytes(bytes, 0x5C);
+        overdriveModeCounters = new int[20];
+        for (int i = 0; i < 20; i++) {
+            overdriveModeCounters[i] = read2Bytes(bytes, 0x60 + i * 2);
+        }
+        overdriveModeFlags = read4Bytes(bytes, 0x88);
+        unknownInt8C = read4Bytes(bytes, 0x8C);
+        unknownInt90 = read4Bytes(bytes, 0x90);
     }
 
     private void mapFlags() {
@@ -135,6 +156,7 @@ public class PlayerCharStatDataObject implements Nameable, Writable, Localized<P
         commandIds.addAll(StackObject.bitfieldToIntList(abilityField3E).stream().map(i -> i + 0x3000).toList());
         commandIds.addAll(StackObject.bitfieldToIntList(abilityField42).stream().map(i -> i + 0x3020).toList());
         commandIds.addAll(StackObject.bitfieldToIntList(abilityField46).stream().map(i -> i + 0x3040).toList());
+        learnedOverdriveModes = StackObject.bitfieldToList("bitfield_overdriveMode", overdriveModeFlags);
     }
 
     private void mapStrings(int[] stringBytes, String localization) {
@@ -207,8 +229,14 @@ public class PlayerCharStatDataObject implements Nameable, Writable, Localized<P
 
         write4Bytes(array, 0x50, encounterCount);
         write4Bytes(array, 0x54, killCount);
-        System.arraycopy(bytes, 0x58, array, 0x58, 0x3C);
-        // TODO
+        write4Bytes(array, 0x58, unknownInt58);
+        write4Bytes(array, 0x5C, unknownInt5C);
+        for (int i = 0; i < 20; i++) {
+            write2Bytes(array, 0x60 + i * 2, overdriveModeCounters[i]);
+        }
+        write4Bytes(array, 0x88, overdriveModeFlags);
+        write4Bytes(array, 0x8C, unknownInt8C);
+        write4Bytes(array, 0x90, unknownInt90);
         return array;
     }
 
@@ -239,7 +267,21 @@ public class PlayerCharStatDataObject implements Nameable, Writable, Localized<P
         list.add("STR=" + str + " DEF=" + def + " MAG=" + mag + " MDF=" + mdf);
         list.add("AGI=" + agi + " LCK=" + lck + " EVA=" + eva + " ACC=" + acc);
         list.add("Poison Damage=" + poisonDamage + "%");
+        list.add("Overdrive Mode=" + StackObject.enumToString("overdriveMode", overdriveMode));
+        list.add("Current Overdrive=" + overdriveCurrent);
+        list.add("Max Overdrive=" + overdriveMax);
+        list.add("Current Sphere Levels=" + slvAvailable);
+        list.add("Used Sphere Levels=" + slvUsed);
         list.add("Abilities=[" + commandIds.stream().map(a -> asMove(a)).collect(Collectors.joining(", ")) + "]");
+
+        list.add("--- Overdrive Modes ---");
+        for (int i = 0; i < 20; i++) {
+            int count = overdriveModeCounters[i];
+            list.add(StackObject.enumToString("overdriveMode", i) + ": " + (count == 0xFFFF ? "Cannot learn" : count));
+        }
+        if (overdriveModeFlags != 0) {
+            list.add("Already learned: " + StackObject.asString(DEFAULT_LOCALIZATION, "bitfieldFrom_overdriveMode", overdriveModeFlags));
+        }
 
         String full = list.stream().filter(s -> s != null && !s.isBlank()).collect(Collectors.joining("\n"));
         return full;
