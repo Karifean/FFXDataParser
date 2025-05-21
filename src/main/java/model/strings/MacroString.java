@@ -54,6 +54,10 @@ public class MacroString {
         return getRegularString();
     }
 
+    public boolean isEmpty() {
+        return getRegularString().isEmpty() && getSimplifiedString().isEmpty();
+    }
+
     public String getRegularString() {
         return StringHelper.bytesToString(regularBytes, charset);
     }

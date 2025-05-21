@@ -807,8 +807,12 @@ public class AtelScriptObject {
         }
         List<ScriptField> inputs = func.inputs;
         if (inputs != null) {
-            for (int i = 0; i < inputs.size() && i < params.size(); i++) {
-                typed(params.get(i), inputs.get(i).type);
+            int len = Math.min(inputs.size(), params.size());
+            List<StackObject> typedParams = new ArrayList<>();
+            for (int i = 0; i < len; i++) {
+                StackObject typedParam = func.getTypedParam(i, params, typedParams);
+                typedParams.add(typedParam);
+                typed(params.get(i), typedParam.type);
             }
         }
         return func;

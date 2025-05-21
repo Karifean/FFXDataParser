@@ -199,7 +199,7 @@ public class AutoAbilityDataObject extends NameDescriptionTextObject implements 
     boolean increaseDef;
     boolean increaseMdf;
 
-    public int gilPrice;
+    public Integer gilPrice;
 
     private boolean sensor;
     private boolean firstStrike;
@@ -577,7 +577,9 @@ public class AutoAbilityDataObject extends NameDescriptionTextObject implements 
         if (icon != 0x14) {
             list.add("Byte68=" + icon);
         }
-        list.add(ifG0(gilPrice, "Price=", " gil"));
+        if (gilPrice != null) {
+            list.add("Price=" + gilPrice + " gil");
+        }
         String full = list.stream().filter(s -> s != null && !s.isBlank()).collect(Collectors.joining(", "));
         String descriptionStr = description.getDefaultString();
         return String.format("%-18s", getName()) + " { " + full + " } " + descriptionStr;

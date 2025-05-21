@@ -19,14 +19,17 @@ public class LocalizedMacroStringObject {
     }
 
     public void setLocalizedContent(String localization, MacroString content) {
+        if (contents.containsKey(localization) && content.isEmpty()) {
+            return;
+        }
         contents.put(localization, content);
     }
 
     public void readAndSetLocalizedContent(String localization, int[] bytes, int regularOffset, int simplifiedOffset) {
-        if (bytes == null || bytes.length == 0) {
+        if (bytes == null) {
             return;
         }
-        contents.put(localization, new MacroString(StringHelper.localizationToCharset(localization), regularOffset, simplifiedOffset, bytes));
+        setLocalizedContent(localization, new MacroString(StringHelper.localizationToCharset(localization), regularOffset, simplifiedOffset, bytes));
     }
 
     public String writeAllContent() {

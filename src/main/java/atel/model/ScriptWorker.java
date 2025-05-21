@@ -85,7 +85,7 @@ public class ScriptWorker {
             list.add("Type=" + StackObject.enumToString("eventWorkerType", eventWorkerType));
         }
         if (purposeSlot != null) {
-            list.add("PurposeSlot=" + purposeSlotToString(purposeSlot) + StringHelper.hex2Suffix(purposeSlot));
+            list.add("PurposeSlot=" + StackObject.enumToString("battleWorkerSlot", purposeSlot));
         }
         list.add("Entrypoints=" + StringHelper.hex2WithSuffix(entryPointCount));
         list.add("Jumps=" + StringHelper.hex2WithSuffix(jumpCount));
@@ -146,41 +146,5 @@ public class ScriptWorker {
 
     public void setPurposeSlot(int purposeSlot) {
         this.purposeSlot = purposeSlot;
-    }
-
-    public static String purposeSlotToString(int battleWorkerSlot) {
-        if (battleWorkerSlot == 0x00) {
-            return "?BattleCameras";
-        }
-        if (battleWorkerSlot >= 0x25 && battleWorkerSlot <= 0x28) {
-            String chr = StackObject.enumToScriptField("playerChar", battleWorkerSlot - 0x17).getName();
-            return "BasicHandlesFor" + chr;
-        }
-        if (battleWorkerSlot >= 0x29 && battleWorkerSlot <= 0x3A) {
-            String chr = StackObject.enumToScriptField("playerChar", battleWorkerSlot - 0x29).getName();
-            return "ExtraHandlesFor" + chr;
-        }
-        if (battleWorkerSlot == 0x3D) {
-            return "MonsterAi";
-        }
-        if (battleWorkerSlot == 0x3E) {
-            return "BtlScene0-7";
-        } else if (battleWorkerSlot == 0x3F) {
-            return "BtlScene8+ (Voice)";
-        }
-        if (battleWorkerSlot == 0x41 || battleWorkerSlot == 0x42 || battleWorkerSlot == 0x43) {
-            return "MagicCam3-" + (battleWorkerSlot - 0x41);
-        } else if (battleWorkerSlot == 0x44 || battleWorkerSlot == 0x45 || battleWorkerSlot == 0x46) {
-            return "MagicCam2-" + (battleWorkerSlot - 0x44);
-        } else if (battleWorkerSlot == 0x47 || battleWorkerSlot == 0x48 || battleWorkerSlot == 0x49) {
-            return "MagicCam4-" + (battleWorkerSlot - 0x47);
-        } else if (battleWorkerSlot == 0x4A || battleWorkerSlot == 0x4B || battleWorkerSlot == 0x4C) {
-            return "MagicCam6-" + (battleWorkerSlot - 0x4A);
-        }
-        if (battleWorkerSlot >= 0x6D && battleWorkerSlot <= 0x7E) {
-            String chr = StackObject.enumToScriptField("playerChar", battleWorkerSlot - 0x6D).getName();
-            return "VoiceHandlesFor" + chr;
-        }
-        return StringHelper.formatHex2(battleWorkerSlot);
     }
 }

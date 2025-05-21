@@ -19,7 +19,7 @@ public class MixCombinationDataObject implements Writable {
     private final int[] bytes;
 
     public int mixOrigin;
-    private final int[] mixResults = new int[0x70];
+    public final int[] mixResults = new int[0x70];
 
     public MixCombinationDataObject(int[] bytes, int[] stringBytes, String localization) {
         this.bytes = bytes;

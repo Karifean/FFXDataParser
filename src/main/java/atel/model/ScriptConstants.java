@@ -278,135 +278,135 @@ public abstract class ScriptConstants {
 
         addEnumsFromAllCsvsInFolder(new File(ENUM_CSV_ROOT));
 
-        putSaveDataVariable(0x0003, "MoonflowFlags1", "int");
-        putSaveDataVariable(0x0004, "MoonflowFlags2", "int");
-        putSaveDataVariable(0x0005, "ViaPurificoFlags1", "int");
-        putSaveDataVariable(0x0006, "ViaPurificoFlags2", "int"); // Also Besaid Falls treasure at &0x80 for some reason
-        putSaveDataVariable(0x0007, "MoonflowFlags3", "int");
-        putSaveDataVariable(0x0080, "RidingChocoboFlags", "int");
-        putSaveDataVariable(0x008D, "CalmLandsQuestProgressionFlags", "int");
-        putSaveDataVariable(0x0092, "MushroomRockRoadFlags", "int");
-        putSaveDataVariable(0x0095, "CalmLandsTreasureFlags", "int");
-        putSaveDataVariable(0x009B, "BelgemineFightProgressionFlags", "int");
-        putSaveDataVariable(0x009C, "YojimboHireAnswerNumber", "int"); // Only used/referenced within nagi0600
-        putSaveDataVariable(0x009F, "MonsterArenaUnlockQuestProgressionFlags", "int");
-        putSaveDataVariable(0x00A0, "MonsterArenaAreaSpeciesConquestUnlockFlags", "int");
-        putSaveDataVariable(0x00A4, "MonsterArenaOriginalCreationUnlockFlags", "int");
-        putSaveDataVariable(0x00A8, "WobblyChocoboRecordMinutes", "int");
-        putSaveDataVariable(0x00A9, "WobblyChocoboRecordSeconds", "int");
-        putSaveDataVariable(0x00AA, "WobblyChocoboRecordTenths", "int");
-        putSaveDataVariable(0x00AB, "DodgerChocoboRecordMinutes", "int");
-        putSaveDataVariable(0x00AC, "DodgerChocoboRecordSeconds", "int");
-        putSaveDataVariable(0x00AD, "DodgerChocoboRecordTenths", "int");
-        putSaveDataVariable(0x00AE, "HyperDodgerChocoboRecordMinutes", "int");
-        putSaveDataVariable(0x00AF, "HyperDodgerChocoboRecordSeconds", "int");
-        putSaveDataVariable(0x00B0, "HyperDodgerChocoboRecordTenths", "int");
-        putSaveDataVariable(0x00B1, "CatcherChocoboRecordMinutes", "int");
-        putSaveDataVariable(0x00B2, "CatcherChocoboRecordSeconds", "int");
-        putSaveDataVariable(0x00B3, "CatcherChocoboRecordTenths", "int");
-        putSaveDataVariable(0x00CE, "BikanelTreasureFlags1", "int");
-        putSaveDataVariable(0x00CF, "BikanelTreasureFlags2", "int");
-        putSaveDataVariable(0x00D0, "BikanelTreasureFlags3", "int");
-        putSaveDataVariable(0x0104, "EnergyBlastProgressionFlags", "int");
-        putSaveDataVariable(0x0114, "RemiemTempleProgressionFlags", "int");
-        putSaveDataVariable(0x0115, "BesaidVillageTreasureFlags", "int");
-        putSaveDataVariable(0x0153, "MusicSpheresOwnedCount", "int");
-        putSaveDataVariable(0x0154, "MovieSpheresOwnedCount", "int");
-        putSaveDataVariable(0x0193, "DebugSkipJechtIntroScenes", "bool");
-        putSaveDataVariable(0x014B, "ControllableCharacterInLuca", "playerChar");
-        putSaveDataVariable(0x01C0, "KilikaForestTreasureFlags", "int");
-        putSaveDataVariable(0x01C5, "BesaidTreasureFlags", "int");
-        putSaveDataVariable(0x01CD, "MacalaniaTreasureFlags", "int");
-        putSaveDataVariable(0x01D2, "OmegaRuinsProgressionFlags", "int");
-        putSaveDataVariable(0x01D4, "HomeProgressionFlags", "int");
-        putSaveDataVariable(0x0205, "ThunderPlainsProgressionFlags", "int");
-        putSaveDataVariable(0x0208, "LightningDodgingRewardsToPickUpFlags", "int");
-        putSaveDataVariable(0x0210, "LightningDodgingTotalBolts", "int");
-        putSaveDataVariable(0x0212, "LightningDodgingTotalDodges", "int");
-        putSaveDataVariable(0x0214, "LightningDodgingHighestConsecutiveDodges", "int"); // 440
-        putSaveDataVariable(0x024C, "BlitzballWakkaPowerProgress", "int");
-        putSaveDataVariable(0x0254, "BlitzballMovementType", "blitzballMovementType");
-        putSaveDataVariable(0x0265, "AirshipLocationsVisitedFlags", "int");
-        putSaveDataVariable(0x0A00, "GameMoment", "int");
-        putSaveDataVariable(0x0A34, "GilLentToOAka", "int");
-        putSaveDataVariable(0x0A38, "MacalaniaPricesChosenForOAka", "int");
-        putSaveDataVariable(0x0A3C, "JechtShotMinigameCleared", "bool");
-        putSaveDataVariable(0x0A3D, "BelgemineFamiliarity", "int");
-        putSaveDataVariable(0x0A44, "RemiemAeonsDefeated", "int");
-        putSaveDataVariable(0x0A49, "WorldChampionPrerequisitesCleared", "bool");
-        putSaveDataVariable(0x0A4A, "SaveSphereInstructionsSeen", "int");
-        putSaveDataVariable(0x0A4C, "CelestialMirrorObtained", "bool");
-        putSaveDataVariable(0x0A4D, "CelestialsObtainedFlags", "int");
-        putSaveDataVariable(0x0A50, "CalmLandsChocoboPositionX", "float");
-        putSaveDataVariable(0x0A54, "CalmLandsChocoboPositionY", "float");
-        putSaveDataVariable(0x0A58, "CalmLandsChocoboPositionZ", "float");
-        putSaveDataVariable(0x0A60, "AlBhedPrimersCollectedCount", "int");
-        putSaveDataVariable(0x0A68, "BlitzballMenuReturnMap", "int");
-        putSaveDataVariable(0x0A6C, "BlitzballMenuReturnEntrance", "int");
-        putSaveDataVariable(0x0A70, "AnimaSealsUnlocked", "int");
-        putSaveDataVariable(0x0A7C, "BattleInfoStorage", "int"); // Some usages: Evrae Altana's remaining HP, which Sahagin remains alive before Geosgaeno.
-        putSaveDataVariable(0x0A80, "CelestialsHalfPoweredFlags", "int");
-        putSaveDataVariable(0x0A81, "CelestialsFullPoweredFlags", "int");
-        putSaveDataVariable(0x0A83, "isRedButterflyEncounter", "bool");
-        putSaveDataVariable(0x0A84, "MusicTempStorageForResting", "bgm");
-        putSaveDataVariable(0x0A88, "BlitzballTeamPlayerCount", "int", "blitzballTeam");
-        putSaveDataVariable(0x0A8F, "OptionalAeonsRecruitedFlags", "int");
-        putSaveDataVariable(0x0A93, "JechtSpheresCollectedCount", "int");
-        putSaveDataVariable(0x0A94, "AeonBoostingKeyItemsObtainedFlags", "int");
-        putSaveDataVariable(0x0A95, "AirshipDestinationUnlocks", "int");
-        putSaveDataVariable(0x0A97, "?CactuarGuardiansQuestProgress", "int");
-        putSaveDataVariable(0x0A98, "IsBetweenDjoseFaythTalkAndAirshipBoarding", "bool");
-        putSaveDataVariable(0x0A99, "CactuarGuardiansBeaten", "int");
-        putSaveDataVariable(0x0A9A, "AlBhedPrimersInstructionsSeen", "bool");
-        putSaveDataVariable(0x0A9B, "RemiemRaceTreasureFlags", "int");
-        putSaveDataVariable(0x0A9D, "DarkValeforCompletionFlags", "int");
-        putSaveDataVariable(0x0A9E, "DarkIfritCompletionFlags", "int");
-        putSaveDataVariable(0x0A9F, "DarkIxionCompletionFlags", "int");
-        putSaveDataVariable(0x0AA0, "DarkShivaCompletionFlags", "int");
-        putSaveDataVariable(0x0AA1, "DarkBahamutCompletionFlags", "int");
-        putSaveDataVariable(0x0AA2, "DarkYojimboCompletionFlags", "int");
-        putSaveDataVariable(0x0AA3, "DarkAnimaCompletionFlags", "int");
-        putSaveDataVariable(0x0AA4, "DarkMagusSistersCompletionFlags", "int");
-        putSaveDataVariable(0x0AA5, "PenanceUnlockState", "int");
-        putSaveDataVariable(0x0AEB, "BattleDialogLinesSeenFlags", "int");
-        putSaveDataVariable(0x0B63, "?TidusBattleTalkativeness", "int");
-        putSaveDataVariable(0x0B64, "?WakkaBattleTalkativeness", "int");
-        putSaveDataVariable(0x0B65, "?YunaBattleTalkativeness", "int");
-        putSaveDataVariable(0x0B66, "?LuluBattleTalkativeness", "int");
-        putSaveDataVariable(0x0B67, "?RikkuBattleTalkativeness", "int");
-        putSaveDataVariable(0x0B68, "?AuronBattleTalkativeness", "int");
-        putSaveDataVariable(0x0B69, "Unused?KimahriBattleTalkativeness", "int");
-        putSaveDataVariable(0x1000, "BlitzballPlayerLearnedTechsPage1", "bitfieldFrom_blitzTechP1", "blitzballPlayer");
-        putSaveDataVariable(0x10F0, "BlitzballPlayerLearnedTechsPage2", "bitfieldFrom_blitzTechP2", "blitzballPlayer");
-        putSaveDataVariable(0x1266, "BlitzballPlayerEquippedTechs", "blitzTech"); // index = blitzballPlayer * 5 + 0..4
-        putSaveDataVariable(0x1392, "BlitzballPlayerUnlockedTechSlots", "int", "blitzballPlayer");
-        putSaveDataVariable(0x13CE, "BlitzballPlayerCurrentLevel", "int", "blitzballPlayer");
-        putSaveDataVariable(0x1568, "BlitzballPlayerCurrentEXP", "int", "blitzballPlayer");
-        putSaveDataVariable(0x141A, "BlitzballTeamPlayers", "blitzballPlayer");
-        putSaveDataVariable(0x1452, "BlitzballMatchPlayerScore", "int");
-        putSaveDataVariable(0x1453, "BlitzballMatchOpponentScore", "int");
-        putSaveDataVariable(0x1454, "BlitzballIsSecondHalf?", "bool");
-        putSaveDataVariable(0x1455, "BlitzballMarkedPlayerIndex?", "int", "int");
-        putSaveDataVariable(0x1465, "BlitzballEnemyTeam", "blitzballTeam");
-        putSaveDataVariable(0x1466, "BlitzballCurrentLeagueTeamSeedings", "blitzballTeam", "int");
-        putSaveDataVariable(0x146C, "BlitzballCurrentTournamentTeamSlot", "blitzballTeam", "int");
-        putSaveDataVariable(0x147A, "BlitzballCurrentLeagueTeamWins", "int", "blitzballTeam");
-        putSaveDataVariable(0x1480, "BlitzballCurrentLeagueTeamLosses", "int", "blitzballTeam");
-        putSaveDataVariable(0x1486, "BlitzballCurrentLeagueRound", "int");
-        putSaveDataVariable(0x1487, "BlitzballCurrentLeagueMatchTeamSlot", "blitzballTeam", "int");
-        putSaveDataVariable(0x148E, "BlitzballGameMode", "blitzballGameMode");
-        putSaveDataVariable(0x14B3, "BlitzballCurrentTournamentState", "int");
-        putSaveDataVariable(0x14B4, null, "int");
-        putSaveDataVariable(0x152A, "BlitzballPlayerContractDurations", "int", "blitzballPlayer");
-        putSaveDataVariable(0x1566, "BlitzballTotalGamesWon", "int");
-        putSaveDataVariable(0x1798, "BlitzballPlayerCostPerGame", "int", "blitzballPlayer");
-        putSaveDataVariable(0x1810, "BlitzballLeaguePrizeIndex", "int");
-        putSaveDataVariable(0x1816, "BlitzballTournamentPrizeIndex", "int");
-        putSaveDataVariable(0x181C, "BlitzballLeagueTopScorerPrizeIndex", "int");
-        putSaveDataVariable(0x181E, "BlitzballTournamentTopScorerPrizeIndex", "int");
-        putSaveDataVariable(0x1820, "?BlitzballPlayerUncoveredTechsPage1", "bitfieldFrom_blitzTechP1", "blitzballPlayer");
-        putSaveDataVariable(0x1910, "?BlitzballPlayerUncoveredTechsPage2", "bitfieldFrom_blitzTechP2", "blitzballPlayer");
-        putSaveDataVariable(0x2000, "SphereGridNodeState", "sphereGridNodeState", "int");
+        putSaveDataVariable(0x1EF, "MoonflowFlags1", "int");
+        putSaveDataVariable(0x1F0, "MoonflowFlags2", "int");
+        putSaveDataVariable(0x1F1, "ViaPurificoFlags1", "int");
+        putSaveDataVariable(0x1F2, "ViaPurificoFlags2", "int"); // Also Besaid Falls treasure at &0x80 for some reason
+        putSaveDataVariable(0x1F3, "MoonflowFlags3", "int");
+        putSaveDataVariable(0x26C, "RidingChocoboFlags", "int");
+        putSaveDataVariable(0x279, "CalmLandsQuestProgressionFlags", "int");
+        putSaveDataVariable(0x27E, "MushroomRockRoadFlags", "int");
+        putSaveDataVariable(0x281, "CalmLandsTreasureFlags", "int");
+        putSaveDataVariable(0x287, "BelgemineFightProgressionFlags", "int");
+        putSaveDataVariable(0x288, "YojimboHireAnswerNumber", "int"); // Only used/referenced within nagi0600
+        putSaveDataVariable(0x28B, "MonsterArenaUnlockQuestProgressionFlags", "int");
+        putSaveDataVariable(0x28C, "MonsterArenaAreaSpeciesConquestUnlockFlags", "int");
+        putSaveDataVariable(0x290, "MonsterArenaOriginalCreationUnlockFlags", "int");
+        putSaveDataVariable(0x294, "WobblyChocoboRecordMinutes", "int");
+        putSaveDataVariable(0x295, "WobblyChocoboRecordSeconds", "int");
+        putSaveDataVariable(0x296, "WobblyChocoboRecordTenths", "int");
+        putSaveDataVariable(0x297, "DodgerChocoboRecordMinutes", "int");
+        putSaveDataVariable(0x298, "DodgerChocoboRecordSeconds", "int");
+        putSaveDataVariable(0x299, "DodgerChocoboRecordTenths", "int");
+        putSaveDataVariable(0x29A, "HyperDodgerChocoboRecordMinutes", "int");
+        putSaveDataVariable(0x29B, "HyperDodgerChocoboRecordSeconds", "int");
+        putSaveDataVariable(0x29C, "HyperDodgerChocoboRecordTenths", "int");
+        putSaveDataVariable(0x29D, "CatcherChocoboRecordMinutes", "int");
+        putSaveDataVariable(0x29E, "CatcherChocoboRecordSeconds", "int");
+        putSaveDataVariable(0x29F, "CatcherChocoboRecordTenths", "int");
+        putSaveDataVariable(0x2BA, "BikanelTreasureFlags1", "int");
+        putSaveDataVariable(0x2BB, "BikanelTreasureFlags2", "int");
+        putSaveDataVariable(0x2BC, "BikanelTreasureFlags3", "int");
+        putSaveDataVariable(0x2F0, "EnergyBlastProgressionFlags", "int");
+        putSaveDataVariable(0x300, "RemiemTempleProgressionFlags", "int");
+        putSaveDataVariable(0x301, "BesaidVillageTreasureFlags", "int");
+        putSaveDataVariable(0x33F, "MusicSpheresOwnedCount", "int");
+        putSaveDataVariable(0x340, "MovieSpheresOwnedCount", "int");
+        putSaveDataVariable(0x37F, "DebugSkipJechtIntroScenes", "bool");
+        putSaveDataVariable(0x337, "ControllableCharacterInLuca", "playerChar");
+        putSaveDataVariable(0x3AC, "KilikaForestTreasureFlags", "int");
+        putSaveDataVariable(0x3B1, "BesaidTreasureFlags", "int");
+        putSaveDataVariable(0x3B9, "MacalaniaTreasureFlags", "int");
+        putSaveDataVariable(0x3Be, "OmegaRuinsProgressionFlags", "int");
+        putSaveDataVariable(0x3C0, "HomeProgressionFlags", "int");
+        putSaveDataVariable(0x3F1, "ThunderPlainsProgressionFlags", "int");
+        putSaveDataVariable(0x3F4, "LightningDodgingRewardsToPickUpFlags", "int");
+        putSaveDataVariable(0x3Fc, "LightningDodgingTotalBolts", "int");
+        putSaveDataVariable(0x3Fe, "LightningDodgingTotalDodges", "int");
+        putSaveDataVariable(0x400, "LightningDodgingHighestConsecutiveDodges", "int"); // 440
+        putSaveDataVariable(0x438, "BlitzballWakkaPowerProgress", "int");
+        putSaveDataVariable(0x440, "BlitzballMovementType", "blitzballMovementType");
+        putSaveDataVariable(0x451, "AirshipLocationsVisitedFlags", "int");
+        putSaveDataVariable(0xBEC, "GameMoment", "int");
+        putSaveDataVariable(0xC20, "GilLentToOAka", "int");
+        putSaveDataVariable(0xC24, "MacalaniaPricesChosenForOAka", "int");
+        putSaveDataVariable(0xC28, "JechtShotMinigameCleared", "bool");
+        putSaveDataVariable(0xC29, "BelgemineFamiliarity", "int");
+        putSaveDataVariable(0xC30, "RemiemAeonsDefeated", "int");
+        putSaveDataVariable(0xC35, "WorldChampionPrerequisitesCleared", "bool");
+        putSaveDataVariable(0xC36, "SaveSphereInstructionsSeen", "int");
+        putSaveDataVariable(0xC38, "CelestialMirrorObtained", "bool");
+        putSaveDataVariable(0xC39, "CelestialsObtainedFlags", "int");
+        putSaveDataVariable(0xC3C, "CalmLandsChocoboPositionX", "float");
+        putSaveDataVariable(0xC40, "CalmLandsChocoboPositionY", "float");
+        putSaveDataVariable(0xC44, "CalmLandsChocoboPositionZ", "float");
+        putSaveDataVariable(0xC4C, "AlBhedPrimersCollectedCount", "int");
+        putSaveDataVariable(0xC54, "BlitzballMenuReturnMap", "int");
+        putSaveDataVariable(0xC58, "BlitzballMenuReturnEntrance", "int");
+        putSaveDataVariable(0xC5C, "AnimaSealsUnlocked", "int");
+        putSaveDataVariable(0xC68, "BattleInfoStorage", "int"); // Some usages: Evrae Altana's remaining HP, which Sahagin remains alive before Geosgaeno.
+        putSaveDataVariable(0xC6C, "CelestialsHalfPoweredFlags", "int");
+        putSaveDataVariable(0xC6D, "CelestialsFullPoweredFlags", "int");
+        putSaveDataVariable(0xC6F, "isRedButterflyEncounter", "bool");
+        putSaveDataVariable(0xC70, "MusicTempStorageForResting", "bgm");
+        putSaveDataVariable(0xC74, "BlitzballTeamPlayerCount", "int", "blitzballTeam");
+        putSaveDataVariable(0xC7B, "OptionalAeonsRecruitedFlags", "int");
+        putSaveDataVariable(0xC7F, "JechtSpheresCollectedCount", "int");
+        putSaveDataVariable(0xC80, "AeonBoostingKeyItemsObtainedFlags", "int");
+        putSaveDataVariable(0xC81, "AirshipDestinationUnlocks", "int");
+        putSaveDataVariable(0xC83, "?CactuarGuardiansQuestProgress", "int");
+        putSaveDataVariable(0xC84, "IsBetweenDjoseFaythTalkAndAirshipBoarding", "bool");
+        putSaveDataVariable(0xC85, "CactuarGuardiansBeaten", "int");
+        putSaveDataVariable(0xC86, "AlBhedPrimersInstructionsSeen", "bool");
+        putSaveDataVariable(0xC87, "RemiemRaceTreasureFlags", "int");
+        putSaveDataVariable(0xC89, "DarkValeforCompletionFlags", "int");
+        putSaveDataVariable(0xC8A, "DarkIfritCompletionFlags", "int");
+        putSaveDataVariable(0xC8B, "DarkIxionCompletionFlags", "int");
+        putSaveDataVariable(0xC8C, "DarkShivaCompletionFlags", "int");
+        putSaveDataVariable(0xC8D, "DarkBahamutCompletionFlags", "int");
+        putSaveDataVariable(0xC8E, "DarkYojimboCompletionFlags", "int");
+        putSaveDataVariable(0xC8F, "DarkAnimaCompletionFlags", "int");
+        putSaveDataVariable(0xC90, "DarkMagusSistersCompletionFlags", "int");
+        putSaveDataVariable(0xC91, "PenanceUnlockState", "int");
+        putSaveDataVariable(0xCD7, "BattleDialogLinesSeenFlags", "int");
+        putSaveDataVariable(0xD4f, "?TidusBattleTalkativeness", "int");
+        putSaveDataVariable(0xD50, "?WakkaBattleTalkativeness", "int");
+        putSaveDataVariable(0xD51, "?YunaBattleTalkativeness", "int");
+        putSaveDataVariable(0xD52, "?LuluBattleTalkativeness", "int");
+        putSaveDataVariable(0xD53, "?RikkuBattleTalkativeness", "int");
+        putSaveDataVariable(0xD54, "?AuronBattleTalkativeness", "int");
+        putSaveDataVariable(0xD55, "Unused?KimahriBattleTalkativeness", "int");
+        putSaveDataVariable(0x11EC, "BlitzballPlayerLearnedTechsPage1", "bitfieldFrom_blitzTechP1", "blitzballPlayer");
+        putSaveDataVariable(0x12DC, "BlitzballPlayerLearnedTechsPage2", "bitfieldFrom_blitzTechP2", "blitzballPlayer");
+        putSaveDataVariable(0x1452, "BlitzballPlayerEquippedTechs", "blitzTech"); // index = blitzballPlayer * 5 + 0..4
+        putSaveDataVariable(0x157E, "BlitzballPlayerUnlockedTechSlots", "int", "blitzballPlayer");
+        putSaveDataVariable(0x15BA, "BlitzballPlayerCurrentLevel", "int", "blitzballPlayer");
+        putSaveDataVariable(0x1754, "BlitzballPlayerCurrentEXP", "int", "blitzballPlayer");
+        putSaveDataVariable(0x1606, "BlitzballTeamPlayers", "blitzballPlayer");
+        putSaveDataVariable(0x163E, "BlitzballMatchPlayerScore", "int");
+        putSaveDataVariable(0x163F, "BlitzballMatchOpponentScore", "int");
+        putSaveDataVariable(0x1640, "BlitzballIsSecondHalf?", "bool");
+        putSaveDataVariable(0x1641, "BlitzballMarkedPlayerIndex?", "int", "int");
+        putSaveDataVariable(0x1651, "BlitzballEnemyTeam", "blitzballTeam");
+        putSaveDataVariable(0x1652, "BlitzballCurrentLeagueTeamSeedings", "blitzballTeam", "int");
+        putSaveDataVariable(0x1658, "BlitzballCurrentTournamentTeamSlot", "blitzballTeam", "int");
+        putSaveDataVariable(0x1666, "BlitzballCurrentLeagueTeamWins", "int", "blitzballTeam");
+        putSaveDataVariable(0x166C, "BlitzballCurrentLeagueTeamLosses", "int", "blitzballTeam");
+        putSaveDataVariable(0x1672, "BlitzballCurrentLeagueRound", "int");
+        putSaveDataVariable(0x1673, "BlitzballCurrentLeagueMatchTeamSlot", "blitzballTeam", "int");
+        putSaveDataVariable(0x167A, "BlitzballGameMode", "blitzballGameMode");
+        putSaveDataVariable(0x169F, "BlitzballCurrentTournamentState", "int");
+        putSaveDataVariable(0x16A0, null, "int");
+        putSaveDataVariable(0x1716, "BlitzballPlayerContractDurations", "int", "blitzballPlayer");
+        putSaveDataVariable(0x1752, "BlitzballTotalGamesWon", "int");
+        putSaveDataVariable(0x1984, "BlitzballPlayerCostPerGame", "int", "blitzballPlayer");
+        putSaveDataVariable(0x19FC, "BlitzballLeaguePrizeIndex", "int");
+        putSaveDataVariable(0x1A02, "BlitzballTournamentPrizeIndex", "int");
+        putSaveDataVariable(0x1A08, "BlitzballLeagueTopScorerPrizeIndex", "int");
+        putSaveDataVariable(0x1A0A, "BlitzballTournamentTopScorerPrizeIndex", "int");
+        putSaveDataVariable(0x1A0C, "?BlitzballPlayerUncoveredTechsPage1", "bitfieldFrom_blitzTechP1", "blitzballPlayer");
+        putSaveDataVariable(0x1AFC, "?BlitzballPlayerUncoveredTechsPage2", "bitfieldFrom_blitzTechP2", "blitzballPlayer");
+        putSaveDataVariable(0x21EC, "SphereGridNodeState", "sphereGridNodeState", "int");
 
         putBattleVariable(0x0170, "BattleDialogLineVoiceFile", "int");
         putBattleVariable(0x028C, "BattleDialogLineString", "system01String");
@@ -419,10 +419,10 @@ public abstract class ScriptConstants {
         putEnum("deathAnimation", 0x05, "Steal-Machina (Same as 02 with machina SFX)", "death_break");
         putEnum("deathAnimation", 0x08, "YAT/YKT", "death_break2");
 
-        putEnum("selector", 0x00, "Any/All");
-        putEnum("selector", 0x01, "Highest");
-        putEnum("selector", 0x02, "Lowest");
-        putEnum("selector", 0x80, "Not");
+        putEnum("selector", 0x00, "Any/All", "nop");
+        putEnum("selector", 0x01, "Highest", "max");
+        putEnum("selector", 0x02, "Lowest", "min");
+        putEnum("selector", 0x80, "Not", "not");
 
         putEnum("ambushState", 0x00, "Normal (00)", "first_attack_normal");
         putEnum("ambushState", 0x01, "Preemptive", "first_attack_player");
@@ -458,6 +458,93 @@ public abstract class ScriptConstants {
         putEnum("battleWorkerType", 0x08, "MagicCameraHandler-Item");
         putEnum("battleWorkerType", 0x09, "MagicCameraHandler-Monmagic1");
         putEnum("battleWorkerType", 0x0A, "MagicCameraHandler-Monmagic2");
+
+        putEnum("battleWorkerSlot", 0x00, "?BattleCameras");
+        for (int i = 0; i <= 0x11; i++) {
+            String chr = StackObject.enumToScriptField("playerChar", i).getName();
+            if (i >= 0x0E) {
+                putEnum("battleWorkerSlot", i + 0x17, "BasicHandlesFor" + chr);
+            }
+            putEnum("battleWorkerSlot", i + 0x29, "ExtraHandlesFor" + chr);
+            putEnum("battleWorkerSlot", i + 0x6D, "VoiceHandlesFor" + chr);
+        }
+        putEnum("battleWorkerSlot", 0x3D, "MonsterAi");
+        putEnum("battleWorkerSlot", 0x3E, "BtlScene0-7");
+        putEnum("battleWorkerSlot", 0x3F, "BtlScene8+ (Voice)");
+        for (int i = 0; i < 3; i++) {
+            putEnum("battleWorkerSlot", 0x41 + i, "MagicCam3-" + i);
+            putEnum("battleWorkerSlot", 0x44 + i, "MagicCam2-" + i);
+            putEnum("battleWorkerSlot", 0x47 + i, "MagicCam4-" + i);
+            putEnum("battleWorkerSlot", 0x4A + i, "MagicCam6-" + i);
+        }
+
+        putEnum("combatHandlerTag", 0x00, "onTurn");
+        putEnum("combatHandlerTag", 0x01, "preTurn");
+        putEnum("combatHandlerTag", 0x02, "onTargeted");
+        putEnum("combatHandlerTag", 0x03, "onHit");
+        putEnum("combatHandlerTag", 0x04, "onDeath");
+        putEnum("combatHandlerTag", 0x05, "onMove");
+        putEnum("combatHandlerTag", 0x06, "postTurn"); // prePoison
+        putEnum("combatHandlerTag", 0x07, "postMove?");
+        putEnum("combatHandlerTag", 0x08, "postPoison");
+        putEnum("combatHandlerTag", 0x09, "YojiPay");
+        putEnum("combatHandlerTag", 0x0A, "YojiDismiss");
+        putEnum("combatHandlerTag", 0x0B, "YojiDeath");
+        putEnum("combatHandlerTag", 0x0C, "MagusTurn");
+        putEnum("combatHandlerTag", 0x0D, "MagusDoAsYouWill");
+        putEnum("combatHandlerTag", 0x0E, "MagusOneMoreTime");
+        putEnum("combatHandlerTag", 0x0F, "MagusFight");
+        putEnum("combatHandlerTag", 0x10, "MagusGoGo");
+        putEnum("combatHandlerTag", 0x11, "MagusHelpEachOther");
+        putEnum("combatHandlerTag", 0x12, "MagusCombinePowers");
+        putEnum("combatHandlerTag", 0x13, "MagusDefense");
+        putEnum("combatHandlerTag", 0x14, "MagusAreYouAllRight");
+
+        putEnum("cameraHandlerTag", 0x18, "Enter");
+        putEnum("cameraHandlerTag", 0x19, "Select");
+        putEnum("cameraHandlerTag", 0x1B, "MagicStart");
+        putEnum("cameraHandlerTag", 0x1C, "Normal");
+        putEnum("cameraHandlerTag", 0x2C, "MonMagicStart");
+        putEnum("cameraHandlerTag", 0x2D, "MonMagicLaunch");
+        putEnum("cameraHandlerTag", 0x2E, "MonItemStart");
+        putEnum("cameraHandlerTag", 0x2F, "MonItemLaunch");
+        putEnum("cameraHandlerTag", 0x33, "ItemLaunch");
+        putEnum("cameraHandlerTag", 0x34, "MagicLaunch");
+        putEnum("cameraHandlerTag", 0x36, "Swap");
+        putEnum("cameraHandlerTag", 0x3C, "SkillActivation");
+        putEnum("cameraHandlerTag", 0x42, "PlayerVictory");
+        putEnum("cameraHandlerTag", 0x43, "PlayerDefeat");
+        putEnum("cameraHandlerTag", 0x79, "SummonMagicFiring");
+        putEnum("cameraHandlerTag", 0x83, "Summon");
+
+        putEnum("battleGruntHandlerTag", 0x09, "OnAttack");
+        putEnum("battleGruntHandlerTag", 0x0A, "AfterAttack");
+        putEnum("battleGruntHandlerTag", 0x0B, "OnDamaged");
+
+        putEnum("motionHandlerTag", 0x00, "Wait", "_tag_motion_wait");
+        putEnum("motionHandlerTag", 0x04, "Magic", "_tag_motion_magic");
+        putEnum("motionHandlerTag", 0x05, "MagicThrow", "_tag_motion_magic_throw");
+        putEnum("motionHandlerTag", 0x13, "SP1", "_tag_motion_sp1");
+        putEnum("motionHandlerTag", 0x14, "SP2", "_tag_motion_sp2");
+        putEnum("motionHandlerTag", 0x15, "SP3", "_tag_motion_sp3");
+        putEnum("motionHandlerTag", 0x16, "SP4", "_tag_motion_sp4");
+        putEnum("motionHandlerTag", 0x17, "SP5", "_tag_motion_sp5");
+        putEnum("motionHandlerTag", 0x18, "SP6", "_tag_motion_sp6");
+        putEnum("motionHandlerTag", 0x19, "SP7", "_tag_motion_sp7");
+        putEnum("motionHandlerTag", 0x1A, "SP8", "_tag_motion_sp8");
+        putEnum("motionHandlerTag", 0x41, "AttackEnd", "_tag_motion_attack_end");
+        putEnum("motionHandlerTag", 0x4E, "Pay", "_tag_motion_pay");
+
+        putEnum("battleStartEndHookTag", 0x04, "End");
+        putEnum("battleStartEndHookTag", 0x05, "Start");
+
+        putEnum("voiceHandlerTag", 0x09, "Command");
+        putEnum("voiceHandlerTag", 0x0A, "Revived");
+        putEnum("voiceHandlerTag", 0x0B, "Switched");
+        putEnum("voiceHandlerTag", 0x0C, "Summoned");
+        putEnum("voiceHandlerTag", 0x0D, "Provoke");
+        putEnum("voiceHandlerTag", 0x0E, "Threaten");
+        putEnum("voiceHandlerTag", 0x0F, "Flee?");
 
         putEnum("controllerButton", 0x00, "?L2 (Scroll Up)");
         putEnum("controllerButton", 0x01, "?R2 (Scroll Down)");
@@ -569,16 +656,32 @@ public abstract class ScriptConstants {
         putEnum("blitzballGameMode", 0x05, "Cancel");
         putEnum("blitzballGameMode", 0x06, "Reset Data");
 
-        putEnum("battleDebugFlag", 0x01, "?MonstersInvincible");
+        putEnum("battleDebugFlag", 0x00, "?FullItems");
+        putEnum("battleDebugFlag", 0x01, "?PlayersInvincible");
         putEnum("battleDebugFlag", 0x02, "?AllInvincible");
         putEnum("battleDebugFlag", 0x03, "ControlMonsters");
-        putEnum("battleDebugFlag", 0x04, "?NoMagicEffects");
-        putEnum("battleDebugFlag", 0x05, "?NoMpCost");
+        putEnum("battleDebugFlag", 0x04, "?NoMpCost");
+        putEnum("battleDebugFlag", 0x05, "?AlwaysOverdrive");
         putEnum("battleDebugFlag", 0x06, "?NoDamageVariance");
         putEnum("battleDebugFlag", 0x07, "NeverCrit");
         putEnum("battleDebugFlag", 0x08, "?AttacksStatusesAlwaysHit");
-        putEnum("battleDebugFlag", 0x09, "?OverdriveAlwaysAvailable");
-        putEnum("battleDebugFlag", 0x0A, "?AlwaysCrit");
+        putEnum("battleDebugFlag", 0x09, "?LogBattleInformation");
+        putEnum("battleDebugFlag", 0x0A, "?FullSpGil");
+        putEnum("battleDebugFlag", 0x0B, "?FullWeapons");
+        putEnum("battleDebugFlag", 0x0C, "?MonstersInvincible");
+        putEnum("battleDebugFlag", 0x0D, "?AlwaysCrit");
+        putEnum("battleDebugFlag", 0x0E, "?DmgAlways1");
+        putEnum("battleDebugFlag", 0x0F, "?DmgAlways9999");
+        putEnum("battleDebugFlag", 0x10, "?DmgAlways99999");
+        putEnum("battleDebugFlag", 0x11, "?AlwaysRareDrop");
+        putEnum("battleDebugFlag", 0x12, "?APx100");
+        putEnum("battleDebugFlag", 0x13, "?Gilx100");
+        putEnum("battleDebugFlag", 0x14, "?NoOverkills");
+        putEnum("battleDebugFlag", 0x15, "?FullCommands");
+        putEnum("battleDebugFlag", 0x16, "?FullSummons");
+        putEnum("battleDebugFlag", 0x17, "?CommandSkip");
+        putEnum("battleDebugFlag", 0x18, "?PermanentSensor");
+        putEnum("battleDebugFlag", 0x19, "?AlwaysPreemptive");
 
         putEnum("textAlignment", 0x00, "Top Left", "MESWIN_POS_LEFTUP");
         putEnum("textAlignment", 0x01, "Bottom Left", "MESWIN_POS_LEFTDOWN");
@@ -594,6 +697,8 @@ public abstract class ScriptConstants {
         putEnum("effectType", -1, "All");
 
         putEnum("stdmotion", -1, null, "MOT_ALL");
+        putEnum("stdmotion", 0, null, "MOT_NONE");
+        putEnum("stdmotion", 255, null, "MOT_ALL");
 
         putEnum("field", 0x0000, "system");
         putEnum("field", 0x0002, "test00");
@@ -683,16 +788,71 @@ public abstract class ScriptConstants {
         putEnum("battleTransition", 0x00, "Screen Shatter");
         putEnum("battleTransition", 0x01, "Fade");
 
+        putEnum("shadowMode", 0x00, null, "shadow_mode_none");
+        putEnum("shadowMode", 0x01, null, "shadow_mode_easy");
+        putEnum("shadowMode", 0x02, null, "shadow_mode_drop");
+
+        putEnum("reverbeStatus", 0x00, null, "reverbe_stat_off");
+        putEnum("reverbeStatus", 0x01, null, "reverbe_stat_on");
+        putEnum("reverbeStatus", 0x02, null, "reverbe_stat_script");
+
+        putEnum("specialBattleSetting", 0x01, "Sin Fin");
+        putEnum("specialBattleSetting", 0x02, "Sin Arm");
+        putEnum("specialBattleSetting", 0x03, "Evrae");
+
         putEnum("battleEndType", 0x01, "Defeat");
         putEnum("battleEndType", 0x02, "Victory");
-        putEnum("battleEndType", 0x03, "?Escape");
-        putEnum("battleEndType", 0x04, null); // Seems to be a special case override thing?
+        putEnum("battleEndType", 0x03, "PlayerEscaped");
+        putEnum("battleEndType", 0x04, "MonsterEscaped");
 
         putEnum("appearMotion", 0x00, "No Animation", "appear_motion_off");
         putEnum("appearMotion", 0x01, null, "appear_motion_off_trans");
         putEnum("appearMotion", 0x02, null, "appear_motion_on");
         putEnum("appearMotion", 0x03, null, "appear_motion_on_trans");
         putEnum("appearMotion", 0x04, "Hidden", "appear_motion_off_hide");
+
+        putEnum("btlCharVoice", 0x00, "Damage");
+        putEnum("btlCharVoice", 0x01, "Attack");
+        putEnum("btlCharVoice", 0x02, "Finisher1");
+        putEnum("btlCharVoice", 0x03, "Finisher2");
+        putEnum("btlCharVoice", 0x04, "Finisher3");
+        putEnum("btlCharVoice", 0x05, "Frustrated");
+        putEnum("btlCharVoice", 0x06, "BigSuccess");
+        putEnum("btlCharVoice", 0x07, "BigDamage");
+
+        putEnum("btlSoundEffect", 0x00, null, "btl_se_critical_hit");
+        putEnum("btlSoundEffect", 0x01, null, "btl_se_normal_hit");
+        putEnum("btlSoundEffect", 0x02, null, "btl_se_weak_hit");
+        putEnum("btlSoundEffect", 0x03, null, "btl_se_not_hit");
+        putEnum("btlSoundEffect", 0x04, null, "btl_se_add_attack");
+        putEnum("btlSoundEffect", 0x05, null, "btl_se_start_attack");
+        putEnum("btlSoundEffect", 0x06, null, "btl_se_foot");
+        putEnum("btlSoundEffect", 0x07, null, "btl_se_jump");
+        putEnum("btlSoundEffect", 0x08, null, "btl_se_land");
+        putEnum("btlSoundEffect", 0x09, null, "btl_se_death");
+        putEnum("btlSoundEffect", 0x0A, null, "btl_se_appear");
+        putEnum("btlSoundEffect", 0x0B, null, "btl_se_normal_damage");
+        putEnum("btlSoundEffect", 0x0C, null, "btl_se_critical_damage");
+        putEnum("btlSoundEffect", 0x0D, null, "btl_se_weak_damage");
+        putEnum("btlSoundEffect", 0x0E, null, "btl_se_chant_magic");
+        putEnum("btlSoundEffect", 0x0F, null, "btl_se_chant_sp0");
+        putEnum("btlSoundEffect", 0x10, null, "btl_se_chant_sp1");
+        putEnum("btlSoundEffect", 0x11, null, "btl_se_chant_sp2");
+        putEnum("btlSoundEffect", 0x12, null, "btl_se_chant_sp3");
+        putEnum("btlSoundEffect", 0x13, null, "btl_se_sp0");
+        putEnum("btlSoundEffect", 0x14, null, "btl_se_sp1");
+        putEnum("btlSoundEffect", 0x15, null, "btl_se_sp2");
+        putEnum("btlSoundEffect", 0x16, null, "btl_se_sp3");
+        putEnum("btlSoundEffect", 0x17, null, "btl_se_sp4");
+        putEnum("btlSoundEffect", 0x18, null, "btl_se_sp5");
+        putEnum("btlSoundEffect", 0x19, null, "btl_se_sp6");
+        putEnum("btlSoundEffect", 0x1A, null, "btl_se_chant_summon");
+        putEnum("btlSoundEffect", 0x1B, null, "btl_se_fall_down");
+        putEnum("btlSoundEffect", 0x1C, null, "btl_se_win");
+        putEnum("btlSoundEffect", 0x1D, null, "btl_se_item");
+        putEnum("btlSoundEffect", 0x1E, null, "btl_se_item_search");
+        putEnum("btlSoundEffect", 0x1F, null, "btl_se_not_hit_near");
+        putEnum("btlSoundEffect", 0x20, null, "btl_se_start_attack_miss");
 
         putEnum("damageFormula", 0x00, "None");
         putEnum("damageFormula", 0x01, "STR vs DEF", "calc_physic");
@@ -737,14 +897,33 @@ public abstract class ScriptConstants {
         putEnum("damageType", 0x01, "Physical", "atc_type_physic");
         putEnum("damageType", 0x02, "Magical", "atc_type_magic");
 
+        putEnum("cmdSubmenu", 0x00, "Normal Menu");
+        putEnum("cmdSubmenu", 0x01, "Black Magic");
+        putEnum("cmdSubmenu", 0x02, "White Magic");
+        putEnum("cmdSubmenu", 0x03, "Skill");
+        putEnum("cmdSubmenu", 0x04, "Overdrive");
+        putEnum("cmdSubmenu", 0x05, "Summon");
+        putEnum("cmdSubmenu", 0x06, "Items");
+        putEnum("cmdSubmenu", 0x07, "Weapon Change");
+        putEnum("cmdSubmenu", 0x08, "Escape");
+        putEnum("cmdSubmenu", 0x0A, "Switch Character");
+        putEnum("cmdSubmenu", 0x0C, "Left Menu");
+        putEnum("cmdSubmenu", 0x0D, "Right Menu");
+        putEnum("cmdSubmenu", 0x0E, "Special");
+        putEnum("cmdSubmenu", 0x0F, "Armor Change");
+        putEnum("cmdSubmenu", 0x11, "Use");
+        putEnum("cmdSubmenu", 0x14, "Mix");
+        putEnum("cmdSubmenu", 0x15, "Gil (Bribe/SC)");
+        putEnum("cmdSubmenu", 0x16, "Gil (Pay Yoji)");
+
         putEnum("sphereGrid", 0x00, "Original (JP/NTSC) Sphere Grid");
         putEnum("sphereGrid", 0x01, "Standard Sphere Grid");
         putEnum("sphereGrid", 0x02, "Expert Sphere Grid");
 
-        putEnum("weakState", 0x00, "Normal");
-        putEnum("weakState", 0x01, "Slightly Weak");
-        putEnum("weakState", 0x02, "Very Weak");
-        putEnum("weakState", 0x03, "Dead");
+        putEnum("weakState", 0x00, "Normal", "chr_idle_normal");
+        putEnum("weakState", 0x01, "Slightly Weak", "chr_idle_weak");
+        putEnum("weakState", 0x02, "Very Weak", "chr_idle_dying");
+        putEnum("weakState", 0x03, "Dead", "chr_idle_dead");
 
         putEnum("achievement", 0x00, "Completion of FFX", "ACH_COMPLETION_OF_FFX");
         putEnum("achievement", 0x02, "Teamwork!", "ACH_TEAMWORK_OF_FFX");
@@ -831,8 +1010,8 @@ public abstract class ScriptConstants {
         putEnum("ctbIconType", 0x16, "Boss (numbered)");
         putEnum("ctbIconType", 0x17, "Cid");
 
-        putEnum("magusTarget", 0x00, "AllMonsters");
-        putEnum("magusTarget", 0x01, "FrontlineChars");
+        putEnum("magusTarget", 0x00, "AllMonsters", "command_target_enemy");
+        putEnum("magusTarget", 0x01, "FrontlineChars", "command_target_friend");
         putEnum("magusTarget", 0x101, "FrontlineChars except self");
         for (int i = 0x0F; i <= 0x11; i++) {
             getEnumMap("magusTarget").put(i + 0x0200, getEnumMap("playerChar").get(i));
@@ -849,6 +1028,9 @@ public abstract class ScriptConstants {
 
         putEnum("motionType", 0x00, "Grounded");
         putEnum("motionType", 0x02, "Swimming");
+
+        putEnum("moveType", 0x01, "Walking");
+        putEnum("moveType", 0x02, "Running");
 
         putMotionProperty(0x00, null, "motion_attack_start_dist");
         putMotionProperty(0x01, null, "motion_attack_offset");
@@ -1101,7 +1283,7 @@ public abstract class ScriptConstants {
         putBattleActorProperty(0x00ED, null, "unknown", "stat_visible_eff");
         putBattleActorProperty(0x00EE, null, "unknown", "stat_motion_dispose_flag");
         putBattleActorProperty(0x00EF, null, "unknown", "stat_model_dispose_flag");
-        putBattleActorProperty(0x00F0, "?ImmunityDelay", "unknown", "stat_def_ctb");
+        putBattleActorProperty(0x00F0, "ImmunityDelay", "unknown", "stat_def_ctb");
         putBattleActorProperty(0x00F1, null, "unknown", "stat_shadow");
         putBattleActorProperty(0x00F2, null, "unknown", "stat_death");
         putBattleActorProperty(0x00F3, null, "unknown", "stat_death_stone");
@@ -1128,7 +1310,7 @@ public abstract class ScriptConstants {
         putBattleActorProperty(0x0108, "NullMagic", "bool", "stat_sp_inv_magic");
         putBattleActorProperty(0x0109, "NullPhysical", "bool", "stat_sp_inv_physic");
         putBattleActorProperty(0x010A, "LearnableRonsoRage", "command", "stat_blue_magic");
-        putBattleActorProperty(0x010B, "?NullSlice", "unknown", "stat_sp_disable_zan");
+        putBattleActorProperty(0x010B, "NullSlice", "unknown", "stat_sp_disable_zan");
         putBattleActorProperty(0x010C, "OverkillThreshold", "int", "stat_over_kill_hp");
         putBattleActorProperty(0x010D, null, "unknown", "stat_return_motion_type");
         putBattleActorProperty(0x010E, null, "unknown", "stat_cam_width");
@@ -1191,7 +1373,7 @@ public abstract class ScriptConstants {
         putBattleActorProperty(0x0147, "Item1RareAmountOverkill", "int", "stat_item1_rare_over_kill_num");
         putBattleActorProperty(0x0148, "Item2CommonAmountOverkill", "int", "stat_item2_com_over_kill_num");
         putBattleActorProperty(0x0149, "Item2RareAmountOverkill", "int", "stat_item2_rare_over_kill_num");
-        putBattleActorProperty(0x014A, null, "unknown", "stat_death_return");
+        putBattleActorProperty(0x014A, "ReturnsBeforeDeathAnimation", "unknown", "stat_death_return");
         putBattleActorProperty(0x014B, null, "unknown", "stat_linear_move_reset");
         putBattleActorProperty(0x014C, null, "unknown", "stat_bodyhit_direct");
         putBattleActorProperty(0x014D, "?recruited (Aeon)", "bool", "stat_join");

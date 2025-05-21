@@ -19,6 +19,9 @@ public class LocalizedFieldStringObject {
     }
 
     public void setLocalizedContent(String localization, FieldString content) {
+        if (contents.containsKey(localization) && content.isEmpty()) {
+            return;
+        }
         contents.put(localization, content);
     }
 
@@ -26,7 +29,7 @@ public class LocalizedFieldStringObject {
         if (bytes == null) {
             return;
         }
-        contents.put(localization, new FieldString(StringHelper.localizationToCharset(localization), regularHeader, simplifiedHeader, bytes));
+        setLocalizedContent(localization, new FieldString(StringHelper.localizationToCharset(localization), regularHeader, simplifiedHeader, bytes));
     }
 
     public String writeAllContent() {

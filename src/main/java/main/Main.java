@@ -7,9 +7,7 @@ import atel.EventFile;
 import atel.MonsterFile;
 import reading.FileAccessorWithMods;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 import java.util.stream.IntStream;
 
 import static main.DataReadingManager.*;
@@ -286,10 +284,10 @@ public class Main {
                 }).forEach(e -> System.out.println(e.getName()));
                 break;
             case MODE_CUSTOM:
-                // readPlayerCharStats("battle/kernel/ply_save.bin", true);
+                readPlayerCharStats("battle/kernel/ply_save.bin", true);
                 // readPlayerCharRom("battle/kernel/ply_rom.bin", true);
                 // readWeaponNames("battle/kernel/w_name.bin", true);
-                readCtbBase(PATH_ORIGINALS_KERNEL + "ctb_base.bin", true);
+                // readCtbBase(PATH_ORIGINALS_KERNEL + "ctb_base.bin", true);
                 // readEncounterTables(PATH_ORIGINALS_KERNEL + "btl.bin", true);
                 // readMixCombinations(PATH_ORIGINALS_KERNEL + "prepare.bin", true);
                 // readDirectAtelScriptObject("menu/menumain.bin", true);

@@ -25,7 +25,6 @@ import static reading.BytesHelper.read2Bytes;
 public class CommandDataObject extends NameDescriptionTextObject implements Nameable, Writable {
     public static final int COM_LENGTH = 0x5C;
     public static final int PCCOM_LENGTH = 0x60;
-    static Map<Integer, String> submenus;
 
     private final boolean isCharacterAbility;
 
@@ -215,7 +214,6 @@ public class CommandDataObject extends NameDescriptionTextObject implements Name
         super(bytes, stringBytes, localization);
         isCharacterAbility = group <= 3;
         considerSphereType = group == 2;
-        prepareMaps();
         mapBytes(bytes);
         mapFlags();
     }
@@ -533,8 +531,12 @@ public class CommandDataObject extends NameDescriptionTextObject implements Name
         list.add(useInLeftMenu ? "Topmenu=Left" : "");
         list.add(isTriggerCommand ? "Trigger-Command" : "");
         list.add(opensSubMenu ? "Opens Submenu" : "");
-        list.add(ifNN(submenus.get(subMenuCategorization), "Submenu=\"", "\""));
-        list.add(subsubMenuCategorization != subMenuCategorization ? "Subsubmenu=" + submenus.get(subsubMenuCategorization) : "");
+        if (isCharacterAbility) {
+            list.add("Submenu=" + StackObject.enumToString("cmdSubmenu", subMenuCategorization));
+            if (subsubMenuCategorization != subMenuCategorization) {
+                list.add("Subsubmenu=" + StackObject.enumToString("cmdSubmenu", subsubMenuCategorization));
+            }
+        }
         list.add(useInUseMenu ? "In \"Use\" Menu" : "");
         list.add(ifG0(costOD, "Overdrive (", "p)"));
         list.add(ifNN(overdriveCharacter, "OD-User=", ""));
@@ -866,27 +868,4 @@ public class CommandDataObject extends NameDescriptionTextObject implements Name
         return StringHelper.formatHex2(bt) + '=' + String.format("%03d", bt) + '(' + String.format("%8s", Integer.toBinaryString(bt)).replace(' ', '0') + ')';
     }
 
-    private static void prepareMaps() {
-        if (submenus == null) {
-            submenus = new HashMap<>();
-            submenus.put(0x00, "Normal Menu");
-            submenus.put(0x01, "Black Magic");
-            submenus.put(0x02, "White Magic");
-            submenus.put(0x03, "Skill");
-            submenus.put(0x04, "Overdrive");
-            submenus.put(0x05, "Summon");
-            submenus.put(0x06, "Items");
-            submenus.put(0x07, "Weapon Change");
-            submenus.put(0x08, "Escape");
-            submenus.put(0x0A, "Switch Character");
-            submenus.put(0x0C, "Left Menu");
-            submenus.put(0x0D, "Right Menu");
-            submenus.put(0x0E, "Special");
-            submenus.put(0x0F, "Armor Change");
-            submenus.put(0x11, "Use");
-            submenus.put(0x14, "Mix");
-            submenus.put(0x15, "Gil (Bribe/SC)");
-            submenus.put(0x16, "Gil (Pay Yoji)");
-        }
-    }
 }

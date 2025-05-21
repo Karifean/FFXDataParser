@@ -538,7 +538,7 @@ public abstract class ScriptFuncLib {
         putFuncWithIdx(0x4013, new ScriptFunc("setActorLight", "unknown", null, p("lightIndex", "int"), p("r", "int"), p("b", "int"), p("g", "int"), p("polar", "float"), p("azimuth", "float")));
         putUnknownFunc(0x4014, 1);
         putUnknownFunc(0x4015, 2);
-        putUnknownFunc(0x4016, 2);
+        putFuncWithIdx(0x4016, new ScriptFunc("setMainCharMoveSpeed", "unknown", null, p("moveType"), p("speed", "float")));
         putFuncWithIdx(0x4017, new ScriptFunc("setInvisibleWallState", "unknown", null, p("polygonGroup", "int"), p("state", "invisWallState")));
         putUnknownFunc(0x4019, 1);
         putFuncWithIdx(0x401A, new ScriptFunc("cameraCrossFade", "unknown", null, p("frames", "int"), p("alpha", "int")));
@@ -928,7 +928,7 @@ public abstract class ScriptFuncLib {
         putUnknownFunc(0x7053, "btlMoveJump", 9);
         putFuncWithIdx(0x7054, new ScriptFunc(null, "unknown", "btlSetChrPosElem", p("btlChr"), p(2), p(3)));
         putUnknownFunc(0x7055, "btlSetBodyHit", 1);
-        putUnknownFunc(0x7056, "btlSetSpecialBattle", 1);
+        putFuncWithIdx(0x7056, new ScriptFunc(null, "unknown", "btlSetSpecialBattle", p("specialBattleSetting")));
         putUnknownFunc(0x7057, "btlDirMove", 4);
         putFuncWithIdx(0x7058, new ScriptFunc(null, "unknown", "btlCheckMotionNum", p("btlChr"), p("stdmotion")));
         putUnknownFunc(0x7059, "btlMoveTargetDist2D", "float", 1);
@@ -951,7 +951,7 @@ public abstract class ScriptFuncLib {
         putUnknownFunc(0x706A, "btlCheckTargetOwn", 1);
         putFuncWithIdx(0x706B, new ScriptFunc(null, "unknown", "btlSetModelHide", p("btlChr"), p("part", "int"), p("show?", "bool")));
         putUnknownFunc(0x706C, "btlSoundEffectNormal", 2);
-        putFuncWithIdx(0x706D, new ScriptFunc(null, "unknown", "btlSoundStreamNormal", p("btlChr"), p(2)));
+        putFuncWithIdx(0x706D, new ScriptFunc(null, "unknown", "btlSoundStreamNormal", p("btlChr"), p("btlCharVoice")));
         putFuncWithIdx(0x706E, new ScriptFunc(null, "unknown", "btlReqVoice", p("btlChr"), p(2)));
         putUnknownFunc(0x706F, "btlSetMotion2", 1);
         putUnknownFunc(0x7070, "btlStatusOn", 0);
@@ -965,7 +965,7 @@ public abstract class ScriptFuncLib {
         putFuncWithIdx(0x7078, new ScriptFuncAccessor("readCommandPropertyForActor", "command", "btlGetComInfo2", null, "commandProperty", p("btlChr")));
         putUnknownFunc(0x7079, "btlResetWeapon", 0);
         putFuncWithIdx(0x707A, new ScriptFunc(null, "unknown", "btlGetCalcResult", p("btlChr")));
-        putFuncWithIdx(0x707B, new ScriptFunc(null, "unknown", "btlSoundEffect", p("btlChr"), p(2)));
+        putFuncWithIdx(0x707B, new ScriptFunc(null, "unknown", "btlSoundEffect", p("btlChr"), p("sfx", "btlSoundEffect")));
         putUnknownFunc(0x707C, "btlWaitSound", 0);
         putFuncWithIdx(0x707D, new ScriptFunc("setDebugFlag", "unknown", "btlSetDebug", p("battleDebugFlag"), p("active", "bool")));
         putFuncWithIdx(0x707E, new ScriptFunc("?checkDebugFlagEnabled", "bool", "btlGetDebug", p("battleDebugFlag")));
@@ -977,7 +977,7 @@ public abstract class ScriptFuncLib {
         putUnknownFunc(0x7084, "btlResetAfterImage", 0);
         putUnknownFunc(0x7085, "btlMoveAttack", 8);
         putUnknownFunc(0x7086, "btlUseChrMpLimit", 0);
-        putFuncWithIdx(0x7087, new ScriptFunc(null, "unknown", "btlSoundEffectFade", p("btlChr"), p(2), p(3)));
+        putFuncWithIdx(0x7087, new ScriptFunc(null, "unknown", "btlSoundEffectFade", p("btlChr"), p("sfx", "btlSoundEffect"), p(3)));
         putFuncWithIdx(0x7088, new ScriptFunc(null, "unknown", "btlRegSoundEffect", p("btlChr"), p(2)));
         putUnknownFunc(0x7089, "btlRegSoundEffectFade", 3);
         putFuncWithIdx(0x708A, new ScriptFunc(null, "unknown", "btlInitEncount", p("encounter")));
@@ -1043,13 +1043,13 @@ public abstract class ScriptFuncLib {
         putUnknownFunc(0x70C6, "btlGetCameraBuffer", 1);
         putUnknownFunc(0x70C7, "btlGetCameraBufferFloat", "float", 1);
         putUnknownFunc(0x70C8, "btlSoundEffect2", 2);
-        putFuncWithIdx(0x70C9, new ScriptFunc(null, "unknown", "btlSoundEffect3", p("btlChr"), p(2)));
+        putFuncWithIdx(0x70C9, new ScriptFunc(null, "unknown", "btlSoundEffect3", p("btlChr"), p("sfx", "btlSoundEffect")));
         putUnknownFunc(0x70CA, "btlRegSoundEffect2", 2);
         putUnknownFunc(0x70CB, "btlRegSoundEffect3", 2);
         putFuncWithIdx(0x70CC, new ScriptFunc("initializeMatchingGroupTo", "unknown", "btlSetOwnTarget", p("btlChr")));
         putFuncWithIdx(0x70CD, new ScriptFunc("addToMatchingGroup", "unknown", "btlAddOwnTarget", p("btlChr")));
         putFuncWithIdx(0x70CE, new ScriptFunc("removeFromMatchingGroup", "unknown", "btlSubOwnTarget", p("btlChr")));
-        putUnknownFunc(0x70CF, "btlGetReverbe", 0);
+        putFuncWithIdx(0x70CF, new ScriptFunc(null, "reverbeStatus", "btlGetReverbe", true));
         putUnknownFunc(0x70D0, "btlSetCameraSelectMode", 1);
         putFuncWithIdx(0x70D1, new ScriptFunc(null, "unknown", "btlGetNomEff", p("btlChr")));
         putUnknownFunc(0x70D2, "btlGetHitEff", 1);

@@ -161,7 +161,7 @@ public class GearDataObject {
     }
 
     private static String getGearAbilityLabel(int idx) {
-        if (idx == 0x00FF) {
+        if (idx == 0xFF) {
             return "Empty";
         } else {
             AutoAbilityDataObject obj = DataAccess.getAutoAbility(idx);

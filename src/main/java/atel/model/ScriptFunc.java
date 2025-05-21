@@ -62,11 +62,10 @@ public class ScriptFunc extends ScriptField {
         if (len == 0) {
             return str.toString() + ')';
         }
+        List<StackObject> typedParams = new ArrayList<>();
         for (int i = 0; i < len; i++) {
-            StackObject obj = params.get(i);
-            String paramType = inputs.get(i).type;
-            boolean doNotRetype = obj == null || obj.expression || "unknown".equals(paramType) || ("int".equals(paramType) && (obj.type.startsWith("int") || obj.type.startsWith("uint")));
-            StackObject typed = doNotRetype ? obj : new StackObject(paramType, obj);
+            StackObject typed = getTypedParam(i, params, typedParams);
+            typedParams.add(typed);
             str.append(inputs.get(i).name).append('=').append(typed).append(", ");
         }
         return str.substring(0, str.length() - 2) + ')';
@@ -78,5 +77,15 @@ public class ScriptFunc extends ScriptField {
 
     protected boolean isNameless() {
         return (name == null || name.isEmpty()) && (internalName == null || internalName.isEmpty());
+    }
+
+    public StackObject getTypedParam(int index, List<StackObject> params, List<StackObject> earlierParams) {
+        StackObject obj = params.get(index);
+        String paramType = inputs.get(index).type;
+        boolean doNotRetype = obj == null || obj.expression || "unknown".equals(paramType) || ("int".equals(paramType) && (obj.type.startsWith("int") || obj.type.startsWith("uint")));
+        if (doNotRetype) {
+            return obj;
+        }
+        return new StackObject(paramType, obj);
     }
 }

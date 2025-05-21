@@ -19,11 +19,17 @@ public class LocalizedKeyedStringObject {
     }
 
     public void setLocalizedContent(String localization, KeyedString content) {
+        if (contents.containsKey(localization) && content.isEmpty()) {
+            return;
+        }
         contents.put(localization, content);
     }
 
     public void readAndSetLocalizedContent(String localization, int[] bytes, int offset, int key) {
-        contents.put(localization, new KeyedString(StringHelper.localizationToCharset(localization), offset, key, bytes));
+        if (bytes == null) {
+            return;
+        }
+        setLocalizedContent(localization, new KeyedString(StringHelper.localizationToCharset(localization), offset, key, bytes));
     }
 
     public String writeAllContent() {
@@ -31,10 +37,6 @@ public class LocalizedKeyedStringObject {
     }
 
     public KeyedString getLocalizedContent(String localization) {
-        return contents.get(localization);
-    }
-
-    public KeyedString updateLocalizedContent(String localization) {
         return contents.get(localization);
     }
 

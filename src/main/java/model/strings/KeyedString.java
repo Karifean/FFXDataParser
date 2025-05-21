@@ -61,6 +61,10 @@ public class KeyedString {
         return StringHelper.bytesToString(bytes, charset);
     }
 
+    public boolean isEmpty() {
+        return getString().isEmpty();
+    }
+
     public void setString(String str, String newCharset) {
         setCharset(newCharset);
         bytes = StringHelper.stringToBytes(str, charset);

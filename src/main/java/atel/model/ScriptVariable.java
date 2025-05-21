@@ -9,6 +9,7 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 public class ScriptVariable {
+    public static final int SAVEDATA_ATEL_OFFSET = 0x1EC;
     public final int index;
     public final long fullBytes;
     public final int lb;
@@ -66,7 +67,7 @@ public class ScriptVariable {
     }
 
     public void inferType(String type) {
-        if (isWeakType(inferredType)) {
+        if (isWeakType(inferredType) && !"var".equals(type)) {
             inferredType = type;
         }
     }
@@ -84,23 +85,25 @@ public class ScriptVariable {
         }
         for (int i = 0; i < elementCount; i++) {
             String type = formatToType(format);
-            int valueSigned = 0;
+            int valueUnsigned = 0;
             if (dataOffset > 0) {
                 int valueOffset = valueLocation + i * length;
-                valueSigned += bytes[valueOffset];
+                valueUnsigned |= bytes[valueOffset];
                 if (length > 1) {
-                    valueSigned += bytes[valueOffset + 1] << 8;
+                    valueUnsigned |= bytes[valueOffset + 1] << 8;
                     if (length > 2) {
-                        valueSigned += (bytes[valueOffset + 2] << 16) + (bytes[valueOffset + 3] << 24);
+                        valueUnsigned |= (bytes[valueOffset + 2] << 16);
+                        valueUnsigned |= (bytes[valueOffset + 3] << 24);
                     }
                 }
             }
-            int valueUnsigned = valueSigned;
-            if ("int16".equals(type) && valueSigned >= 0x8000 && valueSigned <= 0xFFFF) {
-                valueUnsigned = valueSigned - 0x10000;
-            }
-            if ("int8".equals(type) && valueSigned >= 0x80 && valueSigned <= 0xFF) {
-                valueUnsigned = valueSigned - 0x100;
+            int valueSigned;
+            if ("int16".equals(type) && (valueUnsigned & 0x8000) != 0) {
+                valueSigned = valueUnsigned - 0x10000;
+            } else if ("int8".equals(type) && (valueUnsigned & 0x80) != 0) {
+                valueSigned = valueUnsigned - 0x100;
+            } else {
+                valueSigned = valueUnsigned;
             }
             StackObject obj = new StackObject(parentWorker, null, type, valueSigned, valueUnsigned);
             values.add(obj);
@@ -130,7 +133,7 @@ public class ScriptVariable {
 
     public String getLabel(ScriptWorker worker) {
         if (location == 0) {
-            ScriptField scriptField = StackObject.enumToScriptField("saveData", offset);
+            ScriptField scriptField = StackObject.enumToScriptField("saveData", offset + SAVEDATA_ATEL_OFFSET);
             if (scriptField.name != null) {
                 return scriptField.name;
             }
@@ -146,7 +149,13 @@ public class ScriptVariable {
 
     public String getArrayIndexType() {
         if (location == 0) {
-            ScriptField scriptField = StackObject.enumToScriptField("saveData", offset);
+            ScriptField scriptField = StackObject.enumToScriptField("saveData", offset + SAVEDATA_ATEL_OFFSET);
+            if (scriptField.indexType != null) {
+                return scriptField.indexType;
+            }
+        }
+        if (location == 1) {
+            ScriptField scriptField = StackObject.enumToScriptField("battleVar", offset);
             if (scriptField.indexType != null) {
                 return scriptField.indexType;
             }
@@ -156,7 +165,7 @@ public class ScriptVariable {
 
     public String getType() {
         if (location == 0) {
-            ScriptField enumTarget = ScriptConstants.ENUMERATIONS.get("saveData").get(offset);
+            ScriptField enumTarget = ScriptConstants.ENUMERATIONS.get("saveData").get(offset + SAVEDATA_ATEL_OFFSET);
             if (enumTarget != null) {
                 return enumTarget.type;
             }
@@ -171,13 +180,27 @@ public class ScriptVariable {
     }
 
     public String getVarLabel(ScriptWorker worker) {
-        int offsetBonus = location == 3 && worker != null ? worker.privateDataOffset : 0;
-        String offsetStr = (location == 3 && worker == null ? "+" : "") + StringHelper.formatHex4(offset + offsetBonus);
+        int offsetBonus = 0;
+        String prefix = "";
+        if (location == 0) {
+            offsetBonus = SAVEDATA_ATEL_OFFSET;
+        } else if (location == 3) {
+            if (worker != null) {
+                offsetBonus = worker.privateDataOffset;
+            } else {
+                prefix = "+";
+            }
+        }
+        String offsetStr = prefix + StringHelper.formatHex4(offset + offsetBonus);
         return locationToLabel(location) + offsetStr;
     }
 
     public String getDereference() {
-        return locationToString(location) + "[" + StringHelper.formatHex4(offset) + "]";
+        String offsetStr = StringHelper.formatHex4(offset);
+        if (location == 0) {
+            offsetStr = StringHelper.formatHex4(offset + SAVEDATA_ATEL_OFFSET) + "=" + offsetStr + "+" + StringHelper.formatHex4(SAVEDATA_ATEL_OFFSET);
+        }
+        return locationToString(location) + "[" + offsetStr + "]";
     }
 
     public String valuesString() {
