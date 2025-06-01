@@ -13,18 +13,23 @@ public class SphereGridClusterDataObject {
     public static final int LENGTH = 0x10;
     private final int[] bytes;
 
-    private int posX;
-    private int posY;
+    public int posX;
+    public int posY;
     private int unused3;
-    private int radiusType;
+    public int radiusType;
     private int unused5;
     private int unused6;
     private int unused7;
     private int unused8;
 
+    public int radius;
+    public boolean altDesign;
+
     public SphereGridClusterDataObject(int[] bytes, int[] stringBytes) {
         this.bytes = bytes;
         mapBytes();
+        radius = radiusType & 0x03;
+        altDesign = (radiusType & 0x04) != 0;
     }
 
     public SphereGridClusterDataObject(int[] bytes) {
@@ -47,7 +52,7 @@ public class SphereGridClusterDataObject {
     public String toString() {
         List<String> list = new ArrayList<>();
         list.add("Position=(" + posX + "/" + posY + ")");
-        list.add("Radius/Type=" + radiusType);
+        list.add("Radius=" + radius + (altDesign ? " (Alt)" : "") + StringHelper.hex2Suffix(radiusType));
         if (unused3 != 0) {
             list.add("Unknown3=" + StringHelper.formatHex4(unused3));
         }

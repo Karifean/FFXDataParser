@@ -94,8 +94,8 @@ public abstract class ScriptFuncLib {
         putUnknownFunc(0x002F, 1);
         putUnknownFunc(0x0030, 1);
         putFuncWithIdx(0x0033, new ScriptFunc("getWorkerIndex", "int", null, p("worker"))); // maybe arg is only useful for battle, would be just echoed back in events
-        putFuncWithIdx(0x0034, new ScriptFunc("enableInteractionAtLevel", "unknown", null, p("level", "int"))); // "level" from game, "thread" in noclip (like signal priority)
-        putFuncWithIdx(0x0035, new ScriptFunc("disableInteractionAtLevel", "unknown", null, p("level", "int")));
+        putFuncWithIdx(0x0034, new ScriptFunc("enableFieldInteraction", "unknown", null, p("type", "fieldInteraction")));
+        putFuncWithIdx(0x0035, new ScriptFunc("disableFieldInteraction", "unknown", null, p("type", "fieldInteraction")));
         putFuncWithIdx(0x0036, new ScriptFunc("stopOtherMotion", "unknown", null, p("worker")));
         putUnknownFunc(0x0037, 1);
         putFuncWithIdx(0x0038, new ScriptFunc("getWorkerX?", "float", null, p("worker")));
@@ -152,7 +152,7 @@ public abstract class ScriptFuncLib {
         putFuncWithIdx(0x0082, new ScriptFunc("getCurrentEntranceZ", "float", null, true));
         putFuncWithIdx(0x0083, new ScriptFunc("getCurrentEntranceRotation", "float", null, true));
         putFuncWithIdx(0x0084, new ScriptFunc("waitForText", "unknown", null, p("boxIndex", "int"), p(2)));
-        putUnknownFunc(0x0085, 1); // noclip: setCollisionRadius()
+        putFuncWithIdx(0x0085, new ScriptFunc("setTouchRadius", "unknown", null, p("radius", "float"))); // noclip: setCollisionRadius()
         putUnknownFunc(0x0086, 0);
         putFuncWithIdx(0x0087, new ScriptFunc("CurrentMap", "map", null, false));
         putUnknownFunc(0x0088, 0);
@@ -573,14 +573,14 @@ public abstract class ScriptFuncLib {
         putFuncWithIdx(0x5005, new ScriptFunc("resetMotion", "unknown", null, true));
         putFuncWithIdx(0x5006, new ScriptFunc("scaleActor", "unknown", null, p("scaleXYZ", "float")));
         putFuncWithIdx(0x5007, new ScriptFunc("scaleActor", "unknown", null, p("scaledDimensions","dimensionsBitfield"), p("scaleX", "float"), p("scaleY", "float"), p("scaleZ", "float")));
-        putFuncWithIdx(0x5008, new ScriptFunc("?setHideEvent", "unknown", null, p("bool")));
+        putFuncWithIdx(0x5008, new ScriptFunc("?setHidden", "unknown", null, p("hidden", "bool")));
         putFuncWithIdx(0x5009, new ScriptFunc("setActorWeight", "float", null, p("weight", "float")));
         putUnknownFunc(0x500A, 1); // cur_actor->__0x4f8 = p1
         putFuncWithIdx(0x500B, new ScriptFunc("setActorGroundHeight", "unknown", null, p("height", "float")));
         putUnknownFunc(0x500C, 1); // `chEnGravity`; noted invalid by dbgPrintf; En might stand for Enable?; supposed to set the gravity mode instead
-        putFuncWithIdx(0x500D, new ScriptFunc("?setHideEvent2", "unknown", null, p("bool")));
-        putUnknownFunc(0x500E, 1);
-        putUnknownFunc(0x500F, 1);
+        putFuncWithIdx(0x500D, new ScriptFunc("?setHidden2", "unknown", null, p("bool")));
+        putFuncWithIdx(0x500E, new ScriptFunc("setIgnoreNavmesh", "unknown", null, p("ignore", "bool")));
+        putFuncWithIdx(0x500F, new ScriptFunc("?setCollisionDisabled", "unknown", null, p("disabled", "bool")));
         putFuncWithIdx(0x5010, new ScriptFunc("loadModelMotionGroup", "unknown", null, p("model"), p("motionType")));
         putFuncWithIdx(0x5011, new ScriptFunc("disposeMotionGroup", "unknown", null, p(1)));
         putFuncWithIdx(0x5013, new ScriptFunc("setFieldModeAndMotionType", "unknown", null, p("motionType")));

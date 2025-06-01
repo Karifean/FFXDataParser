@@ -546,6 +546,13 @@ public abstract class ScriptConstants {
         putEnum("voiceHandlerTag", 0x0E, "Threaten");
         putEnum("voiceHandlerTag", 0x0F, "Flee?");
 
+        putEnum("fieldInteraction", 0x00, "talk");
+        putEnum("fieldInteraction", 0x01, "scout");
+        putEnum("fieldInteraction", 0x02, "cross");
+        putEnum("fieldInteraction", 0x03, "touch");
+        putEnum("fieldInteraction", 0x04, "enter");
+        putEnum("fieldInteraction", 0x05, "leave");
+
         putEnum("controllerButton", 0x00, "?L2 (Scroll Up)");
         putEnum("controllerButton", 0x01, "?R2 (Scroll Down)");
         putEnum("controllerButton", 0x02, "?L1 (Switch)");
