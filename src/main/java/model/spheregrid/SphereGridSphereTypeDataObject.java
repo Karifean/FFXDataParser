@@ -25,12 +25,12 @@ public class SphereGridSphereTypeDataObject implements Writable, Localized<Spher
     private final int[] bytes;
 
     public LocalizedKeyedStringObject description = new LocalizedKeyedStringObject();
-    public LocalizedKeyedStringObject unusedString0405 = new LocalizedKeyedStringObject();
+    public LocalizedKeyedStringObject simplifiedDescription = new LocalizedKeyedStringObject();
 
     private int descriptionOffset;
     private int descriptionKey;
-    private int unusedString0405Offset;
-    private int unusedString0405Key;
+    private int simplifiedDescriptionOffset;
+    private int simplifiedDescriptionKey;
     private int actionByte;
     private int activationBitfield;
     private int rangeByte;
@@ -50,8 +50,8 @@ public class SphereGridSphereTypeDataObject implements Writable, Localized<Spher
     private void mapBytes() {
         descriptionOffset = read2Bytes(0x00);
         descriptionKey = read2Bytes(0x02);
-        unusedString0405Offset = read2Bytes(0x04);
-        unusedString0405Key = read2Bytes(0x06);
+        simplifiedDescriptionOffset = read2Bytes(0x04);
+        simplifiedDescriptionKey = read2Bytes(0x06);
         actionByte = read2Bytes(0x08);
         activationBitfield = read2Bytes(0x0A);
         rangeByte = bytes[0x0C];
@@ -69,13 +69,14 @@ public class SphereGridSphereTypeDataObject implements Writable, Localized<Spher
             return;
         }
         description.readAndSetLocalizedContent(localization, stringBytes, descriptionOffset, descriptionKey);
-        unusedString0405.readAndSetLocalizedContent(localization, stringBytes, unusedString0405Offset, unusedString0405Key);
+        simplifiedDescription.readAndSetLocalizedContent(localization, stringBytes, simplifiedDescriptionOffset, simplifiedDescriptionKey);
     }
 
     @Override
     public LocalizedKeyedStringObject getKeyedString(String title) {
         return switch (title) {
             case "description" -> description;
+            case "simplifiedDescription" -> simplifiedDescription;
             default -> null;
         };
     }
@@ -84,7 +85,7 @@ public class SphereGridSphereTypeDataObject implements Writable, Localized<Spher
     public Stream<KeyedString> streamKeyedStrings(String localization) {
         return Stream.of(
                 description.getLocalizedContent(localization),
-                unusedString0405.getLocalizedContent(localization)
+                simplifiedDescription.getLocalizedContent(localization)
         );
     }
 
@@ -92,7 +93,7 @@ public class SphereGridSphereTypeDataObject implements Writable, Localized<Spher
     public int[] toBytes(String localization) {
         int[] array = new int[SphereGridSphereTypeDataObject.LENGTH];
         write4Bytes(array, 0x00, description.getLocalizedContent(localization).toHeaderBytes());
-        write4Bytes(array, 0x04, unusedString0405.getLocalizedContent(localization).toHeaderBytes());
+        write4Bytes(array, 0x04, simplifiedDescription.getLocalizedContent(localization).toHeaderBytes());
         write2Bytes(array, 0x08, actionByte);
         write2Bytes(array, 0x0A, activationBitfield);
         array[0x0C] = rangeByte;
@@ -104,7 +105,7 @@ public class SphereGridSphereTypeDataObject implements Writable, Localized<Spher
     @Override
     public void setLocalizations(SphereGridSphereTypeDataObject localizationObject) {
         localizationObject.description.copyInto(description);
-        localizationObject.unusedString0405.copyInto(unusedString0405);
+        localizationObject.simplifiedDescription.copyInto(simplifiedDescription);
     }
 
     @Override

@@ -15,18 +15,18 @@ public class NameDescriptionTextObject implements Nameable, Writable, Localized<
     private final int[] bytes;
 
     public LocalizedKeyedStringObject name = new LocalizedKeyedStringObject();
-    public LocalizedKeyedStringObject unusedString0405 = new LocalizedKeyedStringObject();
+    public LocalizedKeyedStringObject simplifiedName = new LocalizedKeyedStringObject();
     public LocalizedKeyedStringObject description = new LocalizedKeyedStringObject();
-    public LocalizedKeyedStringObject unusedString0C0D = new LocalizedKeyedStringObject();
+    public LocalizedKeyedStringObject simplifiedDescription = new LocalizedKeyedStringObject();
 
     private int nameOffset;
     private int nameKey;
-    private int unusedString0405Offset;
-    private int unusedString0405Key;
+    private int simplifiedNameOffset;
+    private int simplifiedNameKey;
     private int descriptionOffset;
     private int descriptionKey;
-    private int unusedString0C0DOffset;
-    private int unusedString0C0DKey;
+    private int simplifiedDescriptionOffset;
+    private int simplifiedDescriptionKey;
 
     public NameDescriptionTextObject(int[] bytes, int[] stringBytes, String localization) {
         this.bytes = bytes;
@@ -40,46 +40,46 @@ public class NameDescriptionTextObject implements Nameable, Writable, Localized<
     private void mapBytes() {
         nameOffset = read2Bytes(0x00);
         nameKey = read2Bytes(0x02);
-        unusedString0405Offset = read2Bytes(0x04);
-        unusedString0405Key = read2Bytes(0x06);
+        simplifiedNameOffset = read2Bytes(0x04);
+        simplifiedNameKey = read2Bytes(0x06);
         descriptionOffset = read2Bytes(0x08);
         descriptionKey = read2Bytes(0x0A);
-        unusedString0C0DOffset = read2Bytes(0x0C);
-        unusedString0C0DKey = read2Bytes(0x0E);
+        simplifiedDescriptionOffset = read2Bytes(0x0C);
+        simplifiedDescriptionKey = read2Bytes(0x0E);
     }
 
     @Override
     public int[] toBytes(String localization) {
         int[] array = new int[NameDescriptionTextObject.LENGTH];
         write4Bytes(array, 0x00, name.getLocalizedContent(localization).toHeaderBytes());
-        write4Bytes(array, 0x04, unusedString0405.getLocalizedContent(localization).toHeaderBytes());
+        write4Bytes(array, 0x04, simplifiedName.getLocalizedContent(localization).toHeaderBytes());
         write4Bytes(array, 0x08, description.getLocalizedContent(localization).toHeaderBytes());
-        write4Bytes(array, 0x0C, unusedString0C0D.getLocalizedContent(localization).toHeaderBytes());
+        write4Bytes(array, 0x0C, simplifiedDescription.getLocalizedContent(localization).toHeaderBytes());
         return array;
     }
 
     private void mapStrings(int[] stringBytes, String localization) {
         name.readAndSetLocalizedContent(localization, stringBytes, nameOffset, nameKey);
-        unusedString0405.readAndSetLocalizedContent(localization, stringBytes, unusedString0405Offset, unusedString0405Key);
+        simplifiedName.readAndSetLocalizedContent(localization, stringBytes, simplifiedNameOffset, simplifiedNameKey);
         description.readAndSetLocalizedContent(localization, stringBytes, descriptionOffset, descriptionKey);
-        unusedString0C0D.readAndSetLocalizedContent(localization, stringBytes, unusedString0C0DOffset, unusedString0C0DKey);
+        simplifiedDescription.readAndSetLocalizedContent(localization, stringBytes, simplifiedDescriptionOffset, simplifiedDescriptionKey);
     }
 
     @Override
     public void setLocalizations(NameDescriptionTextObject localizationObject) {
         localizationObject.name.copyInto(name);
-        localizationObject.unusedString0405.copyInto(unusedString0405);
+        localizationObject.simplifiedName.copyInto(simplifiedName);
         localizationObject.description.copyInto(description);
-        localizationObject.unusedString0C0D.copyInto(unusedString0C0D);
+        localizationObject.simplifiedDescription.copyInto(simplifiedDescription);
     }
 
     @Override
     public Stream<KeyedString> streamKeyedStrings(String localization) {
         return Stream.of(
                 name.getLocalizedContent(localization),
-                unusedString0405.getLocalizedContent(localization),
+                simplifiedName.getLocalizedContent(localization),
                 description.getLocalizedContent(localization),
-                unusedString0C0D.getLocalizedContent(localization)
+                simplifiedDescription.getLocalizedContent(localization)
         );
     }
 
@@ -87,7 +87,9 @@ public class NameDescriptionTextObject implements Nameable, Writable, Localized<
     public LocalizedKeyedStringObject getKeyedString(String title) {
         return switch (title) {
             case "name" -> name;
+            case "simplifiedName" -> simplifiedName;
             case "description" -> description;
+            case "simplifiedDescription" -> simplifiedDescription;
             default -> null;
         };
     }

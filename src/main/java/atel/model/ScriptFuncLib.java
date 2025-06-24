@@ -173,7 +173,9 @@ public abstract class ScriptFuncLib {
         putUnknownFunc(0x009A, 1);
         putUnknownFunc(0x009B, 2);
         putFuncWithIdx(0x009D, new ScriptFunc("setTextFlags", "unknown", null, p("boxIndex", "int"), p("textFlags", "textFlagBitfield")));
-        putFuncWithIdx(0x009E, new ScriptFunc("prepareStringIntVariable", "unknown", null, p("boxIndex", "int"), p("varIndex", "int"), p("stringVarType"), p("value", "unknown")));
+        putFuncWithIdx(0x009E, new ScriptFunc("setStringVariable", "unknown", null, p("boxIndex", "int"), p("varIndex", "int"), p("stringVarType"), p("value", "unknown")));
+        putFuncWithIdx(0x009F, new ScriptFunc("setStringVariableValue", "unknown", null, p("boxIndex", "int"), p("varIndex", "int"), p("value", "unknown"))); // Unused by the game
+        putFuncWithIdx(0x00A0, new ScriptFunc("setStringVariableType", "unknown", null, p("boxIndex", "int"), p("varIndex", "int"), p("stringVarType"))); // Unused by the game
         putUnknownFunc(0x00A2, 5);
         putFuncWithIdx(0x00A3, new ScriptFunc("getWorkerPosition", "unknown", null, p("worker"), p("xDest", "pointer"), p("yDest", "pointer"), p("zDest", "pointer")));
         putUnknownFunc(0x00A4, 2);
@@ -282,7 +284,7 @@ public abstract class ScriptFuncLib {
         putFuncWithIdx(0x0126, new ScriptFunc("warpToPoint", "float", null, p("x", "float"), p("y", "float"), p("z", "float")));
         putUnknownFunc(0x0127, 1);
         putUnknownFunc(0x0128, 2);
-        putFuncWithIdx(0x0129, new ScriptFunc("?setSplashColor", "unknown", null, p("splashIndex", "int"), p("r?", "int"), p("g?", "int"), p("b?", "int")));
+        putFuncWithIdx(0x0129, new ScriptFunc("setSplashColor", "unknown", null, p("splashIndex", "int"), p("r", "int"), p("b", "int"), p("g", "int")));
         putUnknownFunc(0x012A, 2);
         putUnknownFunc(0x012B, 1);
         // putFuncWithIdx(0x012B, new ScriptFunc("workerWithinRadius", "bool", null, p("worker"), p("radius", "int"))); // Not sure how this happened, but this seems to be wrong. It's a 1 argument function for sure.

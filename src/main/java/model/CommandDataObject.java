@@ -8,13 +8,11 @@ import model.spheregrid.SphereGridSphereTypeDataObject;
 import model.strings.LocalizedKeyedStringObject;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
-import static reading.BytesHelper.write2Bytes;
 import static reading.BytesHelper.read2Bytes;
+import static reading.BytesHelper.write2Bytes;
 
 /**
  * command.bin

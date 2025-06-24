@@ -22,7 +22,7 @@ public class WeaponNameDataObject implements Writable, Localized<WeaponNameDataO
     private final int[] bytes;
 
     public LocalizedKeyedStringObject[] names = new LocalizedKeyedStringObject[7];
-    public LocalizedKeyedStringObject[] unusedStrings = new LocalizedKeyedStringObject[7];
+    public LocalizedKeyedStringObject[] simplifiedNames = new LocalizedKeyedStringObject[7];
     public int[] models = new int[7];
     public int finalBytes;
 
@@ -60,7 +60,7 @@ public class WeaponNameDataObject implements Writable, Localized<WeaponNameDataO
             int offset = read2Bytes(bytes, i * 0x04 + 0x1C);
             int key = read2Bytes(bytes, i * 0x04 + 0x1E);
             str.readAndSetLocalizedContent(localization, stringBytes, offset, key);
-            unusedStrings[i] = str;
+            simplifiedNames[i] = str;
         }
     }
 
@@ -70,13 +70,13 @@ public class WeaponNameDataObject implements Writable, Localized<WeaponNameDataO
             localization.names[i].copyInto(names[i]);
         }
         for (int i = 0; i < names.length; i++) {
-            localization.unusedStrings[i].copyInto(unusedStrings[i]);
+            localization.simplifiedNames[i].copyInto(simplifiedNames[i]);
         }
     }
 
     @Override
     public Stream<KeyedString> streamKeyedStrings(String localization) {
-        return Stream.concat(Arrays.stream(names), Arrays.stream(unusedStrings)).map(n -> n.getLocalizedContent(localization));
+        return Stream.concat(Arrays.stream(names), Arrays.stream(simplifiedNames)).map(n -> n.getLocalizedContent(localization));
     }
 
     @Override
@@ -89,6 +89,13 @@ public class WeaponNameDataObject implements Writable, Localized<WeaponNameDataO
             case "W" -> names[4];
             case "L" -> names[5];
             case "R" -> names[6];
+            case "sT" -> simplifiedNames[0];
+            case "sY" -> simplifiedNames[1];
+            case "sA" -> simplifiedNames[2];
+            case "sK" -> simplifiedNames[3];
+            case "sW" -> simplifiedNames[4];
+            case "sL" -> simplifiedNames[5];
+            case "sR" -> simplifiedNames[6];
             default -> null;
         };
     }
@@ -96,7 +103,7 @@ public class WeaponNameDataObject implements Writable, Localized<WeaponNameDataO
     @Override
     public int[] toBytes(String localization) {
         int[] array = new int[WeaponNameDataObject.LENGTH];
-
+        // TODO
         return array;
     }
 
@@ -106,9 +113,9 @@ public class WeaponNameDataObject implements Writable, Localized<WeaponNameDataO
         for (int i = 0; i < names.length; i++) {
             list.add(StackObject.enumToScriptField("playerChar", i).name.charAt(0) + " Name: " + names[i].getDefaultString());
         }
-        for (int i = 0; i < unusedStrings.length; i++) {
-            list.add(StackObject.enumToScriptField("playerChar", i).name.charAt(0) + " Unused: " + unusedStrings[i].getDefaultString());
-        }
+        /* for (int i = 0; i < simplifiedNames.length; i++) {
+            list.add(StackObject.enumToScriptField("playerChar", i).name.charAt(0) + " Simplified: " + simplifiedNames[i].getDefaultString());
+        } */
         for (int i = 0; i < models.length; i++) {
             list.add(StackObject.enumToScriptField("playerChar", i).name.charAt(0) + " Model: " + StackObject.enumToString("model", models[i]));
         }

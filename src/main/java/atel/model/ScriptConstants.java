@@ -577,6 +577,10 @@ public abstract class ScriptConstants {
         putEnum("stringVarType", 0x2C, "Immediate Integer (2 Digits?)");
         putEnum("stringVarType", 0x2D, "Immediate Integer (3 Digits?)");
         putEnum("stringVarType", 0x2E, "Immediate Integer (4 Digits?)");
+        putEnum("stringVarType", 0x33, "Item Label");
+        putEnum("stringVarType", 0x34, "Gear Label");
+        putEnum("stringVarType", 0x35, "Command Label");
+        putEnum("stringVarType", 0x36, "Auto-Ability Label");
         putEnum("stringVarType", 0x37, "Treasure Label");
 
         putEnum("textFlagBitfield", 0x0002, "?HasSpeakerLine");
@@ -886,7 +890,7 @@ public abstract class ScriptConstants {
         putEnum("overdriveMode", 0x02, "Stoic", "limit_type_kuniku");
         putEnum("overdriveMode", 0x03, "Healer", "limit_type_jiai");
         putEnum("overdriveMode", 0x04, "Tactician", "limit_type_sakuryaku");
-        putEnum("overdriveMode", 0x05, "Sufferer", "limit_type_kyuuti");
+        putEnum("overdriveMode", 0x05, "?Victim", "limit_type_kyuuti");
         putEnum("overdriveMode", 0x06, "Dancer", "limit_type_karei");
         putEnum("overdriveMode", 0x07, "Avenger", "limit_type_hiai");
         putEnum("overdriveMode", 0x08, "Slayer", "limit_type_gaika");
@@ -895,7 +899,7 @@ public abstract class ScriptConstants {
         putEnum("overdriveMode", 0x0B, "Victor", "limit_type_syouri");
         putEnum("overdriveMode", 0x0C, "Coward", "limit_type_tijyoku");
         putEnum("overdriveMode", 0x0D, "Ally", "limit_type_taiji");
-        putEnum("overdriveMode", 0x0E, "Victim", "limit_type_kugyou");
+        putEnum("overdriveMode", 0x0E, "?Sufferer", "limit_type_kugyou");
         putEnum("overdriveMode", 0x0F, "Daredevil", "limit_type_kiki");
         putEnum("overdriveMode", 0x10, "Loner", "limit_type_kokou");
         putEnum("overdriveMode", 0x13, "Aeons Only", "limit_type_syoukan");

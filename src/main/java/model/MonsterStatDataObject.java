@@ -28,19 +28,19 @@ public class MonsterStatDataObject implements Nameable, Writable, Localized<Mons
 
     int nameOffset;
     int sensorTextOffset;
-    int unusedString0809Offset;
+    int simplifiedSensorTextOffset;
     int scanTextOffset;
-    int unusedString1011Offset;
+    int simplifiedScanTextOffset;
     public LocalizedKeyedStringObject name = new LocalizedKeyedStringObject();
     public LocalizedKeyedStringObject sensorText = new LocalizedKeyedStringObject();
-    public LocalizedKeyedStringObject unusedString0809 = new LocalizedKeyedStringObject();
+    public LocalizedKeyedStringObject simplifiedSensorText = new LocalizedKeyedStringObject();
     public LocalizedKeyedStringObject scanText = new LocalizedKeyedStringObject();
-    public LocalizedKeyedStringObject unusedString1011 = new LocalizedKeyedStringObject();
+    public LocalizedKeyedStringObject simplifiedScanText = new LocalizedKeyedStringObject();
     int nameKey;
     int sensorTextKey;
-    int unusedString0809Key;
+    int simplifiedSensorTextKey;
     int scanTextKey;
-    int unusedString1011Key;
+    int simplifiedScanTextKey;
 
     int hp;
     int mp;
@@ -189,12 +189,12 @@ public class MonsterStatDataObject implements Nameable, Writable, Localized<Mons
         nameKey = read2Bytes(bytes, 0x02);
         sensorTextOffset = read2Bytes(bytes, 0x04);
         sensorTextKey = read2Bytes(bytes, 0x06);
-        unusedString0809Offset = read2Bytes(bytes, 0x08);
-        unusedString0809Key = read2Bytes(bytes, 0x0A);
+        simplifiedSensorTextOffset = read2Bytes(bytes, 0x08);
+        simplifiedSensorTextKey = read2Bytes(bytes, 0x0A);
         scanTextOffset = read2Bytes(bytes, 0x0C);
         scanTextKey = read2Bytes(bytes, 0x0E);
-        unusedString1011Offset = read2Bytes(bytes, 0x10);
-        unusedString1011Key = read2Bytes(bytes, 0x12);
+        simplifiedScanTextOffset = read2Bytes(bytes, 0x10);
+        simplifiedScanTextKey = read2Bytes(bytes, 0x12);
         hp = read4Bytes(bytes, 0x14);
         mp = read4Bytes(bytes, 0x18);
         overkillThreshold = read4Bytes(bytes, 0x1C);
@@ -338,9 +338,9 @@ public class MonsterStatDataObject implements Nameable, Writable, Localized<Mons
         int[] array = new int[MonsterStatDataObject.LENGTH];
         write4Bytes(array, 0x00, name.getLocalizedContent(localization).toHeaderBytes());
         write4Bytes(array, 0x04, sensorText.getLocalizedContent(localization).toHeaderBytes());
-        write4Bytes(array, 0x08, unusedString0809.getLocalizedContent(localization).toHeaderBytes());
+        write4Bytes(array, 0x08, simplifiedSensorText.getLocalizedContent(localization).toHeaderBytes());
         write4Bytes(array, 0x0C, scanText.getLocalizedContent(localization).toHeaderBytes());
-        write4Bytes(array, 0x10, unusedString1011.getLocalizedContent(localization).toHeaderBytes());
+        write4Bytes(array, 0x10, simplifiedScanText.getLocalizedContent(localization).toHeaderBytes());
         write4Bytes(array, 0x14, hp);
         write4Bytes(array, 0x18, mp);
         write4Bytes(array, 0x1C, overkillThreshold);
@@ -412,9 +412,9 @@ public class MonsterStatDataObject implements Nameable, Writable, Localized<Mons
         return Stream.of(
                 name.getLocalizedContent(localization),
                 sensorText.getLocalizedContent(localization),
-                unusedString0809.getLocalizedContent(localization),
+                simplifiedSensorText.getLocalizedContent(localization),
                 scanText.getLocalizedContent(localization),
-                unusedString1011.getLocalizedContent(localization)
+                simplifiedScanText.getLocalizedContent(localization)
         );
     }
 
@@ -423,7 +423,9 @@ public class MonsterStatDataObject implements Nameable, Writable, Localized<Mons
         return switch (title) {
             case "name" -> name;
             case "sensor" -> sensorText;
+            case "simplifiedSensor" -> simplifiedSensorText;
             case "scan" -> scanText;
+            case "simplifiedScan" -> simplifiedScanText;
             default -> null;
         };
     }
@@ -434,17 +436,17 @@ public class MonsterStatDataObject implements Nameable, Writable, Localized<Mons
         }
         name.readAndSetLocalizedContent(localization, stringBytes, nameOffset, nameKey);
         sensorText.readAndSetLocalizedContent(localization, stringBytes, sensorTextOffset, sensorTextKey);
-        unusedString0809.readAndSetLocalizedContent(localization, stringBytes, unusedString0809Offset, unusedString0809Key);
+        simplifiedSensorText.readAndSetLocalizedContent(localization, stringBytes, simplifiedSensorTextOffset, simplifiedSensorTextKey);
         scanText.readAndSetLocalizedContent(localization, stringBytes, scanTextOffset, scanTextKey);
-        unusedString1011.readAndSetLocalizedContent(localization, stringBytes, unusedString1011Offset, unusedString1011Key);
+        simplifiedScanText.readAndSetLocalizedContent(localization, stringBytes, simplifiedScanTextOffset, simplifiedScanTextKey);
     }
 
     public void setLocalizations(MonsterStatDataObject localizationObject) {
         localizationObject.name.copyInto(name);
         localizationObject.sensorText.copyInto(sensorText);
-        localizationObject.unusedString0809.copyInto(unusedString0809);
+        localizationObject.simplifiedSensorText.copyInto(simplifiedSensorText);
         localizationObject.scanText.copyInto(scanText);
-        localizationObject.unusedString1011.copyInto(unusedString1011);
+        localizationObject.simplifiedScanText.copyInto(simplifiedScanText);
     }
 
     public String buildStrings(String localization) {

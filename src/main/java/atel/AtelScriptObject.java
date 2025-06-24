@@ -806,13 +806,10 @@ public class AtelScriptObject {
             func = new ScriptFunc("Unknown:" + StringHelper.formatHex4(idx), "unknown", null, false);
         }
         List<ScriptField> inputs = func.inputs;
-        if (inputs != null) {
+        if (inputs != null && !inputs.isEmpty() && !params.isEmpty()) {
             int len = Math.min(inputs.size(), params.size());
-            List<StackObject> typedParams = new ArrayList<>();
             for (int i = 0; i < len; i++) {
-                StackObject typedParam = func.getTypedParam(i, params, typedParams);
-                typedParams.add(typedParam);
-                typed(params.get(i), typedParam.type);
+                typed(params.get(i), inputs.get(i).type);
             }
         }
         return func;
