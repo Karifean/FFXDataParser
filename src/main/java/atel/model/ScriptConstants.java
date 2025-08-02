@@ -1038,6 +1038,7 @@ public abstract class ScriptConstants {
         putEnum("gravityMode", 0x02, "Swimming");
 
         putEnum("motionType", 0x00, "Grounded");
+        putEnum("motionType", 0x01, "Battle");
         putEnum("motionType", 0x02, "Swimming");
 
         putEnum("moveType", 0x01, "Walking");
