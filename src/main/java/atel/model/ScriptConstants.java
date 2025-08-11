@@ -586,6 +586,8 @@ public abstract class ScriptConstants {
         putEnum("textFlagBitfield", 0x0002, "?HasSpeakerLine");
         putEnum("textFlagBitfield", 0x4000, "Al Bhed");
 
+        /*
+        Note: Now handles directly in StackObject as an indirection into macro dict 7
         putEnum("blitzballPlayer", 0x00, "Tidus");
         putEnum("blitzballPlayer", 0x01, "Wakka");
         putEnum("blitzballPlayer", 0x02, "Datto");
@@ -646,7 +648,7 @@ public abstract class ScriptConstants {
         putEnum("blitzballPlayer", 0x39, "Brother");
         putEnum("blitzballPlayer", 0x3A, "Mifurey");
         putEnum("blitzballPlayer", 0x3B, "Miyu");
-        putEnum("blitzballPlayer", 0x3C, "<Empty>");
+        putEnum("blitzballPlayer", 0x3C, "<Empty>"); */
 
         putEnum("blitzballTeam", 0x00, "Luca Goers");
         putEnum("blitzballTeam", 0x01, "Kilika Beasts");

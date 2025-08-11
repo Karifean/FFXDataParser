@@ -8,6 +8,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static atel.model.ScriptVariable.SAVEDATA_ATEL_OFFSET;
 import static main.StringHelper.*;
 
 public class AtelScriptObject {
@@ -211,9 +212,10 @@ public class AtelScriptObject {
                     variableDeclarations[varIdx] = scriptVariable;
                     scriptVariable.inferredType = "float".equals(scriptVariable.getType()) ? "float" : "unknown";
                     if (scriptVariable.location == 0) {
-                        ScriptField entry = ScriptConstants.getEnumMap("saveData").get(scriptVariable.offset);
+                        ScriptField entry = ScriptConstants.getEnumMap("saveData").get(scriptVariable.offset + SAVEDATA_ATEL_OFFSET);
                         if (entry != null) {
                             scriptVariable.inferredType = entry.type;
+                            scriptVariable.typeKnown = true;
                         }
                     } else if (scriptVariable.location == 4) {
                         scriptVariable.parseValues();

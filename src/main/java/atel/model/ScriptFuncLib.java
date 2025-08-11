@@ -150,7 +150,7 @@ public abstract class ScriptFuncLib {
         putFuncWithIdx(0x0080, new ScriptFunc("getCurrentEntranceX", "float", null, true));
         putFuncWithIdx(0x0081, new ScriptFunc("getCurrentEntranceY", "float", null, true));
         putFuncWithIdx(0x0082, new ScriptFunc("getCurrentEntranceZ", "float", null, true));
-        putFuncWithIdx(0x0083, new ScriptFunc("getCurrentEntranceRotation", "float", null, true));
+        putFuncWithIdx(0x0083, new ScriptFunc("getCurrentEntranceYaw", "float", null, true));
         putFuncWithIdx(0x0084, new ScriptFunc("waitForText", "unknown", null, p("boxIndex", "int"), p(2)));
         putFuncWithIdx(0x0085, new ScriptFunc("setTouchRadius", "unknown", null, p("radius", "float"))); // noclip: setCollisionRadius()
         putFuncWithIdx(0x0086, new ScriptFunc("CurrentLevel", "unknown", null, false)); // the ID of the actual map geometry file, multiple "map"s can share these

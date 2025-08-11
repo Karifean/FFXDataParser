@@ -23,6 +23,7 @@ public class ScriptVariable {
 
     public ScriptWorker parentWorker;
     public String inferredType = "unknown";
+    public boolean typeKnown = false;
 
     public ScriptVariable(ScriptWorker parentWorker, int index, int lb, int hb) {
         this.parentWorker = parentWorker;
@@ -40,6 +41,7 @@ public class ScriptVariable {
     public ScriptVariable(ScriptVariable vr) {
         this.parentWorker = vr.parentWorker;
         this.inferredType = vr.inferredType;
+        this.typeKnown = vr.typeKnown;
         this.index = vr.index;
         this.lb = vr.lb;
         this.hb = vr.hb;
@@ -67,6 +69,9 @@ public class ScriptVariable {
     }
 
     public void inferType(String type) {
+        if (typeKnown) {
+            return;
+        }
         if (isWeakType(inferredType) && !"var".equals(type)) {
             inferredType = type;
         }

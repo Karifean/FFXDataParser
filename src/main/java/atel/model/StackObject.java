@@ -195,6 +195,17 @@ public class StackObject {
                 return "Map#" + valueSigned + hexSuffix;
             }
         }
+        if ("blitzballPlayer".equals(type)) {
+            if (valueSigned == 0x3C) {
+                return "<Empty>";
+            }
+            if (StringHelper.MACRO_LOOKUP.containsKey(0x700 + valueSigned)) {
+                String str = StringHelper.MACRO_LOOKUP.get(0x700 + valueSigned).getLocalizedString(localization);
+                return "\"" + str + "\"" + hexSuffix;
+            } else {
+                return enumToString(type, valueSigned);
+            }
+        }
         if ("blitzTech".equals(type) || "blitzTechP1".equals(type)) {
             return StringHelper.MACRO_LOOKUP.get(0x800 + valueSigned).getLocalizedString(localization) + hexSuffix;
         } else if ("blitzTechP2".equals(type)) {
