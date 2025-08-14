@@ -84,7 +84,11 @@ public abstract class DataAccess {
         if (MOVES == null) {
             throw new UnsupportedOperationException();
         }
-        return MOVES[idx];
+        if (idx >= 0 && idx < MOVES.length) {
+            return MOVES[idx];
+        } else {
+            return null;
+        }
     }
 
     public static AutoAbilityDataObject getAutoAbility(int idx) {
@@ -129,7 +133,11 @@ public abstract class DataAccess {
         if (TREASURES == null) {
             throw new UnsupportedOperationException();
         }
-        return TREASURES[idx];
+        if (idx >= 0 && idx < TREASURES.length) {
+            return TREASURES[idx];
+        } else {
+            return null;
+        }
     }
 
     public static void addMonsterLocalizations(MonsterStatDataObject[] localizations) {
