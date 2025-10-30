@@ -42,20 +42,20 @@ public abstract class StringHelper {
         return formatted;
     }
 
-    public static String hex2Suffix(int twoByteValue) {
-        return " [" + formatHex2(twoByteValue) + "h]";
+    public static String hex2Suffix(int oneByteValue) {
+        return " [" + formatHex2(oneByteValue) + "h]";
     }
 
-    public static String hex4Suffix(int fourByteValue) {
-        return " [" + formatHex4(fourByteValue) + "h]";
+    public static String hex4Suffix(int twoByteValue) {
+        return " [" + formatHex4(twoByteValue) + "h]";
     }
 
-    public static String hex2WithSuffix(int twoByteValue) {
-        return twoByteValue + hex2Suffix(twoByteValue);
+    public static String hex2WithSuffix(int oneByteValue) {
+        return oneByteValue + hex2Suffix(oneByteValue);
     }
 
-    public static String hex4WithSuffix(int fourByteValue) {
-        return fourByteValue + hex4Suffix(fourByteValue);
+    public static String hex4WithSuffix(int twoByteValue) {
+        return twoByteValue + hex4Suffix(twoByteValue);
     }
 
     public static List<Integer> charToBytes(char chr, String charset) {
@@ -293,7 +293,7 @@ public abstract class StringHelper {
                 if (chr != null) {
                     out.append(chr);
                 } else {
-                    out.append("{UNKCHR:").append(formatHex2(idx)).append('}');
+                    out.append(extraOffset != 0 ? "{UNKDBLCHR:04:" : "{UNKCHR:").append(formatHex2(idx)).append('}');
                 }
             } else if (idx == 0x01) {
                 out.append("{PAUSE}");
@@ -378,7 +378,9 @@ public abstract class StringHelper {
                 if (chr != null) {
                     out.append(chr);
                 } else {
-                    out.append("{UNKDBLCHR:").append(formatHex2(idx)).append(':').append(formatHex2(lowByte)).append('}');
+                    out.append(extraOffset != 0 ? "{UNKTPLCHR:04:" : "{UNKDBLCHR:")
+                            .append(formatHex2(idx)).append(':')
+                            .append(formatHex2(lowByte)).append('}');
                 }
             } else {
                 offset++;

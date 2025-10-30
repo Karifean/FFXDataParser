@@ -1,6 +1,7 @@
 package atel;
 
 import main.DataWritingManager;
+import main.StringHelper;
 import model.Nameable;
 import reading.Chunk;
 import model.MonsterLootDataObject;
@@ -76,7 +77,7 @@ public class MonsterFile implements Nameable {
     @Override
     public String toString() {
         StringBuilder full = new StringBuilder();
-        full.append(getName()).append('\n');
+        full.append(getName()).append(StringHelper.hex4Suffix(monsterIndex + 0x1000)).append('\n');
         if (monsterAi != null) {
             full.append("- Script Code -").append('\n');
             full.append(monsterAi.allLinesString());

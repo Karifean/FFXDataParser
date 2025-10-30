@@ -13,6 +13,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static main.DataReadingManager.DEFAULT_LOCALIZATION;
 import static reading.BytesHelper.*;
 
 /**
@@ -99,7 +100,7 @@ public class MonsterStatDataObject implements Nameable, Writable, Localized<Mons
     public int ctbIconType;
     public int doomCounter;
     public int monsterArenaIdx;
-    public int modelIdxOther;
+    public int soundBankRef;
 
     int alwaysZero7C;
     int alwaysZero7D;
@@ -254,7 +255,7 @@ public class MonsterStatDataObject implements Nameable, Writable, Localized<Mons
         ctbIconType = bytes[0x76];
         doomCounter = bytes[0x77];
         monsterArenaIdx = read2Bytes(bytes, 0x78);
-        modelIdxOther = read2Bytes(bytes, 0x7A);
+        soundBankRef = read2Bytes(bytes, 0x7A);
         alwaysZero7C = bytes[0x7C];
         alwaysZero7D = bytes[0x7D];
         alwaysZero7E = bytes[0x7E];
@@ -399,7 +400,7 @@ public class MonsterStatDataObject implements Nameable, Writable, Localized<Mons
         array[0x76] = ctbIconType;
         array[0x77] = doomCounter;
         write2Bytes(array, 0x78, monsterArenaIdx);
-        write2Bytes(array, 0x7A, modelIdxOther);
+        write2Bytes(array, 0x7A, soundBankRef);
         array[0x7C] = alwaysZero7C;
         array[0x7D] = alwaysZero7D;
         array[0x7E] = alwaysZero7E;
@@ -504,8 +505,8 @@ public class MonsterStatDataObject implements Nameable, Writable, Localized<Mons
         } else {
             list.add("Cannot be Captured");
         }
-        list.add("Model Base?=" + StackObject.enumToString("model", modelIdx));
-        list.add("Model Texture?=" + StackObject.enumToString("model", modelIdxOther));
+        list.add("Model/Motion Base=" + StackObject.asString(DEFAULT_LOCALIZATION, "model", modelIdx));
+        list.add("Sound Bank=" + (soundBankRef == 0 ? "Direct" + StringHelper.hex2Suffix(0) : StackObject.asString(DEFAULT_LOCALIZATION, "monster", soundBankRef)));
 
         if (alwaysZero7C != 0) {
             list.add("byte 7C not zero!: " + StringHelper.formatHex2(alwaysZero7C));

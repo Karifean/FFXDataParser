@@ -351,8 +351,8 @@ public class Main {
                 spaced.append((char) c).append(' ');
                 boolean first = true;
                 for (int bc : charBytes) {
-                    byteString.append(Integer.toHexString(bc));
-                    grep.append("\\x").append(Integer.toHexString(bc));
+                    byteString.append(StringHelper.formatHex2(bc));
+                    grep.append("\\x").append(StringHelper.formatHex2(bc));
                     if (first) {
                         first = false;
                     } else {

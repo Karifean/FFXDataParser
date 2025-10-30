@@ -411,6 +411,28 @@ public abstract class ScriptConstants {
         putBattleVariable(0x0170, "BattleDialogLineVoiceFile", "int");
         putBattleVariable(0x028C, "BattleDialogLineString", "system01String");
 
+        putEnum("playerChar", 0x0000, "Tidus", "PC_TIDUS");
+        putEnum("playerChar", 0x0001, "Yuna", "PC_YUNA");
+        putEnum("playerChar", 0x0002, "Auron", "PC_AURON");
+        putEnum("playerChar", 0x0003, "Kimahri", "PC_KIMAHRI");
+        putEnum("playerChar", 0x0004, "Wakka", "PC_WAKKA");
+        putEnum("playerChar", 0x0005, "Lulu", "PC_LULU");
+        putEnum("playerChar", 0x0006, "Rikku", "PC_RIKKU");
+        putEnum("playerChar", 0x0007, "Seymour", "PC_SEYMOUR");
+        putEnum("playerChar", 0x0008, "Valefor", "PC_VALEFOR");
+        putEnum("playerChar", 0x0009, "Ifrit", "PC_IFRIT");
+        putEnum("playerChar", 0x000A, "Ixion", "PC_IXION");
+        putEnum("playerChar", 0x000B, "Shiva", "PC_SHIVA");
+        putEnum("playerChar", 0x000C, "Bahamut", "PC_BAHAMUT");
+        putEnum("playerChar", 0x000D, "Anima", "PC_ANIMA");
+        putEnum("playerChar", 0x000E, "Yojimbo", "PC_YOJIMBO");
+        putEnum("playerChar", 0x000F, "Cindy", "PC_MAGUS1");
+        putEnum("playerChar", 0x0010, "Sandy", "PC_MAGUS2");
+        putEnum("playerChar", 0x0011, "Mindy", "PC_MAGUS3");
+        putEnum("playerChar", 0x0012, null, "PC_DUMMY");
+        putEnum("playerChar", 0x0013, null, "PC_DUMMY2");
+        putEnum("playerChar", -1, "Empty", null); // 0xFFFF
+
         putEnum("deathAnimation", 0x00, "Character (Body remains and targetable)", "death_normal");
         putEnum("deathAnimation", 0x01, "Boss (Body remains but untargetable)", "death_nop");
         putEnum("deathAnimation", 0x02, "Humanoid (No Pyreflies, body fades out)", "death_fadeout");
@@ -954,28 +976,6 @@ public abstract class ScriptConstants {
         for (int i = 0x300; i < 0x323; i++) {
             putEnum("monsterArenaUnlock", i, "Creation #" + (i - 0x2FF) + " defeated");
         }
-
-        putEnum("playerChar", 0x0000, "Tidus", "PC_TIDUS");
-        putEnum("playerChar", 0x0001, "Yuna", "PC_YUNA");
-        putEnum("playerChar", 0x0002, "Auron", "PC_AURON");
-        putEnum("playerChar", 0x0003, "Kimahri", "PC_KIMAHRI");
-        putEnum("playerChar", 0x0004, "Wakka", "PC_WAKKA");
-        putEnum("playerChar", 0x0005, "Lulu", "PC_LULU");
-        putEnum("playerChar", 0x0006, "Rikku", "PC_RIKKU");
-        putEnum("playerChar", 0x0007, "Seymour", "PC_SEYMOUR");
-        putEnum("playerChar", 0x0008, "Valefor", "PC_VALEFOR");
-        putEnum("playerChar", 0x0009, "Ifrit", "PC_IFRIT");
-        putEnum("playerChar", 0x000A, "Ixion", "PC_IXION");
-        putEnum("playerChar", 0x000B, "Shiva", "PC_SHIVA");
-        putEnum("playerChar", 0x000C, "Bahamut", "PC_BAHAMUT");
-        putEnum("playerChar", 0x000D, "Anima", "PC_ANIMA");
-        putEnum("playerChar", 0x000E, "Yojimbo", "PC_YOJIMBO");
-        putEnum("playerChar", 0x000F, "Cindy", "PC_MAGUS1");
-        putEnum("playerChar", 0x0010, "Sandy", "PC_MAGUS2");
-        putEnum("playerChar", 0x0011, "Mindy", "PC_MAGUS3");
-        putEnum("playerChar", 0x0012, null, "PC_DUMMY");
-        putEnum("playerChar", 0x0013, null, "PC_DUMMY2");
-        putEnum("playerChar", -1, "Empty", null); // 0xFFFF
 
         for (int i = 0; i <= 0x0013; i++) {
             getEnumMap("btlChr").put(i, getEnumMap("playerChar").get(i));

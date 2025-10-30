@@ -159,11 +159,12 @@ public class StackObject {
             CommandDataObject ability = DataAccess.getCommand(valueSigned + 0x3000);
             return (ability != null ? '"'+ability.getName(localization)+'"' : "NullCmd") + hexSuffix;
         }
-        if ("btlChr".equals(type) && valueSigned >= 0x1000 && valueSigned < 0x2000) {
+        if (("btlChr".equals(type) || "monster".equals(type)) && valueSigned >= 0x1000 && valueSigned < 0x2000) {
             try {
                 MonsterFile monster = DataAccess.getMonster(valueSigned);
                 if (monster != null) {
-                    return "Actors:MonsterType=m" + String.format("%03d", valueSigned - 0x1000) + " (" + monster.getName(localization) + ")" + hexSuffix;
+                    String prefix = "btlChr".equals(type) ? "Actors:MonsterType=" : "";
+                    return prefix + "m" + String.format("%03d", valueSigned & 0x0FFF) + " (" + monster.getName(localization) + ")" + hexSuffix;
                 }
             } catch (UnsupportedOperationException ignored) {}
         }
@@ -204,6 +205,27 @@ public class StackObject {
                 return "\"" + str + "\"" + hexSuffix;
             } else {
                 return enumToString(type, valueSigned);
+            }
+        }
+        if ("model".equals(type)) {
+            ScriptField enumValue = enumToScriptField(type, valueSigned);
+            if (valueSigned == 0) {
+                return enumValue.toString();
+            }
+            String file = switch (valueSigned >> 12) {
+                case 0 -> "pc/c";
+                case 1 -> "mon/m";
+                case 2 -> "npc/n";
+                case 3 -> "sum/s";
+                case 4 -> "wep/w";
+                case 5 -> "obj/f";
+                case 6 -> "skl/k";
+                default -> null;
+            };
+            if (file != null) {
+                return file + String.format("%03d", valueSigned & 0x0FFF) + " (" + enumValue.getLabel() + ")" + hexSuffix;
+            } else {
+                return enumValue.toString();
             }
         }
         if ("blitzTech".equals(type) || "blitzTechP1".equals(type)) {
