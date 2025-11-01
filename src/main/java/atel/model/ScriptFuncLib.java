@@ -96,7 +96,7 @@ public abstract class ScriptFuncLib {
         putFuncWithIdx(0x0033, new ScriptFunc("getWorkerIndex", "int", null, p("worker"))); // maybe arg is only useful for battle, would be just echoed back in events
         putFuncWithIdx(0x0034, new ScriptFunc("enableFieldInteraction", "unknown", null, p("type", "fieldInteraction")));
         putFuncWithIdx(0x0035, new ScriptFunc("disableFieldInteraction", "unknown", null, p("type", "fieldInteraction")));
-        putFuncWithIdx(0x0036, new ScriptFunc("stopOtherMotion", "unknown", null, p("worker")));
+        putFuncWithIdx(0x0036, new ScriptFunc("stopMotion", "unknown", null, p("worker")));
         putUnknownFunc(0x0037, 1);
         putFuncWithIdx(0x0038, new ScriptFunc("getWorkerX", "float", null, p("worker")));
         putFuncWithIdx(0x0039, new ScriptFunc("getWorkerY", "float", null, p("worker")));
@@ -214,7 +214,7 @@ public abstract class ScriptFuncLib {
         putFuncWithIdx(0x00D0, new ScriptFunc("SavedAnimation", "unknown", null, false));
         putFuncWithIdx(0x00D1, new ScriptFunc("stopWorkerMotion", "unknown", null, true));
         putFuncWithIdx(0x00D2, new ScriptFunc("stopWorkerRotation", "unknown", null, true));
-        putFuncWithIdx(0x00D5, new ScriptFunc("playFieldVoiceLine", "unknown", null, p("voiceFileIndex", "int")));
+        putFuncWithIdx(0x00D5, new ScriptFunc("playFieldVoiceLine", "unknown", null, p("voiceFile")));
         putUnknownFunc(0x00D6, 0);
         putFuncWithIdx(0x00D7, new ScriptFunc("?abortFieldVoiceLine", "unknown", null, true));
         putUnknownFunc(0x00D8, 0);
@@ -611,7 +611,7 @@ public abstract class ScriptFuncLib {
         putUnknownFunc(0x502C, 2);
         putFuncWithIdx(0x502D, new ScriptFunc("setAttachedToWorker", "unknown", null, p("worker"), p("attachmentPoint", "int")));
         putFuncWithIdx(0x5030, new ScriptFunc("?getSound", "unknown", null, true)); // Never used by the game so not sure how it would be used with other functions
-        putFuncWithIdx(0x5031, new ScriptFunc("?getOtherActorSound", "unknown", null, p("worker"))); // Never used by the game so not sure how it would be used with other functions
+        putFuncWithIdx(0x5031, new ScriptFunc("?getActorSound", "unknown", null, p("worker"))); // Never used by the game so not sure how it would be used with other functions
         putFuncWithIdx(0x5032, new ScriptFunc("playDefaultCharMotion", "unknown", null, true));
         putFuncWithIdx(0x5033, new ScriptFunc("?setTransparent", "unknown", null, p("?target"), p("?latch")));
         putFuncWithIdx(0x5034, new ScriptFunc("?setMotionHokan", "unknown", null, p(1)));
@@ -621,7 +621,7 @@ public abstract class ScriptFuncLib {
         putUnknownFunc(0x5038, 4);
         putFuncWithIdx(0x5039, new ScriptFunc("setThickness", "float", null, p("thickness", "float")));
         putFuncWithIdx(0x503A, new ScriptFunc("setClipZ", "float", null, p("clipZ", "float")));
-        putFuncWithIdx(0x503B, new ScriptFunc("disposeOtherActorMotionGroup", "unknown", null, p("btlChr"), p(2)));
+        putFuncWithIdx(0x503B, new ScriptFunc("disposeActorMotionGroup", "unknown", null, p("btlChr"), p(2)));
         putUnknownFunc(0x503C, 1);
         putUnknownFunc(0x503D, 1);
         putUnknownFunc(0x503E, 2);
@@ -632,12 +632,12 @@ public abstract class ScriptFuncLib {
         putFuncWithIdx(0x5044, new ScriptFunc(p("worker"), p("motion"), p(3), p(4), p(5), p(6)));
         putFuncWithIdx(0x5045, new ScriptFunc(p("worker"), p("motion"), p(3), p(4), p(5), p(6)));
         putFuncWithIdx(0x5046, new ScriptFunc(p("worker"), p("motion"), p(3), p(4), p(5), p(6)));
-        putFuncWithIdx(0x5047, new ScriptFunc("playOtherActorMotion", "unknown", null, p("worker"), p("motion")));
-        putFuncWithIdx(0x5048, new ScriptFunc("playOtherActorMotion2", "unknown", null, p("worker"), p("motion")));
-        putFuncWithIdx(0x5049, new ScriptFunc("?awaitOtherActorMotion", "unknown", null, p("worker")));
-        putFuncWithIdx(0x504A, new ScriptFunc("?shouldAwaitOtherActorMotion", "bool", null, p("worker")));
-        putFuncWithIdx(0x504B, new ScriptFunc("resetOtherActorMotion", "unknown", null, p("worker")));
-        putFuncWithIdx(0x504C, new ScriptFunc("setOtherActorMotionSpeed", "unknown", null, p("worker"), p("motionSpeed", "float")));
+        putFuncWithIdx(0x5047, new ScriptFunc("playActorMotion", "unknown", null, p("worker"), p("motion")));
+        putFuncWithIdx(0x5048, new ScriptFunc("playActorMotion2", "unknown", null, p("worker"), p("motion")));
+        putFuncWithIdx(0x5049, new ScriptFunc("?awaitActorMotion", "unknown", null, p("worker")));
+        putFuncWithIdx(0x504A, new ScriptFunc("?shouldAwaitActorMotion", "bool", null, p("worker")));
+        putFuncWithIdx(0x504B, new ScriptFunc("resetActorMotion", "unknown", null, p("worker")));
+        putFuncWithIdx(0x504C, new ScriptFunc("setActorMotionSpeed", "unknown", null, p("worker"), p("motionSpeed", "float")));
         putUnknownFunc(0x504D, 1);
         putFuncWithIdx(0x504E, new ScriptFunc("?loadModelAsync", "unknown", null, p("model")));
         putFuncWithIdx(0x504F, new ScriptFunc("?loadModelSync", "unknown", null, p("model")));
@@ -678,7 +678,7 @@ public abstract class ScriptFuncLib {
         putUnknownFunc(0x5072, 0); // returns cur_actor->__0x824
         putFuncWithIdx(0x5073, new ScriptFunc("setOverlapHit", "unknown", null, p("enabled", "bool")));
         putFuncWithIdx(0x5074, new ScriptFunc("getOverlapHit", "bool", null));
-        putFuncWithIdx(0x5075, new ScriptFunc("getOtherActorMotionFrame", "int", null, p("worker")));
+        putFuncWithIdx(0x5075, new ScriptFunc("getActorMotionFrame", "int", null, p("worker")));
         putUnknownFunc(0x5076, 1); // cur_actor->__0x4d4 = p1
         putUnknownFunc(0x5077, 0); // returns cur_actor->__0x4d4
         putFuncWithIdx(0x5078, new ScriptFunc("?textureSetAnim", "unknown", null, p(1), p(2)));
@@ -943,7 +943,7 @@ public abstract class ScriptFuncLib {
         putUnknownFunc(0x7061, "btlClearStatEff", 0);
         putUnknownFunc(0x7062, "btlSetHitEffect", 2);
         putUnknownFunc(0x7063, "btlWaitHitEffect", 0);
-        putFuncWithIdx(0x7064, new ScriptFunc("loadBattleVoiceLine", "unknown", "btlVoiceStandby", p("voiceFileIndex", "int")));
+        putFuncWithIdx(0x7064, new ScriptFunc("loadBattleVoiceLine", "unknown", "btlVoiceStandby", p("voiceFile")));
         putUnknownFunc(0x7065, "btlVoiceStart", 0);
         putUnknownFunc(0x7066, "btlVoiceStop", 0);
         putUnknownFunc(0x7067, "btlGetVoiceStatus", 0);
@@ -1022,7 +1022,7 @@ public abstract class ScriptFuncLib {
         putUnknownFunc(0x70B0, "btlDistTargetFrame2", 1);
         putUnknownFunc(0x70B1, "btlPrintSp", 1);
         putFuncWithIdx(0x70B2, new ScriptFuncAccessor("setMotionValue", null, "btlSetMotionData2", "=", "motionProperty"));
-        putFuncWithIdx(0x70B3, new ScriptFunc("setCommandDialogVoiceLine", "unknown", "btlVoiceSet", p("voiceFileIndex", "int")));
+        putFuncWithIdx(0x70B3, new ScriptFunc("setCommandDialogVoiceLine", "unknown", "btlVoiceSet", p("voiceFile")));
         putUnknownFunc(0x70B4, "btlFadeOutWeapon", 0);
         putUnknownFunc(0x70B5, "btlResetMotionSpeed", 0);
         putFuncWithIdx(0x70B6, new ScriptFunc(null, "unknown", "btlDistTargetFrameSpd", p("btlChr")));

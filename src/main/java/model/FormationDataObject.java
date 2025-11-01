@@ -132,7 +132,7 @@ public class FormationDataObject {
 
     private static String writeMonster(int monsterIndex) {
         MonsterFile monster = DataAccess.getMonster(monsterIndex);
-        String monsterIdxString = "m" + String.format("%03d", monsterIndex - 0x1000);
+        String monsterIdxString = "m" + StringHelper.formatDec3(monsterIndex & 0x0FFF);
         String monsterName = monsterIdxString + (monster != null ? " - " + monster.getName() : "");
         return monsterName + StringHelper.hex4Suffix(monsterIndex);
     }

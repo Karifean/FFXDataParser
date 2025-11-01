@@ -408,7 +408,7 @@ public abstract class ScriptConstants {
         putSaveDataVariable(0x1AFC, "?BlitzballPlayerUncoveredTechsPage2", "bitfieldFrom_blitzTechP2", "blitzballPlayer");
         putSaveDataVariable(0x21EC, "SphereGridNodeState", "sphereGridNodeState", "int");
 
-        putBattleVariable(0x0170, "BattleDialogLineVoiceFile", "int");
+        putBattleVariable(0x0170, "BattleDialogLineVoiceFile", "voiceFile");
         putBattleVariable(0x028C, "BattleDialogLineString", "system01String");
 
         putEnum("playerChar", 0x0000, "Tidus", "PC_TIDUS");
@@ -986,7 +986,7 @@ public abstract class ScriptConstants {
         putEnum("btlChr", 0x00FF, "Actor:None");
 
         for (int i = 0x1000; i <= 0x1200; i++) {
-            putEnum("btlChr", i, "Actors:MonsterType=m" + String.format("%03d", i - 0x1000));
+            putEnum("btlChr", i, "Actors:MonsterType=m" + StringHelper.formatDec3(i & 0x0FFF));
         }
         putEnum("btlChr", -26, null, "CHR_OWN_TARGET0"); // 0xFFE6
         putEnum("btlChr", -25, null, "CHR_ALL_PLY3"); // 0xFFE7

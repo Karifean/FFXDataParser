@@ -164,7 +164,7 @@ public class StackObject {
                 MonsterFile monster = DataAccess.getMonster(valueSigned);
                 if (monster != null) {
                     String prefix = "btlChr".equals(type) ? "Actors:MonsterType=" : "";
-                    return prefix + "m" + String.format("%03d", valueSigned & 0x0FFF) + " (" + monster.getName(localization) + ")" + hexSuffix;
+                    return prefix + "m" + StringHelper.formatDec3(valueSigned & 0x0FFF) + " (" + monster.getName(localization) + ")" + hexSuffix;
                 }
             } catch (UnsupportedOperationException ignored) {}
         }
@@ -212,7 +212,7 @@ public class StackObject {
             if (valueSigned == 0) {
                 return enumValue.toString();
             }
-            String file = switch (valueSigned >> 12) {
+            String filePrefix = switch (valueSigned >> 12) {
                 case 0 -> "pc/c";
                 case 1 -> "mon/m";
                 case 2 -> "npc/n";
@@ -222,11 +222,19 @@ public class StackObject {
                 case 6 -> "skl/k";
                 default -> null;
             };
-            if (file != null) {
-                return file + String.format("%03d", valueSigned & 0x0FFF) + " (" + enumValue.getLabel() + ")" + hexSuffix;
+            if (filePrefix != null) {
+                String enumLabel = enumValue.getName(localization) != null ? " (" + enumValue.getLabel() + ")" : "";
+                return filePrefix + StringHelper.formatDec3(valueSigned & 0x0FFF) + enumLabel + hexSuffix;
             } else {
                 return enumValue.toString();
             }
+        }
+        if ("voiceFile".equals(type)) {
+            int fileNumber = valueSigned >> 12;
+            int firstLetterIndex = (valueSigned >> 6) & 0x3F;
+            int secondLetterIndex = valueSigned & 0x3F;
+            String tag = StringHelper.toLetter(firstLetterIndex) + "" + StringHelper.toLetter(secondLetterIndex);
+            return fileNumber + tag + hexSuffix;
         }
         if ("blitzTech".equals(type) || "blitzTechP1".equals(type)) {
             return StringHelper.MACRO_LOOKUP.get(0x800 + valueSigned).getLocalizedString(localization) + hexSuffix;

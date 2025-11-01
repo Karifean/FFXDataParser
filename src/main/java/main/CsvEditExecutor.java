@@ -62,7 +62,7 @@ public abstract class CsvEditExecutor {
         for (int i = 0; i < header.length; i++) {
             String col = header[i].toLowerCase(Locale.ROOT);
             int spaceIndex = col.indexOf(' ');
-            String locale = spaceIndex > 0 ? col.substring(0, spaceIndex) : "";
+            String locale = spaceIndex > 0 ? col.substring(0, spaceIndex) : col;
             if ("id".equals(col)) {
                 idCol = i;
             } else if ("type".equals(col)) {
@@ -133,7 +133,7 @@ public abstract class CsvEditExecutor {
         for (int i = 0; i < header.length; i++) {
             String col = header[i].toLowerCase(Locale.ROOT);
             int spaceIndex = col.indexOf(' ');
-            String locale = spaceIndex > 0 ? col.substring(0, spaceIndex) : "";
+            String locale = spaceIndex > 0 ? col.substring(0, spaceIndex) : col;
             if ("id".equals(col)) {
                 idCol = i;
             } else if ("string index".equals(col)) {
@@ -188,7 +188,7 @@ public abstract class CsvEditExecutor {
         for (int i = 0; i < header.length; i++) {
             String col = header[i].toLowerCase(Locale.ROOT);
             int spaceIndex = col.indexOf(' ');
-            String locale = spaceIndex > 0 ? col.substring(0, spaceIndex) : "";
+            String locale = spaceIndex > 0 ? col.substring(0, spaceIndex) : col;
             if ("id".equals(col)) {
                 idCol = i;
             } else if ("string index".equals(col)) {

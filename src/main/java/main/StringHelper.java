@@ -14,6 +14,7 @@ import static main.DataReadingManager.LOCALIZATIONS;
 import static main.DataReadingManager.getLocalizationRoot;
 
 public abstract class StringHelper {
+    public static final String LETTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
     public static final String ANSI_RESET = "\u001B[0m";
     public static final String ANSI_BLACK = "\u001B[30m";
     public static final String ANSI_RED = "\u001B[31m";
@@ -40,6 +41,10 @@ public abstract class StringHelper {
             return formatted.substring(4);
         }
         return formatted;
+    }
+
+    public static String formatDec3(int threeDigitValue) {
+        return String.format("%03d", threeDigitValue);
     }
 
     public static String hex2Suffix(int oneByteValue) {
@@ -500,5 +505,12 @@ public abstract class StringHelper {
     public static void setCharMap(String charset, Map<Integer, Character> byteToCharMap, Map<Character, Integer> charToByteMap) {
         BYTE_TO_CHAR_MAPS.put(charset, byteToCharMap);
         CHAR_TO_BYTE_MAPS.put(charset, charToByteMap);
+    }
+
+    public static char toLetter(int letterIndex) {
+        if (letterIndex <= 0 || letterIndex >= 26) {
+            return '_';
+        }
+        return LETTERS.charAt(letterIndex - 1);
     }
 }

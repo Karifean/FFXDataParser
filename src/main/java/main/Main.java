@@ -235,7 +235,7 @@ public class Main {
                 break;
             case MODE_MAKE_AUTOHASTE_MOD:
                 for (int monsterIndex = 1; monsterIndex <= 346; monsterIndex++) {
-                    String mIndexString = String.format("m%03d", monsterIndex);
+                    String mIndexString = "m" + StringHelper.formatDec3(monsterIndex);
                     MonsterFile monster = DataAccess.getMonster(monsterIndex + 0x1000);
                     if (monster != null) {
                         monster.monsterStatData.autoStatusesTemporal |= 0x0800;

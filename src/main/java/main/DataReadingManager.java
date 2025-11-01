@@ -303,7 +303,7 @@ public class DataReadingManager {
     }
 
     public static MonsterFile readMonsterFull(int monsterIndex, boolean print) {
-        String mIndexString = String.format("m%03d", monsterIndex);
+        String mIndexString = "m" + StringHelper.formatDec3(monsterIndex);
         String midPath = '_' + mIndexString + '/' + mIndexString;
         String originalsPath = PATH_MONSTER_FOLDER + midPath + ".bin";
         MonsterFile monsterFile = readMonsterFile(monsterIndex, originalsPath, print);

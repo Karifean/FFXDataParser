@@ -862,8 +862,4 @@ public class CommandDataObject extends NameDescriptionTextObject implements Name
         }
     }
 
-    private static String formatUnknownByte(int bt) {
-        return StringHelper.formatHex2(bt) + '=' + String.format("%03d", bt) + '(' + String.format("%8s", Integer.toBinaryString(bt)).replace(' ', '0') + ')';
-    }
-
 }

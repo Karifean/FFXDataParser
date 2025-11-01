@@ -61,7 +61,7 @@ public class ScriptField implements Nameable {
         if (idx == null) {
             return null;
         }
-        String format = idx >= 0x10000 || idx < 0 ? "%08X" : (idx >= 0x100 ? "%04X" : "%02X");
+        String format = (idx & 0xFFFF0000) != 0 ? "%08X" : ((idx & 0xFF00) != 0 ? "%04X" : "%02X");
         String formatted = String.format(format, idx);
         if ("%08X".equals(format) && formatted.startsWith("FFFF")) {
             return formatted.substring(4);
