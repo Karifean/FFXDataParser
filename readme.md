@@ -86,11 +86,13 @@ The following files can be placed, with the following expected columns (i.e. the
   - Exact same columns as commands.csv, IDs are expected to use format `A...`, ex. `A029`
 - `monsterNameSensor.csv` - To make edits to name or sensor texts of monsters.
   - `id` - Contains monster ID written out in decimal, ex. `37` or `251` etc.
-  - `type` - Either `name` or `sensor`.
+  - `type` - Either `name` or `sensor`. (`scan` also works)
   - `direct copy` - Optionally contains another monster ID written out in decimal, in which case it simply clones the string from the given monster and does nothing else.
   - `us`/`de`/`fr`/`sp`/`it`/`jp`/`ch`/`kr` - String to insert in the given language, usual rules apply.
 - `monsterScan.csv` - To make edits to scan texts of monsters.
-  - Contains the same columns as monsterNameSensor.csv except no type column.
+  - Contains the same columns as monsterNameSensor.csv. 
+  - The `type` column must still be present and should say `scan` for each row.
+  - Note: This file is parsed identically to the monsterNameSensor.csv; all three types (`name`, `sensor`, `scan`) actually work in all three, I just found it more convenient to separate name/sensor from scan texts.
 - `events.csv` - To make edits to event/field script file texts.
   - `id` - Contains event ID written out as a string, ex. `bika0000` or `mtgz0700` etc.
   - `string index` - Numeric ID of the given string in decimal
