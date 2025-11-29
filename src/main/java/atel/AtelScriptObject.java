@@ -3,10 +3,7 @@ package atel;
 import atel.model.*;
 import main.StringHelper;
 import model.strings.LocalizedFieldStringObject;
-import reading.FileAccessorWithMods;
 
-import java.io.File;
-import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -175,30 +172,17 @@ public class AtelScriptObject {
         }
     }
 
-    public void addVariableNamings(String declarationsPath) {
-        File file = FileAccessorWithMods.getModdedFile(declarationsPath);
-        if (!file.exists()) {
+    public void addVariableNamings(Map<Integer, String> namings) {
+        if (namings == null || namings.isEmpty()) {
             return;
         }
-        try {
-            List<String> namingLines = FileAccessorWithMods.textFileToLineList(file);
-            for (String line : namingLines) {
-                try {
-                    String[] split = line.split("=");
-                    int index = Integer.parseInt(split[0], 16);
-                    if (variableDeclarations != null && index >= 0 && index < variableDeclarations.length) {
-                        variableDeclarations[index].declaredLabel = split[1];
-                    } else {
-                        System.err.println("Variable naming declaration out of bounds: " + StringHelper.formatHex2(index));
-                    }
-                } catch (NumberFormatException e) {
-                    System.err.println("Failed to parse line");
-                    e.printStackTrace();
-                }
+        for (Map.Entry<Integer, String> line : namings.entrySet()) {
+            int index = line.getKey();
+            if (variableDeclarations != null && index >= 0 && index < variableDeclarations.length) {
+                variableDeclarations[index].declaredLabel = line.getValue();
+            } else {
+                System.err.println("Variable naming declaration out of bounds: " + StringHelper.formatHex2(index));
             }
-        } catch (IOException e) {
-            System.err.println("Got IOException in reading name declarations");
-            e.printStackTrace();
         }
     }
 

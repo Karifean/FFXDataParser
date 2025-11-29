@@ -99,38 +99,63 @@ public class Main {
                     }
                 }
                 break;
+            case MODE_PARSE_ALL_MONSTERS:
+                realArgs = IntStream.range(1, 361).mapToObj(idx -> String.valueOf(idx)).toList();
             case MODE_PARSE_MONSTER:
                 for (String arg : realArgs) {
                     int idx = Integer.parseInt(arg, 10);
                     int monsterIdx = idx + 0x1000;
-                    MonsterFile monster = DataAccess.getMonster(monsterIdx);
-                    if (monster != null) {
-                        monster.parseScript();
-                        System.out.println("Printing monster #" + arg + StringHelper.hex4Suffix(monsterIdx));
-                        System.out.println(monster);
+                    String mIndexString = "m" + StringHelper.formatDec3(idx);
+                    MonsterFile monsterFile = DataAccess.getMonster(monsterIdx);
+                    if (monsterFile != null) {
+                        monsterFile.parseScript();
+                        String path = PATH_MONSTER_FOLDER + '_' + mIndexString + '/' + mIndexString + ".bin";
+                        System.out.println("--- " + path + " ---");
+                        String textOutputPath = PATH_TEXT_OUTPUT_ROOT + "battle/mon/" + mIndexString + ".txt";
+                        String monsterFileString = monsterFile.toString();
+                        FileAccessorWithMods.writeStringToFile(textOutputPath, monsterFileString);
+                        System.out.println(monsterFileString);
                     } else {
                         System.err.println("Monster with idx " + arg + " not found");
                     }
                 }
                 break;
-            case MODE_PARSE_ALL_MONSTERS:
-                readAllMonsters(true);
-                break;
-            case MODE_PARSE_ENCOUNTER:
-                for (String filename : realArgs) {
-                    readEncounterFull(filename, true);
-                }
-                break;
             case MODE_PARSE_ALL_ENCOUNTERS:
-                readAllEncounters(true);
-                break;
-            case MODE_PARSE_EVENT:
-                for (String filename : realArgs) {
-                    readEventFull(filename, true);
+                realArgs = DataAccess.ENCOUNTERS.keySet().stream().toList();
+            case MODE_PARSE_ENCOUNTER:
+                for (String encounterId : realArgs) {
+                    EncounterFile encounterFile = DataAccess.getEncounter(encounterId);
+                    if (encounterFile != null) {
+                        encounterFile.parseScript();
+                        String path = PATH_ORIGINALS_ENCOUNTER + encounterId + '/' + encounterId + ".bin";
+                        System.out.println("--- " + path + " ---");
+                        String textOutputPath = PATH_TEXT_OUTPUT_ROOT + "battle/btl/" + encounterId + ".txt";
+                        String encounterFileString = encounterFile.toString();
+                        FileAccessorWithMods.writeStringToFile(textOutputPath, encounterFileString);
+                        System.out.println(encounterFileString);
+                    } else {
+                        System.err.println("Encounter with id " + encounterId + " not found");
+                    }
                 }
                 break;
             case MODE_PARSE_ALL_EVENTS:
-                readAllEvents(SKIP_BLITZBALL_EVENTS_FOLDER, true);
+                realArgs = DataAccess.EVENTS.keySet().stream().filter(eventId -> (!SKIP_BLITZBALL_EVENTS_FOLDER || !eventId.startsWith("bl"))).toList();
+            case MODE_PARSE_EVENT:
+                for (String eventId : realArgs) {
+                    EventFile eventFile = DataAccess.getEvent(eventId);
+                    if (eventFile != null) {
+                        eventFile.parseScript();
+                        String shortened = eventId.substring(0, 2);
+                        String path = PATH_ORIGINALS_EVENT + shortened + '/' + eventId + '/' + eventId + ".ebp";
+                        System.out.println("--- " + path + " ---");
+                        String textOutputPath = PATH_TEXT_OUTPUT_ROOT + "event/obj/" + shortened + '/' + eventId + ".txt";
+                        String encounterFileString = eventFile.toString();
+                        FileAccessorWithMods.writeStringToFile(textOutputPath, encounterFileString);
+                        System.out.println(encounterFileString);
+                    } else {
+                        System.err.println("Encounter with id " + eventId + " not found");
+                    }
+                }
                 break;
             case MODE_PARSE_ATEL_FILE:
                 for (String filename : realArgs) {

@@ -1387,7 +1387,7 @@ public abstract class ScriptConstants {
         putBattleActorProperty(0x0147, "Item1RareAmountOverkill", "int", "stat_item1_rare_over_kill_num");
         putBattleActorProperty(0x0148, "Item2CommonAmountOverkill", "int", "stat_item2_com_over_kill_num");
         putBattleActorProperty(0x0149, "Item2RareAmountOverkill", "int", "stat_item2_rare_over_kill_num");
-        putBattleActorProperty(0x014A, "ReturnsBeforeDeathAnimation", "unknown", "stat_death_return");
+        putBattleActorProperty(0x014A, "ReturnsBeforeDeathAnimation", "bool", "stat_death_return");
         putBattleActorProperty(0x014B, null, "unknown", "stat_linear_move_reset");
         putBattleActorProperty(0x014C, null, "unknown", "stat_bodyhit_direct");
         putBattleActorProperty(0x014D, "?recruited (Aeon)", "bool", "stat_join");

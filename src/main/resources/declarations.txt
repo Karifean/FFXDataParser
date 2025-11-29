@@ -1,0 +1,3 @@
+monster m100 00=Target
+monster m100 01=Dice
+monster m100 02=NovaCount

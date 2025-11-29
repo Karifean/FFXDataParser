@@ -94,10 +94,11 @@ public class DataReadingManager {
         DataAccess.MIX_COMBINATIONS = readMixCombinations(PATH_ORIGINALS_KERNEL + "prepare.bin", false);
         DataAccess.CTB_BASE = readCtbBase(PATH_ORIGINALS_KERNEL + "ctb_base.bin", false);
 
-        readAllMonsters(false);
+        ScriptCustomDeclarations customDeclarations = readScriptCustomDeclarations();
+        readAllMonsters(customDeclarations.monsterMap);
         if (LOAD_EVENTS_AND_ENCOUNTERS) {
-            readAllEvents(false, false);
-            readAllEncounters(false);
+            readAllEvents(customDeclarations.eventMap, false);
+            readAllEncounters(customDeclarations.encounterMap);
         }
         readEncounterTables(PATH_ORIGINALS_KERNEL + "btl.bin", false);
         addAllMonsterLocalizations();
@@ -302,59 +303,48 @@ public class DataReadingManager {
         return new EventFile(eventId, bytes);
     }
 
-    public static void readAllMonsters(final boolean print) {
+    public static void readAllMonsters(Map<String, Map<Integer, String>> declarations) {
         for (int index = 0; index <= MONSTER_MAX_INDEX; index++) {
-            MonsterFile monsterFile = readMonsterFull(index, print);
+            String mIndexString = "m" + StringHelper.formatDec3(index);
+            Map<Integer, String> monsterDeclarations = declarations != null ? declarations.get(mIndexString) : null;
+            MonsterFile monsterFile = readMonsterFull(index, monsterDeclarations);
             DataAccess.MONSTERS[index] = monsterFile;
         }
     }
 
-    public static MonsterFile readMonsterFull(int monsterIndex, boolean print) {
+    public static MonsterFile readMonsterFull(int monsterIndex, Map<Integer, String> declarations) {
         String mIndexString = "m" + StringHelper.formatDec3(monsterIndex);
         String midPath = '_' + mIndexString + '/' + mIndexString;
         String originalsPath = PATH_MONSTER_FOLDER + midPath + ".bin";
-        MonsterFile monsterFile = readMonsterFile(monsterIndex, originalsPath, print);
+        MonsterFile monsterFile = readMonsterFile(monsterIndex, originalsPath, false);
         if (monsterFile == null) {
             return null;
         }
-        monsterFile.monsterAi.addVariableNamings(PATH_MONSTER_FOLDER + midPath + ".dcl");
-        if (print) {
-            monsterFile.parseScript();
-            String textOutputPath = PATH_TEXT_OUTPUT_ROOT + "battle/mon/" + mIndexString + ".txt";
-            String monsterFileString = monsterFile.toString();
-            FileAccessorWithMods.writeStringToFile(textOutputPath, monsterFileString);
-            System.out.println(monsterFileString);
-        }
+        monsterFile.monsterAi.addVariableNamings(declarations);
+        addVariableNamings(monsterFile.monsterAi, PATH_MONSTER_FOLDER + midPath + ".dcl");
         return monsterFile;
     }
 
-    public static void readAllEncounters(final boolean print) {
+    public static void readAllEncounters(Map<String, Map<Integer, String>> declarations) {
         File encountersFolder = FileAccessorWithMods.getRealFile(PATH_ORIGINALS_ENCOUNTER);
         if (encountersFolder.isDirectory()) {
             String[] contents = encountersFolder.list();
             if (contents != null) {
                 Stream<String> encounterFiles = Arrays.stream(contents).filter(sf -> !sf.startsWith(".")).sorted();
                 encounterFiles.forEach(encounterId -> {
-                    EncounterFile encounterFile = readEncounterFull(encounterId, print);
+                    Map<Integer, String> encounterDeclarations = declarations != null ? declarations.get(encounterId) : null;
+                    EncounterFile encounterFile = readEncounterFull(encounterId, encounterDeclarations);
                     DataAccess.ENCOUNTERS.put(encounterId, encounterFile);
                 });
-            } else {
-                if (print) {
-                    System.out.println("Cannot list encounters");
-                }
-            }
-        } else {
-            if (print) {
-                System.out.println("Cannot locate encounters");
             }
         }
     }
 
-    public static EncounterFile readEncounterFull(String encounterId, boolean print) {
+    public static EncounterFile readEncounterFull(String encounterId, Map<Integer, String> declarations) {
         String midPath = encounterId + '/' + encounterId;
         String endPath = midPath + ".bin";
         String originalsPath = PATH_ORIGINALS_ENCOUNTER + endPath;
-        EncounterFile encounterFile = readEncounterFile(encounterId, originalsPath, print, false);
+        EncounterFile encounterFile = readEncounterFile(encounterId, originalsPath, false, false);
         if (encounterFile == null) {
             return null;
         }
@@ -365,18 +355,12 @@ public class DataReadingManager {
         }
         List<LocalizedFieldStringObject> localizedStrings = StringHelper.readLocalizedStringFiles("battle/btl/" + endPath);
         encounterFile.addLocalizations(localizedStrings);
-        encounterFile.encounterScript.addVariableNamings(PATH_ORIGINALS_ENCOUNTER + midPath + ".dcl");
-        if (print) {
-            encounterFile.parseScript();
-            String textOutputPath = PATH_TEXT_OUTPUT_ROOT + "battle/btl/" + encounterId + ".txt";
-            String encounterFileString = encounterFile.toString();
-            FileAccessorWithMods.writeStringToFile(textOutputPath, encounterFileString);
-            System.out.println(encounterFileString);
-        }
+        encounterFile.encounterScript.addVariableNamings(declarations);
+        addVariableNamings(encounterFile.encounterScript, PATH_ORIGINALS_ENCOUNTER + midPath + ".dcl");
         return encounterFile;
     }
 
-    public static void readAllEvents(final boolean skipBlitzballEvents, final boolean print) {
+    public static void readAllEvents(Map<String, Map<Integer, String>> declarations, final boolean skipBlitzballEvents) {
         File eventsFolder = FileAccessorWithMods.getRealFile(PATH_ORIGINALS_EVENT);
         if (eventsFolder.isDirectory()) {
             String[] contents = eventsFolder.list();
@@ -389,39 +373,26 @@ public class DataReadingManager {
                         .filter(sf -> !sf.startsWith("."))
                         .sorted();
                 eventFiles.forEach(eventId -> {
-                    EventFile eventFile = readEventFull(eventId, print);
+                    Map<Integer, String> eventDeclarations = declarations != null ? declarations.get(eventId) : null;
+                    EventFile eventFile = readEventFull(eventId, eventDeclarations);
                     DataAccess.EVENTS.put(eventId, eventFile);
                 });
-            } else {
-                if (print) {
-                    System.out.println("Cannot list events");
-                }
-            }
-        } else {
-            if (print) {
-                System.out.println("Cannot locate events");
             }
         }
     }
 
-    public static EventFile readEventFull(String eventId, boolean print) {
+    public static EventFile readEventFull(String eventId, Map<Integer, String> declarations) {
         String shortened = eventId.substring(0, 2);
         String midPath = shortened + '/' + eventId + '/' + eventId;
         String originalsPath = PATH_ORIGINALS_EVENT + midPath + ".ebp";
-        EventFile eventFile = readEventFile(eventId, originalsPath, print);
+        EventFile eventFile = readEventFile(eventId, originalsPath, false);
         if (eventFile == null) {
             return null;
         }
         List<LocalizedFieldStringObject> localizedStrings = StringHelper.readLocalizedStringFiles("event/obj_ps3/" + midPath + ".bin");
         eventFile.addLocalizations(localizedStrings);
-        eventFile.eventScript.addVariableNamings(PATH_ORIGINALS_EVENT + midPath + ".dcl");
-        if (print) {
-            eventFile.parseScript();
-            String textOutputPath = PATH_TEXT_OUTPUT_ROOT + "event/obj/" + shortened + '/' + eventId + ".txt";
-            String eventFileString = eventFile.toString();
-            FileAccessorWithMods.writeStringToFile(textOutputPath, eventFileString);
-            System.out.println(eventFileString);
-        }
+        eventFile.eventScript.addVariableNamings(declarations);
+        addVariableNamings(eventFile.eventScript, PATH_ORIGINALS_EVENT + midPath + ".dcl");
         return eventFile;
     }
 
@@ -517,4 +488,58 @@ public class DataReadingManager {
         }
         return obj;
     }
+
+    private static ScriptCustomDeclarations readScriptCustomDeclarations() {
+        File declarationsFile = new File(FileAccessorWithMods.RESOURCES_ROOT + "declarations.txt");
+        Map<String, Map<Integer, String>> eventMap = new HashMap<>();
+        Map<String, Map<Integer, String>> encounterMap = new HashMap<>();
+        Map<String, Map<Integer, String>> monsterMap = new HashMap<>();
+        ScriptCustomDeclarations declarations = new ScriptCustomDeclarations(eventMap, encounterMap, monsterMap);
+        try {
+            List<String> declarationLines = FileAccessorWithMods.textFileToLineList(declarationsFile);
+            for (String line : declarationLines) {
+                String[] split = line.split(" ");
+                String type = split[0];
+                Map<String, Map<Integer, String>> targetMap;
+                if ("event".equals(type)) {
+                    targetMap = eventMap;
+                } else if ("encounter".equals(type)) {
+                    targetMap = encounterMap;
+                } else if ("monster".equals(type)) {
+                    targetMap = monsterMap;
+                } else {
+                    continue;
+                }
+                String key = split[1];
+                Map<Integer, String> subMap = targetMap.computeIfAbsent(key, (v) -> new HashMap<>());
+                String declaration = split[2];
+                String[] declarationSplit = declaration.split("=");
+                subMap.put(Integer.parseInt(declarationSplit[0], 16), declarationSplit[1]);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return declarations;
+    }
+
+    private static void addVariableNamings(AtelScriptObject script, String declarationsPath) {
+        File file = FileAccessorWithMods.getModdedFile(declarationsPath);
+        if (!file.exists()) {
+            return;
+        }
+        try {
+            List<String> namingLines = FileAccessorWithMods.textFileToLineList(file);
+            Map<Integer, String> map = new HashMap<>();
+            for (String line : namingLines) {
+                String[] split = line.split("=");
+                map.put(Integer.parseInt(split[0], 16), split[1]);
+            }
+            script.addVariableNamings(map);
+        } catch (IOException | NumberFormatException e) {
+            System.err.println("Got Exception in reading name declarations");
+            e.printStackTrace();
+        }
+    }
+
+    private record ScriptCustomDeclarations(Map<String, Map<Integer, String>> eventMap, Map<String, Map<Integer, String>> encounterMap, Map<String, Map<Integer, String>> monsterMap) {}
 }
