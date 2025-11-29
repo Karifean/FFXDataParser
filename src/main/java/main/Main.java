@@ -293,20 +293,91 @@ public class Main {
                     System.out.println("CA: " + blitzballGrowthToString(caValues, baseOffset));
                 }
                 System.out.println("Events");
-                DataAccess.EVENTS.values().stream().filter(e -> {
+                DataAccess.EVENTS.values().forEach(e -> {
                     e.parseScript();
-                    return Arrays.stream(e.eventScript.variableDeclarations).anyMatch(d -> {
+                    Map<Integer, String> matcherMap = new HashMap<>();
+                    Arrays.stream(e.eventScript.variableDeclarations).forEach(d -> {
                         if (d.values.isEmpty() || d.values.size() < 100) {
-                            return false;
+                            return;
                         }
+                        boolean hpEqual = true;
+                        boolean spEqual = true;
+                        boolean atEqual = true;
+                        boolean enEqual = true;
+                        boolean paEqual = true;
+                        boolean shEqual = true;
+                        boolean blEqual = true;
+                        boolean caEqual = true;
+                        int checks = 8;
                         for (int i = 0; i < 100; i++) {
-                            if (d.values.get(i).valueSigned != hpValues.get(i).valueSigned) {
-                                return false;
+                            int val = d.values.get(i).valueSigned;
+                            if (hpEqual && val != hpValues.get(i).valueSigned) {
+                                hpEqual = false;
+                                checks--;
+                            }
+                            if (spEqual && val != spValues.get(i).valueSigned) {
+                                spEqual = false;
+                                checks--;
+                            }
+                            if (atEqual && val != atValues.get(i).valueSigned) {
+                                atEqual = false;
+                                checks--;
+                            }
+                            if (enEqual && val != enValues.get(i).valueSigned) {
+                                enEqual = false;
+                                checks--;
+                            }
+                            if (paEqual && val != paValues.get(i).valueSigned) {
+                                paEqual = false;
+                                checks--;
+                            }
+                            if (shEqual && val != shValues.get(i).valueSigned) {
+                                shEqual = false;
+                                checks--;
+                            }
+                            if (blEqual && val != blValues.get(i).valueSigned) {
+                                blEqual = false;
+                                checks--;
+                            }
+                            if (caEqual && val != caValues.get(i).valueSigned) {
+                                caEqual = false;
+                                checks--;
+                            }
+                            if (checks <= 0) {
+                                break;
                             }
                         }
-                        return true;
+                        if (hpEqual) {
+                            matcherMap.put(d.index, "BlitzballStatGrowthTable_HP");
+                        }
+                        if (spEqual) {
+                            matcherMap.put(d.index, "BlitzballStatGrowthTable_SP");
+                        }
+                        if (atEqual) {
+                            matcherMap.put(d.index, "BlitzballStatGrowthTable_AT");
+                        }
+                        if (enEqual) {
+                            matcherMap.put(d.index, "BlitzballStatGrowthTable_EN");
+                        }
+                        if (paEqual) {
+                            matcherMap.put(d.index, "BlitzballStatGrowthTable_PA");
+                        }
+                        if (shEqual) {
+                            matcherMap.put(d.index, "BlitzballStatGrowthTable_SH");
+                        }
+                        if (blEqual) {
+                            matcherMap.put(d.index, "BlitzballStatGrowthTable_BL");
+                        }
+                        if (caEqual) {
+                            matcherMap.put(d.index, "BlitzballStatGrowthTable_CA");
+                        }
                     });
-                }).forEach(e -> System.out.println(e.getName()));
+                    if (!matcherMap.isEmpty()) {
+                        StringBuilder builder = new StringBuilder("event ").append(e.id);
+                        matcherMap.forEach((index, stat) -> builder.append(' ').append(StringHelper.formatHex2(index)).append('=').append(stat));
+                        System.out.println(builder);
+                    }
+                });
                 break;
             case MODE_CUSTOM:
                 readPlayerCharStats("battle/kernel/ply_save.bin", true);
