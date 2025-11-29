@@ -512,9 +512,10 @@ public class DataReadingManager {
                 }
                 String key = split[1];
                 Map<Integer, String> subMap = targetMap.computeIfAbsent(key, (v) -> new HashMap<>());
-                String declaration = split[2];
-                String[] declarationSplit = declaration.split("=");
-                subMap.put(Integer.parseInt(declarationSplit[0], 16), declarationSplit[1]);
+                for (int i = 2; i < split.length; i++) {
+                    String[] declaration = split[i].split("=");
+                    subMap.put(Integer.parseInt(declaration[0], 16), declaration[1]);
+                }
             }
         } catch (IOException e) {
             e.printStackTrace();
