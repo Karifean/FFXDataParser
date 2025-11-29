@@ -51,7 +51,7 @@ public class DataReadingManager {
     );
     public static final List<String> CHARSETS = List.of("ch", "cn", "jp", "kr", "us");
 
-    private static final boolean ALLOW_DAT_FILES = true;
+    private static final boolean ALLOW_DAT_FILES = false;
     private static final boolean LOAD_EVENTS_AND_ENCOUNTERS = true;
 
     public static String getLocalizationRoot(String localization) {
@@ -302,6 +302,13 @@ public class DataReadingManager {
         return new EventFile(eventId, bytes);
     }
 
+    public static void readAllMonsters(final boolean print) {
+        for (int index = 0; index <= MONSTER_MAX_INDEX; index++) {
+            MonsterFile monsterFile = readMonsterFull(index, print);
+            DataAccess.MONSTERS[index] = monsterFile;
+        }
+    }
+
     public static MonsterFile readMonsterFull(int monsterIndex, boolean print) {
         String mIndexString = "m" + StringHelper.formatDec3(monsterIndex);
         String midPath = '_' + mIndexString + '/' + mIndexString;
@@ -310,6 +317,7 @@ public class DataReadingManager {
         if (monsterFile == null) {
             return null;
         }
+        monsterFile.monsterAi.addVariableNamings(PATH_MONSTER_FOLDER + midPath + ".dcl");
         if (print) {
             monsterFile.parseScript();
             String textOutputPath = PATH_TEXT_OUTPUT_ROOT + "battle/mon/" + mIndexString + ".txt";
@@ -318,13 +326,6 @@ public class DataReadingManager {
             System.out.println(monsterFileString);
         }
         return monsterFile;
-    }
-
-    public static void readAllMonsters(final boolean print) {
-        for (int index = 0; index <= MONSTER_MAX_INDEX; index++) {
-            MonsterFile monsterFile = readMonsterFull(index, print);
-            DataAccess.MONSTERS[index] = monsterFile;
-        }
     }
 
     public static void readAllEncounters(final boolean print) {
@@ -350,7 +351,8 @@ public class DataReadingManager {
     }
 
     public static EncounterFile readEncounterFull(String encounterId, boolean print) {
-        String endPath = encounterId + '/' + encounterId + ".bin";
+        String midPath = encounterId + '/' + encounterId;
+        String endPath = midPath + ".bin";
         String originalsPath = PATH_ORIGINALS_ENCOUNTER + endPath;
         EncounterFile encounterFile = readEncounterFile(encounterId, originalsPath, print, false);
         if (encounterFile == null) {
@@ -363,6 +365,7 @@ public class DataReadingManager {
         }
         List<LocalizedFieldStringObject> localizedStrings = StringHelper.readLocalizedStringFiles("battle/btl/" + endPath);
         encounterFile.addLocalizations(localizedStrings);
+        encounterFile.encounterScript.addVariableNamings(PATH_ORIGINALS_ENCOUNTER + midPath + ".dcl");
         if (print) {
             encounterFile.parseScript();
             String textOutputPath = PATH_TEXT_OUTPUT_ROOT + "battle/btl/" + encounterId + ".txt";
@@ -411,6 +414,7 @@ public class DataReadingManager {
         }
         List<LocalizedFieldStringObject> localizedStrings = StringHelper.readLocalizedStringFiles("event/obj_ps3/" + midPath + ".bin");
         eventFile.addLocalizations(localizedStrings);
+        eventFile.eventScript.addVariableNamings(PATH_ORIGINALS_EVENT + midPath + ".dcl");
         if (print) {
             eventFile.parseScript();
             String textOutputPath = PATH_TEXT_OUTPUT_ROOT + "event/obj/" + shortened + '/' + eventId + ".txt";

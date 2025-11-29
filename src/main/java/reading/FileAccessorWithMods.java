@@ -42,6 +42,19 @@ public class FileAccessorWithMods {
         return new DataInputStream(new BufferedInputStream(new FileInputStream(file)));
     }
 
+    public static List<String> textFileToLineList(File file) throws IOException {
+        List<String> list = new ArrayList<>();
+        if (file.exists()) {
+            try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    list.add(line);
+                }
+            }
+        }
+        return list;
+    }
+
     public static List<String[]> csvToList(File file) throws IOException {
         List<String[]> list = new ArrayList<>();
         if (file.exists()) {

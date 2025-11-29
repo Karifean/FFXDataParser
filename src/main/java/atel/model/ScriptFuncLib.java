@@ -66,7 +66,7 @@ public abstract class ScriptFuncLib {
         putUnknownFunc(0x0006, 3);
         putUnknownFunc(0x0007, 1);
         putFuncWithIdx(0x0010, new ScriptFunc("getEntranceIndex", "int", null, true));
-        putFuncWithIdx(0x0011, new ScriptFunc("transitionToMap?", "unknown", null, p("map"), p("entranceIndex?", "int")));
+        putFuncWithIdx(0x0011, new ScriptFunc("transitionToRoom?", "unknown", null, p("room"), p("spawnpoint", "int")));
         putUnknownFunc(0x0012, 2);
         putFuncWithIdx(0x0013, new ScriptFunc("setPosition", "unknown", null, p("x", "float"), p("y", "float"), p("z", "float")));
         putFuncWithIdx(0x0015, new ScriptFunc("setDestination", "unknown", null, p("x", "float"), p("y", "float"), p("z", "float")));
@@ -147,16 +147,16 @@ public abstract class ScriptFuncLib {
         putFuncWithIdx(0x007C, new ScriptFunc("waitForText", "unknown", null, p("boxIndex", "int"))); // equivalent to 0x0084 with second param 0
         putFuncWithIdx(0x007D, new ScriptFunc("?awaitPlayerDialogueChoice", "int", null, p("boxIndex", "int")));
         putUnknownFunc(0x007F, 1);
-        putFuncWithIdx(0x0080, new ScriptFunc("getCurrentEntranceX", "float", null, true));
-        putFuncWithIdx(0x0081, new ScriptFunc("getCurrentEntranceY", "float", null, true));
-        putFuncWithIdx(0x0082, new ScriptFunc("getCurrentEntranceZ", "float", null, true));
-        putFuncWithIdx(0x0083, new ScriptFunc("getCurrentEntranceYaw", "float", null, true));
+        putFuncWithIdx(0x0080, new ScriptFunc("getCurrentSpawnpointX", "float", null, true));
+        putFuncWithIdx(0x0081, new ScriptFunc("getCurrentSpawnpointY", "float", null, true));
+        putFuncWithIdx(0x0082, new ScriptFunc("getCurrentSpawnpointZ", "float", null, true));
+        putFuncWithIdx(0x0083, new ScriptFunc("getCurrentSpawnpointYaw", "float", null, true));
         putFuncWithIdx(0x0084, new ScriptFunc("waitForText", "unknown", null, p("boxIndex", "int"), p(2)));
         putFuncWithIdx(0x0085, new ScriptFunc("setTouchRadius", "unknown", null, p("radius", "float"))); // noclip: setCollisionRadius()
-        putFuncWithIdx(0x0086, new ScriptFunc("CurrentLevel", "unknown", null, false)); // the ID of the actual map geometry file, multiple "map"s can share these
-        putFuncWithIdx(0x0087, new ScriptFunc("CurrentMap", "map", null, false));
-        putFuncWithIdx(0x0088, new ScriptFunc("LastLevel", "unknown", null, false));
-        putFuncWithIdx(0x0089, new ScriptFunc("LastMap", "map", null, false));
+        putFuncWithIdx(0x0086, new ScriptFunc("CurrentMap", "unknown", null, false)); // the ID of the actual map geometry file, multiple "map"s can share these
+        putFuncWithIdx(0x0087, new ScriptFunc("CurrentRoom", "room", null, false));
+        putFuncWithIdx(0x0088, new ScriptFunc("LastMap", "unknown", null, false));
+        putFuncWithIdx(0x0089, new ScriptFunc("LastRoom", "room", null, false));
         putUnknownFunc(0x008B, 0); // noclip: checking line crossing
         putUnknownFunc(0x008D, 1);
         putUnknownFunc(0x008E, 1); // noclip: setCollisionHeight()
@@ -196,22 +196,22 @@ public abstract class ScriptFuncLib {
         putUnknownFunc(0x00BC, 1);
         putUnknownFunc(0x00BD, 1);
         putUnknownFunc(0x00BE, 1);
-        putFuncWithIdx(0x00BF, new ScriptFunc("getEntranceX", "float", null, p("entranceIndex")));
-        putFuncWithIdx(0x00C0, new ScriptFunc("getEntranceY", "float", null, p("entranceIndex")));
-        putFuncWithIdx(0x00C1, new ScriptFunc("getEntranceZ", "float", null, p("entranceIndex")));
-        putFuncWithIdx(0x00C2, new ScriptFunc("getEntranceRotation", "float", null, p("entranceIndex")));
+        putFuncWithIdx(0x00BF, new ScriptFunc("getSpawnpointX", "float", null, p("spawnpoint", "int")));
+        putFuncWithIdx(0x00C0, new ScriptFunc("getSpawnpointY", "float", null, p("spawnpoint", "int")));
+        putFuncWithIdx(0x00C1, new ScriptFunc("getSpawnpointZ", "float", null, p("spawnpoint", "int")));
+        putFuncWithIdx(0x00C2, new ScriptFunc("getSpawnpointYaw", "float", null, p("spawnpoint", "int")));
         putUnknownFunc(0x00C4, 0);
         putFuncWithIdx(0x00C5, new ScriptFunc("registerTurnMotions?", "unknown", null, p("p1", "motion"), p("p2", "motion"), p("p3", "motion"), p("p4", "motion")));
         putUnknownFunc(0x00C6, 0);
         putUnknownFunc(0x00C7, null, "motion", 1);
         putFuncWithIdx(0x00C8, new ScriptFunc("computeRotationDuration", "unknown", null, p("flags", "int"), p("shortDuration", "int"), p("longDuration", "int")));
-        putFuncWithIdx(0x00C9, new ScriptFunc("getScriptEntrypointForEntrance", "int", null, p("mapEntrance", "int"))); // a signal is sent for this entrypoint to an event-defined worker when the map loads
+        putFuncWithIdx(0x00C9, new ScriptFunc("getScriptEntrypointForSpawnpoint", "int", null, p("spawnpoint", "int"))); // a signal is sent for this entrypoint to an event-defined worker when the map loads
         putFuncWithIdx(0x00CA, new ScriptFunc("addPartyMember", "unknown", null, p("playerChar")));
         putFuncWithIdx(0x00CB, new ScriptFunc("removePartyMember", "unknown", null, p("playerChar"))); // Party member is greyed out in the list
         putUnknownFunc(0x00CC, 1);
         putUnknownFunc(0x00CE, 1);
-        putFuncWithIdx(0x00CF, new ScriptFunc("saveAnimation", "unknown", null, p("motion")));
-        putFuncWithIdx(0x00D0, new ScriptFunc("SavedAnimation", "unknown", null, false));
+        putFuncWithIdx(0x00CF, new ScriptFunc("saveMotion", "unknown", null, p("motion")));
+        putFuncWithIdx(0x00D0, new ScriptFunc("SavedMotion", "unknown", null, false));
         putFuncWithIdx(0x00D1, new ScriptFunc("stopWorkerMotion", "unknown", null, true));
         putFuncWithIdx(0x00D2, new ScriptFunc("stopWorkerRotation", "unknown", null, true));
         putFuncWithIdx(0x00D5, new ScriptFunc("playFieldVoiceLine", "unknown", null, p("voiceFile")));
@@ -220,8 +220,8 @@ public abstract class ScriptFuncLib {
         putUnknownFunc(0x00D8, 0);
         putUnknownFunc(0x00D9, 0);
         putUnknownFunc(0x00DA, 0);
-        putFuncWithIdx(0x00DB, new ScriptFunc("loadAndPlayMoveAnimation", "unknown", null, p("moveAnim")));
-        putFuncWithIdx(0x00DC, new ScriptFunc("awaitLoadingOfMoveAnimation", "unknown", null, true));
+        putFuncWithIdx(0x00DB, new ScriptFunc("loadAndPlayMagic", "unknown", null, p("magicFile")));
+        putFuncWithIdx(0x00DC, new ScriptFunc("awaitLoadingOfMagic", "unknown", null, true));
         putUnknownFunc(0x00DE, 0);
         putFuncWithIdx(0x00DF, new ScriptFunc("playSfx", "unknown", null, p("sfx")));
         putFuncWithIdx(0x00E0, new ScriptFunc(p("sfx")));
@@ -232,7 +232,7 @@ public abstract class ScriptFuncLib {
         putUnknownFunc(0x00E6, 1);
         putFuncWithIdx(0x00E7, new ScriptFunc("putPartyMemberInSlot", "unknown", null, p("slot", "int"), p("playerChar")));
         putFuncWithIdx(0x00E8, new ScriptFunc("storeFrontlineInArray", "unknown", null, p("slot1", "pointer"), p("slot2", "pointer"), p("slot3", "pointer")));
-        putUnknownFunc(0x00E9, 1);
+        putFuncWithIdx(0x00E9, new ScriptFunc("setMenuEnabled", "unknown", null, p("enabled", "bool")));
         putUnknownFunc(0x00EB, 0);
         putFuncWithIdx(0x00EC, new ScriptFunc("findPartyMemberFormationIndex", "int", null, p("playerChar")));
         putFuncWithIdx(0x00ED, new ScriptFunc("getWorkerLinkedChr", "btlChr", null, true)); // get ID of attached actor
@@ -259,7 +259,7 @@ public abstract class ScriptFuncLib {
         putUnknownFunc(0x0108, 5);
         putUnknownFunc(0x0109, 1);
         putUnknownFunc(0x010A, 1);
-        putFuncWithIdx(0x010B, new ScriptFunc("warpToMap?", "unknown", null, p("map"), p("entranceIndex?", "int")));
+        putFuncWithIdx(0x010B, new ScriptFunc("warpToRoom?", "unknown", null, p("room"), p("spawnpoint", "int")));
         putUnknownFunc(0x010C, 2);
         putFuncWithIdx(0x010D, new ScriptFunc("SetPrimerCollected", "unknown", null, p("primerIndex", "int")));
         putFuncWithIdx(0x010E, new ScriptFunc("CollectedPrimersBitfield", "bitfield", null, false));
@@ -362,8 +362,8 @@ public abstract class ScriptFuncLib {
         putUnknownFunc(0x0194, 1);
         putUnknownFunc(0x0195, 0); // some sort of wait related to move animation/magic
         putFuncWithIdx(0x0196, new ScriptFunc("bindGfxToSelf", "unknown", null, p("gfxIndex", "int"))); // only works for level geometry
-        putFuncWithIdx(0x0197, new ScriptFunc("attachToLevelPart", "unknown", null, p("partIndex", "int")));
-        putFuncWithIdx(0x0198, new ScriptFunc("enableVisualEffectIndex", "unknown", null, p("levelPartIndex", "int"), p("effectType"), p("runOnce", "bool")));
+        putFuncWithIdx(0x0197, new ScriptFunc("attachToMapPart", "unknown", null, p("partIndex", "int")));
+        putFuncWithIdx(0x0198, new ScriptFunc("enableVisualEffectIndex", "unknown", null, p("mapPartIndex", "int"), p("effectType"), p("runOnce", "bool")));
         putFuncWithIdx(0x0199, new ScriptFunc("enableOwnVisualEffectIndex", "unknown", null, p("effectType"), p("runOnce", "bool")));
         putFuncWithIdx(0x019C, new ScriptFunc("True", "bool", null, false));
         putFuncWithIdx(0x019D, new ScriptFunc("detach", "unknown", null, p("unloadModel", "bool")));
@@ -399,7 +399,7 @@ public abstract class ScriptFuncLib {
         putUnknownFunc(0x01C5, 2);
         putUnknownFunc(0x01C6, 0);
         putFuncWithIdx(0x01C8, new ScriptFunc("disableOwnVisualEffect", "unknown", null, p("effectType", "int"))); // Never used by the game
-        putFuncWithIdx(0x01C9, new ScriptFunc("disableVisualEffect", "unknown", null, p("levelPartIndex", "int"), p("effectType")));
+        putFuncWithIdx(0x01C9, new ScriptFunc("disableVisualEffect", "unknown", null, p("mapPartIndex", "int"), p("effectType")));
         putUnknownFunc(0x01CA, 0);
         putFuncWithIdx(0x01CC, new ScriptFunc("CurrentPlayingMusic", "bgm", null, false));
         putUnknownFunc(0x01CE, 0);
@@ -1136,7 +1136,7 @@ public abstract class ScriptFuncLib {
         putUnknownFunc(0x7126, 1);
         putUnknownFunc(0x7127, 2);
 
-        putFuncWithIdx(0x8000, new ScriptFunc("setLevelLayerVisibility", "unknown", null, p("layerIndex", "int"), p("visible", "bool")));
+        putFuncWithIdx(0x8000, new ScriptFunc("setMapLayerVisibility", "unknown", null, p("layerIndex", "int"), p("visible", "bool")));
         putFuncWithIdx(0x8001, new ScriptFunc("setSkyboxVisibility", "unknown", null, p("visible", "bool")));
         putFuncWithIdx(0x8002, new ScriptFunc("setGfxActive?", "unknown", null, p("gfxIndex", "int"), p("active", "bool"))); // GFX are either lights or particle effects
         putFuncWithIdx(0x8003, new ScriptFunc("startGfxTimer", "unknown", null, p("gfxIndex", "int")));

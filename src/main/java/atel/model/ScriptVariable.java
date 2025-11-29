@@ -24,6 +24,7 @@ public class ScriptVariable {
     public ScriptWorker parentWorker;
     public String inferredType = "unknown";
     public boolean typeKnown = false;
+    public String declaredLabel;
 
     public ScriptVariable(ScriptWorker parentWorker, int index, int lb, int hb) {
         this.parentWorker = parentWorker;
@@ -137,6 +138,9 @@ public class ScriptVariable {
     }
 
     public String getLabel(ScriptWorker worker) {
+        if (declaredLabel != null) {
+            return declaredLabel;
+        }
         if (location == 0) {
             ScriptField scriptField = StackObject.enumToScriptField("saveData", offset + SAVEDATA_ATEL_OFFSET);
             if (scriptField.name != null) {
