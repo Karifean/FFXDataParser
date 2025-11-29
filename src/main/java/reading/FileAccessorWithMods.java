@@ -23,19 +23,15 @@ public class FileAccessorWithMods {
     }
 
     public static File resolveFile(String path, boolean print) {
-        File file;
-        if (DISABLE_MODS) {
-            file = getRealFile(path);
-        } else {
-            file = getModdedFile(path);
-            if (!file.exists()) {
-                file = getRealFile(path);
-            }
-        }
         if (print) {
-            System.out.println("--- " + file.getPath() + " ---");
+            System.out.println("--- " + path + " ---");
         }
-        return file;
+        File moddedFile = DISABLE_MODS ? null : getModdedFile(path);
+        if (moddedFile != null && moddedFile.exists()) {
+            return moddedFile;
+        } else {
+            return getRealFile(path);
+        }
     }
 
     public static DataInputStream readFile(File file) throws FileNotFoundException {
