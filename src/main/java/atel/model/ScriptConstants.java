@@ -378,15 +378,18 @@ public abstract class ScriptConstants {
         putSaveDataVariable(0xD55, "Unused?KimahriBattleTalkativeness", "int");
         putSaveDataVariable(0x11EC, "BlitzballPlayerLearnedTechsPage1", "bitfieldFrom_blitzTechP1", "blitzballPlayer");
         putSaveDataVariable(0x12DC, "BlitzballPlayerLearnedTechsPage2", "bitfieldFrom_blitzTechP2", "blitzballPlayer");
+        putSaveDataVariable(0x13CC, "BlitzballPlayerPendingLearningTechsPage1?", "bitfieldFrom_blitzTechP1", "blitzballPlayer");
+        putSaveDataVariable(0x140C, "BlitzballPlayerPendingLearningTechsPage2?", "bitfieldFrom_blitzTechP2", "blitzballPlayer");
         putSaveDataVariable(0x1452, "BlitzballPlayerEquippedTechs", "blitzTech"); // index = blitzballPlayer * 5 + 0..4
         putSaveDataVariable(0x157E, "BlitzballPlayerUnlockedTechSlots", "int", "blitzballPlayer");
         putSaveDataVariable(0x15BA, "BlitzballPlayerCurrentLevel", "int", "blitzballPlayer");
+        putSaveDataVariable(0x15F6, "MatchPlayerPendingEXP", "int", "int");
         putSaveDataVariable(0x1754, "BlitzballPlayerCurrentEXP", "int", "blitzballPlayer");
         putSaveDataVariable(0x1606, "BlitzballTeamPlayers", "blitzballPlayer");
-        putSaveDataVariable(0x163E, "BlitzballMatchPlayerScore", "int");
+        putSaveDataVariable(0x163E, "BlitzballMatchAurochsScore", "int");
         putSaveDataVariable(0x163F, "BlitzballMatchOpponentScore", "int");
-        putSaveDataVariable(0x1640, "BlitzballIsSecondHalf?", "bool");
-        putSaveDataVariable(0x1641, "BlitzballMarkedPlayerIndex?", "int", "int");
+        putSaveDataVariable(0x1640, "BlitzballIsSecondHalf", "bool");
+        putSaveDataVariable(0x1641, "BlitzballMatchPlayerMarkedIndex", "int", "int");
         putSaveDataVariable(0x1651, "BlitzballEnemyTeam", "blitzballTeam");
         putSaveDataVariable(0x1652, "BlitzballCurrentLeagueTeamSeedings", "blitzballTeam", "int");
         putSaveDataVariable(0x1658, "BlitzballCurrentTournamentTeamSlot", "blitzballTeam", "int");
@@ -394,11 +397,16 @@ public abstract class ScriptConstants {
         putSaveDataVariable(0x166C, "BlitzballCurrentLeagueTeamLosses", "int", "blitzballTeam");
         putSaveDataVariable(0x1672, "BlitzballCurrentLeagueRound", "int");
         putSaveDataVariable(0x1673, "BlitzballCurrentLeagueMatchTeamSlot", "blitzballTeam", "int");
+        putSaveDataVariable(0x1679, "BlitzballAurochsMatchupLine", "int");
         putSaveDataVariable(0x167A, "BlitzballGameMode", "blitzballGameMode");
         putSaveDataVariable(0x169F, "BlitzballCurrentTournamentState", "int");
         putSaveDataVariable(0x16A0, null, "int");
+        putSaveDataVariable(0x16A1, "BlitzballCurrentGameGoalsScored", "int");
+        putSaveDataVariable(0x16A2, "BlitzballCurrentGameGoalScorer", "blitzballPlayer", "int");
+        putSaveDataVariable(0x1714, "BlitzballAurochsMatchupLineLeftSide", "bool");
         putSaveDataVariable(0x1716, "BlitzballPlayerContractDurations", "int", "blitzballPlayer");
         putSaveDataVariable(0x1752, "BlitzballTotalGamesWon", "int");
+        putSaveDataVariable(0x17CC, "BlitzballCurrentGameGoalTimestamp", "int", "int");
         putSaveDataVariable(0x1984, "BlitzballPlayerCostPerGame", "int", "blitzballPlayer");
         putSaveDataVariable(0x19FC, "BlitzballLeaguePrizeIndex", "int");
         putSaveDataVariable(0x1A02, "BlitzballTournamentPrizeIndex", "int");
@@ -607,6 +615,21 @@ public abstract class ScriptConstants {
 
         putEnum("textFlagBitfield", 0x0002, "?HasSpeakerLine");
         putEnum("textFlagBitfield", 0x4000, "Al Bhed");
+
+        putEnum("blitzTechPassiveFamilyBitfield", 0x0002, "Anti-Venom");
+        putEnum("blitzTechPassiveFamilyBitfield", 0x0004, "Anti-Nap");
+        putEnum("blitzTechPassiveFamilyBitfield", 0x0008, "Anti-Wither");
+        putEnum("blitzTechPassiveFamilyBitfield", 0x0010, "Anti-Drain");
+        putEnum("blitzTechPassiveFamilyBitfield", 0x0080, "Tackle Slip");
+        putEnum("blitzTechPassiveFamilyBitfield", 0x0200, "Volley");
+        putEnum("blitzTechPassiveFamilyBitfield", 0x0400, "Elite Defense");
+        putEnum("blitzTechPassiveFamilyBitfield", 0x0800, "Brawler");
+        putEnum("blitzTechPassiveFamilyBitfield", 0x1000, "Good Morning!");
+        putEnum("blitzTechPassiveFamilyBitfield", 0x2000, "Grip Gloves");
+
+        putEnum("blitzballTechcopyTiming", 1, "Too early");
+        putEnum("blitzballTechcopyTiming", 2, "Correct");
+        putEnum("blitzballTechcopyTiming", 3, "Too late");
 
         /*
         Note: Now handles directly in StackObject as an indirection into macro dict 7

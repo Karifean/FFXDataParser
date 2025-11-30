@@ -172,14 +172,26 @@ public class AtelScriptObject {
         }
     }
 
-    public void addVariableNamings(Map<Integer, String> namings) {
+    public void addVariableNamings(List<String> namings) {
         if (namings == null || namings.isEmpty()) {
             return;
         }
-        for (Map.Entry<Integer, String> line : namings.entrySet()) {
-            int index = line.getKey();
+        for (String line : namings) {
+            String[] split = line.split("=");
+            if (split.length < 2) {
+                System.err.println("Malformed delcaration: " + line);
+                continue;
+            }
+            int index = Integer.parseInt(split[0], 16);
             if (variableDeclarations != null && index >= 0 && index < variableDeclarations.length) {
-                variableDeclarations[index].declaredLabel = line.getValue();
+                ScriptVariable vr = variableDeclarations[index];
+                vr.declaredLabel = "".equals(split[1]) ? null : split[1];
+                if (split.length > 2) {
+                    vr.declaredType = "".equals(split[2]) ? null : split[2];
+                    if (split.length > 3) {
+                        vr.declaredIndexType = "".equals(split[3]) ? null : split[3];
+                    }
+                }
             } else {
                 System.err.println("Variable naming declaration out of bounds: " + StringHelper.formatHex2(index));
             }
@@ -224,12 +236,11 @@ public class AtelScriptObject {
                     int hb = read4Bytes(variableStructsTableOffset + varIdx * 8 + 4);
                     ScriptVariable scriptVariable = new ScriptVariable(worker, varIdx, lb, hb);
                     variableDeclarations[varIdx] = scriptVariable;
-                    scriptVariable.inferredType = "float".equals(scriptVariable.getType()) ? "float" : "unknown";
+                    scriptVariable.inferredType = "float".equals(scriptVariable.getFormatType()) ? "float" : "unknown";
                     if (scriptVariable.location == 0) {
                         ScriptField entry = ScriptConstants.getEnumMap("saveData").get(scriptVariable.offset + SAVEDATA_ATEL_OFFSET);
                         if (entry != null) {
-                            scriptVariable.inferredType = entry.type;
-                            scriptVariable.typeKnown = true;
+                            scriptVariable.declaredType = entry.type;
                         }
                     } else if (scriptVariable.location == 4) {
                         scriptVariable.parseValues();
@@ -875,7 +886,7 @@ public class AtelScriptObject {
 
     public String getVariableType(int index) {
         if (variableDeclarations != null && index >= 0 && index < variableDeclarations.length) {
-            return variableDeclarations[index].inferredType;
+            return variableDeclarations[index].getType();
         }
         warningsOnLine.add("Variable index " + StringHelper.formatHex2(index) + " out of bounds!");
         return "unknown";

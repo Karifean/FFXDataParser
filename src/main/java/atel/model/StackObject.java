@@ -187,13 +187,13 @@ public class StackObject {
                 return '"' + noLineBreakString + '"' + hexSuffix;
             }
         }
-        if ("map".equals(type)) {
-            String mapName = EventFile.getMapNameById(valueSigned);
-            if (mapName != null) {
-                EventFile event = DataAccess.getEvent(mapName);
-                return (event != null ? event.getName(localization) : (mapName + " (Unknown)")) + hexSuffix;
+        if ("room".equals(type)) {
+            String roomId = EventFile.getRoomNameById(valueSigned);
+            if (roomId != null) {
+                EventFile event = DataAccess.getEvent(roomId);
+                return (event != null ? event.getName(localization) : (roomId + " (Unknown)")) + hexSuffix;
             } else {
-                return "Map#" + valueSigned + hexSuffix;
+                return "Room#" + valueSigned + hexSuffix;
             }
         }
         if ("blitzballPlayer".equals(type)) {

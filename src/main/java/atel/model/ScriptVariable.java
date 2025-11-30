@@ -23,8 +23,9 @@ public class ScriptVariable {
 
     public ScriptWorker parentWorker;
     public String inferredType = "unknown";
-    public boolean typeKnown = false;
     public String declaredLabel;
+    public String declaredType;
+    public String declaredIndexType;
 
     public ScriptVariable(ScriptWorker parentWorker, int index, int lb, int hb) {
         this.parentWorker = parentWorker;
@@ -42,7 +43,6 @@ public class ScriptVariable {
     public ScriptVariable(ScriptVariable vr) {
         this.parentWorker = vr.parentWorker;
         this.inferredType = vr.inferredType;
-        this.typeKnown = vr.typeKnown;
         this.index = vr.index;
         this.lb = vr.lb;
         this.hb = vr.hb;
@@ -52,6 +52,9 @@ public class ScriptVariable {
         this.location = vr.location;
         this.elementCount = vr.elementCount;
         this.elementSize = vr.elementSize;
+        this.declaredLabel = vr.declaredLabel;
+        this.declaredType = vr.declaredType;
+        this.declaredIndexType = vr.declaredIndexType;
     }
 
     public int getLength() {
@@ -70,7 +73,7 @@ public class ScriptVariable {
     }
 
     public void inferType(String type) {
-        if (typeKnown) {
+        if (declaredType != null) {
             return;
         }
         if (isWeakType(inferredType) && !"var".equals(type)) {
@@ -127,14 +130,15 @@ public class ScriptVariable {
     }
 
     private String fullTypeString() {
-        String rawType = formatToType(format);
-        String rawTypeSuffix = !rawType.equals(inferredType) ? " (" + rawType + ")" : "";
+        String formatType = formatToType(format);
+        String myType = getType();
+        String rawTypeSuffix = !formatType.equals(myType) ? " (" + formatType + ")" : "";
         if (elementCount <= 1) {
-            return inferredType + rawTypeSuffix;
+            return myType + rawTypeSuffix;
         }
         String elements = elementSize > 1 ? elementCount + "=" + (elementCount / elementSize) + "*" + elementSize + "bytes" : ""+elementCount;
         String arrayIndex = "[" + elements + "]";
-        return inferredType + arrayIndex + rawTypeSuffix;
+        return myType + arrayIndex + rawTypeSuffix;
     }
 
     public String getLabel(ScriptWorker worker) {
@@ -157,6 +161,9 @@ public class ScriptVariable {
     }
 
     public String getArrayIndexType() {
+        if (declaredIndexType != null) {
+            return declaredIndexType;
+        }
         if (location == 0) {
             ScriptField scriptField = StackObject.enumToScriptField("saveData", offset + SAVEDATA_ATEL_OFFSET);
             if (scriptField.indexType != null) {
@@ -173,6 +180,10 @@ public class ScriptVariable {
     }
 
     public String getType() {
+        return declaredType != null ? declaredType : inferredType;
+    }
+
+    public String getFormatType() {
         if (location == 0) {
             ScriptField enumTarget = ScriptConstants.ENUMERATIONS.get("saveData").get(offset + SAVEDATA_ATEL_OFFSET);
             if (enumTarget != null) {

@@ -303,16 +303,16 @@ public class DataReadingManager {
         return new EventFile(eventId, bytes);
     }
 
-    public static void readAllMonsters(Map<String, Map<Integer, String>> declarations) {
+    public static void readAllMonsters(Map<String, List<String>> declarations) {
         for (int index = 0; index <= MONSTER_MAX_INDEX; index++) {
             String mIndexString = "m" + StringHelper.formatDec3(index);
-            Map<Integer, String> monsterDeclarations = declarations != null ? declarations.get(mIndexString) : null;
+            List<String> monsterDeclarations = declarations != null ? declarations.get(mIndexString) : null;
             MonsterFile monsterFile = readMonsterFull(index, monsterDeclarations);
             DataAccess.MONSTERS[index] = monsterFile;
         }
     }
 
-    public static MonsterFile readMonsterFull(int monsterIndex, Map<Integer, String> declarations) {
+    public static MonsterFile readMonsterFull(int monsterIndex, List<String> declarations) {
         String mIndexString = "m" + StringHelper.formatDec3(monsterIndex);
         String midPath = '_' + mIndexString + '/' + mIndexString;
         String originalsPath = PATH_MONSTER_FOLDER + midPath + ".bin";
@@ -325,14 +325,14 @@ public class DataReadingManager {
         return monsterFile;
     }
 
-    public static void readAllEncounters(Map<String, Map<Integer, String>> declarations) {
+    public static void readAllEncounters(Map<String, List<String>> declarations) {
         File encountersFolder = FileAccessorWithMods.getRealFile(PATH_ORIGINALS_ENCOUNTER);
         if (encountersFolder.isDirectory()) {
             String[] contents = encountersFolder.list();
             if (contents != null) {
                 Stream<String> encounterFiles = Arrays.stream(contents).filter(sf -> !sf.startsWith(".")).sorted();
                 encounterFiles.forEach(encounterId -> {
-                    Map<Integer, String> encounterDeclarations = declarations != null ? declarations.get(encounterId) : null;
+                    List<String> encounterDeclarations = declarations != null ? declarations.get(encounterId) : null;
                     EncounterFile encounterFile = readEncounterFull(encounterId, encounterDeclarations);
                     DataAccess.ENCOUNTERS.put(encounterId, encounterFile);
                 });
@@ -340,7 +340,7 @@ public class DataReadingManager {
         }
     }
 
-    public static EncounterFile readEncounterFull(String encounterId, Map<Integer, String> declarations) {
+    public static EncounterFile readEncounterFull(String encounterId, List<String> declarations) {
         String midPath = encounterId + '/' + encounterId;
         String endPath = midPath + ".bin";
         String originalsPath = PATH_ORIGINALS_ENCOUNTER + endPath;
@@ -360,7 +360,7 @@ public class DataReadingManager {
         return encounterFile;
     }
 
-    public static void readAllEvents(Map<String, Map<Integer, String>> declarations, final boolean skipBlitzballEvents) {
+    public static void readAllEvents(Map<String, List<String>> declarations, final boolean skipBlitzballEvents) {
         File eventsFolder = FileAccessorWithMods.getRealFile(PATH_ORIGINALS_EVENT);
         if (eventsFolder.isDirectory()) {
             String[] contents = eventsFolder.list();
@@ -373,7 +373,7 @@ public class DataReadingManager {
                         .filter(sf -> !sf.startsWith("."))
                         .sorted();
                 eventFiles.forEach(eventId -> {
-                    Map<Integer, String> eventDeclarations = declarations != null ? declarations.get(eventId) : null;
+                    List<String> eventDeclarations = declarations != null ? declarations.get(eventId) : null;
                     EventFile eventFile = readEventFull(eventId, eventDeclarations);
                     DataAccess.EVENTS.put(eventId, eventFile);
                 });
@@ -381,7 +381,7 @@ public class DataReadingManager {
         }
     }
 
-    public static EventFile readEventFull(String eventId, Map<Integer, String> declarations) {
+    public static EventFile readEventFull(String eventId, List<String> declarations) {
         String shortened = eventId.substring(0, 2);
         String midPath = shortened + '/' + eventId + '/' + eventId;
         String originalsPath = PATH_ORIGINALS_EVENT + midPath + ".ebp";
@@ -491,16 +491,16 @@ public class DataReadingManager {
 
     private static ScriptCustomDeclarations readScriptCustomDeclarations() {
         File declarationsFile = new File(FileAccessorWithMods.RESOURCES_ROOT + "declarations.txt");
-        Map<String, Map<Integer, String>> eventMap = new HashMap<>();
-        Map<String, Map<Integer, String>> encounterMap = new HashMap<>();
-        Map<String, Map<Integer, String>> monsterMap = new HashMap<>();
+        Map<String, List<String>> eventMap = new HashMap<>();
+        Map<String, List<String>> encounterMap = new HashMap<>();
+        Map<String, List<String>> monsterMap = new HashMap<>();
         ScriptCustomDeclarations declarations = new ScriptCustomDeclarations(eventMap, encounterMap, monsterMap);
         try {
             List<String> declarationLines = FileAccessorWithMods.textFileToLineList(declarationsFile);
             for (String line : declarationLines) {
                 String[] split = line.split(" ");
                 String type = split[0];
-                Map<String, Map<Integer, String>> targetMap;
+                Map<String, List<String>> targetMap;
                 if ("event".equals(type)) {
                     targetMap = eventMap;
                 } else if ("encounter".equals(type)) {
@@ -511,11 +511,8 @@ public class DataReadingManager {
                     continue;
                 }
                 String key = split[1];
-                Map<Integer, String> subMap = targetMap.computeIfAbsent(key, (v) -> new HashMap<>());
-                for (int i = 2; i < split.length; i++) {
-                    String[] declaration = split[i].split("=");
-                    subMap.put(Integer.parseInt(declaration[0], 16), declaration[1]);
-                }
+                List<String> list = targetMap.computeIfAbsent(key, (v) -> new ArrayList<>());
+                list.addAll(Arrays.asList(split).subList(2, split.length));
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -530,17 +527,12 @@ public class DataReadingManager {
         }
         try {
             List<String> namingLines = FileAccessorWithMods.textFileToLineList(file);
-            Map<Integer, String> map = new HashMap<>();
-            for (String line : namingLines) {
-                String[] split = line.split("=");
-                map.put(Integer.parseInt(split[0], 16), split[1]);
-            }
-            script.addVariableNamings(map);
+            script.addVariableNamings(namingLines);
         } catch (IOException | NumberFormatException e) {
             System.err.println("Got Exception in reading name declarations");
             e.printStackTrace();
         }
     }
 
-    private record ScriptCustomDeclarations(Map<String, Map<Integer, String>> eventMap, Map<String, Map<Integer, String>> encounterMap, Map<String, Map<Integer, String>> monsterMap) {}
+    private record ScriptCustomDeclarations(Map<String, List<String>> eventMap, Map<String, List<String>> encounterMap, Map<String, List<String>> monsterMap) {}
 }
