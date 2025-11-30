@@ -127,12 +127,12 @@ public abstract class ScriptFuncLib {
         putFuncWithIdx(0x0061, new ScriptFunc("setTalkRange", "unknown", null, p("range", "float")));
         putUnknownFunc(0x0062, 1); // noclip: collision detection
         putFuncWithIdx(0x0063, new ScriptFunc("setTalkAngleTolerance", "unknown", null, p("tolerance", "float"))); // noclip: collision detection
-        putFuncWithIdx(0x0064, new ScriptFunc("displayFieldString", "unknown", null, p("messageWindowIndex", "int"), p("string", "localString")));
-        putFuncWithIdx(0x0065, new ScriptFunc("positionMessage", "unknown", null, p("messageWindowIndex", "int"), p("x", "int"), p("y", "int"), p("align", "textAlignment")));
-        putFuncWithIdx(0x0066, new ScriptFunc("setMessageBoxTransparent", "unknown", null, p("messageWindowIndex", "int"), p("transparent", "bool")));
-        putFuncWithIdx(0x0069, new ScriptFunc(p("messageWindowIndex", "int"), p("int"), p("int")));
-        putFuncWithIdx(0x006A, new ScriptFunc("?showMessage", "unknown", null, p("messageWindowIndex", "int"), p(2)));
-        putFuncWithIdx(0x006B, new ScriptFunc("?closeMessage", "unknown", null, p("messageWindowIndex", "int")));
+        putFuncWithIdx(0x0064, new ScriptFunc("displayFieldString", "unknown", null, p("msgWindow", "int"), p("string", "localString")));
+        putFuncWithIdx(0x0065, new ScriptFunc("positionMessage", "unknown", null, p("msgWindow", "int"), p("x", "int"), p("y", "int"), p("align", "textAlignment")));
+        putFuncWithIdx(0x0066, new ScriptFunc("setMessageBoxTransparent", "unknown", null, p("msgWindow", "int"), p("transparent", "bool")));
+        putFuncWithIdx(0x0069, new ScriptFunc(p("msgWindow", "int"), p("int"), p("int")));
+        putFuncWithIdx(0x006A, new ScriptFunc("?showMessage", "unknown", null, p("msgWindow", "int"), p(2)));
+        putFuncWithIdx(0x006B, new ScriptFunc("?closeMessage", "unknown", null, p("msgWindow", "int")));
         putFuncWithIdx(0x006C, new ScriptFunc("setMovementSpeed", "unknown", null, p("speed", "float")));
         putFuncWithIdx(0x006D, new ScriptFunc("setYawTurnStepAllLevels", "unknown", null, p("float"))); // affects *all* motions on this worker, not just the current one
         putFuncWithIdx(0x006E, new ScriptFunc("setPitchTurnStepAllLevels", "unknown", null, p("float")));
@@ -144,14 +144,14 @@ public abstract class ScriptFuncLib {
         putFuncWithIdx(0x0077, new ScriptFunc("stopWorkerMotion", "unknown", null, p("worker")));
         putFuncWithIdx(0x0078, new ScriptFunc("stopWorkerRotation", "unknown", null, p("worker")));
         putFuncWithIdx(0x007A, new ScriptFunc("setCollisionEdgeLength", "unknown", null, p("leftLength", "float"), p("rightLength", "float"))); // distance along line defined by positions
-        putFuncWithIdx(0x007C, new ScriptFunc("waitForText", "unknown", null, p("messageWindowIndex", "int"))); // equivalent to 0x0084 with second param 0
-        putFuncWithIdx(0x007D, new ScriptFunc("?awaitPlayerDialogueChoice", "int", null, p("messageWindowIndex", "int")));
+        putFuncWithIdx(0x007C, new ScriptFunc("waitForText", "unknown", null, p("msgWindow", "int"))); // equivalent to 0x0084 with second param 0
+        putFuncWithIdx(0x007D, new ScriptFunc("?awaitPlayerDialogueChoice", "int", null, p("msgWindow", "int")));
         putUnknownFunc(0x007F, 1);
         putFuncWithIdx(0x0080, new ScriptFunc("getCurrentSpawnpointX", "float", null, true));
         putFuncWithIdx(0x0081, new ScriptFunc("getCurrentSpawnpointY", "float", null, true));
         putFuncWithIdx(0x0082, new ScriptFunc("getCurrentSpawnpointZ", "float", null, true));
         putFuncWithIdx(0x0083, new ScriptFunc("getCurrentSpawnpointYaw", "float", null, true));
-        putFuncWithIdx(0x0084, new ScriptFunc("waitForText", "unknown", null, p("messageWindowIndex", "int"), p(2)));
+        putFuncWithIdx(0x0084, new ScriptFunc("waitForText", "unknown", null, p("msgWindow", "int"), p(2)));
         putFuncWithIdx(0x0085, new ScriptFunc("setTouchRadius", "unknown", null, p("radius", "float"))); // noclip: setCollisionRadius()
         putFuncWithIdx(0x0086, new ScriptFunc("CurrentMap", "map", null, false)); // the ID of the actual map geometry file, multiple "map"s can share these
         putFuncWithIdx(0x0087, new ScriptFunc("CurrentRoom", "room", null, false));
@@ -160,7 +160,7 @@ public abstract class ScriptFuncLib {
         putUnknownFunc(0x008B, 0); // noclip: checking line crossing
         putUnknownFunc(0x008D, 1);
         putUnknownFunc(0x008E, 1); // noclip: setCollisionHeight()
-        putFuncWithIdx(0x008F, new ScriptFunc("?canTextAdvance", "bool", null, p("messageWindowIndex", "int")));
+        putFuncWithIdx(0x008F, new ScriptFunc("?canTextAdvance", "bool", null, p("msgWindow", "int")));
         putFuncWithIdx(0x0090, new ScriptFunc("?getYaw", "float", null, true));
         putUnknownFunc(0x0091, 0);
         putFuncWithIdx(0x0092, new ScriptFunc("?getWorkerYaw", "float", null, p("worker")));
@@ -168,14 +168,14 @@ public abstract class ScriptFuncLib {
         putFuncWithIdx(0x0094, new ScriptFunc("setGravity", "unknown", null, p("g", "int")));
         putFuncWithIdx(0x0095, new ScriptFunc("setRotationYaw", "unknown", null, p("float")));
         putFuncWithIdx(0x0096, new ScriptFunc("setRotationPitch", "unknown", null, p("float")));
-        putFuncWithIdx(0x0097, new ScriptFunc("getMessageWindowState", "messageWindowState", null, p("messageWindowIndex", "int")));
+        putFuncWithIdx(0x0097, new ScriptFunc("getMessageWindowState", "messageWindowState", null, p("msgWindow", "int")));
         putFuncWithIdx(0x0098, new ScriptFunc("setMotionSpline", "unknown", null, p("duration", "int"), p("spline", "pointer")));
         putUnknownFunc(0x009A, 1);
         putUnknownFunc(0x009B, 2);
-        putFuncWithIdx(0x009D, new ScriptFunc("setTextFlags", "unknown", null, p("messageWindowIndex", "int"), p("textFlags", "textFlagBitfield")));
-        putFuncWithIdx(0x009E, new ScriptFunc("setStringVariable", "unknown", null, p("messageWindowIndex", "int"), p("varIndex", "int"), p("stringVarType"), p("value", "unknown")));
-        putFuncWithIdx(0x009F, new ScriptFunc("setStringVariableValue", "unknown", null, p("messageWindowIndex", "int"), p("varIndex", "int"), p("value", "unknown"))); // Unused by the game
-        putFuncWithIdx(0x00A0, new ScriptFunc("setStringVariableType", "unknown", null, p("messageWindowIndex", "int"), p("varIndex", "int"), p("stringVarType"))); // Unused by the game
+        putFuncWithIdx(0x009D, new ScriptFunc("setTextFlags", "unknown", null, p("msgWindow", "int"), p("textFlags", "textFlagBitfield")));
+        putFuncWithIdx(0x009E, new ScriptFunc("setStringVariable", "unknown", null, p("msgWindow", "int"), p("varIndex", "int"), p("stringVarType"), p("value", "unknown")));
+        putFuncWithIdx(0x009F, new ScriptFunc("setStringVariableValue", "unknown", null, p("msgWindow", "int"), p("varIndex", "int"), p("value", "unknown"))); // Unused by the game
+        putFuncWithIdx(0x00A0, new ScriptFunc("setStringVariableType", "unknown", null, p("msgWindow", "int"), p("varIndex", "int"), p("stringVarType"))); // Unused by the game
         putUnknownFunc(0x00A2, 5);
         putFuncWithIdx(0x00A3, new ScriptFunc("getWorkerPosition", "unknown", null, p("worker"), p("xDest", "pointer"), p("yDest", "pointer"), p("zDest", "pointer")));
         putFuncWithIdx(0x00A4, new ScriptFunc("workerDist", "unknown", null, p("workerA", "worker"), p("workerB", "worker")));
@@ -246,7 +246,7 @@ public abstract class ScriptFuncLib {
         putUnknownFunc(0x00F8, 3);
         putUnknownFunc(0x00F9, 0);
         putUnknownFunc(0x00FA, 1);
-        putFuncWithIdx(0x00FB, new ScriptFunc("getCurrentHoveredDialogueChoice", "int", null, p("messageWindowIndex", "int")));
+        putFuncWithIdx(0x00FB, new ScriptFunc("getCurrentHoveredDialogueChoice", "int", null, p("msgWindow", "int")));
         putFuncWithIdx(0x00FD, new ScriptFunc("playSfxWithParams?", "unknown", null, p("sfx"), p(2), p(3)));
         putUnknownFunc(0x00FE, 2);
         putUnknownFunc(0x0100, 3);
@@ -300,12 +300,12 @@ public abstract class ScriptFuncLib {
         putUnknownFunc(0x0138, 1);
         putUnknownFunc(0x0139, 8);
         putFuncWithIdx(0x0139, new ScriptFunc("requestNumericInput?", "int", null, p(1), p(2), p(3), p(4), p(5), p("x?", "int"), p("y?", "int"), p("align", "textAlignment")));
-        putFuncWithIdx(0x013B, new ScriptFunc("displayFieldChoice", "int", null, p("messageWindowIndex", "int"), p("string", "localString"), p(3), p(4), p("x", "int"), p("y", "int"), p("align", "textAlignment")));
+        putFuncWithIdx(0x013B, new ScriptFunc("displayFieldChoice", "int", null, p("msgWindow", "int"), p("string", "localString"), p(3), p(4), p("x", "int"), p("y", "int"), p("align", "textAlignment")));
         putUnknownFunc(0x013D, 1);
         putUnknownFunc(0x013E, 1);
         putFuncWithIdx(0x013F, new ScriptFunc("resolveStringMacro", "macroString", null, p("section", "stringVarType"), p("entryIndex", "unknown")));
         putUnknownFunc(0x0140, 6);
-        putFuncWithIdx(0x0141, new ScriptFunc("?setMessageToConstructedString", "unknown", null, p("messageWindowIndex", "int"), p("constructedString", "unknown"), p("pointer?", "pointer")));
+        putFuncWithIdx(0x0141, new ScriptFunc("?setMessageToConstructedString", "unknown", null, p("msgWindow", "int"), p("constructedString", "unknown"), p("pointer?", "pointer")));
         putUnknownFunc(0x0142, 2);
         putUnknownFunc(0x0143, 1);
         putUnknownFunc(0x0144, 1);
@@ -324,7 +324,7 @@ public abstract class ScriptFuncLib {
         putFuncWithIdx(0x0157, new ScriptFunc("UnsetFootSoundFlag", "unknown", null, p("flag", "footSoundFlag")));
         putUnknownFunc(0x0158, 1);
         putUnknownFunc(0x0159, 2);
-        putFuncWithIdx(0x015B, new ScriptFunc("obtainTreasure", "unknown", null, p("messageWindowIndex", "int"), p("treasure")));
+        putFuncWithIdx(0x015B, new ScriptFunc("obtainTreasure", "unknown", null, p("msgWindow", "int"), p("treasure")));
         putUnknownFunc(0x015D, 1);
         putUnknownFunc(0x015E, 1);
         putFuncWithIdx(0x015F, new ScriptFunc("?addKeyItem", "unknown", null, p("keyItem")));
@@ -450,7 +450,7 @@ public abstract class ScriptFuncLib {
         putUnknownFunc(0x0212, 2);
         putUnknownFunc(0x0213, 1);
         putFuncWithIdx(0x0215, new ScriptFunc("grantCelestialUpgrade", "unknown", null, p("playerChar"), p("level", "int")));
-        putFuncWithIdx(0x0216, new ScriptFunc("teachAbilityToPartyMemberWithMsg", "unknown", null, p("messageWindowIndex?", "int"), p("playerChar"), p("charCommand")));
+        putFuncWithIdx(0x0216, new ScriptFunc("teachAbilityToPartyMemberWithMsg", "unknown", null, p("msgWindow?", "int"), p("playerChar"), p("charCommand")));
         putUnknownFunc(0x0217, 0);
         putFuncWithIdx(0x0219, new ScriptFunc("changeMonsterArenaCaptures2", "unknown", null, p("monsterArenaIndex", "int"), p("add", "int")));
         putUnknownFunc(0x021A, 2);
@@ -909,9 +909,9 @@ public abstract class ScriptFuncLib {
         putUnknownFunc(0x703F, "camReq", 2);
         putUnknownFunc(0x7040, "btlMagicStart", 1);
         putUnknownFunc(0x7041, "btlMagicEnd", 0);
-        putFuncWithIdx(0x7042, new ScriptFunc("displayBattleString", "unknown", "btlMes", p("messageWindowIndex", "int"), p("string", "localString"), p("x?", "int"), p("y?", "int"), p("align", "textAlignment")));
-        putFuncWithIdx(0x7043, new ScriptFunc("closeTextOnConfirm", "unknown", "btlMesWait", p("messageWindowIndex", "int")));
-        putFuncWithIdx(0x7044, new ScriptFunc("closeTextImmediately", "unknown", "btlMesClose", p("messageWindowIndex", "int")));
+        putFuncWithIdx(0x7042, new ScriptFunc("displayBattleString", "unknown", "btlMes", p("msgWindow", "int"), p("string", "localString"), p("x?", "int"), p("y?", "int"), p("align", "textAlignment")));
+        putFuncWithIdx(0x7043, new ScriptFunc("closeTextOnConfirm", "unknown", "btlMesWait", p("msgWindow", "int")));
+        putFuncWithIdx(0x7044, new ScriptFunc("closeTextImmediately", "unknown", "btlMesClose", p("msgWindow", "int")));
         putUnknownFunc(0x7045, "btlDistTargetFrame", 1);
         putUnknownFunc(0x7046, "btlSplineStart", 1);
         putUnknownFunc(0x7047, "btlSplineRegist", 2);
@@ -957,7 +957,7 @@ public abstract class ScriptFuncLib {
         putUnknownFunc(0x706F, "btlSetMotion2", 1);
         putUnknownFunc(0x7070, "btlStatusOn", 0);
         putUnknownFunc(0x7071, "btlStatusOff", 0);
-        putFuncWithIdx(0x7072, new ScriptFunc("displayBattleDialogString", "unknown", "btlmes2", p("messageWindowIndex", "int"), p("string", "localString")));
+        putFuncWithIdx(0x7072, new ScriptFunc("displayBattleDialogString", "unknown", "btlmes2", p("msgWindow", "int"), p("string", "localString")));
         putUnknownFunc(0x7073, "btlAttachWeapon", 1);
         putUnknownFunc(0x7074, "btlDetachWeapon", 1);
         putFuncWithIdx(0x7075, new ScriptFunc(null, "unknown", "btlReqWeaponMotion", p("btlChr"), p(2), p(3)));
@@ -1129,7 +1129,7 @@ public abstract class ScriptFuncLib {
         putUnknownFunc(0x711B, "btlSetCameraStandard", 0);
         putUnknownFunc(0x711C, "btlSetGameOverEffNum", 1);
         putUnknownFunc(0x711D, "btlSetShadowHeight", 1);
-        putFuncWithIdx(0x7120, new ScriptFunc("displayBattleSystem01String?", "unknown", null, p("messageWindowIndex", "int"), p("string", "system01String")));
+        putFuncWithIdx(0x7120, new ScriptFunc("displayBattleSystem01String?", "unknown", null, p("msgWindow", "int"), p("string", "system01String")));
         putUnknownFunc(0x7123, 1);
         putFuncWithIdx(0x7124, new ScriptFunc("setCommandDialogLineString", "unknown", null, p("string", "localString")));
         putUnknownFunc(0x7125, 0);
