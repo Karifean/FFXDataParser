@@ -131,13 +131,14 @@ public class StackObject {
             return "&" + scriptVariable.getLabel(parentWorker) + hexSuffix;
         }
         if ("encounter".equals(type)) {
-            int field = (valueSigned & 0xFFFF0000) >> 16;
+            int map = (valueSigned & 0xFFFF0000) >> 16;
             int encIdx = valueSigned & 0x0000FFFF;
-            ScriptField fieldObj = ScriptConstants.getEnumMap("field").get(field);
-            if (fieldObj == null) {
+            ScriptField mapObj = ScriptConstants.getEnumMap("map").get(map);
+            if (mapObj == null) {
                 return '?' + type + ':' + valueSigned + hexSuffix;
             } else {
-                return fieldObj.name + '_' + String.format("%02d", encIdx) + hexSuffix;
+                String encounterId = mapObj.name + '_' + String.format("%02d", encIdx);
+                return encounterId + hexSuffix;
             }
         }
         if ("menu".equals(type)) {

@@ -741,6 +741,10 @@ public abstract class ScriptConstants {
         putEnum("battleDebugFlag", 0x18, "?PermanentSensor");
         putEnum("battleDebugFlag", 0x19, "?AlwaysPreemptive");
 
+        putEnum("messageWindowState", 0x01, "Printing?");
+        putEnum("messageWindowState", 0x02, "Fully printed?");
+        putEnum("messageWindowState", 0x03, "Closed");
+
         putEnum("textAlignment", 0x00, "Top Left", "MESWIN_POS_LEFTUP");
         putEnum("textAlignment", 0x01, "Bottom Left", "MESWIN_POS_LEFTDOWN");
         putEnum("textAlignment", 0x02, "Top Right", "MESWIN_POS_RIGHTUP");
@@ -758,39 +762,39 @@ public abstract class ScriptConstants {
         putEnum("stdmotion", 0, null, "MOT_NONE");
         putEnum("stdmotion", 255, null, "MOT_ALL");
 
-        putEnum("field", 0x0000, "system");
-        putEnum("field", 0x0002, "test00");
-        putEnum("field", 0x0005, "test10");
-        putEnum("field", 0x0006, "test11");
-        putFields(0x000A, "znkd", 14);
-        putFields(0x001E, "bjyt", 12);
-        putFields(0x0032, "cdsp", 8);
-        putFields(0x0041, "bsil", 7);
-        putFields(0x005F, "slik", 11);
-        putFields(0x0083, "klyt", 12);
-        putFields(0x00A5, "lchb", 18);
-        putFields(0x00D2, "mihn", 8);
-        putFields(0x00DC, "kino", 9);
-        putFields(0x00F5, "genk", 16);
-        putFields(0x012C, "kami", 4);
-        putFields(0x0136, "mcfr", 14);
-        putFields(0x014A, "maca", 5);
-        putFields(0x0154, "mcyt", 7);
-        putFields(0x015E, "bika", 4);
-        putFields(0x0168, "azit", 7);
-        putFields(0x017C, "hiku", 21);
-        putFields(0x0195, "stbv", 1);
-        putFields(0x019A, "bvyt", 13);
-        putFields(0x01A9, "nagi", 7);
-        putFields(0x01BD, "lmyt", 2);
-        putFields(0x01E5, "mtgz", 11);
-        putFields(0x01F4, "zkrn", 6);
-        putFields(0x0203, "dome", 7);
-        putFields(0x0235, "ssbt", 4);
-        putFields(0x0244, "sins", 9);
-        putFields(0x024E, "omeg", 1);
-        putFields(0x0259, "zzzz", 3);
-        putFields(0x0262, "tori", 3);
+        putEnum("map", 0x0000, "system");
+        putEnum("map", 0x0002, "test00");
+        putEnum("map", 0x0005, "test10");
+        putEnum("map", 0x0006, "test11");
+        putMaps(0x000A, "znkd", 14);
+        putMaps(0x001E, "bjyt", 12);
+        putMaps(0x0032, "cdsp", 8);
+        putMaps(0x0041, "bsil", 7);
+        putMaps(0x005F, "slik", 11);
+        putMaps(0x0083, "klyt", 12);
+        putMaps(0x00A5, "lchb", 18);
+        putMaps(0x00D2, "mihn", 8);
+        putMaps(0x00DC, "kino", 9);
+        putMaps(0x00F5, "genk", 16);
+        putMaps(0x012C, "kami", 4);
+        putMaps(0x0136, "mcfr", 14);
+        putMaps(0x014A, "maca", 5);
+        putMaps(0x0154, "mcyt", 7);
+        putMaps(0x015E, "bika", 4);
+        putMaps(0x0168, "azit", 7);
+        putMaps(0x017C, "hiku", 21);
+        putMaps(0x0195, "stbv", 1);
+        putMaps(0x019A, "bvyt", 13);
+        putMaps(0x01A9, "nagi", 7);
+        putMaps(0x01BD, "lmyt", 2);
+        putMaps(0x01E5, "mtgz", 11);
+        putMaps(0x01F4, "zkrn", 6);
+        putMaps(0x0203, "dome", 7);
+        putMaps(0x0235, "ssbt", 4);
+        putMaps(0x0244, "sins", 9);
+        putMaps(0x024E, "omeg", 1);
+        putMaps(0x0259, "zzzz", 3);
+        putMaps(0x0262, "tori", 3);
 
         putEnum("sfx", 0x80000005, "?NewGameChime");
         putEnum("sfx", 0x80000009, "TreasureChestOpening");
@@ -1501,10 +1505,10 @@ public abstract class ScriptConstants {
         getEnumMap("commandProperty").put(idx, field);
     }
 
-    private static void putFields(int offset, String name, int endIdx) {
+    private static void putMaps(int offset, String name, int endIdx) {
         for (int i = 0; i <= endIdx; i++) {
             String idxStr = String.format("%02d", i);
-            putEnum("field", offset + i, name + idxStr);
+            putEnum("map", offset + i, name + idxStr);
         }
     }
 
