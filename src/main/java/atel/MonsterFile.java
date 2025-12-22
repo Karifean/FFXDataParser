@@ -19,7 +19,8 @@ import static reading.BytesHelper.read4Bytes;
  */
 public class MonsterFile implements Nameable {
     public Integer monsterIndex;
-    public AtelScriptObject monsterAi;
+    public String scriptId;
+    public AtelScriptObject monsterScript;
     public MonsterStatDataObject monsterStatData;
     public MonsterLootDataObject monsterLootData;
     int[] scriptBytes;
@@ -30,7 +31,7 @@ public class MonsterFile implements Nameable {
     int[] lootBytes;
     int[] englishTextBytes;
 
-    public MonsterFile(int monsterIndex, int[] bytes) {
+    public MonsterFile(Integer monsterIndex, int[] bytes) {
         this.monsterIndex = monsterIndex;
         int chunkCount = read4Bytes(bytes, 0x00) - 1;
         List<Chunk> chunks = BytesHelper.bytesToChunks(bytes, chunkCount, 4);
@@ -49,7 +50,8 @@ public class MonsterFile implements Nameable {
     }
 
     private void mapObjects() {
-        monsterAi = new AtelScriptObject(scriptBytes, workerMappingBytes);
+        monsterScript = new AtelScriptObject(scriptBytes, workerMappingBytes);
+        scriptId = monsterScript.scriptId;
         monsterStatData = new MonsterStatDataObject(statBytes, Arrays.copyOfRange(statBytes, MonsterStatDataObject.LENGTH, statBytes.length), "jp");
         monsterLootData = new MonsterLootDataObject(lootBytes);
         MonsterStatDataObject englishTextStatData = new MonsterStatDataObject(englishTextBytes, Arrays.copyOfRange(englishTextBytes, MonsterStatDataObject.LENGTH, englishTextBytes.length), "us");
@@ -57,8 +59,8 @@ public class MonsterFile implements Nameable {
     }
 
     public void parseScript() {
-        if (monsterAi != null) {
-            monsterAi.parseScript();
+        if (monsterScript != null) {
+            monsterScript.parseScript();
         }
     }
 
@@ -77,12 +79,16 @@ public class MonsterFile implements Nameable {
     @Override
     public String toString() {
         StringBuilder full = new StringBuilder();
-        full.append(getName()).append(StringHelper.hex4Suffix(monsterIndex + 0x1000)).append('\n');
-        if (monsterAi != null) {
+        full.append(getName()).append(" (m").append(scriptId).append(')');
+        if (monsterIndex != null) {
+            full.append(StringHelper.hex4Suffix(monsterIndex + 0x1000));
+        }
+        full.append('\n');
+        if (monsterScript != null) {
             full.append("- Script Code -").append('\n');
-            full.append(monsterAi.allLinesString());
+            full.append(monsterScript.allLinesString());
             full.append("- Script Workers -").append('\n');
-            full.append(monsterAi.workersString()).append('\n');
+            full.append(monsterScript.workersString()).append('\n');
         } else {
             full.append("Monster AI missing");
         }

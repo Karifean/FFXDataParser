@@ -48,6 +48,11 @@ You can then run the parser with the following command:
 | `PARSE_EVENT` | `<evIndex1, ex: lmyt0000> [<evIndex2, ex: kami0300>] ...` | Reads the event files with the given name and prints their information. |
 | `PARSE_ALL_EVENTS` | | Reads all event files (except blitzball events) and prints their information. |
 | `READ_MACROS` | | Reads macro strings. (from `macrodic.dcp`) |
+| `READ_ENCOUNTER_TABLE` | | Reads the encounter tables. (from `btl.bin`) |
+| `READ_MIX_TABLE` | | Reads the mix table. (from `prepare.bin`) |
+| `READ_WEAPON_NAMES` | | Reads the weapon names/appearance table. (from `w_name.bin`) |
+| `READ_PC_STATS` | | Reads player character initial stats and growth values. (from `ply_save.bin` and `ply_rom.bin`) |
+| `READ_CTB_BASE` | | Reads the CTB to Tickspeed/ICV table. (from `ctb_base.bin`) |
 | `MAKE_EDITS` | | Apply string edits from csv files and write localized files in all languages into the `mods` folder. |
 
 

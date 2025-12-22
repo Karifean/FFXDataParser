@@ -34,7 +34,7 @@ public class AtelScriptObject {
     protected int floatTableOffset;
     protected int map_start;
     protected int creatorTagAddress;
-    protected int event_name_start;
+    protected int scriptIdAddress;
     protected int jumpsEndAddress;
     protected int amountOfType2or3Scripts;
     protected int amountOfType4Scripts;
@@ -55,6 +55,7 @@ public class AtelScriptObject {
     public List<Integer> areaNameIndexes;
     public MapEntranceObject[] mapEntrances;
     public String creatorTag;
+    public String scriptId;
     Stack<StackObject> stack = new Stack<>();
     Map<Integer, String> currentTempITypes = new HashMap<>();
     Map<Integer, List<StackObject>> varEnums = new HashMap<>();
@@ -90,7 +91,7 @@ public class AtelScriptObject {
         scriptCodeLength = read4Bytes(0x00);
         map_start = read4Bytes(0x04);
         creatorTagAddress = read4Bytes(0x08);
-        event_name_start = read4Bytes(0x0C);
+        scriptIdAddress = read4Bytes(0x0C);
         jumpsEndAddress = read4Bytes(0x10);
         amountOfType2or3Scripts = read2Bytes(0x14);
         amountOfType4Scripts = read2Bytes(0x16);
@@ -106,14 +107,8 @@ public class AtelScriptObject {
         namespaceCount = read2Bytes(0x34);
         actorCount = read2Bytes(0x36);
 
-        int[] creatorTagSubBytes;
-        if (creatorTagAddress > 0 && (creatorTagSubBytes = getStringBytesAtLookupOffset(bytes, creatorTagAddress)) != null) {
-            byte[] creatorStringBytes = new byte[creatorTagSubBytes.length];
-            for (int i = 0; i < creatorTagSubBytes.length; i++) {
-                creatorStringBytes[i] = (byte) creatorTagSubBytes[i];
-            }
-            creatorTag = new String(creatorStringBytes, StandardCharsets.UTF_8);
-        }
+        creatorTag = getUtf8String(bytes, creatorTagAddress);
+        scriptId = getUtf8String(bytes, scriptIdAddress);
 
         if (map_start > 0 && map_start < creatorTagAddress) {
             int mapStartLength = (creatorTagAddress - map_start);
@@ -179,7 +174,7 @@ public class AtelScriptObject {
         for (String line : namings) {
             String[] split = line.split("=");
             if (split.length < 2) {
-                System.err.println("Malformed delcaration: " + line);
+                System.err.println("Malformed declaration: " + line);
                 continue;
             }
             int index = Integer.parseInt(split[0], 16);
@@ -1047,16 +1042,14 @@ public class AtelScriptObject {
             }
         }
         if (PRINT_UNKNOWN_HEADER_VALS) {
-            if (unknown1A != 0) {
-                lines.add("unknown1A=" + StringHelper.formatHex4(unknown1A));
-            }
-            if (unknownOffset24 != 0) {
-                lines.add("unknownOffset24=" + StringHelper.formatHex4(unknownOffset24) + "; size=" + StringHelper.formatHex4(areaNameIndexesOffset - unknownOffset24));
-            }
+            lines.add("unknown1A=" + StringHelper.formatHex4(unknown1A));
+            lines.add("unknownOffset24=" + StringHelper.formatHex4(unknownOffset24) + (unknownOffset24 != 0 ? "; size=" + StringHelper.formatHex4(areaNameIndexesOffset - unknownOffset24) : ""));
             if (unknownSize40StructOffset != 0) {
                 int[] other_offset_target = Arrays.copyOfRange(bytes, unknownSize40StructOffset, unknownSize40StructOffset + 0x40);
                 lines.add("Struct pointed to at 0x2C");
                 lines.add(Arrays.stream(other_offset_target).mapToObj((i) -> StringHelper.formatHex2(i)).collect(Collectors.joining(" ")));
+            } else {
+                lines.add("Struct pointer at 0x2C is 00");
             }
             // Order of offsets seems to be:
             // other_offset - eventData - areaNameIndexes - unknownOffset24

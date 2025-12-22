@@ -43,6 +43,11 @@ public class Main {
     private static final String MODE_MAKE_EDITS = "MAKE_EDITS";
     private static final String MODE_MAKE_AUTOHASTE_MOD = "MAKE_AUTOHASTE_MOD";
     private static final String MODE_READ_BLITZBALL_STATS = "READ_BLITZBALL_STATS";
+    private static final String MODE_READ_ENCOUNTER_TABLE = "READ_ENCOUNTER_TABLE";
+    private static final String MODE_READ_MIX_TABLE = "READ_MIX_TABLE";
+    private static final String MODE_READ_CTB_BASE = "READ_CTB_BASE";
+    private static final String MODE_READ_PC_STATS = "READ_PC_STATS";
+    private static final String MODE_READ_WEAPON_NAMES = "READ_WEAPON_NAMES";
     private static final String MODE_CUSTOM = "CUSTOM";
 
     private static final boolean SKIP_BLITZBALL_EVENTS_FOLDER = true;
@@ -161,7 +166,7 @@ public class Main {
                 for (String filename : realArgs) {
                     if (filename.contains("battle/mon")) {
                         System.out.println("Monster file: " + filename);
-                        MonsterFile monsterFile = readMonsterFile(-1, filename, true);
+                        MonsterFile monsterFile = readMonsterFile(null, filename, true);
                         if (monsterFile != null) {
                             monsterFile.parseScript();
                             System.out.println(monsterFile);
@@ -373,19 +378,29 @@ public class Main {
                         }
                     });
                     if (!matcherMap.isEmpty()) {
-                        StringBuilder builder = new StringBuilder("event ").append(e.id);
+                        StringBuilder builder = new StringBuilder("event ").append(e.scriptId);
                         matcherMap.forEach((index, stat) -> builder.append(' ').append(StringHelper.formatHex2(index)).append('=').append(stat));
                         System.out.println(builder);
                     }
                 });
                 break;
-            case MODE_CUSTOM:
+            case MODE_READ_ENCOUNTER_TABLE:
+                readEncounterTables(PATH_ORIGINALS_KERNEL + "btl.bin", true);
+                break;
+            case MODE_READ_CTB_BASE:
+                readCtbBase(PATH_ORIGINALS_KERNEL + "ctb_base.bin", true);
+                break;
+            case MODE_READ_PC_STATS:
                 readPlayerCharStats("battle/kernel/ply_save.bin", true);
-                // readPlayerCharRom("battle/kernel/ply_rom.bin", true);
-                // readWeaponNames("battle/kernel/w_name.bin", true);
-                // readCtbBase(PATH_ORIGINALS_KERNEL + "ctb_base.bin", true);
-                // readEncounterTables(PATH_ORIGINALS_KERNEL + "btl.bin", true);
-                // readMixCombinations(PATH_ORIGINALS_KERNEL + "prepare.bin", true);
+                readPlayerCharRom("battle/kernel/ply_rom.bin", true);
+                break;
+            case MODE_READ_WEAPON_NAMES:
+                readWeaponNames("battle/kernel/w_name.bin", true);
+                break;
+            case MODE_READ_MIX_TABLE:
+                readMixCombinations(PATH_ORIGINALS_KERNEL + "prepare.bin", true);
+                break;
+            case MODE_CUSTOM:
                 // readDirectAtelScriptObject("menu/menumain.bin", true);
                 // readX2AbilitiesFromFile("ffx_ps2/ffx2/master/new_uspc/battle/kernel/command.bin", "us", true);
                 break;

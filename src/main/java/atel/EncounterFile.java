@@ -18,8 +18,8 @@ import static reading.BytesHelper.read4Bytes;
  * jppc/battle/btl/.../.bin
  */
 public class EncounterFile {
-
-    public String id;
+    public String filename;
+    public String scriptId;
     public AtelScriptObject encounterScript;
     public FormationDataObject formation;
     public BattleAreasPositionsDataObject battleAreasPositions;
@@ -32,10 +32,10 @@ public class EncounterFile {
     int[] englishTextBytes;
     public List<LocalizedFieldStringObject> strings;
 
-    private int chunkCount;
+    private final int chunkCount;
 
-    public EncounterFile(String id, int[] bytes, boolean isInpc) {
-        this.id = id;
+    public EncounterFile(String filename, int[] bytes, boolean isInpc) {
+        this.filename = filename;
         chunkCount = read4Bytes(bytes, 0x00) - 1;
         List<Chunk> chunks = BytesHelper.bytesToChunks(bytes, chunkCount, 4);
         if (chunkCount != chunks.size()) {
@@ -69,6 +69,7 @@ public class EncounterFile {
 
     private void mapObjects() {
         encounterScript = new AtelScriptObject(scriptBytes, workerMappingBytes);
+        scriptId = encounterScript.scriptId;
         if (chunkCount == 4) {
             return;
         }
@@ -136,6 +137,7 @@ public class EncounterFile {
     @Override
     public String toString() {
         StringBuilder full = new StringBuilder();
+        full.append(scriptId).append('\n');
         if (chunkCount == 4) {
             full.append("Unsafe format - ChunkCount is ").append(chunkCount).append('\n');
         }

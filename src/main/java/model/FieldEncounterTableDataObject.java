@@ -1,6 +1,7 @@
 package model;
 
-import java.nio.charset.StandardCharsets;
+import main.StringHelper;
+
 import java.util.Arrays;
 
 import static reading.BytesHelper.read2Bytes;
@@ -14,7 +15,7 @@ public class FieldEncounterTableDataObject {
     int id;
     int dataOffset;
     int formationOffset;
-    String field;
+    String map;
     int unknown0C;
 
     int totalFormationCount;
@@ -25,11 +26,7 @@ public class FieldEncounterTableDataObject {
         id = read2Bytes(headerBytes, headerOffset);
         dataOffset = read2Bytes(headerBytes, headerOffset + 0x02);
         formationOffset = read2Bytes(headerBytes, headerOffset + 0x04);
-        byte[] stringBytes = new byte[6];
-        for (int i = 0; i < 6; i++) {
-            stringBytes[i] = (byte) headerBytes[headerOffset + 0x06 + i];
-        }
-        field = new String(stringBytes, StandardCharsets.UTF_8);
+        map = StringHelper.getUtf8String(headerBytes, headerOffset + 0x06, 0x06);
         unknown0C = read2Bytes(headerBytes, headerOffset + 0x0C);
 
         totalFormationCount = dataBytes[dataOffset];
@@ -47,7 +44,7 @@ public class FieldEncounterTableDataObject {
     public String toString() {
         return "{" +
                 String.format("id=%3d", id) +
-                ", field=" + field +
+                ", map=" + map +
                 ", fmOffset?=" + formationOffset +
                 (unknown0C != 0 ? ", unknown0C=" + unknown0C : "") +
                 ", fmCount=" + totalFormationCount +
@@ -106,7 +103,7 @@ public class FieldEncounterTableDataObject {
             parentGroup = group;
             id = bytes[offset];
             weight = bytes[offset + 1];
-            encounter = String.format("%s_%02d", table.field, id);
+            encounter = String.format("%s_%02d", table.map, id);
         }
 
         @Override

@@ -270,7 +270,7 @@ public class DataReadingManager {
         DataAccess.ENCOUNTER_TABLES = fieldTables;
     }
 
-    public static MonsterFile readMonsterFile(int monsterIndex, String filename, boolean print) {
+    public static MonsterFile readMonsterFile(Integer monsterIndex, String filename, boolean print) {
         if (!(filename.endsWith(".bin") || (ALLOW_DAT_FILES && filename.endsWith(".dat")))) {
             return null;
         }
@@ -305,14 +305,21 @@ public class DataReadingManager {
 
     public static void readAllMonsters(Map<String, List<String>> declarations) {
         for (int index = 0; index <= MONSTER_MAX_INDEX; index++) {
-            String mIndexString = "m" + StringHelper.formatDec3(index);
-            List<String> monsterDeclarations = declarations != null ? declarations.get(mIndexString) : null;
-            MonsterFile monsterFile = readMonsterFull(index, monsterDeclarations);
-            DataAccess.MONSTERS[index] = monsterFile;
+            MonsterFile monsterFile = readMonsterFull(index, declarations);
+            if (monsterFile != null) {
+                try {
+                    if (Integer.parseInt(monsterFile.scriptId) != index) {
+                        System.err.printf("mismatch! %d vs %s%n", index, monsterFile.scriptId);
+                    }
+                } catch (NumberFormatException e) {
+                    e.printStackTrace();
+                }
+                DataAccess.MONSTERS[index] = monsterFile;
+            }
         }
     }
 
-    public static MonsterFile readMonsterFull(int monsterIndex, List<String> declarations) {
+    public static MonsterFile readMonsterFull(int monsterIndex, Map<String, List<String>> declarations) {
         String mIndexString = "m" + StringHelper.formatDec3(monsterIndex);
         String midPath = '_' + mIndexString + '/' + mIndexString;
         String originalsPath = PATH_MONSTER_FOLDER + midPath + ".bin";
@@ -320,8 +327,8 @@ public class DataReadingManager {
         if (monsterFile == null) {
             return null;
         }
-        monsterFile.monsterAi.addVariableNamings(declarations);
-        addVariableNamings(monsterFile.monsterAi, PATH_MONSTER_FOLDER + midPath + ".dcl");
+        monsterFile.monsterScript.addVariableNamings(declarations.get(monsterFile.scriptId));
+        addVariableNamings(monsterFile.monsterScript, PATH_MONSTER_FOLDER + midPath + ".dcl");
         return monsterFile;
     }
 
@@ -332,15 +339,19 @@ public class DataReadingManager {
             if (contents != null) {
                 Stream<String> encounterFiles = Arrays.stream(contents).filter(sf -> !sf.startsWith(".")).sorted();
                 encounterFiles.forEach(encounterId -> {
-                    List<String> encounterDeclarations = declarations != null ? declarations.get(encounterId) : null;
-                    EncounterFile encounterFile = readEncounterFull(encounterId, encounterDeclarations);
-                    DataAccess.ENCOUNTERS.put(encounterId, encounterFile);
+                    EncounterFile encounterFile = readEncounterFull(encounterId, declarations);
+                    if (encounterFile != null) {
+                        if (!encounterId.equals(encounterFile.scriptId)) {
+                            System.err.printf("mismatch! %s vs %s%n", encounterId, encounterFile.scriptId);
+                        }
+                        DataAccess.ENCOUNTERS.put(encounterFile.scriptId, encounterFile);
+                    }
                 });
             }
         }
     }
 
-    public static EncounterFile readEncounterFull(String encounterId, List<String> declarations) {
+    public static EncounterFile readEncounterFull(String encounterId, Map<String, List<String>> declarations) {
         String midPath = encounterId + '/' + encounterId;
         String endPath = midPath + ".bin";
         String originalsPath = PATH_ORIGINALS_ENCOUNTER + endPath;
@@ -355,7 +366,7 @@ public class DataReadingManager {
         }
         List<LocalizedFieldStringObject> localizedStrings = StringHelper.readLocalizedStringFiles("battle/btl/" + endPath);
         encounterFile.addLocalizations(localizedStrings);
-        encounterFile.encounterScript.addVariableNamings(declarations);
+        encounterFile.encounterScript.addVariableNamings(declarations.get(encounterFile.scriptId));
         addVariableNamings(encounterFile.encounterScript, PATH_ORIGINALS_ENCOUNTER + midPath + ".dcl");
         return encounterFile;
     }
@@ -373,15 +384,19 @@ public class DataReadingManager {
                         .filter(sf -> !sf.startsWith("."))
                         .sorted();
                 eventFiles.forEach(eventId -> {
-                    List<String> eventDeclarations = declarations != null ? declarations.get(eventId) : null;
-                    EventFile eventFile = readEventFull(eventId, eventDeclarations);
-                    DataAccess.EVENTS.put(eventId, eventFile);
+                    EventFile eventFile = readEventFull(eventId, declarations);
+                    if (eventFile != null) {
+                        if (!eventId.equals(eventFile.scriptId)) {
+                            System.err.printf("mismatch! %s vs %s%n", eventId, eventFile.scriptId);
+                        }
+                        DataAccess.EVENTS.put(eventFile.scriptId, eventFile);
+                    }
                 });
             }
         }
     }
 
-    public static EventFile readEventFull(String eventId, List<String> declarations) {
+    public static EventFile readEventFull(String eventId, Map<String, List<String>> declarations) {
         String shortened = eventId.substring(0, 2);
         String midPath = shortened + '/' + eventId + '/' + eventId;
         String originalsPath = PATH_ORIGINALS_EVENT + midPath + ".ebp";
@@ -391,7 +406,7 @@ public class DataReadingManager {
         }
         List<LocalizedFieldStringObject> localizedStrings = StringHelper.readLocalizedStringFiles("event/obj_ps3/" + midPath + ".bin");
         eventFile.addLocalizations(localizedStrings);
-        eventFile.eventScript.addVariableNamings(declarations);
+        eventFile.eventScript.addVariableNamings(declarations.get(eventFile.scriptId));
         addVariableNamings(eventFile.eventScript, PATH_ORIGINALS_EVENT + midPath + ".dcl");
         return eventFile;
     }

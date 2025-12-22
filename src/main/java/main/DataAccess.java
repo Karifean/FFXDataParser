@@ -151,6 +151,14 @@ public abstract class DataAccess {
         }
     }
 
+    public static MonsterFile getMonster(String id) {
+        try {
+            return getMonster(Integer.parseInt(id, 10));
+        } catch (NumberFormatException e) {
+            return null;
+        }
+    }
+
     public static MonsterFile getMonster(int idx) {
         if (MONSTERS == null) {
             throw new UnsupportedOperationException();

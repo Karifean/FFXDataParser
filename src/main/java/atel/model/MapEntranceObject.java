@@ -20,7 +20,7 @@ public class MapEntranceObject {
     int unknown02;
     int unknown04;
     int unknown06;
-    float rotation;
+    float yaw;
     float x;
     float y;
     float z;
@@ -37,7 +37,7 @@ public class MapEntranceObject {
         unknown00 = read2Bytes(bytes, 0x02);
         unknown04 = read2Bytes(bytes, 0x04);
         unknown06 = read2Bytes(bytes, 0x06);
-        rotation = readFloat(0x08);
+        yaw = readFloat(0x08);
         x = readFloat(0x0C);
         y = readFloat(0x10);
         z = readFloat(0x14);
@@ -55,7 +55,7 @@ public class MapEntranceObject {
         list.add("x=" + x);
         list.add("y=" + y);
         list.add("z=" + z);
-        list.add("rotation=" + rotation);
+        list.add("yaw/rotation=" + yaw);
         if (unknown00 != 0) {
             list.add("unknown00=" + StringHelper.hex2WithSuffix(unknown00));
         }

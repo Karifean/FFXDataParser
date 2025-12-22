@@ -8,6 +8,7 @@ import reading.BytesHelper;
 import reading.FileAccessorWithMods;
 
 import java.io.File;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 import static main.DataReadingManager.LOCALIZATIONS;
@@ -441,8 +442,6 @@ public abstract class StringHelper {
             return List.of(0x01);
         } else if (cmd.equals("\\n")) {
             return List.of(0x03);
-        } else if (cmd.equals("CMD04")) {
-            return List.of(0x04);
         } else if (cmd.startsWith("SPACE:")) {
             int pixels = Integer.parseInt(cmd.substring(6), 16) + 0x30;
             return List.of(0x07, pixels);
@@ -471,6 +470,10 @@ public abstract class StringHelper {
             int section = Integer.parseInt(cmd.substring(5, 7), 16) + 0x13;
             int line = Integer.parseInt(cmd.substring(8, 10), 16) + 0x30;
             return List.of(section, line);
+        } else if (cmd.startsWith("MACRO:")) {
+            int section = Integer.parseInt(cmd.substring(7, 9), 16) + 0x13;
+            int line = Integer.parseInt(cmd.substring(10, 12), 16) + 0x30;
+            return List.of(section, line);
         } else if (cmd.startsWith("KEY:")) {
             int keyItemIdx = Integer.parseInt(cmd.substring(4, 6), 16) + 0x30;
             return List.of(0x23, keyItemIdx);
@@ -482,9 +485,14 @@ public abstract class StringHelper {
             int chr = Integer.parseInt(cmd.substring(7, 9), 16);
             return List.of(chr);
         } else if (cmd.startsWith("UNKDBLCHR:")) {
-            int section = Integer.parseInt(cmd.substring(10, 12), 16);
-            int idx = Integer.parseInt(cmd.substring(13, 15), 16);
-            return List.of(section, idx);
+            int a = Integer.parseInt(cmd.substring(10, 12), 16);
+            int b = Integer.parseInt(cmd.substring(13, 15), 16);
+            return List.of(a, b);
+        } else if (cmd.startsWith("UNKTPLCHR:")) {
+            int a = Integer.parseInt(cmd.substring(10, 12), 16);
+            int b = Integer.parseInt(cmd.substring(13, 15), 16);
+            int c = Integer.parseInt(cmd.substring(16, 18), 16);
+            return List.of(a, b, c);
         } else {
             return null;
         }
@@ -512,5 +520,27 @@ public abstract class StringHelper {
             return '_';
         }
         return LETTERS.charAt(letterIndex - 1);
+    }
+
+    public static String getUtf8String(int[] bytes, int offset, int length) {
+        return getUtf8String(Arrays.copyOfRange(bytes, offset, offset + length));
+    }
+
+    public static String getUtf8String(int[] bytes, int offset) {
+        if (offset == 0) {
+            return null;
+        }
+        return getUtf8String(getStringBytesAtLookupOffset(bytes, offset));
+    }
+
+    public static String getUtf8String(int[] bytes) {
+        if (bytes == null) {
+            return null;
+        }
+        byte[] stringBytes = new byte[bytes.length];
+        for (int i = 0; i < bytes.length; i++) {
+            stringBytes[i] = (byte) bytes[i];
+        }
+        return new String(stringBytes, StandardCharsets.UTF_8);
     }
 }

@@ -22,7 +22,8 @@ public class EventFile implements Nameable {
     public static final int DEFAULT_ASSUMED_CHUNK_COUNT = 10;
     public static Map<Integer, String> EVENT_BY_ROOM_ID;
 
-    public String id;
+    public String filename;
+    public String scriptId;
     public AtelScriptObject eventScript;
     int[] scriptBytes;
     int[] japaneseTextBytes;
@@ -31,8 +32,8 @@ public class EventFile implements Nameable {
     int[] englishTextBytes;
     public List<LocalizedFieldStringObject> strings;
 
-    public EventFile(String id, int[] bytes) {
-        this.id = id;
+    public EventFile(String filename, int[] bytes) {
+        this.filename = filename;
         List<Chunk> chunks = BytesHelper.bytesToChunks(bytes, DEFAULT_ASSUMED_CHUNK_COUNT, 4);
         mapChunks(chunks);
         mapObjects();
@@ -51,6 +52,7 @@ public class EventFile implements Nameable {
 
     private void mapObjects() {
         eventScript = new AtelScriptObject(scriptBytes, null);
+        scriptId = eventScript.scriptId;
     }
 
     private void mapStrings() {
@@ -118,6 +120,7 @@ public class EventFile implements Nameable {
     }
 
     public String getName(String localization) {
+        String id = scriptId != null ? scriptId : filename;
         if (eventScript == null || eventScript.areaNameIndexes == null || eventScript.areaNameIndexes.isEmpty()) {
             return id;
         }
