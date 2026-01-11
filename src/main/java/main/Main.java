@@ -1,5 +1,8 @@
 package main;
 
+import atel.AtelScriptObject;
+import atel.model.ScriptJump;
+import atel.model.ScriptWorker;
 import atel.model.StackObject;
 import model.*;
 import atel.EncounterFile;
@@ -48,6 +51,8 @@ public class Main {
     private static final String MODE_READ_CTB_BASE = "READ_CTB_BASE";
     private static final String MODE_READ_PC_STATS = "READ_PC_STATS";
     private static final String MODE_READ_WEAPON_NAMES = "READ_WEAPON_NAMES";
+    private static final String MODE_ADD_ATEL_SPACE = "ADD_ATEL_SPACE";
+    private static final String MODE_RECOMPILE = "RECOMPILE";
     private static final String MODE_CUSTOM = "CUSTOM";
 
     private static final boolean SKIP_BLITZBALL_EVENTS_FOLDER = true;
@@ -216,19 +221,6 @@ public class Main {
                 break;
             case MODE_READ_MONSTER_LOCALIZATIONS:
                 readMonsterLocalizations(realArgs.size() > 0 ? realArgs.get(0) : DEFAULT_LOCALIZATION, true);
-                /*
-                for (int i = 0; i < DataAccess.MONSTERS.length; i++) {
-                    MonsterFile monster = DataAccess.MONSTERS[i];
-                    if (monster != null) {
-                        System.out.println("--- Name ---");
-                        System.out.println(monster.monsterStatData.monsterName.getAllContent());
-                        System.out.println("--- Sensor Text ---");
-                        System.out.println(monster.monsterStatData.monsterSensorText.getAllContent());
-                        System.out.println("--- Scan Text ---");
-                        System.out.println(monster.monsterStatData.monsterScanText.getAllContent());
-                    }
-                }
-                 */
                 break;
             case MODE_READ_WEAPON_FILE:
                 for (String filename : realArgs) {
@@ -268,6 +260,7 @@ public class Main {
                     String mIndexString = "m" + StringHelper.formatDec3(monsterIndex);
                     MonsterFile monster = DataAccess.getMonster(monsterIndex + 0x1000);
                     if (monster != null) {
+                        monster.parseScript();
                         monster.monsterStatData.autoStatusesTemporal |= 0x0800;
                         String path = GAME_FILES_ROOT + MODS_FOLDER + PATH_MONSTER_FOLDER + '_' + mIndexString + '/' + mIndexString + ".bin";
                         FileAccessorWithMods.writeByteArrayToFile(path, monster.toBytes());
@@ -400,8 +393,56 @@ public class Main {
             case MODE_READ_MIX_TABLE:
                 readMixCombinations(PATH_ORIGINALS_KERNEL + "prepare.bin", true);
                 break;
+            case MODE_ADD_ATEL_SPACE:
+                /* String type = realArgs.get(0);
+                String id = realArgs.get(1);
+                int workerIndex = Integer.parseInt(realArgs.get(2), 16);
+                String entryPoint = realArgs.get(3);
+                AtelScriptObject scriptObject;
+                if ("event".equals(type)) {
+                    scriptObject = DataAccess.getEvent(id).eventScript;
+                } else if ("encounter".equals(type)) {
+                    scriptObject = DataAccess.getEncounter(id).encounterScript;
+                } else if ("monster".equals(type)) {
+                    scriptObject = Objects.requireNonNull(DataAccess.getMonster(id)).monsterScript;
+                } else {
+                    return;
+                }
+                ScriptWorker worker = scriptObject.getWorker(workerIndex); */
+                break;
+            case MODE_RECOMPILE:
+                for (String variableId : realArgs) {
+                    if (variableId.contains("_")) {
+                        EncounterFile encounterFile = DataAccess.getEncounter(variableId);
+                        if (encounterFile != null) {
+                            encounterFile.parseScript();
+                            int[] bytes = encounterFile.toBytes();
+                            String path = GAME_FILES_ROOT + MODS_FOLDER + PATH_ORIGINALS_ENCOUNTER + variableId + '/' + variableId + ".bin";
+                            FileAccessorWithMods.writeByteArrayToFile(path, bytes);
+                        }
+                    } else if (variableId.length() == 4 && variableId.startsWith("m")) {
+                        int monsterIndex = Integer.parseInt(variableId.substring(1), 10);
+                        MonsterFile monster = DataAccess.getMonster(monsterIndex + 0x1000);
+                        if (monster != null) {
+                            monster.parseScript();
+                            int[] bytes = monster.toBytes();
+                            String path = GAME_FILES_ROOT + MODS_FOLDER + PATH_MONSTER_FOLDER + '_' + variableId + '/' + variableId + ".bin";
+                            FileAccessorWithMods.writeByteArrayToFile(path, bytes);
+                        }
+                    } else {
+                        EventFile eventFile = DataAccess.getEvent(variableId);
+                        if (eventFile != null) {
+                            eventFile.parseScript();
+                            int[] bytes = eventFile.toBytes();
+                            String shortened = variableId.substring(0, 2);
+                            String path = GAME_FILES_ROOT + MODS_FOLDER + PATH_ORIGINALS_EVENT + shortened + '/' + variableId + '/' + variableId + ".ebp";
+                            FileAccessorWithMods.writeByteArrayToFile(path, bytes);
+                        }
+                    }
+                }
+                break;
             case MODE_CUSTOM:
-                // readDirectAtelScriptObject("menu/menumain.bin", true);
+                readDirectAtelScriptObject("menu/menumain.bin", true);
                 // readX2AbilitiesFromFile("ffx_ps2/ffx2/master/new_uspc/battle/kernel/command.bin", "us", true);
                 break;
             case MODE_MAKE_EDITS:

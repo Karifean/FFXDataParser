@@ -3,9 +3,12 @@ package reading;
 import java.io.DataInputStream;
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.BooleanSupplier;
+import java.util.function.Predicate;
 
 public abstract class BytesHelper {
 
@@ -126,6 +129,35 @@ public abstract class BytesHelper {
         return chunks;
     }
 
+    public static <T> int findOrAppend(List<T> list, T obj) {
+        int index = list.indexOf(obj);
+        if (index == -1) {
+            index = list.size();
+            list.add(obj);
+        }
+        return index;
+    }
+
+    public static <T> int findOrAppend(List<T> list, T obj, Predicate<T> predicate) {
+        int size = list.size();
+        for (int i = 0; i < size; i++) {
+            if (predicate.test(list.get(i))) {
+                return i;
+            }
+        }
+        list.add(obj);
+        return size;
+    }
+
+    public static int[] intListToArray(List<Integer> list) {
+        int size = list.size();
+        int[] array = new int[size];
+        for (int i = 0; i < size; i++) {
+            array[i] = list.get(i);
+        }
+        return array;
+    }
+
     public static int read2Bytes(int[] bytes, int offset) {
         if (bytes == null) {
             return 0;
@@ -148,6 +180,15 @@ public abstract class BytesHelper {
         bytes[offset + 1] = (value & 0xFF00) >> 8;
     }
 
+    public static void write3Bytes(int[] bytes, int offset, int value) {
+        if (bytes == null) {
+            return;
+        }
+        bytes[offset]     =  value & 0x0000FF;
+        bytes[offset + 1] = (value & 0x00FF00) >> 8;
+        bytes[offset + 2] = (value & 0xFF0000) >> 16;
+    }
+
     public static void write4Bytes(int[] bytes, int offset, int value) {
         if (bytes == null) {
             return;
@@ -156,5 +197,51 @@ public abstract class BytesHelper {
         bytes[offset + 1] = (value & 0x0000FF00) >> 8;
         bytes[offset + 2] = (value & 0x00FF0000) >> 16;
         bytes[offset + 3] = (value & 0xFF000000) >> 24;
+    }
+
+    public static void add2Bytes(List<Integer> bytes, int value) {
+        if (bytes == null) {
+            return;
+        }
+        bytes.add(value & 0x00FF);
+        bytes.add((value & 0xFF00) >> 8);
+    }
+
+    public static void add4Bytes(List<Integer> bytes, int value) {
+        if (bytes == null) {
+            return;
+        }
+        bytes.add(value & 0x000000FF);
+        bytes.add((value & 0x0000FF00) >> 8);
+        bytes.add((value & 0x00FF0000) >> 16);
+        bytes.add((value & 0xFF000000) >> 24);
+    }
+
+    public static void addUtf8StringBytes(List<Integer> bytes, String value) {
+        if (bytes == null) {
+            return;
+        }
+        for (byte b : value.getBytes(StandardCharsets.UTF_8)) {
+            bytes.add((int) b);
+        }
+        bytes.add(0);
+    }
+
+    public static int[] utf8StringToBytes(String value) {
+        if (value == null) {
+            return new int[0];
+        }
+        int length = value.length();
+        int[] bytes = new int[length + 1];
+        byte[] stringBytes = value.getBytes(StandardCharsets.UTF_8);
+        for (int i = 0; i < length; i++) {
+            bytes[i] = stringBytes[i];
+        }
+        bytes[length] = 0;
+        return bytes;
+    }
+
+    public static int padLengthTo(int length, int alignment) {
+        return (length + alignment - 1) & (-alignment);
     }
 }

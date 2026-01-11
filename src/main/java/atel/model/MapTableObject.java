@@ -11,22 +11,18 @@ import static reading.BytesHelper.*;
 /**
  * Part of AtelScriptObject
  */
-public class MapEntranceObject {
-    public static final int LENGTH = 0x20;
+public class MapTableObject {
+    public static final int LENGTH = 0x10;
     private final int[] bytes;
 
     int unknown00;
     int unknown02;
     int unknown04;
     int unknown06;
-    float yaw;
-    float x;
-    float y;
-    float z;
-    int unknown18;
-    int unknown1C;
+    int unknown08;
+    int unknown0C;
 
-    public MapEntranceObject(int[] bytes) {
+    public MapTableObject(int[] bytes) {
         this.bytes = bytes;
         mapBytes();
     }
@@ -36,40 +32,24 @@ public class MapEntranceObject {
         unknown02 = read2Bytes(bytes, 0x02);
         unknown04 = read2Bytes(bytes, 0x04);
         unknown06 = read2Bytes(bytes, 0x06);
-        yaw = readFloat(0x08);
-        x = readFloat(0x0C);
-        y = readFloat(0x10);
-        z = readFloat(0x14);
-        unknown18 = read4Bytes(bytes, 0x18);
-        unknown1C = read4Bytes(bytes, 0x1C);
+        unknown08 = read4Bytes(bytes, 0x08);
+        unknown0C = read4Bytes(bytes, 0x0C);
     }
 
     public int[] toBytes() {
-        int[] array = new int[MapEntranceObject.LENGTH];
+        int[] array = new int[MapTableObject.LENGTH];
         write2Bytes(array, 0x00, unknown00);
         write2Bytes(array, 0x02, unknown02);
         write2Bytes(array, 0x04, unknown04);
         write2Bytes(array, 0x06, unknown06);
-        write4Bytes(array, 0x08, Float.floatToIntBits(yaw));
-        write4Bytes(array, 0x0C, Float.floatToIntBits(x));
-        write4Bytes(array, 0x10, Float.floatToIntBits(y));
-        write4Bytes(array, 0x14, Float.floatToIntBits(z));
-        write4Bytes(array, 0x18, unknown18);
-        write4Bytes(array, 0x1C, unknown1C);
+        write4Bytes(array, 0x08, unknown08);
+        write4Bytes(array, 0x0C, unknown0C);
         return array;
-    }
-
-    private float readFloat(int offset) {
-        return Float.intBitsToFloat(read4Bytes(bytes, offset));
     }
 
     @Override
     public String toString() {
         List<String> list = new ArrayList<>();
-        list.add("x=" + x);
-        list.add("y=" + y);
-        list.add("z=" + z);
-        list.add("yaw/rotation=" + yaw);
         if (unknown00 != 0) {
             list.add("unknown00=" + StringHelper.hex2WithSuffix(unknown00));
         }
@@ -82,11 +62,11 @@ public class MapEntranceObject {
         if (unknown06 != 0) {
             list.add("unknown06=" + StringHelper.hex2WithSuffix(unknown06));
         }
-        if (unknown18 != 0) {
-            list.add("unknown18=" + StringHelper.hex2WithSuffix(unknown18));
+        if (unknown08 != 0) {
+            list.add("unknown08=" + StringHelper.hex4WithSuffix(unknown08));
         }
-        if (unknown1C != 0) {
-            list.add("unknown1C=" + StringHelper.hex2WithSuffix(unknown1C));
+        if (unknown0C != 0) {
+            list.add("unknown0C=" + StringHelper.hex4WithSuffix(unknown0C));
         }
         String full = list.stream().filter(s -> s != null && !s.isBlank()).collect(Collectors.joining(", "));
         return "{ " + full + " }";

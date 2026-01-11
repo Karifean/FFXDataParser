@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static main.DataReadingManager.DEFAULT_LOCALIZATION;
 import static reading.BytesHelper.*;
 
 /**
@@ -117,7 +118,7 @@ public class WeaponNameDataObject implements Writable, Localized<WeaponNameDataO
             list.add(StackObject.enumToScriptField("playerChar", i).name.charAt(0) + " Simplified: " + simplifiedNames[i].getDefaultString());
         } */
         for (int i = 0; i < models.length; i++) {
-            list.add(StackObject.enumToScriptField("playerChar", i).name.charAt(0) + " Model: " + StackObject.enumToString("model", models[i]));
+            list.add(StackObject.enumToScriptField("playerChar", i).name.charAt(0) + " Model: " + StackObject.asString(DEFAULT_LOCALIZATION,"model", models[i]));
         }
         list.add("Unknown46=" + StringHelper.formatHex4(finalBytes));
         String full = list.stream().filter(s -> s != null && !s.isBlank()).collect(Collectors.joining("\n"));

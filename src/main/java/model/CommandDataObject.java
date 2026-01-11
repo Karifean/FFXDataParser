@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static main.DataReadingManager.DEFAULT_LOCALIZATION;
 import static reading.BytesHelper.read2Bytes;
 import static reading.BytesHelper.write2Bytes;
 
@@ -513,8 +514,8 @@ public class CommandDataObject extends NameDescriptionTextObject implements Name
         List<String> list = new ArrayList<>();
         list.add(!usableInCombat ? "Unusable" : "");
         list.add(damageKind());
-        list.add(damageFormula > 0 ? "Formula=" + StackObject.enumToString("damageFormula", damageFormula) : "");
         list.add(ifG0(hitCount, "", "-hit"));
+        list.add(damageFormula > 0 ? "Formula=" + StackObject.enumToString("damageFormula", damageFormula) : "");
         list.add(ifG0(attackPower, "Power=", ""));
         list.add(usesWeaponProperties ? "Uses Weapon Properties" : "");
         list.add(breaksDamageLimit ? "BDL" : "");
@@ -563,9 +564,9 @@ public class CommandDataObject extends NameDescriptionTextObject implements Name
         list.add(inflictDelayStrong ? "Delay (Strong)" : "");
         list.add(ifG0(shatterChance, "Shatter=", "%"));
         list.add(showSpellcastAura ? "Spellcast-Aura" : "");
-        list.add("anim=" + casterAnimation + (useTier1CastAnimation ? "L" : "") + (useTier3CastAnimation ? "H" : "") +
-                "/" + StringHelper.formatHex4(anim1) +
-                "/" + StringHelper.formatHex4(anim2));
+        list.add("userAnim=" + StringHelper.hex2WithSuffix(casterAnimation) + (useTier1CastAnimation ? " T1" : "") + (useTier3CastAnimation ? " T3" : ""));
+        list.add("moveAnim=" + (anim1 == 0 && anim2 == 0 ? "None" : (StackObject.asString(localization, "magicFile", anim1) +
+                "/" + StackObject.asString(localization, "magicFile", anim2))));
         list.add(ifG0(alwaysZero5E, "Byte5E=", ""));
         list.add(ifG0(alwaysZero5F, "Byte5F=", ""));
         list.add(ifG0(gilPrice, "Price=", " gil"));

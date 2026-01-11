@@ -237,6 +237,12 @@ public class StackObject {
             String tag = StringHelper.toLetter(firstLetterIndex) + "" + StringHelper.toLetter(secondLetterIndex);
             return fileNumber + tag + hexSuffix;
         }
+        if ("magicFile".equals(type)) {
+            if (valueSigned == 0) {
+                return "None" + hexSuffix;
+            }
+            return String.format("magic_%04d", valueSigned) + hexSuffix;
+        }
         if ("blitzTech".equals(type) || "blitzTechP1".equals(type)) {
             return StringHelper.MACRO_LOOKUP.get(0x800 + valueSigned).getLocalizedString(localization) + hexSuffix;
         } else if ("blitzTechP2".equals(type)) {

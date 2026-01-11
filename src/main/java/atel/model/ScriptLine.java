@@ -1,13 +1,24 @@
 package atel.model;
 
+import atel.AtelScriptObject;
+import main.StringHelper;
+import reading.BytesHelper;
+
 import java.util.ArrayList;
+import java.util.EmptyStackException;
 import java.util.List;
-import java.util.Set;
+import java.util.Stack;
+import java.util.stream.Collectors;
+
+import static main.StringHelper.*;
 
 public class ScriptLine {
-    private static final Set<Integer> UNCONTINUING_OPCODES = Set.of(0x30, 0x34, 0x3C, 0x40, 0xB0);
+    private static final int JUMP_LINE_MINLENGTH = 16;
+    private static final int HEX_LINE_MINLENGTH = COLORS_USE_CONSOLE_CODES ? 58 : 48;
+    private static final int JUMP_PLUS_HEX_LINE_MINLENGTH = JUMP_LINE_MINLENGTH + HEX_LINE_MINLENGTH + 1;
 
-    public final ScriptWorker scriptWorker;
+    public ScriptWorker parentWorker;
+    public AtelScriptObject parentScript;
     public int offset;
     public List<ScriptInstruction> instructions;
     public ScriptInstruction lineEnder;
@@ -16,12 +27,39 @@ public class ScriptLine {
     public ScriptLine predecessor;
     public ScriptLine successor;
     public ScriptJump branch;
+    public List<String> warnings = new ArrayList<>();
 
-    public ScriptLine(ScriptWorker scriptWorker, int offset, List<ScriptInstruction> instructions, ScriptInstruction lineEnder) {
-        this.scriptWorker = scriptWorker;
+    private boolean malformed = false;
+
+    public ScriptLine(ScriptWorker parentWorker, int offset, List<ScriptInstruction> instructions, ScriptInstruction lineEnder) {
+        this.parentWorker = parentWorker;
+        this.parentScript = parentWorker != null ? parentWorker.parentScript : null;
         this.offset = offset;
         this.instructions = instructions;
         this.lineEnder = lineEnder;
+        if (instructions != null && !instructions.isEmpty()) {
+            instructions.forEach(ins -> ins.setParentLine(this));
+            setUpInputs();
+        }
+    }
+
+    public List<Integer> toBytesList() {
+        List<Integer> list = new ArrayList<>();
+        instructions.forEach(ins -> list.addAll(ins.toBytesList()));
+        return list;
+    }
+
+    public void rereference(int newOffset, List<ScriptLine> workerJumpTargets, List<ScriptVariable> variableDeclarations, List<Integer> refInts, List<Integer> refFloats) {
+        offset = newOffset;
+        incomingJumps.stream().filter(j -> j.isEntryPoint).forEach(j -> j.addr = newOffset);
+        int cursor = newOffset;
+        for (ScriptInstruction ins : instructions) {
+            cursor = ins.rereference(cursor, variableDeclarations, refInts, refFloats);
+        }
+        if (branch != null) {
+            int index = BytesHelper.findOrAppend(workerJumpTargets, branch.targetLine);
+            lineEnder.setArgv(index);
+        }
     }
 
     public List<ScriptJump> getProperJumps() {
@@ -37,29 +75,45 @@ public class ScriptLine {
     }
 
     public boolean continues() {
-        return !UNCONTINUING_OPCODES.contains(lineEnder.opcode);
+        return !ScriptConstants.OPCODES_UNCONTINUING.contains(lineEnder.opcode);
     }
 
-    public List<ScriptLine> getPotentialPreviousLines() {
-        List<ScriptLine> list = new ArrayList<>();
-        if (predecessor != null && predecessor.continues()) {
-            list.add(predecessor);
+    public void setUpInputs() {
+        try {
+            Stack<ScriptInstruction> stack = new Stack<>();
+            for (ScriptInstruction instruction : instructions) {
+                instruction.setUpInputs(stack);
+                instruction.pushOutput(stack);
+            }
+        } catch (EmptyStackException e) {
+            malformed = true;
+            e.printStackTrace();
         }
-        List<ScriptJump> properJumps = getProperJumps();
-        if (!properJumps.isEmpty()) {
-            list.addAll(properJumps.stream().map(j -> j.targetLine).toList());
-        }
-        return list;
     }
 
-    public List<ScriptLine> getPotentialNextLines() {
-        List<ScriptLine> list = new ArrayList<>();
-        if (continues() && successor != null) {
-            list.add(successor);
+    public String asString(ScriptState state) {
+        String ol = String.format("%-5s", StringHelper.formatHex4(offset) + ' ');
+        String jl = consoleColorIfEnabled(ANSI_PURPLE) + String.format("%-" + JUMP_LINE_MINLENGTH + "s", getJumpsString(state)) + ' ';
+        String jhl = String.format("%-" + JUMP_PLUS_HEX_LINE_MINLENGTH + "s", jl + consoleColorIfEnabled(ANSI_BLUE) + asHexString()) + ' ';
+        String tl = consoleColorIfEnabled(ANSI_RESET) + lineEnder.asString(state);
+        String wl = warnings.isEmpty() ? "" : (consoleColorIfEnabled(ANSI_RED) + String.join(" ", warnings));
+        return ol + jhl + tl + wl + consoleColorIfEnabled(ANSI_RESET);
+    }
+
+    public String getJumpsString(ScriptState state) {
+        List<String> jumps = incomingJumps.stream().filter(j -> !j.isEntryPoint).map(j -> j.getLabel()).toList();
+        if (jumps.isEmpty()) {
+            return "";
         }
-        if (branch != null) {
-            list.add(branch.targetLine);
-        }
-        return list;
+        return String.join(",", jumps) + ":";
+    }
+
+    public String asHexString() {
+        return instructions.stream().map(ins -> ins.asHexString()).collect(Collectors.joining(" "));
+    }
+
+    @Override
+    public String toString() {
+        return asHexString();
     }
 }

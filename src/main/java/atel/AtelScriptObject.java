@@ -3,59 +3,70 @@ package atel;
 import atel.model.*;
 import main.StringHelper;
 import model.strings.LocalizedFieldStringObject;
+import reading.BytesHelper;
 
-import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static atel.model.ScriptVariable.SAVEDATA_ATEL_OFFSET;
 import static main.StringHelper.*;
+import static reading.BytesHelper.*;
 
 public class AtelScriptObject {
+    public static final boolean RECOMPILE_ATEL = true;
+    private static final int STATIC_HEADER_LENGTH = 0x38;
     private static final int JUMP_LINE_MINLENGTH = 16;
     private static final int HEX_LINE_MINLENGTH = COLORS_USE_CONSOLE_CODES ? 58 : 48;
     private static final int JUMP_PLUS_HEX_LINE_MINLENGTH = JUMP_LINE_MINLENGTH + HEX_LINE_MINLENGTH + 1;
 
-    private static final boolean PRINT_UNKNOWN_HEADER_VALS = false;
+    private static final boolean PRINT_META_STRUCT = false;
     private static final boolean PRINT_REF_INTS_FLOATS = false;
     private static final boolean PRINT_JUMP_TABLE = false;
     private static final boolean INFER_BITWISE_OPS_AS_BITFIELDS = false;
+    private static final boolean PRINT_CODE_BY_ENTRY_POINTS = false;
+    private static final boolean KEEP_EXISTING_REF_INTS_FLOATS_ORDER = true;
 
-    protected final int[] bytes;
-    protected final int[] battleWorkerMappingBytes;
+    private final boolean hasWorkerLocalPrivateData;
+    private final int[] bytes;
+    private final int[] battleWorkerMappingBytes;
+    private int battleWorkerCount;
+    private int battleWorkerSlotCount;
 
-    protected int[] actualScriptCodeBytes;
-    protected ScriptWorker[] workers;
+    private int[] actualScriptCodeBytes;
+    private ScriptWorker[] workers;
     public int[] refFloats;
     public int[] refInts;
     public ScriptVariable[] variableDeclarations;
-    protected int variableStructsTableOffset;
-    protected int intTableOffset;
-    protected int floatTableOffset;
-    protected int map_start;
-    protected int creatorTagAddress;
-    protected int scriptIdAddress;
-    protected int jumpsEndAddress;
-    protected int amountOfType2or3Scripts;
-    protected int amountOfType4Scripts;
-    protected int amountOfType5Scripts;
-    protected int areaNameBytes;
-    protected int areaNameIndexesOffset;
-    protected int unknownSize40StructOffset;
-    protected int mainScriptIndex;
-    protected int unknown1A;
-    protected int unknownOffset24;
+    private int variableStructsTableOffset;
+    private int intTableOffset;
+    private int floatTableOffset;
+    private int sharedDataOffset;
+    private int jumpTablesOffset;
+    private int map_start;
+    private int creatorTagAddress;
+    private int scriptIdAddress;
+    private int jumpsEndAddress;
+    private int amountOfType2or3Scripts;
+    private int amountOfType4Scripts;
+    private int amountOfType5Scripts;
+    private int areaNameBytes;
+    private int areaNameIndexesOffset;
+    private int scriptMetaStructOffset;
+    private int mainScriptIndex;
+    private int unknown1A;
     public int eventDataOffset;
-    protected int scriptCodeLength;
-    protected int scriptCodeStartAddress;
-    protected int scriptCodeEndAddress;
-    protected int namespaceCount;  // Total number of workers
-    protected int actorCount; // Total number of workers except subroutines
+    private int unknownTable24Offset;
+    private int scriptCodeLength;
+    private int scriptCodeStartAddress;
+    private int scriptCodeEndAddress;
+    private int namespaceCount;  // Total number of workers
+    private int actorCount; // Total number of workers except subroutines
     public List<LocalizedFieldStringObject> strings;
     public List<Integer> areaNameIndexes;
     public MapEntranceObject[] mapEntrances;
+    public MapTableObject[] mapTableObjects;
     public String creatorTag;
     public String scriptId;
+    public ScriptMetaStruct scriptMetaStruct;
     Stack<StackObject> stack = new Stack<>();
     Map<Integer, String> currentTempITypes = new HashMap<>();
     Map<Integer, List<StackObject>> varEnums = new HashMap<>();
@@ -65,7 +76,6 @@ public class AtelScriptObject {
     String currentRXType = "unknown";
     String currentRYType = "unknown";
     boolean gatheringInfo = true;
-    List<ScriptJump> scriptJumps;
     Map<Integer, List<ScriptJump>> scriptJumpsByDestination;
     List<ScriptJump> currentExecutionLines;
 
@@ -80,11 +90,213 @@ public class AtelScriptObject {
     List<ScriptInstruction> instructions = new ArrayList<>();
     List<ScriptLine> scriptLines = new ArrayList<>();
 
+    int[] eventDataBytes = new int[0];
+    int[] sharedDataBytes = new int[0];
+    int[] unknownTable24Data = new int[0];
+
     public AtelScriptObject(int[] bytes, int[] battleWorkerMappingBytes) {
         this.bytes = bytes;
         this.battleWorkerMappingBytes = battleWorkerMappingBytes;
+        this.hasWorkerLocalPrivateData = battleWorkerMappingBytes == null;
         mapFields();
         parseWorkers();
+        parseEventSharedData();
+    }
+
+    public AtelScriptObjectBytes toBytes() {
+        List<Integer> scriptBytesList = new ArrayList<>();
+        List<ScriptVariable> newVariableDeclarations;
+        if (variableDeclarations != null && variableDeclarations.length > 0) {
+            newVariableDeclarations = new ArrayList<>(Arrays.stream(variableDeclarations).toList());
+        }  else {
+            newVariableDeclarations = new ArrayList<>();
+        }
+        List<Integer> newRefInts;
+        if (KEEP_EXISTING_REF_INTS_FLOATS_ORDER && refInts != null && refInts.length > 0) {
+            newRefInts = new ArrayList<>(Arrays.stream(refInts).boxed().toList());
+        } else {
+            newRefInts = new ArrayList<>();
+        }
+        List<Integer> newRefFloats;
+        if (KEEP_EXISTING_REF_INTS_FLOATS_ORDER && refFloats != null && refFloats.length > 0) {
+            newRefFloats = new ArrayList<>(Arrays.stream(refFloats).boxed().toList());
+        } else {
+            newRefFloats = new ArrayList<>();
+        }
+        int cursor = 0;
+        for (ScriptWorker worker : workers) {
+            List<ScriptLine> workerJumpTargets = new ArrayList<>();
+            List<ScriptLine> workerLines = worker.getLines();
+            for (ScriptLine line : workerLines) {
+                line.rereference(cursor, workerJumpTargets, newVariableDeclarations, newRefInts, newRefFloats);
+                scriptBytesList.addAll(line.toBytesList());
+                cursor = scriptBytesList.size();
+            }
+            worker.setJumpTargets(workerJumpTargets);
+        }
+        int scriptCodeLength = scriptBytesList.size();
+        int[] scriptCodeBytes = intListToArray(scriptBytesList);
+        int[] refIntsArray = BytesHelper.intListToArray(newRefInts);
+        int[] refFloatsArray = BytesHelper.intListToArray(newRefFloats);
+        int varCount = newVariableDeclarations.size();
+        for (ScriptWorker worker : workers) {
+            worker.variableDeclarations = variableDeclarations;
+            worker.refInts = refIntsArray;
+            worker.refFloats = refFloatsArray;
+            worker.variablesCount = varCount;
+            worker.refIntCount = refIntsArray.length;
+            worker.refFloatCount = refFloatsArray.length;
+            worker.entryPointCount = worker.entryPoints.length;
+            worker.jumpCount = worker.jumps.length;
+        }
+        int[] staticHeaderBytes = new int[STATIC_HEADER_LENGTH];
+        write4Bytes(staticHeaderBytes, 0x00, scriptCodeLength);
+        int amountOfType2or3Scripts = (int) Arrays.stream(workers).filter(w -> w.eventWorkerType == 2 || w.eventWorkerType == 3).count();
+        write2Bytes(staticHeaderBytes, 0x14, amountOfType2or3Scripts);
+        int amountOfType4Scripts = (int) Arrays.stream(workers).filter(w -> w.eventWorkerType == 4).count();
+        write2Bytes(staticHeaderBytes, 0x16, amountOfType4Scripts);
+        write2Bytes(staticHeaderBytes, 0x18, mainScriptIndex);
+        write2Bytes(staticHeaderBytes, 0x1A, unknown1A);
+        int amountOfType5Scripts = (int) Arrays.stream(workers).filter(w -> w.eventWorkerType == 5).count();
+        write2Bytes(staticHeaderBytes, 0x1C, amountOfType5Scripts);
+        int workerCount = workers.length;
+        write2Bytes(staticHeaderBytes, 0x34, workerCount);
+        int actorCount = (int) Arrays.stream(workers).filter(w -> w.eventWorkerType != 0).count();
+        write2Bytes(staticHeaderBytes, 0x36, actorCount);
+        int workerHeaderLength = workerCount * (ScriptWorker.LENGTH + 4);
+        int[] workerHeaderBytes = new int[workerHeaderLength];
+        for (int i = 0; i < workerCount; i++) {
+            write4Bytes(workerHeaderBytes, i * 4, STATIC_HEADER_LENGTH + workerCount * 4 + i * ScriptWorker.LENGTH);
+        }
+        int newMapEntrancesOffset = STATIC_HEADER_LENGTH + workerHeaderLength;
+        int mapEntrancesLength = mapEntrances != null ? mapEntrances.length * MapEntranceObject.LENGTH : 0;
+        int[] mapEntrancesBytes = new int[mapEntrancesLength];
+        if (mapEntrancesLength == 0) {
+            write4Bytes(staticHeaderBytes, 0x04, 0);
+        } else {
+            write4Bytes(staticHeaderBytes, 0x04, newMapEntrancesOffset);
+            for (int i = 0; i < mapEntrances.length; i++) {
+                System.arraycopy(mapEntrances[i].toBytes(), 0, mapEntrancesBytes, i * MapEntranceObject.LENGTH, MapEntranceObject.LENGTH);
+            }
+        }
+        int newCreatorTagOffset = newMapEntrancesOffset + mapEntrancesLength;
+        write4Bytes(staticHeaderBytes, 0x08, newCreatorTagOffset);
+        int[] creatorTagBytes = utf8StringToBytes(creatorTag);
+        int newScriptIdAddress = padLengthTo(newCreatorTagOffset + creatorTagBytes.length, 2);
+        write4Bytes(staticHeaderBytes, 0x0C, newScriptIdAddress);
+        int[] scriptIdBytes = utf8StringToBytes(scriptId);
+        int newVariableDeclarationsOffset = (newScriptIdAddress + scriptIdBytes.length + 6) & 0xFFFFFFFC;
+        int newRefIntsOffset = newVariableDeclarationsOffset + varCount * 8;
+        int newRefFloatsOffset = newRefIntsOffset + newRefInts.size() * 4;
+        int referencesLength = varCount * 8 + newRefInts.size() * 4 + newRefFloats.size() * 4;
+        int[] referencesBytes = new int[referencesLength];
+        for (int i = 0; i < varCount; i++) {
+            System.arraycopy(newVariableDeclarations.get(i).toBytes(), 0, referencesBytes, i * 8, 8);
+        }
+        for (int i = 0; i < newRefInts.size(); i++) {
+            write4Bytes(referencesBytes, varCount * 8 + i * 4, newRefInts.get(i));
+        }
+        for (int i = 0; i < newRefFloats.size(); i++) {
+            write4Bytes(referencesBytes, varCount * 8 + newRefInts.size() * 4 + i * 4, newRefFloats.get(i));
+        }
+        int newScriptCodeOffset = newVariableDeclarationsOffset + referencesLength;
+        write4Bytes(staticHeaderBytes, 0x30, newScriptCodeOffset);
+        int newSharedDataOffset = (newScriptCodeOffset + scriptCodeLength + 0x1F) & 0xFFFFFFF0;
+        int sharedDataLength = sharedDataBytes.length;
+        int newMetaStructOffset = (newSharedDataOffset + sharedDataLength + 0x0F) & 0xFFFFFFF0;
+        int[] metaStructBytes;
+        if (scriptMetaStruct != null) {
+            ScriptMetaStruct.ScriptMetaStructBytes metaStructBytesObj = scriptMetaStruct.toBytes(newMetaStructOffset);
+            write4Bytes(staticHeaderBytes, 0x2C, metaStructBytesObj.enterOffset());
+            metaStructBytes = metaStructBytesObj.bytes();
+        } else {
+            write4Bytes(staticHeaderBytes, 0x2C, 0);
+            metaStructBytes = new int[0];
+        }
+        int metaStructLength = metaStructBytes.length;
+        int newEventDataOffset = newMetaStructOffset + metaStructLength;
+        int eventDataLength = eventDataBytes.length;
+        write4Bytes(staticHeaderBytes, 0x20, newEventDataOffset);
+
+        int mapTableLength = mapTableObjects != null && mapTableObjects.length > 0 ? mapTableObjects.length * MapTableObject.LENGTH + 4 : 0;
+        int[] mapTableBytes = new int[mapTableLength];
+        int newMapTableOffset = newEventDataOffset + eventDataLength;
+        if (mapTableLength == 0) {
+            write4Bytes(staticHeaderBytes, 0x24, 0);
+        } else {
+            write4Bytes(staticHeaderBytes, 0x24, newMapTableOffset);
+            write4Bytes(mapTableBytes, 0, mapTableObjects.length);
+            for (int i = 0; i < mapTableObjects.length; i++) {
+                System.arraycopy(mapTableObjects[i].toBytes(), 0, mapTableBytes, 4 + i * MapTableObject.LENGTH, MapTableObject.LENGTH);
+            }
+        }
+
+        int newAreaNameIndexesOffset = newMapTableOffset + mapTableBytes.length;
+        int areaNameCount = areaNameIndexes != null ? areaNameIndexes.size() : 0;
+        int areaNameIndexesLength = areaNameCount * 2;
+        int[] areaNameIndexesBytes = new int[areaNameIndexesLength];
+        if (areaNameCount == 0) {
+            write2Bytes(staticHeaderBytes, 0x1E, 0);
+            write4Bytes(staticHeaderBytes, 0x28, 0);
+        } else {
+            for (int i = 0; i < areaNameCount; i++) {
+                write2Bytes(areaNameIndexesBytes, i * 2, areaNameIndexes.get(i));
+            }
+            int newAreaIndexesBytes = 0x8000 | areaNameCount;
+            write2Bytes(staticHeaderBytes, 0x1E, newAreaIndexesBytes);
+            write4Bytes(staticHeaderBytes, 0x28, newAreaNameIndexesOffset);
+        }
+        int newJumpTablesOffset = newAreaNameIndexesOffset + areaNameIndexesLength;
+        int jumpTableLength = 0;
+        for (ScriptWorker worker : workers) {
+            worker.variableDeclarationsOffset = newVariableDeclarationsOffset;
+            worker.refIntsOffset = newRefIntsOffset;
+            worker.refFloatsOffset = newRefFloatsOffset;
+            worker.privateDataLengthPadded = (worker.privateDataLength + 0x0F) & 0xFFFFFFF0;
+            worker.sharedDataOffset = newSharedDataOffset;
+            int workerListLength = (worker.entryPointCount * 4) + (worker.jumpCount * 4) + worker.privateDataLengthPadded;
+            jumpTableLength += workerListLength;
+        }
+        int jumpTableCursor = 0;
+        int[] jumpTableBytes = new int[jumpTableLength];
+        for (int i = 0; i < workerCount; i++) {
+            ScriptWorker worker = workers[i];
+            worker.scriptEntryPointsOffset = newJumpTablesOffset + jumpTableCursor;
+            for (int j = 0; j < worker.entryPointCount; j++) {
+                write4Bytes(jumpTableBytes, jumpTableCursor, worker.entryPoints[j].addr);
+                jumpTableCursor += 4;
+            }
+            worker.jumpsOffset = newJumpTablesOffset + jumpTableCursor;
+            for (int j = 0; j < worker.jumpCount; j++) {
+                write4Bytes(jumpTableBytes, jumpTableCursor, worker.jumps[j].addr);
+                jumpTableCursor += 4;
+            }
+            if (worker.privateDataLength > 0 && hasWorkerLocalPrivateData) {
+                worker.privateDataOffset = newJumpTablesOffset + jumpTableCursor;
+                System.arraycopy(worker.privateDataBytes, 0, jumpTableBytes, jumpTableCursor, worker.privateDataLength);
+                jumpTableCursor += worker.privateDataLengthPadded;
+            }
+            System.arraycopy(worker.toBytes(), 0, workerHeaderBytes, workerCount * 4 + i * ScriptWorker.LENGTH, ScriptWorker.LENGTH);
+        }
+        int totalLength = (newJumpTablesOffset + jumpTableLength + 0x14) & 0xFFFFFFF0;
+        write4Bytes(staticHeaderBytes, 0x10, totalLength);
+        int[] scriptObjectFullBytes = new int[totalLength];
+        System.arraycopy(staticHeaderBytes, 0, scriptObjectFullBytes, 0, STATIC_HEADER_LENGTH);
+        System.arraycopy(workerHeaderBytes, 0, scriptObjectFullBytes, STATIC_HEADER_LENGTH, workerHeaderLength);
+        System.arraycopy(mapEntrancesBytes, 0, scriptObjectFullBytes, newMapEntrancesOffset, mapEntrancesLength);
+        System.arraycopy(creatorTagBytes, 0, scriptObjectFullBytes, newCreatorTagOffset, creatorTagBytes.length);
+        System.arraycopy(scriptIdBytes, 0, scriptObjectFullBytes, newScriptIdAddress, scriptIdBytes.length);
+        System.arraycopy(referencesBytes, 0, scriptObjectFullBytes, newVariableDeclarationsOffset, referencesLength);
+        System.arraycopy(scriptCodeBytes, 0, scriptObjectFullBytes, newScriptCodeOffset, scriptCodeLength);
+        System.arraycopy(sharedDataBytes, 0, scriptObjectFullBytes, newSharedDataOffset, sharedDataLength);
+        System.arraycopy(metaStructBytes, 0, scriptObjectFullBytes, newMetaStructOffset, metaStructBytes.length);
+        System.arraycopy(eventDataBytes, 0, scriptObjectFullBytes, newEventDataOffset, eventDataLength);
+        System.arraycopy(mapTableBytes, 0, scriptObjectFullBytes, newMapTableOffset, mapTableLength);
+        if (newAreaNameIndexesOffset != 0) {
+            System.arraycopy(areaNameIndexesBytes, 0, scriptObjectFullBytes, newAreaNameIndexesOffset, areaNameIndexesBytes.length);
+        }
+        System.arraycopy(jumpTableBytes, 0, scriptObjectFullBytes, newJumpTablesOffset, jumpTableLength);
+        return new AtelScriptObjectBytes(scriptObjectFullBytes, getBattleWorkerMappingBytes());
     }
 
     private void mapFields() {
@@ -100,9 +312,9 @@ public class AtelScriptObject {
         amountOfType5Scripts = read2Bytes(0x1C);
         areaNameBytes = read2Bytes(0x1E);
         eventDataOffset = read4Bytes(0x20);
-        unknownOffset24 = read4Bytes(0x24);
+        unknownTable24Offset = read4Bytes(0x24);
         areaNameIndexesOffset = read4Bytes(0x28);
-        unknownSize40StructOffset = read4Bytes(0x2C);
+        scriptMetaStructOffset = read4Bytes(0x2C);
         scriptCodeStartAddress = read4Bytes(0x30);
         namespaceCount = read2Bytes(0x34);
         actorCount = read2Bytes(0x36);
@@ -119,31 +331,65 @@ public class AtelScriptObject {
             }
         }
 
+        if (unknownTable24Offset > 0) {
+            int unknownTableCount = read4Bytes(unknownTable24Offset);
+            mapTableObjects = new MapTableObject[unknownTableCount];
+            for (int i = 0; i < unknownTableCount; i++) {
+                mapTableObjects[i] = new MapTableObject(Arrays.copyOfRange(bytes, unknownTable24Offset + 4 + i * MapTableObject.LENGTH, unknownTable24Offset + 4 + (i + 1) * MapTableObject.LENGTH));
+            }
+        }
+
         if (areaNameBytes > 0 && areaNameIndexesOffset > 0) {
-            areaNameIndexes = new ArrayList<>();
-            if ((areaNameBytes & 0x8000) > 0) {
+            if ((areaNameBytes & 0x8000) != 0) {
                 int count = areaNameBytes & 0x7FFF;
+                areaNameIndexes = new ArrayList<>(count);
                 for (int i = 0; i < count; i++) {
                     areaNameIndexes.add(read2Bytes(areaNameIndexesOffset + 2 * i));
                 }
             } else {
+                areaNameIndexes = new ArrayList<>(1);
                 areaNameIndexes.add(areaNameBytes);
             }
+        }
+
+        if (scriptMetaStructOffset > 0) {
+            scriptMetaStruct = new ScriptMetaStruct(this, bytes, scriptMetaStructOffset);
         }
     }
 
     private void parseWorkers() {
-        scriptJumps = new ArrayList<>();
         scriptJumpsByDestination = new HashMap<>();
         workers = new ScriptWorker[namespaceCount];
         for (int i = 0; i < namespaceCount; i++) {
             int offset = read4Bytes(0x38 + i * 4);
-            ScriptWorker scriptWorker = parseScriptWorker(offset, i);
-            parseScriptJumps(scriptWorker);
+            ScriptWorker scriptWorker = new ScriptWorker(this, i, Arrays.copyOfRange(bytes, offset, offset + ScriptWorker.LENGTH));
             workers[i] = scriptWorker;
+            scriptWorker.parseReferences(bytes);
+            for (ScriptJump entryPoint : scriptWorker.entryPoints) {
+                scriptJumpsByDestination.computeIfAbsent(entryPoint.addr, (x) -> new ArrayList<>()).add(entryPoint);
+            }
+            for (ScriptJump jump : scriptWorker.jumps) {
+                scriptJumpsByDestination.computeIfAbsent(jump.addr, (x) -> new ArrayList<>()).add(jump);
+            }
         }
-        parseVarIntFloatTables();
+        syncVarIntFloatTables();
         parseBattleWorkerTypes();
+    }
+
+    private void parseEventSharedData() {
+        int offsetAfter = areaNameIndexesOffset != 0 ? areaNameIndexesOffset : (jumpTablesOffset != 0 ? jumpTablesOffset : jumpsEndAddress);
+        if (unknownTable24Offset > 0) {
+            unknownTable24Data = Arrays.copyOfRange(bytes, unknownTable24Offset, offsetAfter);
+            offsetAfter = unknownTable24Offset;
+        }
+        if (eventDataOffset > 0) {
+            eventDataBytes = Arrays.copyOfRange(bytes, eventDataOffset, offsetAfter);
+            offsetAfter = eventDataOffset;
+        }
+        if (sharedDataOffset > 0) {
+            int nextOffset = scriptMetaStruct != null ? scriptMetaStruct.getStartOffset() : offsetAfter;
+            sharedDataBytes = Arrays.copyOfRange(bytes, sharedDataOffset, nextOffset);
+        }
     }
 
     public void addLocalizations(List<LocalizedFieldStringObject> strings) {
@@ -208,72 +454,50 @@ public class AtelScriptObject {
 
         gatheringInfo = false;
         semanticParseScriptCode();
-    }
-
-    private ScriptWorker parseScriptWorker(int offset, int scriptIndex) {
-        return new ScriptWorker(this, scriptIndex, Arrays.copyOfRange(bytes, offset, offset + ScriptWorker.LENGTH));
+        for (ScriptWorker worker : workers) {
+            worker.parseWorkerAtelCode(actualScriptCodeBytes);
+        }
     }
 
     public ScriptWorker getWorker(int workerIndex) {
         return workerIndex >= 0 && workerIndex < workers.length ? workers[workerIndex] : null;
     }
 
-    private void parseVarIntFloatTables() {
-        variableStructsTableOffset = -1;
-        intTableOffset = -1;
-        floatTableOffset = -1;
+    private void syncVarIntFloatTables() {
+        variableStructsTableOffset = 0;
+        intTableOffset = 0;
+        floatTableOffset = 0;
+        sharedDataOffset = 0;
+        jumpTablesOffset = 0;
+        boolean first = true;
         for (ScriptWorker worker : workers) {
-            if (variableStructsTableOffset < 0) {
-                variableStructsTableOffset = worker.variableStructsTableOffset;
-                variableDeclarations = new ScriptVariable[worker.variablesCount];
-                for (int varIdx = 0; varIdx < worker.variablesCount; varIdx++) {
-                    int lb = read4Bytes(variableStructsTableOffset + varIdx * 8);
-                    int hb = read4Bytes(variableStructsTableOffset + varIdx * 8 + 4);
-                    ScriptVariable scriptVariable = new ScriptVariable(worker, varIdx, lb, hb);
-                    variableDeclarations[varIdx] = scriptVariable;
-                    scriptVariable.inferredType = "float".equals(scriptVariable.getFormatType()) ? "float" : "unknown";
-                    if (scriptVariable.location == 0) {
-                        ScriptField entry = ScriptConstants.getEnumMap("saveData").get(scriptVariable.offset + SAVEDATA_ATEL_OFFSET);
-                        if (entry != null) {
-                            scriptVariable.declaredType = entry.type;
-                        }
-                    } else if (scriptVariable.location == 4) {
-                        scriptVariable.parseValues();
-                    } else if (scriptVariable.location == 6) {
-                        scriptVariable.parseValues();
-                    }
+            if (first) {
+                first = false;
+                variableStructsTableOffset = worker.variableDeclarationsOffset;
+                variableDeclarations = worker.variableDeclarations;
+                intTableOffset = worker.refIntsOffset;
+                refInts = worker.refInts;
+                floatTableOffset = worker.refFloatsOffset;
+                refFloats = worker.refFloats;
+                sharedDataOffset = worker.sharedDataOffset;
+                jumpTablesOffset = worker.scriptEntryPointsOffset;
+            } else {
+                if (worker.variableDeclarationsOffset != variableStructsTableOffset || worker.variablesCount != variableDeclarations.length) {
+                    System.err.println("WARNING, variables table mismatch!");
                 }
                 worker.variableDeclarations = variableDeclarations;
-                worker.setVariableInitialValues();
-            } else if (worker.variableStructsTableOffset != variableStructsTableOffset || worker.variablesCount != variableDeclarations.length) {
-                System.err.println("WARNING, variables table mismatch!");
-            } else {
-                worker.variableDeclarations = variableDeclarations;
-                worker.setVariableInitialValues();
-            }
-            if (intTableOffset < 0) {
-                intTableOffset = worker.intTableOffset;
-                refInts = new int[worker.refIntCount];
-                for (int i = 0; i < worker.refIntCount; i++) {
-                    refInts[i] = read4Bytes(intTableOffset + i * 4);
+                if (worker.refIntsOffset != intTableOffset || worker.refIntCount != refInts.length) {
+                    System.err.println("WARNING, int table mismatch!");
                 }
                 worker.refInts = refInts;
-            } else if (worker.intTableOffset != intTableOffset || worker.refIntCount != refInts.length) {
-                System.err.println("WARNING, int table mismatch!");
-            } else {
-                worker.refInts = refInts;
-            }
-            if (floatTableOffset < 0) {
-                floatTableOffset = worker.floatTableOffset;
-                refFloats = new int[worker.refFloatCount];
-                for (int i = 0; i < worker.refFloatCount; i++) {
-                    refFloats[i] = read4Bytes(floatTableOffset + i * 4);
+                if (worker.refFloatsOffset != floatTableOffset || worker.refFloatCount != refFloats.length) {
+                    System.err.println("WARNING, float table mismatch!");
                 }
                 worker.refFloats = refFloats;
-            } else if (worker.floatTableOffset != floatTableOffset || worker.refFloatCount != refFloats.length) {
-                System.err.println("WARNING, float table mismatch!");
-            } else {
-                worker.refFloats = refFloats;
+                if (worker.sharedDataOffset != sharedDataOffset) {
+                    System.err.println("WARNING, shared data offset mismatch!");
+                }
+                worker.sharedDataOffset = sharedDataOffset;
             }
         }
     }
@@ -282,69 +506,86 @@ public class AtelScriptObject {
         if (battleWorkerMappingBytes == null || battleWorkerMappingBytes.length == 0) {
             return;
         }
-        int workersToMapSupposedly = battleWorkerMappingBytes[0];
-        int workerSlotCount = battleWorkerMappingBytes[1];
+        battleWorkerCount = battleWorkerMappingBytes[0];
+        battleWorkerSlotCount = battleWorkerMappingBytes[1];
         // map from section index to purpose slot
         Map<Integer, Integer> slotMap = new HashMap<>();
-        for (int i = 0; i < workerSlotCount; i++) {
+        for (int i = 0; i < battleWorkerSlotCount; i++) {
             if (battleWorkerMappingBytes[i + 2] != 0xFF) {
                 slotMap.put(battleWorkerMappingBytes[i + 2], i);
             }
         }
-        int sectionsLineOffset = workerSlotCount + 2 + (workerSlotCount % 2);
+        int sectionsLineOffset = (battleWorkerSlotCount + 0x03) & 0xFFFFFFFE;
         Integer firstOffset = null;
-        for (int i = 0; i < workersToMapSupposedly; i++) {
+        for (int i = 0; i < battleWorkerCount; i++) {
             int offset = sectionsLineOffset + i * 4;
             int workerIndex = battleWorkerMappingBytes[offset];
             int battleWorkerType = battleWorkerMappingBytes[offset + 1];
-            int sectionOffset = battleWorkerMappingBytes[offset + 2] + battleWorkerMappingBytes[offset + 3] * 0x100;
+            int sectionOffset = BytesHelper.read2Bytes(battleWorkerMappingBytes, offset + 2);
             if (i == 0) {
                 firstOffset = sectionOffset;
             } else if (offset >= firstOffset) {
                 // System.err.println("WARNING - Offset number mismatch at index " + i + " expected " + workersToMapSupposedly);
                 break;
             }
-            int entryPointSlotCount = battleWorkerMappingBytes[sectionOffset] + battleWorkerMappingBytes[sectionOffset + 1] * 0x100;
-            int sectionPayloadOffset = sectionOffset + 2;
             ScriptWorker worker = getWorker(workerIndex);
             if (worker != null) {
                 if (slotMap.containsKey(i)) {
                     worker.setPurposeSlot(slotMap.get(i));
                 }
-                worker.setBattleWorkerTypes(battleWorkerType, entryPointSlotCount, Arrays.copyOfRange(battleWorkerMappingBytes, sectionPayloadOffset, sectionPayloadOffset + entryPointSlotCount * 2));
+                int entryPointPayloadOffset = sectionOffset + 2;
+                int entryPointSlotCount = BytesHelper.read2Bytes(battleWorkerMappingBytes, sectionOffset);
+                int[] entryPointPayload = Arrays.copyOfRange(battleWorkerMappingBytes, entryPointPayloadOffset, entryPointPayloadOffset + entryPointSlotCount * 2);
+                worker.setBattleWorkerTypes(battleWorkerType, entryPointSlotCount, entryPointPayload);
             } else {
                 System.err.println("WARNING - no worker with index " + workerIndex + " at section " + i + "!");
             }
         }
     }
 
-    private void parseScriptJumps(ScriptWorker worker) {
-        int entryPointCount = worker.entryPointCount;
-        ScriptJump[] entryPoints = new ScriptJump[entryPointCount];
-        for (int i = 0; i < entryPointCount; i++) {
-            int addr = read4Bytes(worker.scriptEntryPointsOffset + i * 4);
-            ScriptJump entryPoint = new ScriptJump(worker, addr, i, true);
-            entryPoints[i] = entryPoint;
-            scriptJumps.add(entryPoint);
-            if (!scriptJumpsByDestination.containsKey(addr)) {
-                scriptJumpsByDestination.put(addr, new ArrayList<>());
-            }
-            scriptJumpsByDestination.get(addr).add(entryPoint);
+    private int[] getBattleWorkerMappingBytes() {
+        if (battleWorkerMappingBytes == null) {
+            return null;
         }
-        worker.entryPoints = entryPoints;
-        int jumpCount = worker.jumpCount;
-        ScriptJump[] jumps = new ScriptJump[jumpCount];
-        for (int i = 0; i < jumpCount; i++) {
-            int addr = read4Bytes(worker.jumpsOffset + i * 4);
-            ScriptJump jump = new ScriptJump(worker, addr, i, false);
-            jumps[i] = jump;
-            scriptJumps.add(jump);
-            if (!scriptJumpsByDestination.containsKey(addr)) {
-                scriptJumpsByDestination.put(addr, new ArrayList<>());
+        int headerLength = battleWorkerSlotCount + 2;
+        int[] battleWorkerMappingHeaderBytes = new int[headerLength];
+        Arrays.fill(battleWorkerMappingHeaderBytes, 0xFF);
+        List<Integer> workerIndexes = new ArrayList<>();
+        for (int i = 0; i < workers.length; i++) {
+            ScriptWorker worker = workers[i];
+            if (worker.purposeSlot != null) {
+                battleWorkerMappingHeaderBytes[worker.purposeSlot + 2] = workerIndexes.size();
+                workerIndexes.add(i);
             }
-            scriptJumpsByDestination.get(addr).add(jump);
         }
-        worker.jumps = jumps;
+        int newBattleWorkerCount = workerIndexes.size();
+        battleWorkerMappingHeaderBytes[0] = newBattleWorkerCount;
+        battleWorkerMappingHeaderBytes[1] = battleWorkerSlotCount;
+        int battleWorkerPayloadsOffset = (battleWorkerSlotCount + 0x03) & 0xFFFFFFFE;
+        int[] battleWorkerPayloadsBytes = new int[newBattleWorkerCount * 4];
+        int workerSectionOffset = battleWorkerPayloadsOffset + newBattleWorkerCount * 4;
+        int cursor = workerSectionOffset;
+        int[][] workerSectionBytesList = new int[newBattleWorkerCount][];
+        for (int i = 0; i < newBattleWorkerCount; i++) {
+            int workerIndex = workerIndexes.get(i);
+            battleWorkerPayloadsBytes[i * 4] = workerIndex;
+            ScriptWorker worker = getWorker(workerIndex);
+            battleWorkerPayloadsBytes[i * 4 + 1] = worker.battleWorkerType;
+            write2Bytes(battleWorkerPayloadsBytes, i * 4 + 2, cursor);
+            int[] slotsBytes = worker.getBattleWorkerEntryPointSlotsBytes();
+            workerSectionBytesList[i] = slotsBytes;
+            cursor += slotsBytes.length;
+        }
+        int[] fullBytes = new int[cursor];
+        System.arraycopy(battleWorkerMappingHeaderBytes, 0, fullBytes, 0, headerLength);
+        System.arraycopy(battleWorkerPayloadsBytes, 0, fullBytes, headerLength, newBattleWorkerCount * 4);
+        cursor = workerSectionOffset;
+        for (int i = 0; i < newBattleWorkerCount; i++) {
+            int sectionLength = workerSectionBytesList[i].length;
+            System.arraycopy(workerSectionBytesList[i], 0, fullBytes, cursor, sectionLength);
+            cursor += sectionLength;
+        }
+        return fullBytes;
     }
 
     protected void syntacticParseScriptCode() {
@@ -361,19 +602,22 @@ public class AtelScriptObject {
         while (cursor < scriptCodeLength) {
             List<ScriptJump> jumpsOnInstruction = new ArrayList<>();
             int offset = cursor;
-            int opcode = nextAiByte(cursor, jumpsOnInstruction, false);
+            nextAiByte(cursor, jumpsOnInstruction, false);
+            int opcode = actualScriptCodeBytes[cursor];
             cursor++;
             ScriptInstruction instruction;
             if (hasArgs(opcode)) {
-                final int arg1 = nextAiByte(cursor, jumpsOnInstruction, true);
+                nextAiByte(cursor, jumpsOnInstruction, true);
+                final int arg1 = actualScriptCodeBytes[cursor];
                 cursor++;
-                final int arg2 = nextAiByte(cursor, jumpsOnInstruction, true);
+                nextAiByte(cursor, jumpsOnInstruction, true);
+                final int arg2 = actualScriptCodeBytes[cursor];
                 cursor++;
                 instruction = new ScriptInstruction(offset, opcode, arg1, arg2);
             } else {
                 instruction = new ScriptInstruction(offset, opcode);
             }
-            instruction.jumps = jumpsOnInstruction;
+            instruction.incomingJumps = jumpsOnInstruction;
             jumpsOnLine.addAll(jumpsOnInstruction);
             lineInstructions.add(instruction);
             instructions.add(instruction);
@@ -404,23 +648,22 @@ public class AtelScriptObject {
         List<ScriptJump> softMisalignedOnLine = new ArrayList<>();
         List<ScriptJump> hardMisalignedOnLine = new ArrayList<>();
         for (ScriptInstruction instruction : instructions) {
-            if (!instruction.jumps.isEmpty()) {
-                restoreTypingsFromJumps(instruction.jumps);
-                instruction.jumps.forEach(j -> j.reachableFrom = currentExecutionLines);
+            if (!instruction.incomingJumps.isEmpty()) {
+                restoreTypingsFromJumps(instruction.incomingJumps);
+                instruction.incomingJumps.forEach(j -> j.reachableFrom = currentExecutionLines);
                 currentExecutionLines = new ArrayList<>(currentExecutionLines);
-                currentExecutionLines.addAll(instruction.jumps);
-                List<ScriptJump> hardMisaligned = instruction.jumps.stream().filter(j -> j.hardMisaligned).collect(Collectors.toList());
+                currentExecutionLines.addAll(instruction.incomingJumps);
+                List<ScriptJump> hardMisaligned = instruction.incomingJumps.stream().filter(j -> j.hardMisaligned).collect(Collectors.toList());
                 if (!hardMisaligned.isEmpty()) {
                     hardMisalignedOnLine.addAll(hardMisaligned);
                 }
                 if (!nonNullInstructionsOnLine.isEmpty()) {
-                    softMisalignedOnLine.addAll(instruction.jumps);
+                    softMisalignedOnLine.addAll(instruction.incomingJumps);
                 }
             }
             if (instruction.opcode != 0x00) {
                 nonNullInstructionsOnLine.add(instruction);
             }
-            instruction.reachableFrom = currentExecutionLines;
             processInstruction(instruction);
             if (getLineEnd(instruction.opcode)) {
                 if (!stack.empty()) {
@@ -479,7 +722,7 @@ public class AtelScriptObject {
         return String.join(" ", segments);
     }
 
-    protected int nextAiByte(int cursor, List<ScriptJump> jumpsOnLine, boolean isArgByte) {
+    protected void nextAiByte(int cursor, List<ScriptJump> jumpsOnLine, boolean isArgByte) {
         if (scriptJumpsByDestination.containsKey(cursor)) {
             List<ScriptJump> jumps = scriptJumpsByDestination.get(cursor);
             restoreTypingsFromJumps(jumps);
@@ -488,7 +731,6 @@ public class AtelScriptObject {
                 jumps.forEach(ScriptJump::markAsHardMisaligned);
             }
         }
-        return actualScriptCodeBytes[cursor];
     }
 
     protected void restoreTypingsFromJumps(List<ScriptJump> jumps) {
@@ -603,6 +845,9 @@ public class AtelScriptObject {
                 textScriptLine += "Set test = " + p1;
                 currentRXType = resolveType(p1);
             } else if (opcode == 0x2B) { // REPUSH / COPY
+                if ("float".equals(resolveType(p1))) {
+                    warningsOnLine.add("Repush of float value does not work!");
+                }
                 stack.push(new StackObject(p1.type, p1));
                 stack.push(new StackObject(p1.type, p1));
             } else if (opcode == 0x2C) { // POPY / SET_CASE
@@ -620,9 +865,9 @@ public class AtelScriptObject {
                 }
                 String level = p1.expression ? ""+p1 : ""+p1.valueSigned;
                 boolean direct = !p2.expression && !p3.expression && isWeakType(p2.type) && isWeakType(p3.type) && p2.valueSigned < workers.length && p3.valueSigned < workers[p2.valueSigned].entryPoints.length;
-                String s = p2.expression ? "(" + p2 + ")" : format2Or4Byte(p2.valueSigned);
+                String w = p2.expression ? "(" + p2 + ")" : format2Or4Byte(p2.valueSigned);
                 String e = p3.expression ? "(" + p3 + ")" : format2Or4Byte(p3.valueSigned);
-                String scriptLabel = direct ? workers[p2.valueSigned].entryPoints[p3.valueSigned].getLabel() : ("w" + s + "e" + e);
+                String scriptLabel = direct ? workers[p2.valueSigned].entryPoints[p3.valueSigned].getLabel() : ("w" + w + "e" + e);
                 String content = cmd + " " + scriptLabel + " (Level " + level + ")";
                 stack.push(new StackObject(currentWorker, ins, "worker", true, content));
             } else if (opcode == 0x39) { // PREQ
@@ -992,6 +1237,9 @@ public class AtelScriptObject {
     }
 
     public String allLinesString() {
+        if (PRINT_CODE_BY_ENTRY_POINTS) {
+            return allWorkerCodeString();
+        }
         List<String> lines = new ArrayList<>();
         for (int i = 0; i < lineCount; i++) {
             lines.add(fullLineString(i));
@@ -1007,6 +1255,20 @@ public class AtelScriptObject {
         String warnLine = warnLines.get(line);
         String wl = warnLine == null || warnLine.isEmpty() ? "" : (consoleColorIfEnabled(ANSI_RED) + warnLine);
         return ol + jhl + tl + wl + consoleColorIfEnabled(ANSI_RESET);
+    }
+
+    public String allWorkerCodeString() {
+        List<String> lines = new ArrayList<>();
+        for (ScriptWorker worker : workers) {
+            lines.add("w" + StringHelper.formatHex2(worker.workerIndex));
+            worker.parseWorkerAtelCode(actualScriptCodeBytes);
+            for (ScriptJump ep : worker.entryPoints) {
+                lines.add(ep.getLabel());
+                lines.add(ep.getLinesString());
+                lines.add("");
+            }
+        }
+        return String.join("\n", lines) + '\n';
     }
 
     public String allInstructionsAsmString() {
@@ -1041,18 +1303,16 @@ public class AtelScriptObject {
                 lines.add("Entrance " + StringHelper.formatHex2(i) + " " + mapEntrances[i].toString());
             }
         }
-        if (PRINT_UNKNOWN_HEADER_VALS) {
+        if (unknown1A != 0) {
             lines.add("unknown1A=" + StringHelper.formatHex4(unknown1A));
-            lines.add("unknownOffset24=" + StringHelper.formatHex4(unknownOffset24) + (unknownOffset24 != 0 ? "; size=" + StringHelper.formatHex4(areaNameIndexesOffset - unknownOffset24) : ""));
-            if (unknownSize40StructOffset != 0) {
-                int[] other_offset_target = Arrays.copyOfRange(bytes, unknownSize40StructOffset, unknownSize40StructOffset + 0x40);
-                lines.add("Struct pointed to at 0x2C");
-                lines.add(Arrays.stream(other_offset_target).mapToObj((i) -> StringHelper.formatHex2(i)).collect(Collectors.joining(" ")));
+        }
+        if (PRINT_META_STRUCT) {
+            if (scriptMetaStruct != null) {
+                lines.add("Meta Struct");
+                lines.add(scriptMetaStruct.toString());
             } else {
-                lines.add("Struct pointer at 0x2C is 00");
+                lines.add("Meta Struct is null");
             }
-            // Order of offsets seems to be:
-            // other_offset - eventData - areaNameIndexes - unknownOffset24
         }
         if (areaNameIndexes != null) {
             int firstAreaNameIndex = areaNameIndexes.get(0);
@@ -1106,4 +1366,6 @@ public class AtelScriptObject {
     public int[] getBytes() {
         return bytes;
     }
+
+    public record AtelScriptObjectBytes(int[] bytes, int[] battleWorkerMappingBytes) {}
 }

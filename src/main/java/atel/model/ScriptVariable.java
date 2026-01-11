@@ -3,20 +3,24 @@ package atel.model;
 import main.StringHelper;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.Objects;
 import java.util.stream.Collectors;
 
+import static reading.BytesHelper.write2Bytes;
+import static reading.BytesHelper.write3Bytes;
+
 public class ScriptVariable {
+    public static final int LENGTH = 0x8;
     public static final int SAVEDATA_ATEL_OFFSET = 0x1EC;
     public final int index;
     public final long fullBytes;
     public final int lb;
     public final int hb;
     public final int offset;
+    public final int formatLocationByte;
     public final int format;
     public final int location;
+    public final int unknownBit;
     public final int elementCount;
     public final int elementSize;
     public final List<StackObject> values = new ArrayList<>();
@@ -34,8 +38,10 @@ public class ScriptVariable {
         this.hb = hb;
         this.fullBytes = hb * 0x100000000L + lb;
         this.offset = lb & 0x00FFFFFF;
+        this.formatLocationByte = (lb & 0xFF000000) >> 24;
         this.format = (lb & 0xF0000000) >> 28;
         this.location = (lb & 0x0F000000) >> 25;
+        this.unknownBit = (lb & 0x01000000) >> 24;
         this.elementCount = hb & 0xFFFF;
         this.elementSize = (hb & 0xFFFF0000) >> 16;
     }
@@ -48,13 +54,25 @@ public class ScriptVariable {
         this.hb = vr.hb;
         this.fullBytes = vr.fullBytes;
         this.offset = vr.offset;
+        this.formatLocationByte = vr.formatLocationByte;
         this.format = vr.format;
         this.location = vr.location;
+        this.unknownBit = vr.unknownBit;
         this.elementCount = vr.elementCount;
         this.elementSize = vr.elementSize;
         this.declaredLabel = vr.declaredLabel;
         this.declaredType = vr.declaredType;
         this.declaredIndexType = vr.declaredIndexType;
+    }
+
+    public int[] toBytes() {
+        int[] array = new int[LENGTH];
+        write3Bytes(array, 0x00, offset);
+        int formatLocationByte = (format << 4) | (location << 1) | unknownBit;
+        array[0x03] = formatLocationByte;
+        write2Bytes(array, 0x04, elementCount);
+        write2Bytes(array, 0x06, elementSize);
+        return array;
     }
 
     public int getLength() {
@@ -86,6 +104,9 @@ public class ScriptVariable {
             return;
         }
         int dataOffset = getDataOffset();
+        if (dataOffset == 0) {
+            return;
+        }
         int[] bytes = parentWorker.parentScript.getBytes();
         int valueLocation = dataOffset + offset;
         int length = getLength();
@@ -94,16 +115,13 @@ public class ScriptVariable {
         }
         for (int i = 0; i < elementCount; i++) {
             String type = formatToType(format);
-            int valueUnsigned = 0;
-            if (dataOffset > 0) {
-                int valueOffset = valueLocation + i * length;
-                valueUnsigned |= bytes[valueOffset];
-                if (length > 1) {
-                    valueUnsigned |= bytes[valueOffset + 1] << 8;
-                    if (length > 2) {
-                        valueUnsigned |= (bytes[valueOffset + 2] << 16);
-                        valueUnsigned |= (bytes[valueOffset + 3] << 24);
-                    }
+            int valueOffset = valueLocation + i * length;
+            int valueUnsigned = bytes[valueOffset];
+            if (length > 1) {
+                valueUnsigned |= bytes[valueOffset + 1] << 8;
+                if (length > 2) {
+                    valueUnsigned |= (bytes[valueOffset + 2] << 16);
+                    valueUnsigned |= (bytes[valueOffset + 3] << 24);
                 }
             }
             int valueSigned;

@@ -31,6 +31,8 @@ public class MonsterFile implements Nameable {
     int[] lootBytes;
     int[] englishTextBytes;
 
+    private boolean scriptParsed = false;
+
     public MonsterFile(Integer monsterIndex, int[] bytes) {
         this.monsterIndex = monsterIndex;
         int chunkCount = read4Bytes(bytes, 0x00) - 1;
@@ -60,14 +62,21 @@ public class MonsterFile implements Nameable {
 
     public void parseScript() {
         if (monsterScript != null) {
+            scriptParsed = true;
             monsterScript.parseScript();
         }
     }
 
     public int[] toBytes() {
         List<int[]> chunks = new ArrayList<>();
-        chunks.add(scriptBytes);
-        chunks.add(workerMappingBytes);
+        if (AtelScriptObject.RECOMPILE_ATEL && scriptParsed) {
+            AtelScriptObject.AtelScriptObjectBytes atelScriptObjectBytes = monsterScript.toBytes();
+            chunks.add(atelScriptObjectBytes.bytes());
+            chunks.add(atelScriptObjectBytes.battleWorkerMappingBytes());
+        } else {
+            chunks.add(scriptBytes);
+            chunks.add(workerMappingBytes);
+        }
         chunks.add(DataWritingManager.dataObjectWithStringsToBytes(monsterStatData, "jp"));
         chunks.add(chunk3Bytes);
         chunks.add(monsterLootData.toBytes(null));

@@ -32,12 +32,12 @@ public abstract class StringHelper {
     public static final Map<String, Map<Character, Integer>> CHAR_TO_BYTE_MAPS = new HashMap<>();
     public static final Map<Integer, LocalizedMacroStringObject> MACRO_LOOKUP = new HashMap<>();
 
-    public static String formatHex2(int twoByteValue) {
-        return String.format("%02X", twoByteValue);
+    public static String formatHex2(int oneByteValue) {
+        return String.format("%02X", oneByteValue);
     }
 
-    public static String formatHex4(int fourByteValue) {
-        String formatted = String.format("%04X", fourByteValue);
+    public static String formatHex4(int twoByteValue) {
+        String formatted = String.format("%04X", twoByteValue);
         if (formatted.length() == 8 && formatted.startsWith("FFFF")) {
             return formatted.substring(4);
         }

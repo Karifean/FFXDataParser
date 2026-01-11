@@ -1103,7 +1103,7 @@ public abstract class ScriptFuncLib {
         putFuncWithIdx(0x7101, new ScriptFunc("isDebugBattleStart", "unknown", "btlGetFullCommand", true));
         putFuncWithIdx(0x7102, new ScriptFunc("makeChrHeadFaceChr?", "unknown", "btlFaseTarget", p("btlChr"), p("target","btlChr")));
         putFuncWithIdx(0x7103, new ScriptFunc("makeChrHeadFacePoint?", "unknown", "btlFaseTargetXYZ", p("btlChr"), p("x", "float"), p("y", "float"), p("z", "float")));
-        putFuncWithIdx(0x7104, new ScriptFunc("changeCommandAnimation", "unknown", "btlSetCommandEffect", p("command"), p("anim1", "int"), p("anim2", "int")));
+        putFuncWithIdx(0x7104, new ScriptFunc("changeCommandAnimation", "unknown", "btlSetCommandEffect", p("command"), p("anim1", "magicFile"), p("anim2", "magicFile")));
         putUnknownFunc(0x7105, "btlWaitStone", 0);
         putFuncWithIdx(0x7106, new ScriptFunc("doesChrKnowCommand", "bool", "btlCheckGetCommand", p("btlChr"), p("command")));
         putUnknownFunc(0x7107, "btlDirPosBasic2", 1);

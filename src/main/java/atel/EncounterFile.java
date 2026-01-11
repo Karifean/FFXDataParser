@@ -33,6 +33,7 @@ public class EncounterFile {
     public List<LocalizedFieldStringObject> strings;
 
     private final int chunkCount;
+    private boolean scriptParsed = false;
 
     public EncounterFile(String filename, int[] bytes, boolean isInpc) {
         this.filename = filename;
@@ -117,6 +118,7 @@ public class EncounterFile {
 
     public void parseScript() {
         if (encounterScript != null) {
+            scriptParsed = true;
             encounterScript.setStrings(strings);
             encounterScript.parseScript();
         }
@@ -124,8 +126,14 @@ public class EncounterFile {
 
     public int[] toBytes() {
         List<int[]> chunks = new ArrayList<>();
-        chunks.add(scriptBytes);
-        chunks.add(workerMappingBytes);
+        if (AtelScriptObject.RECOMPILE_ATEL && scriptParsed) {
+            AtelScriptObject.AtelScriptObjectBytes atelScriptObjectBytes = encounterScript.toBytes();
+            chunks.add(atelScriptObjectBytes.bytes());
+            chunks.add(atelScriptObjectBytes.battleWorkerMappingBytes());
+        } else {
+            chunks.add(scriptBytes);
+            chunks.add(workerMappingBytes);
+        }
         chunks.add(formationBytes);
         chunks.add(battleAreasPositionsBytes);
         chunks.add(DataWritingManager.stringsToStringFileBytes(strings, "jp"));

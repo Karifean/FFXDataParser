@@ -12,6 +12,9 @@ public abstract class ScriptConstants {
     public static String[] OPCODE_LABELS;
     public static int[] OPCODE_STACKPOPS;
     public static List<Integer> OPCODE_ENDLINE;
+    public static final Set<Integer> OPCODE_CALLING = Set.of(0xB5, 0xD8);
+    public static final Set<Integer> OPCODE_BRANCHING = Set.of(0xB0, 0xB1, 0xB2, 0xD5, 0xD6, 0xD7);
+    public static final Set<Integer> OPCODES_UNCONTINUING = Set.of(0x34, 0x3C, 0x40, 0xB0);
     public static final Map<String, Map<Integer, ScriptField>> ENUMERATIONS = new HashMap<>();
     public static final Map<Integer, ScriptField> COMP_OPERATORS = new HashMap<>();
     public static final List<String> INDEX_ENUMS_ONLY = List.of("var", "saveData", "battleVar");

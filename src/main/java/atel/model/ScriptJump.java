@@ -1,15 +1,16 @@
 package atel.model;
 
+import atel.AtelScriptObject;
 import main.DataAccess;
 import main.StringHelper;
+import model.CommandDataObject;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class ScriptJump {
-    public final ScriptWorker scriptWorker;
-    public final int addr;
+    public ScriptWorker parentWorker;
+    public AtelScriptObject parentScript;
+    public int addr;
     public final int workerIndex;
     public final int jumpIndex;
     public final boolean isEntryPoint;
@@ -21,14 +22,15 @@ public class ScriptJump {
     public List<ScriptJump> reachableFrom;
     public boolean hardMisaligned = false;
     public ScriptLine targetLine;
+    public Integer battleWorkerEntryPointSlot;
 
     private String label;
-    private int battleWorkerEntryPointSlot;
 
-    public ScriptJump(ScriptWorker scriptWorker, int addr, int jumpIndex, boolean isEntryPoint) {
-        this.scriptWorker = scriptWorker;
+    public ScriptJump(ScriptWorker parentWorker, int addr, int jumpIndex, boolean isEntryPoint) {
+        this.parentWorker = parentWorker;
+        this.parentScript = parentWorker != null ? parentWorker.parentScript : null;
         this.addr = addr;
-        this.workerIndex = scriptWorker.workerIndex;
+        this.workerIndex = parentWorker != null ? parentWorker.workerIndex : -1;
         this.jumpIndex = jumpIndex;
         this.isEntryPoint = isEntryPoint;
     }
@@ -45,24 +47,86 @@ public class ScriptJump {
         return getLabel() + " (" + StringHelper.formatHex4(addr) + ")";
     }
 
+    public List<ScriptInstruction> toInstructionList() {
+        List<ScriptInstruction> list = new ArrayList<>();
+        List<ScriptLine> lines = getLines();
+        lines.forEach(line -> list.addAll(line.instructions));
+        return list;
+    }
+
+    public List<ScriptLine> getLines() {
+        List<ScriptLine> list = new ArrayList<>();
+        Stack<ScriptLine> linesToCheck = new Stack<>();
+        linesToCheck.push(targetLine);
+        while (!linesToCheck.isEmpty()) {
+            ScriptLine cursor = linesToCheck.pop();
+            while (cursor != null && !list.contains(cursor)) {
+                list.add(cursor);
+                ScriptJump branch = cursor.branch;
+                if (branch != null) {
+                    if (cursor.continues()) {
+                        linesToCheck.add(0, branch.targetLine);
+                    } else {
+                        linesToCheck.push(branch.targetLine);
+                    }
+                }
+                cursor = cursor.continues() ? cursor.successor : null;
+            }
+        }
+        return list;
+    }
+
+    public String getLinesString() {
+        List<ScriptLine> alreadyVisited = new ArrayList<>();
+        List<String> lineStrings = new ArrayList<>();
+        Stack<ScriptJump> linesToCheck = new Stack<>();
+        linesToCheck.push(this);
+        while (!linesToCheck.isEmpty()) {
+            ScriptJump entryPoint = linesToCheck.pop();
+            ScriptState state = new ScriptState(entryPoint);
+            ScriptLine cursor = entryPoint.targetLine;
+            while (cursor != null && !alreadyVisited.contains(cursor)) {
+                alreadyVisited.add(cursor);
+                ScriptJump branch = cursor.branch;
+                if (branch != null) {
+                    branch.setTypes(state);
+                    if (cursor.continues()) {
+                        linesToCheck.add(0, branch);
+                    } else {
+                        linesToCheck.push(branch);
+                    }
+                }
+                lineStrings.add(cursor.asString(state));
+                cursor = cursor.continues() ? cursor.successor : null;
+            }
+        }
+        return String.join("\n", lineStrings);
+    }
+
     public String getDefaultLabel() {
         if (!isEntryPoint) {
             return "j" + StringHelper.formatHex2(jumpIndex);
         } else {
-            String wPrefix = "w" + StringHelper.formatHex2(scriptWorker.workerIndex);
+            String wPrefix = "w" + StringHelper.formatHex2(parentWorker.workerIndex);
             if (jumpIndex == 0) {
                 return wPrefix + "init";
             } else if (jumpIndex == 1) {
                 return wPrefix + "main";
             } else {
-                if (scriptWorker.battleWorkerType != null) {
+                if (parentWorker.battleWorkerType != null) {
                     String wePrefix = wPrefix + "e" + StringHelper.formatHex2(jumpIndex);
                     return wePrefix + battleWorkerEntryPointToString();
                 } else {
-                    return wPrefix + eventWorkerEntryPointToStringWithFallback(scriptWorker.eventWorkerType, jumpIndex);
+                    return wPrefix + eventWorkerEntryPointToStringWithFallback(parentWorker.eventWorkerType, jumpIndex);
                 }
             }
         }
+    }
+
+    public void setTypes(ScriptState state) {
+        this.rAType = state.rAType;
+        this.rXType = state.rXType;
+        this.rYType = state.rYType;
     }
 
     public void setTypes(String rAType, String rXType, String rYType, Map<Integer, String> tempITypes) {
@@ -70,9 +134,6 @@ public class ScriptJump {
         this.rXType = rXType;
         this.rYType = rYType;
         // this.tempITypes = tempITypes;
-        /* if (reachableFrom != null && !reachableFrom.isEmpty()) {
-            reachableFrom.forEach(rf -> rf.setTypes(rAType, rXType, rYType, tempITypes));
-        } */
     }
 
     public void setBattleWorkerEntryPointSlot(int entryPointSlot) {
@@ -80,8 +141,8 @@ public class ScriptJump {
     }
 
     private String battleWorkerEntryPointToString() {
-        int battleWorkerType = scriptWorker.battleWorkerType != null ? scriptWorker.battleWorkerType : -1;
-        int battleWorkerSlot = scriptWorker.purposeSlot != null ? scriptWorker.purposeSlot : -1;
+        int battleWorkerType = parentWorker.battleWorkerType != null ? parentWorker.battleWorkerType : -1;
+        int battleWorkerSlot = parentWorker.purposeSlot != null ? parentWorker.purposeSlot : -1;
         if (battleWorkerType == 0) {
             ScriptField s = ScriptConstants.getEnumMap("cameraHandlerTag").get(battleWorkerEntryPointSlot);
             if (s != null) {
@@ -141,7 +202,12 @@ public class ScriptJump {
             } else {
                 cmd = 0x6000 + battleWorkerEntryPointSlot;
             }
-            return "MagicCam" + StringHelper.formatHex4(cmd) + "(" + DataAccess.getCommand(cmd).getName() + ")";
+            CommandDataObject command = DataAccess.getCommand(cmd);
+            if (command != null) {
+                return "MagicCam" + StringHelper.formatHex4(cmd) + "(" + command.getName() + ")";
+            } else {
+                return "MagicCam" + StringHelper.formatHex4(cmd);
+            }
         }
         String strWorkerPurposeSlot = "s" + StringHelper.formatHex2(battleWorkerSlot);
         String strWorkerType = "t" + StringHelper.formatHex2(battleWorkerType);

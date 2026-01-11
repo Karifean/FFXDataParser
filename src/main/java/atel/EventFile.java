@@ -32,6 +32,8 @@ public class EventFile implements Nameable {
     int[] englishTextBytes;
     public List<LocalizedFieldStringObject> strings;
 
+    private boolean scriptParsed = false;
+
     public EventFile(String filename, int[] bytes) {
         this.filename = filename;
         List<Chunk> chunks = BytesHelper.bytesToChunks(bytes, DEFAULT_ASSUMED_CHUNK_COUNT, 4);
@@ -88,15 +90,20 @@ public class EventFile implements Nameable {
 
     public void parseScript() {
         if (eventScript != null) {
+            scriptParsed = true;
             eventScript.setStrings(strings);
             eventScript.parseScript();
         }
     }
 
     public int[] toBytes() {
-        // Note: this is untested and probably doesn't work!
         List<int[]> chunks = new ArrayList<>();
-        chunks.add(scriptBytes);
+        if (AtelScriptObject.RECOMPILE_ATEL && scriptParsed) {
+            AtelScriptObject.AtelScriptObjectBytes atelScriptObjectBytes = eventScript.toBytes();
+            chunks.add(atelScriptObjectBytes.bytes());
+        } else {
+            chunks.add(scriptBytes);
+        }
         chunks.add(DataWritingManager.stringsToStringFileBytes(strings, "jp"));
         chunks.add(unknownChunk2Bytes);
         chunks.add(ftcxBytes);
