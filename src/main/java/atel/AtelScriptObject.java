@@ -55,7 +55,7 @@ public class AtelScriptObject {
     private int unknown1A;
     public int eventDataOffset;
     private int unknownTable24Offset;
-    private int scriptCodeLength;
+    public int scriptCodeLength;
     private int scriptCodeStartAddress;
     private int scriptCodeEndAddress;
     private int namespaceCount;  // Total number of workers
@@ -622,8 +622,7 @@ public class AtelScriptObject {
             lineInstructions.add(instruction);
             instructions.add(instruction);
             if (getLineEnd(opcode)) {
-                ScriptLine scriptLine = new ScriptLine(null, currentScriptLineOffset, lineInstructions, instruction);
-                scriptLine.incomingJumps = jumpsOnLine;
+                ScriptLine scriptLine = new ScriptLine(null, currentScriptLineOffset, lineInstructions, instruction, jumpsOnLine);
                 jumpsOnLine.forEach(j -> j.targetLine = scriptLine);
                 scriptLines.add(scriptLine);
                 lineCount++;

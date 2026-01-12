@@ -260,6 +260,7 @@ public class ScriptWorker {
                         ScriptLine scriptLine = linesByOffset.get(offset);
                         scriptLine.predecessor = predecessor;
                         predecessor.successor = scriptLine;
+                        predecessor = null;
                     }
                 } else {
                     int cursor = offset;
@@ -303,8 +304,7 @@ public class ScriptWorker {
                         jumpsOnLine.addAll(jumpsOnInstruction);
                         lineInstructions.add(instruction);
                     } while (!ScriptConstants.OPCODE_ENDLINE.contains(opcode));
-                    ScriptLine scriptLine = new ScriptLine(this, offset, lineInstructions, instruction);
-                    scriptLine.incomingJumps = jumpsOnLine;
+                    ScriptLine scriptLine = new ScriptLine(this, offset, lineInstructions, instruction, jumpsOnLine);
                     linesByOffset.put(offset, scriptLine);
                     if (predecessor != null) {
                         scriptLine.predecessor = predecessor;

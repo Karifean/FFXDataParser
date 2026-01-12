@@ -54,6 +54,8 @@ You can then run the parser with the following command:
 | `READ_PC_STATS` | | Reads player character initial stats and growth values. (from `ply_save.bin` and `ply_rom.bin`) |
 | `READ_CTB_BASE` | | Reads the CTB to Tickspeed/ICV table. (from `ctb_base.bin`) |
 | `MAKE_EDITS` | | Apply string edits from csv files and write localized files in all languages into the `mods` folder. |
+| `RECOMPILE` | `<scriptId1, ex: lmyt000> [<scriptIndex2, ex: mtgz08_00>] [<scriptIndex3, ex: m111>] ...` | Recompile the given script/s and save them to the mods folder. Intended mainly for internal testing of the recompilation feature. |
+| `ADD_ATEL_SPACE` | `<type, "event"/"encounter"/"monster"> <scriptId, ex: lmyt0000> <workerIndex in hex, ex: 0A> <count in decimal, ex: 900>` | Recompile the given script while also adding a new entry point to the given worker that consists of <count> bytes of 00. |
 
 
 ### Example usages:
@@ -65,6 +67,8 @@ You can then run the parser with the following command:
 `java -jar target/FFXDataParser-1.1-SNAPSHOT.jar . PARSE_ATEL_FILE ffx_ps2/ffx/master/jppc/event/obj/do/dome0600/dome0600.ebp`
 
 `java -jar target/FFXDataParser-1.1-SNAPSHOT.jar . PARSE_MONSTER 105`
+
+`java -jar target/FFXDataParser-1.1-SNAPSHOT.jar . ADD_ATEL_SPACE event genk0000 3 900`
 
 ## Expected CSV Formats for MAKE_EDITS
 

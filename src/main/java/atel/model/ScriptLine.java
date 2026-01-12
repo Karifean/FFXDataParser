@@ -31,12 +31,13 @@ public class ScriptLine {
 
     private boolean malformed = false;
 
-    public ScriptLine(ScriptWorker parentWorker, int offset, List<ScriptInstruction> instructions, ScriptInstruction lineEnder) {
+    public ScriptLine(ScriptWorker parentWorker, int offset, List<ScriptInstruction> instructions, ScriptInstruction lineEnder, List<ScriptJump> incomingJumps) {
         this.parentWorker = parentWorker;
         this.parentScript = parentWorker != null ? parentWorker.parentScript : null;
         this.offset = offset;
         this.instructions = instructions;
         this.lineEnder = lineEnder;
+        this.incomingJumps = incomingJumps;
         if (instructions != null && !instructions.isEmpty()) {
             instructions.forEach(ins -> ins.setParentLine(this));
             setUpInputs();
@@ -87,7 +88,7 @@ public class ScriptLine {
             }
         } catch (EmptyStackException e) {
             malformed = true;
-            e.printStackTrace();
+            warnings.add("Malformed (EmptyStackException)");
         }
     }
 

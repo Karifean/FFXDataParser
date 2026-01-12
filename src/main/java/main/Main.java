@@ -1,16 +1,17 @@
 package main;
 
 import atel.AtelScriptObject;
-import atel.model.ScriptJump;
-import atel.model.ScriptWorker;
-import atel.model.StackObject;
+import atel.model.*;
 import model.*;
 import atel.EncounterFile;
 import atel.EventFile;
 import atel.MonsterFile;
+import reading.BytesHelper;
 import reading.FileAccessorWithMods;
 
 import java.util.*;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import static main.DataReadingManager.*;
@@ -260,7 +261,6 @@ public class Main {
                     String mIndexString = "m" + StringHelper.formatDec3(monsterIndex);
                     MonsterFile monster = DataAccess.getMonster(monsterIndex + 0x1000);
                     if (monster != null) {
-                        monster.parseScript();
                         monster.monsterStatData.autoStatusesTemporal |= 0x0800;
                         String path = GAME_FILES_ROOT + MODS_FOLDER + PATH_MONSTER_FOLDER + '_' + mIndexString + '/' + mIndexString + ".bin";
                         FileAccessorWithMods.writeByteArrayToFile(path, monster.toBytes());
@@ -394,21 +394,55 @@ public class Main {
                 readMixCombinations(PATH_ORIGINALS_KERNEL + "prepare.bin", true);
                 break;
             case MODE_ADD_ATEL_SPACE:
-                /* String type = realArgs.get(0);
+                String type = realArgs.get(0);
                 String id = realArgs.get(1);
                 int workerIndex = Integer.parseInt(realArgs.get(2), 16);
-                String entryPoint = realArgs.get(3);
+                int count = Integer.parseInt(realArgs.get(3), 10);
                 AtelScriptObject scriptObject;
+                EventFile eventFileToSpace = null;
+                EncounterFile encounterFileToSpace = null;
+                MonsterFile monsterFileToSpace = null;
                 if ("event".equals(type)) {
-                    scriptObject = DataAccess.getEvent(id).eventScript;
+                    eventFileToSpace = DataAccess.getEvent(id);
+                    eventFileToSpace.parseScript();
+                    scriptObject = eventFileToSpace.eventScript;
                 } else if ("encounter".equals(type)) {
-                    scriptObject = DataAccess.getEncounter(id).encounterScript;
+                    encounterFileToSpace = DataAccess.getEncounter(id);
+                    encounterFileToSpace.parseScript();
+                    scriptObject = encounterFileToSpace.encounterScript;
                 } else if ("monster".equals(type)) {
-                    scriptObject = Objects.requireNonNull(DataAccess.getMonster(id)).monsterScript;
+                    monsterFileToSpace = Objects.requireNonNull(DataAccess.getMonster(id));
+                    monsterFileToSpace.parseScript();
+                    scriptObject = monsterFileToSpace.monsterScript;
                 } else {
                     return;
                 }
-                ScriptWorker worker = scriptObject.getWorker(workerIndex); */
+                ScriptWorker worker = scriptObject.getWorker(workerIndex);
+                List<ScriptJump> entryPointList = Arrays.stream(worker.entryPoints).collect(Collectors.toCollection(ArrayList::new));
+                int offset = scriptObject.scriptCodeLength;
+                ScriptJump newEntryPoint = new ScriptJump(worker, offset, entryPointList.size(), true);
+                ScriptInstruction noopInstruction = new ScriptInstruction(offset, 0x00, count);
+                ScriptInstruction endInstruction = new ScriptInstruction(offset + count, 0x3C);
+                newEntryPoint.targetLine = new ScriptLine(worker, offset, new ArrayList<>(List.of(noopInstruction, endInstruction)), endInstruction, new ArrayList<>(List.of(newEntryPoint)));
+                entryPointList.add(newEntryPoint);
+                worker.entryPoints = entryPointList.toArray(l -> new ScriptJump[l]);
+                if (eventFileToSpace != null) {
+                    System.out.println("Added entry point " + newEntryPoint.getLabel() + " with " + count + " bytes of 00 to event " + id);
+                    int[] bytes = eventFileToSpace.toBytes();
+                    String shortened = id.substring(0, 2);
+                    String path = GAME_FILES_ROOT + MODS_FOLDER + PATH_ORIGINALS_EVENT + shortened + '/' + id + '/' + id + ".ebp";
+                    FileAccessorWithMods.writeByteArrayToFile(path, bytes);
+                } else if (encounterFileToSpace != null) {
+                    System.out.println("Added entry point " + newEntryPoint.getLabel() + " with " + count + " bytes of 00 to encounter " + id);
+                    int[] bytes = encounterFileToSpace.toBytes();
+                    String path = GAME_FILES_ROOT + MODS_FOLDER + PATH_ORIGINALS_ENCOUNTER + id + '/' + id + ".bin";
+                    FileAccessorWithMods.writeByteArrayToFile(path, bytes);
+                } else {
+                    System.out.println("Added entry point " + newEntryPoint.getLabel() + " with " + count + " bytes of 00 to monster " + id);
+                    int[] bytes = monsterFileToSpace.toBytes();
+                    String path = GAME_FILES_ROOT + MODS_FOLDER + PATH_MONSTER_FOLDER + '_' + id + '/' + id + ".bin";
+                    FileAccessorWithMods.writeByteArrayToFile(path, bytes);
+                }
                 break;
             case MODE_RECOMPILE:
                 for (String variableId : realArgs) {

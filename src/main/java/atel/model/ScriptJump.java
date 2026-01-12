@@ -8,6 +8,8 @@ import model.CommandDataObject;
 import java.util.*;
 
 public class ScriptJump {
+    private static final boolean OPTIMIZE_REDUNDANT_B0_INSTRUCTIONS = false;
+
     public ScriptWorker parentWorker;
     public AtelScriptObject parentScript;
     public int addr;
@@ -58,9 +60,20 @@ public class ScriptJump {
         List<ScriptLine> list = new ArrayList<>();
         Stack<ScriptLine> linesToCheck = new Stack<>();
         linesToCheck.push(targetLine);
+        ScriptLine lastLine = null;
         while (!linesToCheck.isEmpty()) {
             ScriptLine cursor = linesToCheck.pop();
+            while (cursor.predecessor != null && !list.contains(cursor.predecessor)) {
+                cursor = cursor.predecessor;
+            }
             while (cursor != null && !list.contains(cursor)) {
+                if (OPTIMIZE_REDUNDANT_B0_INSTRUCTIONS && lastLine != null && !lastLine.continues() && lastLine.branch != null && cursor.equals(lastLine.branch.targetLine)) {
+                    if (lastLine.incomingJumps != null && !lastLine.incomingJumps.isEmpty()) {
+                        cursor.incomingJumps.addAll(lastLine.incomingJumps);
+                        lastLine.incomingJumps = new ArrayList<>();
+                    }
+                    list.remove(list.size() - 1);
+                }
                 list.add(cursor);
                 ScriptJump branch = cursor.branch;
                 if (branch != null) {
@@ -68,8 +81,13 @@ public class ScriptJump {
                         linesToCheck.add(0, branch.targetLine);
                     } else {
                         linesToCheck.push(branch.targetLine);
+                        if (OPTIMIZE_REDUNDANT_B0_INSTRUCTIONS && cursor.incomingJumps != null && !cursor.incomingJumps.isEmpty()) {
+                            branch.targetLine.incomingJumps.addAll(cursor.incomingJumps);
+                            cursor.incomingJumps = new ArrayList<>();
+                        }
                     }
                 }
+                lastLine = cursor;
                 cursor = cursor.continues() ? cursor.successor : null;
             }
         }
