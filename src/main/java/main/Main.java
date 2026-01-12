@@ -9,8 +9,8 @@ import atel.MonsterFile;
 import reading.BytesHelper;
 import reading.FileAccessorWithMods;
 
+import java.io.File;
 import java.util.*;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -53,6 +53,7 @@ public class Main {
     private static final String MODE_READ_PC_STATS = "READ_PC_STATS";
     private static final String MODE_READ_WEAPON_NAMES = "READ_WEAPON_NAMES";
     private static final String MODE_ADD_ATEL_SPACE = "ADD_ATEL_SPACE";
+    private static final String MODE_REMAKE_SIZE_TABLE = "REMAKE_SIZE_TABLE";
     private static final String MODE_RECOMPILE = "RECOMPILE";
     private static final String MODE_CUSTOM = "CUSTOM";
 
@@ -475,6 +476,23 @@ public class Main {
                         }
                     }
                 }
+                break;
+            case MODE_REMAKE_SIZE_TABLE:
+                String sizeTablePath = "ffx_ps2/ffx/proj/prog/cdidx/jp/sizetbl.vita.bin";
+                File orig = FileAccessorWithMods.resolveFile(sizeTablePath, false);
+                int[] bytes = BytesHelper.fileToBytes(orig);
+                if (bytes == null) {
+                    System.err.println("bytes are null");
+                    return;
+                }
+                int monstersStartOffset = 0x88E0;
+                for (int monsterIndex = 0; monsterIndex <= 360; monsterIndex++) {
+                    MonsterFile monster = DataAccess.getMonster(monsterIndex + 0x1000);
+                    if (monster != null) {
+                        BytesHelper.write4Bytes(bytes, monstersStartOffset + monsterIndex * 0x04, monster.binaryLength);
+                    }
+                }
+                FileAccessorWithMods.writeByteArrayToFile(GAME_FILES_ROOT + MODS_FOLDER + sizeTablePath, bytes);
                 break;
             case MODE_CUSTOM:
                 readDirectAtelScriptObject("menu/menumain.bin", true);

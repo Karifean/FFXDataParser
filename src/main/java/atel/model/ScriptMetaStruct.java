@@ -245,7 +245,7 @@ public class ScriptMetaStruct {
             offset08 = read4Bytes(myBytes, 0x08);
             offset0C = read4Bytes(myBytes, 0x0C);
             if (offset08 != 0) {
-                obj08 = Arrays.copyOfRange(fullBytes, offset08, offset08 + 0x04 + read4Bytes(fullBytes, offset08) * 0x02);
+                obj08 = Arrays.copyOfRange(fullBytes, offset08, offset08 + 0x04 + read4Bytes(fullBytes, offset08) * 0x04);
             }
             if (offset0C != 0) {
                 obj0C = Arrays.copyOfRange(fullBytes, offset0C, offset0C + 0x40);
@@ -275,8 +275,8 @@ public class ScriptMetaStruct {
         public String toString() {
             List<String> list = new ArrayList<>();
             list.add("at=" + StringHelper.formatHex4(myOffset));
-            list.add("offset08=" + StringHelper.formatHex4(offset08));
-            list.add("offset0C=" + StringHelper.formatHex4(offset0C));
+            String bytesHeader = Arrays.stream(myBytes).mapToObj(StringHelper::formatHex2).collect(Collectors.joining(""));
+            list.add("header=" + bytesHeader);
             String bytes08 = obj08 != null ? Arrays.stream(obj08).mapToObj(StringHelper::formatHex2).collect(Collectors.joining("")) : "";
             list.add("obj08=" + bytes08);
             String bytes0C = obj0C != null ? Arrays.stream(obj0C).mapToObj(StringHelper::formatHex2).collect(Collectors.joining("")) : "";

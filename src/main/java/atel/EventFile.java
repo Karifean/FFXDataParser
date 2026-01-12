@@ -25,6 +25,7 @@ public class EventFile implements Nameable {
     public String filename;
     public String scriptId;
     public AtelScriptObject eventScript;
+    public int binaryLength;
     int[] scriptBytes;
     int[] japaneseTextBytes;
     int[] unknownChunk2Bytes;
@@ -35,6 +36,7 @@ public class EventFile implements Nameable {
     private boolean scriptParsed = false;
 
     public EventFile(String filename, int[] bytes) {
+        binaryLength = bytes.length;
         this.filename = filename;
         List<Chunk> chunks = BytesHelper.bytesToChunks(bytes, DEFAULT_ASSUMED_CHUNK_COUNT, 4);
         mapChunks(chunks);
@@ -108,7 +110,9 @@ public class EventFile implements Nameable {
         chunks.add(unknownChunk2Bytes);
         chunks.add(ftcxBytes);
         chunks.add(DataWritingManager.stringsToStringFileBytes(strings, "us"));
-        return BytesHelper.chunksToBytes(chunks, -1, 0x40, 0x10);
+        int[] bytes = BytesHelper.chunksToBytes(chunks, -1, 0x40, 0x10);
+        binaryLength = bytes.length;
+        return bytes;
     }
 
     @Override

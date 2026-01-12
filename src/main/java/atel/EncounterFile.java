@@ -23,6 +23,7 @@ public class EncounterFile {
     public AtelScriptObject encounterScript;
     public FormationDataObject formation;
     public BattleAreasPositionsDataObject battleAreasPositions;
+    public int binaryLength;
     int[] scriptBytes;
     int[] workerMappingBytes;
     int[] formationBytes;
@@ -36,6 +37,7 @@ public class EncounterFile {
     private boolean scriptParsed = false;
 
     public EncounterFile(String filename, int[] bytes, boolean isInpc) {
+        binaryLength = bytes.length;
         this.filename = filename;
         chunkCount = read4Bytes(bytes, 0x00) - 1;
         List<Chunk> chunks = BytesHelper.bytesToChunks(bytes, chunkCount, 4);
@@ -139,7 +141,9 @@ public class EncounterFile {
         chunks.add(DataWritingManager.stringsToStringFileBytes(strings, "jp"));
         chunks.add(ftcxBytes);
         chunks.add(DataWritingManager.stringsToStringFileBytes(strings, "us"));
-        return BytesHelper.chunksToBytes(chunks, 0x08, 0x40, 0x10);
+        int[] bytes = BytesHelper.chunksToBytes(chunks, 0x08, 0x40, 0x10);
+        binaryLength = bytes.length;
+        return bytes;
     }
 
     @Override

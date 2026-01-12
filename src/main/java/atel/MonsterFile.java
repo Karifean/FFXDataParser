@@ -23,6 +23,7 @@ public class MonsterFile implements Nameable {
     public AtelScriptObject monsterScript;
     public MonsterStatDataObject monsterStatData;
     public MonsterLootDataObject monsterLootData;
+    public int binaryLength;
     int[] scriptBytes;
     int[] audioBytesApparently;
     int[] workerMappingBytes;
@@ -34,6 +35,7 @@ public class MonsterFile implements Nameable {
     private boolean scriptParsed = false;
 
     public MonsterFile(Integer monsterIndex, int[] bytes) {
+        binaryLength = bytes.length;
         this.monsterIndex = monsterIndex;
         int chunkCount = read4Bytes(bytes, 0x00) - 1;
         List<Chunk> chunks = BytesHelper.bytesToChunks(bytes, chunkCount, 4);
@@ -82,7 +84,9 @@ public class MonsterFile implements Nameable {
         chunks.add(monsterLootData.toBytes(null));
         chunks.add(audioBytesApparently);
         chunks.add(DataWritingManager.dataObjectWithStringsToBytes(monsterStatData, "us"));
-        return BytesHelper.chunksToBytes(chunks, 0x08, 0x30, 0x10);
+        int[] bytes = BytesHelper.chunksToBytes(chunks, 0x08, 0x30, 0x10);
+        binaryLength = bytes.length;
+        return bytes;
     }
 
     @Override
