@@ -439,8 +439,9 @@ public class Main {
                     FileAccessorWithMods.writeByteArrayToFile(path, bytes);
                 } else {
                     System.out.println("Added entry point " + newEntryPoint.getLabel() + " with " + count + " bytes of 00 to monster " + id);
+                    String mIndexString = "m" + StringHelper.formatDec3(Integer.parseInt(id, 10));
                     int[] bytes = monsterFileToSpace.toBytes();
-                    String path = GAME_FILES_ROOT + MODS_FOLDER + PATH_MONSTER_FOLDER + '_' + id + '/' + id + ".bin";
+                    String path = GAME_FILES_ROOT + MODS_FOLDER + PATH_MONSTER_FOLDER + '_' + mIndexString + '/' + mIndexString + ".bin";
                     FileAccessorWithMods.writeByteArrayToFile(path, bytes);
                 }
                 break;

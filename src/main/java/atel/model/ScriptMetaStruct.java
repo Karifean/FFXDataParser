@@ -4,7 +4,6 @@ import atel.AtelScriptObject;
 import main.StringHelper;
 import reading.BytesHelper;
 
-import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -44,7 +43,7 @@ public class ScriptMetaStruct {
     private ScriptMetaSubObject obj24;
     private ScriptMetaSubObject obj28;
     private ScriptMetaSubObject obj2C;
-    private ScriptMetaSubObject obj3C;
+    private ScriptMetaMapPointerObject obj3C;
 
     public ScriptMetaStruct(AtelScriptObject parentScript, int[] fullBytes, int enterOffset) {
         this.enterOffset = enterOffset;
@@ -70,32 +69,15 @@ public class ScriptMetaStruct {
         timestamp = StringHelper.getUtf8String(timestampBytes);
         timestampObj10 = new ScriptMetaSubObject(timestampBytes, timestampOffset, TIMESTAMP_LENGTH);
         obj18 = makeSubObject(fullBytes, offset18, 0x04 + read2Bytes(fullBytes, offset18) * 0x08);
-        int offsetAfter1C = offset3C != 0 ? offset3C : enterOffset;
-        obj1C = makeSubObject(fullBytes, offset1C, offsetAfter1C - offset1C); // makeSillyObject?
+        obj1C = makeSubObject(fullBytes, offset1C, 0x04 + read2Bytes(fullBytes, offset1C) * 0x02);
         int offsetAfter24 = offset2C != 0 ? offset2C : (offset28 != 0 ? offset28 : timestampOffset);
         obj24 = makeSubObject(fullBytes, offset24, offsetAfter24 - offset24); // makeSillyObject?
         obj28 = makeSubObject(fullBytes, offset28, 0x02 + read2Bytes(fullBytes, offset28) * 0x02);
         obj2C = makeSubObject(fullBytes, offset2C, 0x3C);
-        obj3C = makeSubObject(fullBytes, offset3C, 0x84);
+        if (offset3C != 0) {
+            obj3C = new ScriptMetaMapPointerObject(fullBytes, offset3C);
+        }
         this.bytes = Arrays.copyOfRange(fullBytes, offset0CStart, enterOffset + HEADER_LENGTH);
-    }
-
-    private ScriptMetaSubObject makeSillyObject(int[] fullBytes, int offset) {
-        if (offset == 0) {
-            return null;
-        }
-        int firstValue = read2Bytes(fullBytes, offset);
-        if (firstValue == 0x20) {
-            int obj24SubLength1 = read4Bytes(fullBytes, offset + 0x20);
-            int obj24SubLength2 = read4Bytes(fullBytes, offset + obj24SubLength1 * 0x10 + 0x24);
-            int obj24Length = 0x60 + obj24SubLength1 * 0x10 + obj24SubLength2 * 0x04;
-            return makeSubObject(fullBytes, offset, obj24Length);
-        } else if (firstValue == 0x01) {
-            return makeSubObject(fullBytes, offset, 0x40);
-        } else if (firstValue == 0x03) {
-            return makeSubObject(fullBytes, offset, 0xB8);
-        }
-        return makeSubObject(fullBytes, offset, 0x100);
     }
 
     public ScriptMetaStructBytes toBytes(int newStartOffset) {
@@ -147,9 +129,20 @@ public class ScriptMetaStruct {
             offset += obj1C.length();
         }
         if (obj3C != null) {
+            if (obj3C.obj08 != null) {
+                obj3C.offset08 = newStartOffset + offset;
+                System.arraycopy(obj3C.obj08, 0, fullBytes, offset, obj3C.obj08.length);
+                offset += obj3C.obj08.length;
+            }
+            if (obj3C.obj0C != null) {
+                obj3C.offset0C = newStartOffset + offset;
+                System.arraycopy(obj3C.obj0C, 0, fullBytes, offset, obj3C.obj0C.length);
+                offset += obj3C.obj0C.length;
+            }
             write4Bytes(header, 0x3C, newStartOffset + offset);
-            System.arraycopy(obj3C.bytes(), 0, fullBytes, offset, obj3C.length());
-            offset += obj3C.length();
+            int[] obj3CHeaderBytes = obj3C.getHeaderBytes();
+            System.arraycopy(obj3CHeaderBytes, 0, fullBytes, offset, obj3CHeaderBytes.length);
+            offset += obj3CHeaderBytes.length;
         }
         System.arraycopy(header, 0, fullBytes, offset, HEADER_LENGTH);
         return new ScriptMetaStructBytes(fullBytes, newStartOffset + offset);
@@ -160,6 +153,10 @@ public class ScriptMetaStruct {
     }
 
     private static int lengthOf(ScriptMetaSubObject obj) {
+        return obj != null ? obj.length() : 0;
+    }
+
+    private static int lengthOf(ScriptMetaMapPointerObject obj) {
         return obj != null ? obj.length() : 0;
     }
 
@@ -192,8 +189,8 @@ public class ScriptMetaStruct {
         list.add("obj28=" + writeSubObject(obj28, timestampObj10));
         list.add("Timestamp=" + timestamp + " (" + writeSubObject(timestampObj10, obj18) + ")");
         list.add("obj18=" + writeSubObject(obj18, obj1C));
-        list.add("obj1C=" + writeSubObject(obj1C, obj3C));
-        list.add("obj3C=" + writeSubObject(obj3C, new ScriptMetaSubObject(null, enterOffset, HEADER_LENGTH)));
+        list.add("obj1C=" + writeSubObject(obj1C, null));
+        list.add("obj3C=" + (obj3C != null ? obj3C.toString() : "null"));
         String full = list.stream().filter(s -> s != null && !s.isBlank()).collect(Collectors.joining("\n"));
         return "{ " + full + " }";
     }
@@ -233,4 +230,58 @@ public class ScriptMetaStruct {
     public record ScriptMetaStructBytes(int[] bytes, int enterOffset) {}
     
     public record ScriptMetaSubObject(int[] bytes, int enterOffset, int length) {}
+
+    private static class ScriptMetaMapPointerObject {
+        private int myOffset;
+        private int[] myBytes;
+        private int offset08;
+        private int offset0C;
+        private int[] obj08;
+        private int[] obj0C;
+
+        private ScriptMetaMapPointerObject(int[] fullBytes, int headerOffset) {
+            myOffset = headerOffset;
+            myBytes = Arrays.copyOfRange(fullBytes, headerOffset, headerOffset + 0x84);
+            offset08 = read4Bytes(myBytes, 0x08);
+            offset0C = read4Bytes(myBytes, 0x0C);
+            if (offset08 != 0) {
+                obj08 = Arrays.copyOfRange(fullBytes, offset08, offset08 + 0x04 + read4Bytes(fullBytes, offset08) * 0x02);
+            }
+            if (offset0C != 0) {
+                obj0C = Arrays.copyOfRange(fullBytes, offset0C, offset0C + 0x40);
+            }
+        }
+
+        private int[] getHeaderBytes() {
+            int[] headerBytes = new int[0x84];
+            System.arraycopy(myBytes, 0, headerBytes, 0, 0x84);
+            write4Bytes(headerBytes, 0x08, offset08);
+            write4Bytes(headerBytes, 0x0C, offset0C);
+            return headerBytes;
+        }
+
+        private int length() {
+            int len = 0x84;
+            if (obj08 != null) {
+                len += obj08.length;
+            }
+            if (obj0C != null) {
+                len += obj0C.length;
+            }
+            return len;
+        }
+
+        @Override
+        public String toString() {
+            List<String> list = new ArrayList<>();
+            list.add("at=" + StringHelper.formatHex4(myOffset));
+            list.add("offset08=" + StringHelper.formatHex4(offset08));
+            list.add("offset0C=" + StringHelper.formatHex4(offset0C));
+            String bytes08 = obj08 != null ? Arrays.stream(obj08).mapToObj(StringHelper::formatHex2).collect(Collectors.joining("")) : "";
+            list.add("obj08=" + bytes08);
+            String bytes0C = obj0C != null ? Arrays.stream(obj0C).mapToObj(StringHelper::formatHex2).collect(Collectors.joining("")) : "";
+            list.add("obj0C=" + bytes0C);
+            return list.stream().filter(s -> s != null && !s.isBlank()).collect(Collectors.joining("; "));
+        }
+    }
 }

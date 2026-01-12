@@ -153,7 +153,7 @@ public abstract class DataAccess {
 
     public static MonsterFile getMonster(String id) {
         try {
-            return getMonster(Integer.parseInt(id, 10));
+            return getMonster(Integer.parseInt(id, 10) | 0x1000);
         } catch (NumberFormatException e) {
             return null;
         }
@@ -163,8 +163,8 @@ public abstract class DataAccess {
         if (MONSTERS == null) {
             throw new UnsupportedOperationException();
         }
-        int actual = idx - 0x1000;
-        if (actual >= 0 && actual < MONSTERS.length) {
+        int actual = idx & 0x0FFF;
+        if (actual < MONSTERS.length) {
             return MONSTERS[actual];
         } else {
             return null;

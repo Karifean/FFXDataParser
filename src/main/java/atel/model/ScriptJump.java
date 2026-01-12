@@ -161,6 +161,7 @@ public class ScriptJump {
     private String battleWorkerEntryPointToString() {
         int battleWorkerType = parentWorker.battleWorkerType != null ? parentWorker.battleWorkerType : -1;
         int battleWorkerSlot = parentWorker.purposeSlot != null ? parentWorker.purposeSlot : -1;
+        int battleWorkerEntryPointSlot = this.battleWorkerEntryPointSlot != null ? this.battleWorkerEntryPointSlot : -1;
         if (battleWorkerType == 0) {
             ScriptField s = ScriptConstants.getEnumMap("cameraHandlerTag").get(battleWorkerEntryPointSlot);
             if (s != null) {
