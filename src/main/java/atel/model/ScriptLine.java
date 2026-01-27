@@ -2,12 +2,8 @@ package atel.model;
 
 import atel.AtelScriptObject;
 import main.StringHelper;
-import reading.BytesHelper;
 
-import java.util.ArrayList;
-import java.util.EmptyStackException;
-import java.util.List;
-import java.util.Stack;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static main.StringHelper.*;
@@ -35,9 +31,9 @@ public class ScriptLine {
         this.parentWorker = parentWorker;
         this.parentScript = parentWorker != null ? parentWorker.parentScript : null;
         this.offset = offset;
-        this.instructions = instructions;
+        this.instructions = instructions != null ? new ArrayList<>(instructions) : new ArrayList<>();
         this.lineEnder = lineEnder;
-        this.incomingJumps = incomingJumps;
+        this.incomingJumps = new ArrayList<>(incomingJumps);
         if (instructions != null && !instructions.isEmpty()) {
             instructions.forEach(ins -> ins.setParentLine(this));
             setUpInputs();
@@ -50,7 +46,7 @@ public class ScriptLine {
         return list;
     }
 
-    public void rereference(int newOffset, List<ScriptLine> workerJumpTargets, List<ScriptVariable> variableDeclarations, List<Integer> refInts, List<Integer> refFloats) {
+    public void rereference(int newOffset, Map<ScriptLine, ScriptJump> workerJumpTargets, List<ScriptVariable> variableDeclarations, List<Integer> refInts, List<Integer> refFloats) {
         offset = newOffset;
         incomingJumps.stream().filter(j -> j.isEntryPoint).forEach(j -> j.addr = newOffset);
         int cursor = newOffset;
@@ -58,7 +54,16 @@ public class ScriptLine {
             cursor = ins.rereference(cursor, variableDeclarations, refInts, refFloats);
         }
         if (branch != null) {
-            int index = BytesHelper.findOrAppend(workerJumpTargets, branch.targetLine);
+            int index;
+            if (workerJumpTargets.containsKey(branch.targetLine)) {
+                ScriptJump existing = workerJumpTargets.get(branch.targetLine);
+                index = existing.jumpIndex;
+                branch = existing;
+            } else {
+                index = workerJumpTargets.size();
+                workerJumpTargets.put(branch.targetLine, branch);
+                branch.jumpIndex = index;
+            }
             lineEnder.setArgv(index);
         }
     }
@@ -76,7 +81,32 @@ public class ScriptLine {
     }
 
     public boolean continues() {
+        if (lineEnder.opcode == 0xD8 && lineEnder.argv == 0x5F) {
+            return false;
+        }
         return !ScriptConstants.OPCODES_UNCONTINUING.contains(lineEnder.opcode);
+    }
+
+    public void setInstructions(List<ScriptInstruction> instructions, ScriptLine nextInList) {
+        malformed = instructions.isEmpty();
+        this.instructions = instructions;
+        if (malformed) {
+            return;
+        }
+        instructions.forEach(ins -> ins.setParentLine(this));
+        lineEnder = instructions.getLast();
+        setUpInputs();
+        if (continues()) {
+            if (nextInList != null) {
+                nextInList.predecessor = this;
+            }
+            successor = nextInList;
+        } else {
+            if (nextInList != null) {
+                nextInList.predecessor = null;
+            }
+            successor = null;
+        }
     }
 
     public void setUpInputs() {

@@ -8,6 +8,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static main.DataReadingManager.DEFAULT_LOCALIZATION;
+
 /**
  * Part of EncounterFile
  */
@@ -28,7 +30,7 @@ public class FormationDataObject {
     int alwaysZero09;
     int alwaysZero0A;
     int alwaysZero0B;
-    int[] monsters = new int[8];
+    public int[] monsters = new int[8];
 
     boolean byte01bit02;
     boolean byte02bit01;
@@ -93,7 +95,7 @@ public class FormationDataObject {
         for (int i = 0; i < 8; i++) {
             int monsterIndex = monsters[i];
             if (monsterIndex != 0xFFFF) {
-                list.add("Monster#" + StringHelper.formatHex2(i) + ": " + writeMonster(monsterIndex));
+                list.add("Monster#" + StringHelper.formatHex2(i) + ": " + writeMonster(monsterIndex, DEFAULT_LOCALIZATION) + StringHelper.hex4Suffix(monsterIndex));
             }
         }
         list.add("Voice lines " + (commonVoiceLinesEnabled ? "enabled" : "disabled"));
@@ -130,11 +132,10 @@ public class FormationDataObject {
         return StringHelper.formatHex2(bt) + '=' + String.format("%03d", bt) + '(' + String.format("%8s", Integer.toBinaryString(bt)).replace(' ', '0') + ')';
     }
 
-    private static String writeMonster(int monsterIndex) {
+    public static String writeMonster(int monsterIndex, String localization) {
         MonsterFile monster = DataAccess.getMonster(monsterIndex);
         String monsterIdxString = "m" + StringHelper.formatDec3(monsterIndex & 0x0FFF);
-        String monsterName = monsterIdxString + (monster != null ? " - " + monster.getName() : "");
-        return monsterName + StringHelper.hex4Suffix(monsterIndex);
+        return monsterIdxString + (monster != null ? " - " + monster.getName(localization) : "");
     }
 
     private int read2Bytes(int offset) {

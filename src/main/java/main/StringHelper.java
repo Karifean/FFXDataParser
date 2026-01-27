@@ -78,7 +78,7 @@ public abstract class StringHelper {
             bytes.add(0x04);
         }
         if (indexValue >= 0x100) {
-            int byte1 = indexValue / 0xD0 + 0x2B;
+            int byte1 = indexValue / 0xD0 + 0x2A;
             int byte2 = indexValue % 0xD0;
             bytes.add(byte1);
             bytes.add(byte2);
@@ -309,23 +309,38 @@ public abstract class StringHelper {
                 extraFiveSections = true;
             } else if (idx == 0x07) {
                 offset++;
+                if (offset >= table.length) {
+                    break;
+                }
                 int pixels = table[offset] - 0x30;
                 out.append("{SPACE:").append(formatHex2(pixels)).append('}');
             } else if (idx == 0x09) {
                 offset++;
+                if (offset >= table.length) {
+                    break;
+                }
                 int varIdx = table[offset] - 0x30;
                 out.append("{TIME:").append(formatHex2(varIdx)).append('}');
             } else if (idx == 0x0A) {
                 offset++;
+                if (offset >= table.length) {
+                    break;
+                }
                 int clr = table[offset];
                 out.append(getColorString(clr));
                 anyColorization = true;
             } else if (idx == 0x0B) {
                 offset++;
+                if (offset >= table.length) {
+                    break;
+                }
                 int ctrlIdx = table[offset];
                 out.append("{CTRL:").append(formatHex2(ctrlIdx)).append(':').append(getControllerInput(ctrlIdx)).append('}');
             } else if (idx == 0x10) {
                 offset++;
+                if (offset >= table.length) {
+                    break;
+                }
                 int rawValue = table[offset];
                 if (rawValue == 0xFF) {
                     out.append("{CHOICE-END}");
@@ -335,15 +350,24 @@ public abstract class StringHelper {
                 }
             } else if (idx == 0x12) {
                 offset++;
+                if (offset >= table.length) {
+                    break;
+                }
                 int varIdx = table[offset] - 0x30;
                 out.append("{VAR:").append(formatHex2(varIdx)).append('}');
             } else if (idx == 0x13 && table[offset+1] <= 0x43) {
                 offset++;
+                if (offset >= table.length) {
+                    break;
+                }
                 int pcIdx = table[offset] - 0x30;
                 out.append("{PC:").append(formatHex2(pcIdx)).append(':').append(getPlayerChar(pcIdx)).append('}');
             } else if (idx >= 0x13 && idx <= 0x22) {
                 int section = idx - 0x13;
                 offset++;
+                if (offset >= table.length) {
+                    break;
+                }
                 int line = table[offset] - 0x30;
                 out.append("{MCR:s").append(formatHex2(section)).append('l').append(formatHex2(line));
                 if (!MACRO_LOOKUP.isEmpty()) {
@@ -358,6 +382,9 @@ public abstract class StringHelper {
                 out.append('}');
             } else if (idx == 0x23) {
                 offset++;
+                if (offset >= table.length) {
+                    break;
+                }
                 int varIdx = table[offset] - 0x30;
                 out.append("{KEY:").append(formatHex2(varIdx));
                 try {
@@ -369,15 +396,24 @@ public abstract class StringHelper {
                 out.append('}');
             } else if (idx == 0x28) {
                 offset++;
+                if (offset >= table.length) {
+                    break;
+                }
                 int varIdx = table[offset] - 0x30;
                 out.append("{CMD:28:").append(formatHex2(varIdx)).append('}');
             } else if (idx == 0x2A) {
                 offset++;
+                if (offset >= table.length) {
+                    break;
+                }
                 int varIdx = table[offset] - 0x30;
                 out.append("{CMD:2A:").append(formatHex2(varIdx)).append('}');
             } else if (idx >= 0x2B) {
                 int section = idx - 0x2B;
                 offset++;
+                if (offset >= table.length) {
+                    break;
+                }
                 int lowByte = table[offset];
                 int actualIdx = section * 0xD0 + lowByte;
                 Character chr = byteToChar(actualIdx + extraOffset, charset);
@@ -390,6 +426,9 @@ public abstract class StringHelper {
                 }
             } else {
                 offset++;
+                if (offset >= table.length) {
+                    break;
+                }
                 int varIdx = table[offset] - 0x30;
                 out.append("{CMD:").append(formatHex2(idx)).append(':').append(formatHex2(varIdx)).append('}');
             }

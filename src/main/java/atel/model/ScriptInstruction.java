@@ -143,7 +143,7 @@ public class ScriptInstruction {
 
     public int getStackPops() {
         if (ScriptConstants.OPCODE_CALLING.contains(opcode)) {
-            ScriptFunc func = ScriptFuncLib.get(argv, null);
+            ScriptFunc func = ScriptFuncLib.FFX.get(argv, null);
             if (func == null) {
                 return 0;
             }
@@ -193,7 +193,9 @@ public class ScriptInstruction {
             default:
                 break;
         }
-        if (opcode == 0x25) { // POPA / SET_RETURN_VALUE
+        if (opcode == 0x00) {
+            return "NOP";
+        } else if (opcode == 0x25) { // POPA / SET_RETURN_VALUE
             state.rAType = resolveType(state, p1);
             return p1 + ";";
         } else if (opcode == 0x2A) { // POPX / SET_TEST
@@ -226,18 +228,20 @@ public class ScriptInstruction {
             return "Set tmpF" + tempIndex + " = " + p1 + ";";
         } else if (opcode == 0x77) { // REQWAIT / WAIT_DELETE
             ScriptWorker targetWorker = parentScript.getWorker(p1.valueSigned);
-            boolean direct = !p1.expression && !p2.expression && isWeakType(p1.type) && isWeakType(p2.type) && targetWorker != null && p2.valueSigned < targetWorker.entryPoints.length;
+            ScriptJump entryPoint = targetWorker != null ? targetWorker.getEntryPoint(p2.valueSigned) : null;
+            boolean direct = !p1.expression && !p2.expression && isWeakType(p1.type) && isWeakType(p2.type) && entryPoint != null;
             String w = p1.expression ? "(" + p2 + ")" : String.format((p1.valueSigned & 0xFF00) != 0 ? "%04X" : "%02X", p1.valueSigned);
             String e = p2.expression ? "(" + p3 + ")" : String.format((p2.valueSigned & 0xFF00) != 0 ? "%04X" : "%02X", p2.valueSigned);
-            String scriptLabel = direct ? targetWorker.entryPoints[p2.valueSigned].getLabel() : ("w" + w + "e" + e);
+            String scriptLabel = direct ? entryPoint.getLabel() : ("w" + w + "e" + e);
             return "await " + scriptLabel + ";";
         } else if (opcode == 0x79) { // REQCHG / EDIT_ENTRY_TABLE
-            ScriptJump[] entryPoints = parentWorker.entryPoints;
             int oldIdx = p2.valueSigned + 2;
             int newIdx = p3.valueSigned;
-            boolean direct = !p2.expression && !p3.expression && isWeakType(p2.type) && isWeakType(p3.type) && oldIdx < entryPoints.length && newIdx < entryPoints.length;
-            String oldScriptLabel = direct ? entryPoints[oldIdx].getLabel() : ("e" + (p2.expression ? "(" + p2 + ")" : String.format((oldIdx & 0xFF00) != 0 ? "%04X" : "%02X", oldIdx)));
-            String newScriptLabel = direct ? entryPoints[newIdx].getLabel() : ("e" + (p3.expression ? "(" + p3 + ")" : String.format((newIdx & 0xFF00) != 0 ? "%04X" : "%02X", newIdx)));
+            ScriptJump oldEntryPoint = parentWorker.getEntryPoint(oldIdx);
+            ScriptJump newEntryPoint = parentWorker.getEntryPoint(newIdx);
+            boolean direct = !p2.expression && !p3.expression && isWeakType(p2.type) && isWeakType(p3.type) && oldEntryPoint != null && newEntryPoint != null;
+            String oldScriptLabel = direct ? oldEntryPoint.getLabel() : ("e" + (p2.expression ? "(" + p2 + ")" : String.format((oldIdx & 0xFF00) != 0 ? "%04X" : "%02X", oldIdx)));
+            String newScriptLabel = direct ? newEntryPoint.getLabel() : ("e" + (p3.expression ? "(" + p3 + ")" : String.format((newIdx & 0xFF00) != 0 ? "%04X" : "%02X", newIdx)));
             String tableHolder = p1.expression ? ""+p1 : ""+p1.valueSigned;
             return "Replace script " + oldScriptLabel + " with " + newScriptLabel + " (store table at " + tableHolder + ")";
         } else if (opcode == 0xA0 || opcode == 0xA1) { // POPV(L) / SET_DATUM_(W/T)
@@ -247,17 +251,14 @@ public class ScriptInstruction {
             String val = typed(p2, getVariableType(argv));
             return "Set " + (opcode == 0xA4 ? "(limit) " : "") + ensureVariableValidWithArray(state, argv, p1) + " = " + val + ";";
         } else if (opcode == 0xB0) { // JMP / JUMP
-            ScriptJump jump = parentWorker.getJump(argv);
-            return "Jump to " + (jump != null ? jump.getLabelWithAddr() : ("j" + StringHelper.formatHex2(argv)));
+            return "Jump to " + jumpToString(state);
         } else if (opcode == 0xB3) { // JSR
             ScriptWorker worker = parentScript.getWorker(argv);
             return "Jump to subroutine " + (worker != null ? worker.getIndexLabel() : ("w" + StringHelper.formatHex2(argv)));
         } else if (opcode == 0xD6) { // POPXCJMP / SET_BNEZ
-            ScriptJump jump = parentWorker.getJump(argv);
-            return "(" + p1 + ") -> " + (jump != null ? jump.getLabelWithAddr() : ("j" + StringHelper.formatHex2(argv)));
+            return "(" + p1 + ") -> " + jumpToString(state);
         } else if (opcode == 0xD7) { // POPXNCJMP / SET_BEZ
-            ScriptJump jump = parentWorker.getJump(argv);
-            return "Check (" + p1 + ") else jump to " + (jump != null ? jump.getLabelWithAddr() : ("j" + StringHelper.formatHex2(argv)));
+            return "Check (" + p1 + ") else jump to " + jumpToString(state);
         } else if (opcode == 0xF6) { // SYSTEM
             return "System " + StringHelper.formatHex2(argv);
         }
@@ -266,6 +267,26 @@ public class ScriptInstruction {
             return "Stack Object: " + stackObject;
         } else {
             return null;
+        }
+    }
+
+    private String jumpToString(ScriptState state) {
+        ScriptJump jump = parentLine.branch;
+        if (jump == null) {
+            return "j" + StringHelper.formatHex2(argv);
+        }
+        if (state.writeJumpsAsIndexedLines) {
+            if (jump.targetLine == null) {
+                return "<No target line>";
+            } else if (jump.targetLine.parentWorker == parentWorker) {
+                int lineIndex = state.lines.indexOf(jump.targetLine);
+                return "Line #" + lineIndex;
+            } else {
+                int lineIndex = jump.targetLine.parentWorker.getLines().indexOf(jump.targetLine);
+                return "Script " + jump.targetLine.parentWorker.getIndexLabel() + " Line #" + lineIndex;
+            }
+        } else {
+            return jump.getLabelWithAddr();
         }
     }
 
@@ -373,10 +394,11 @@ public class ScriptInstruction {
             }
             String level = p1.expression ? ""+p1 : ""+p1.valueSigned;
             ScriptWorker targetWorker = parentScript.getWorker(p2.valueSigned);
-            boolean direct = !p2.expression && !p3.expression && isWeakType(p2.type) && isWeakType(p3.type) && targetWorker != null && p3.valueSigned < targetWorker.entryPoints.length;
+            ScriptJump entryPoint = targetWorker != null ? targetWorker.getEntryPoint(p3.valueSigned) : null;
+            boolean direct = !p2.expression && !p3.expression && isWeakType(p2.type) && isWeakType(p3.type) && entryPoint != null;
             String s = p2.expression ? "(" + p2 + ")" : String.format((p2.valueSigned & 0xFF00) != 0 ? "%04X" : "%02X", p2.valueSigned);
             String e = p3.expression ? "(" + p3 + ")" : String.format((p3.valueSigned & 0xFF00) != 0 ? "%04X" : "%02X", p3.valueSigned);
-            String scriptLabel = direct ? targetWorker.entryPoints[p3.valueSigned].getLabel() : ("w" + s + "e" + e);
+            String scriptLabel = direct ? entryPoint.getLabel() : ("w" + s + "e" + e);
             String content = cmd + " " + scriptLabel + " (Level " + level + ")";
             return new StackObject(parentWorker, this, "worker", true, content);
         } else if (opcode == 0x39) { // PREQ
@@ -457,7 +479,7 @@ public class ScriptInstruction {
     }
 
     private ScriptFunc getAndTypeFuncCall(int idx, List<StackObject> params) {
-        ScriptFunc func = ScriptFuncLib.get(idx, params);
+        ScriptFunc func = ScriptFuncLib.FFX.get(idx, params);
         if (func == null) {
             func = new ScriptFunc("Unknown:" + StringHelper.formatHex4(idx), "unknown", null, false);
         }

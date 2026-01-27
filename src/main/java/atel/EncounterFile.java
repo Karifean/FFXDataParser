@@ -1,23 +1,30 @@
 package atel;
 
 import main.DataWritingManager;
+import main.StringHelper;
 import model.BattleAreasPositionsDataObject;
 import model.FormationDataObject;
+import model.Nameable;
 import model.strings.FieldString;
 import model.strings.LocalizedFieldStringObject;
 import reading.Chunk;
 import reading.BytesHelper;
+import reading.FileAccessorWithMods;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static main.DataReadingManager.PATH_ORIGINALS_ENCOUNTER;
+import static main.DataReadingManager.PATH_ORIGINALS_EVENT;
+import static main.StringHelper.MACRO_LOOKUP;
+import static model.FormationDataObject.writeMonster;
 import static reading.BytesHelper.read4Bytes;
 
 /**
  * jppc/battle/btl/.../.bin
  */
-public class EncounterFile {
+public class EncounterFile implements Nameable {
     public String filename;
     public String scriptId;
     public AtelScriptObject encounterScript;
@@ -119,7 +126,11 @@ public class EncounterFile {
     }
 
     public void parseScript() {
-        if (encounterScript != null) {
+        parseScript(false);
+    }
+
+    public void parseScript(boolean force) {
+        if (encounterScript != null && (force || !scriptParsed)) {
             scriptParsed = true;
             encounterScript.setStrings(strings);
             encounterScript.parseScript();
@@ -144,6 +155,41 @@ public class EncounterFile {
         int[] bytes = BytesHelper.chunksToBytes(chunks, 0x08, 0x40, 0x10);
         binaryLength = bytes.length;
         return bytes;
+    }
+
+    public void writeToMods(boolean writeStrings, boolean writeDeclarations) {
+        String path = PATH_ORIGINALS_ENCOUNTER + scriptId + '/' + scriptId;
+        int[] bytes = toBytes();
+        FileAccessorWithMods.writeByteArrayToMods(path + ".bin", bytes);
+        if (writeStrings) {
+            DataWritingManager.writeEncounterStringsForAllLocalizations(this, false);
+        }
+        if (writeDeclarations) {
+            FileAccessorWithMods.writeStringToMods(path + ".dcl", encounterScript.getDeclarationsAsString());
+        }
+    }
+
+    public String getName(String localization) {
+        String id = scriptId != null ? scriptId : filename;
+        return id + " - " + getEnemyFormationLabel(localization);
+    }
+
+    public String getEnemyFormationLabel(String localization) {
+        if (formation == null) {
+            return "(No Formation)";
+        }
+        List<String> monsterLabels = new ArrayList<>();
+        for (int i = 0; i < 8; i++) {
+            int monsterIndex = formation.monsters[i];
+            if (monsterIndex != 0xFFFF) {
+                monsterLabels.add(writeMonster(monsterIndex, localization));
+            }
+        }
+        if (monsterLabels.isEmpty()) {
+            return "(Empty)";
+        } else {
+            return "[" + String.join(", ", monsterLabels) + "]";
+        }
     }
 
     @Override

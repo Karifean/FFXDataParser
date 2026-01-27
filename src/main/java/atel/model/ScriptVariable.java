@@ -13,9 +13,6 @@ public class ScriptVariable {
     public static final int LENGTH = 0x8;
     public static final int SAVEDATA_ATEL_OFFSET = 0x1EC;
     public final int index;
-    public final long fullBytes;
-    public final int lb;
-    public final int hb;
     public final int offset;
     public final int formatLocationByte;
     public final int format;
@@ -34,9 +31,6 @@ public class ScriptVariable {
     public ScriptVariable(ScriptWorker parentWorker, int index, int lb, int hb) {
         this.parentWorker = parentWorker;
         this.index = index;
-        this.lb = lb;
-        this.hb = hb;
-        this.fullBytes = hb * 0x100000000L + lb;
         this.offset = lb & 0x00FFFFFF;
         this.formatLocationByte = (lb & 0xFF000000) >> 24;
         this.format = (lb & 0xF0000000) >> 28;
@@ -50,9 +44,6 @@ public class ScriptVariable {
         this.parentWorker = vr.parentWorker;
         this.inferredType = vr.inferredType;
         this.index = vr.index;
-        this.lb = vr.lb;
-        this.hb = vr.hb;
-        this.fullBytes = vr.fullBytes;
         this.offset = vr.offset;
         this.formatLocationByte = vr.formatLocationByte;
         this.format = vr.format;
@@ -203,13 +194,13 @@ public class ScriptVariable {
 
     public String getFormatType() {
         if (location == 0) {
-            ScriptField enumTarget = ScriptConstants.ENUMERATIONS.get("saveData").get(offset + SAVEDATA_ATEL_OFFSET);
+            ScriptField enumTarget = ScriptConstants.FFX.ENUMERATIONS.get("saveData").get(offset + SAVEDATA_ATEL_OFFSET);
             if (enumTarget != null) {
                 return enumTarget.type;
             }
         }
         if (location == 1) {
-            ScriptField enumTarget = ScriptConstants.getEnumMap("battleVar").get(offset);
+            ScriptField enumTarget = ScriptConstants.FFX.getEnumMap("battleVar").get(offset);
             if (enumTarget != null) {
                 return enumTarget.type;
             }

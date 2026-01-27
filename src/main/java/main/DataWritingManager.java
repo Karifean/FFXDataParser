@@ -2,6 +2,7 @@ package main;
 
 import atel.EncounterFile;
 import atel.EventFile;
+import model.MonsterStatDataObject;
 import model.strings.*;
 import model.Writable;
 import reading.FileAccessorWithMods;
@@ -11,6 +12,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import static main.DataReadingManager.LOCALIZATIONS;
@@ -56,9 +58,9 @@ public class DataWritingManager {
     public static void writeDataObjectsInAllLocalizations(String path, Writable[] objects, final int length, final int from, final int to, final boolean optimizeStrings) {
         final Writable[] subArray = from == 0 && to == objects.length ? objects : Arrays.copyOfRange(objects, from, to);
         LOCALIZATIONS.forEach((key, value) -> {
-            String localePath = GAME_FILES_ROOT + MODS_FOLDER + getLocalizationRoot(key) + path;
+            String localePath = getLocalizationRoot(key) + path;
             int[] bytes = dataObjectsToBytes(subArray, length, from, to, key, optimizeStrings);
-            FileAccessorWithMods.writeByteArrayToFile(localePath, bytes);
+            FileAccessorWithMods.writeByteArrayToMods(localePath, bytes);
         });
     }
 
@@ -66,11 +68,24 @@ public class DataWritingManager {
         writeDataObjectsInAllLocalizations(path, objects, length, 0, objects.length, optimizeStrings);
     }
 
+    public static void writeMonsterStringsForAllLocalizations(final boolean optimizeStrings) {
+        List<MonsterStatDataObject> list = IntStream.range(0, 366).mapToObj(i -> DataAccess.getMonster(Math.min(i, 360) + 0x1000).monsterStatData).toList();
+        MonsterStatDataObject[] statData = list.toArray(i -> new MonsterStatDataObject[i]);
+        writeDataObjectsInAllLocalizations("battle/kernel/monster1.bin", statData, MonsterStatDataObject.LENGTH, 0, 101, optimizeStrings);
+        writeDataObjectsInAllLocalizations("battle/kernel/monster2.bin", statData, MonsterStatDataObject.LENGTH, 101, 181, optimizeStrings);
+        writeDataObjectsInAllLocalizations("battle/kernel/monster3.bin", statData, MonsterStatDataObject.LENGTH, 181, 366, optimizeStrings);
+    }
+
     public static void writeEventStringsForAllLocalizations(String id, final boolean print) {
         EventFile event = DataAccess.getEvent(id);
         if (event == null) {
             return;
         }
+        writeEventStringsForAllLocalizations(event, print);
+    }
+
+    public static void writeEventStringsForAllLocalizations(EventFile event, final boolean print) {
+        String id = event.scriptId;
         String path = "event/obj_ps3/" + id.substring(0, 2) + '/' + id + '/' + id + ".bin";
         writeStringFileForAllLocalizations(path, event.strings, print);
     }
@@ -80,6 +95,11 @@ public class DataWritingManager {
         if (encounter == null) {
             return;
         }
+        writeEncounterStringsForAllLocalizations(encounter, print);
+    }
+
+    public static void writeEncounterStringsForAllLocalizations(EncounterFile encounter, final boolean print) {
+        String id = encounter.scriptId;
         String path = "battle/btl/" + id + '/' + id + ".bin";
         writeStringFileForAllLocalizations(path, encounter.strings, print);
     }
@@ -89,9 +109,9 @@ public class DataWritingManager {
             System.out.printf("Writing string file: %s%n", path);
         }
         LOCALIZATIONS.forEach((key, value) -> {
-            String localePath = GAME_FILES_ROOT + MODS_FOLDER + getLocalizationRoot(key) + path;
+            String localePath = getLocalizationRoot(key) + path;
             int[] bytes = stringsToStringFileBytes(localizedStrings, key);
-            FileAccessorWithMods.writeByteArrayToFile(localePath, bytes);
+            FileAccessorWithMods.writeByteArrayToMods(localePath, bytes);
         });
     }
 

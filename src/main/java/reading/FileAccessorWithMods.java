@@ -71,6 +71,10 @@ public class FileAccessorWithMods {
         return list;
     }
 
+    public static void writeByteArrayToMods(String path, int[] bytes) {
+        writeByteArrayToFile(GAME_FILES_ROOT + MODS_FOLDER + path, bytes);
+    }
+
     public static void writeByteArrayToFile(String path, int[] bytes) {
         createDirectories(path);
         try (FileOutputStream fileOutputStream = new FileOutputStream(path)) {
@@ -82,6 +86,10 @@ public class FileAccessorWithMods {
             System.err.println("Failed to write file");
             e.printStackTrace();
         }
+    }
+
+    public static void writeStringToMods(String path, String string) {
+        writeStringToFile(GAME_FILES_ROOT + MODS_FOLDER + path, string);
     }
 
     public static void writeStringToFile(String path, String string) {

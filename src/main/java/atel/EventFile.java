@@ -6,6 +6,7 @@ import model.strings.FieldString;
 import model.strings.LocalizedFieldStringObject;
 import reading.Chunk;
 import reading.BytesHelper;
+import reading.FileAccessorWithMods;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -13,6 +14,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import static main.DataReadingManager.PATH_ORIGINALS_EVENT;
 import static main.StringHelper.MACRO_LOOKUP;
 
 /**
@@ -91,7 +93,11 @@ public class EventFile implements Nameable {
     }
 
     public void parseScript() {
-        if (eventScript != null) {
+        parseScript(false);
+    }
+
+    public void parseScript(boolean force) {
+        if (eventScript != null && (force || !scriptParsed)) {
             scriptParsed = true;
             eventScript.setStrings(strings);
             eventScript.parseScript();
@@ -113,6 +119,19 @@ public class EventFile implements Nameable {
         int[] bytes = BytesHelper.chunksToBytes(chunks, -1, 0x40, 0x10);
         binaryLength = bytes.length;
         return bytes;
+    }
+
+    public void writeToMods(boolean writeStrings, boolean writeDeclarations) {
+        String shortened = scriptId.substring(0, 2);
+        String path = PATH_ORIGINALS_EVENT + shortened + '/' + scriptId + '/' + scriptId;
+        int[] bytes = toBytes();
+        FileAccessorWithMods.writeByteArrayToMods(path + ".ebp", bytes);
+        if (writeStrings) {
+            DataWritingManager.writeEventStringsForAllLocalizations(this, false);
+        }
+        if (writeDeclarations) {
+            FileAccessorWithMods.writeStringToMods(path + ".dcl", eventScript.getDeclarationsAsString());
+        }
     }
 
     @Override

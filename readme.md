@@ -61,15 +61,15 @@ You can then run the parser with the following command:
 
 ### Example usages:
 
-`java -jar target/FFXDataParser-1.1-SNAPSHOT.jar . GREP Time to go, escargot!`
+`java -jar target/FFXDataParser-1.2-SNAPSHOT.jar . GREP Time to go, escargot!`
 
-`java -jar target/FFXDataParser-1.1-SNAPSHOT.jar . READ_ALL_ABILITIES`
+`java -jar target/FFXDataParser-1.2-SNAPSHOT.jar . READ_ALL_ABILITIES`
 
-`java -jar target/FFXDataParser-1.1-SNAPSHOT.jar . PARSE_ATEL_FILE ffx_ps2/ffx/master/jppc/event/obj/do/dome0600/dome0600.ebp`
+`java -jar target/FFXDataParser-1.2-SNAPSHOT.jar . PARSE_ATEL_FILE ffx_ps2/ffx/master/jppc/event/obj/do/dome0600/dome0600.ebp`
 
-`java -jar target/FFXDataParser-1.1-SNAPSHOT.jar . PARSE_MONSTER 105`
+`java -jar target/FFXDataParser-1.2-SNAPSHOT.jar . PARSE_MONSTER 105`
 
-`java -jar target/FFXDataParser-1.1-SNAPSHOT.jar . ADD_ATEL_SPACE event genk0000 3 900`
+`java -jar target/FFXDataParser-1.2-SNAPSHOT.jar . ADD_ATEL_SPACE event genk0000 3 900`
 
 ## Expected CSV Formats for MAKE_EDITS
 

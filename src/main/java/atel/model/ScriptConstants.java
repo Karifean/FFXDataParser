@@ -6,44 +6,29 @@ import reading.FileAccessorWithMods;
 import java.io.*;
 import java.util.*;
 
-public abstract class ScriptConstants {
+public class ScriptConstants {
+    public static ScriptConstants FFX = new ScriptConstants();
     private static final String ENUM_CSV_ROOT = FileAccessorWithMods.RESOURCES_ROOT + "enums";
-    public static String[] FUNCSPACES;
+    public String[] FUNCSPACES;
     public static String[] OPCODE_LABELS;
     public static int[] OPCODE_STACKPOPS;
     public static List<Integer> OPCODE_ENDLINE;
     public static final Set<Integer> OPCODE_CALLING = Set.of(0xB5, 0xD8);
     public static final Set<Integer> OPCODE_BRANCHING = Set.of(0xB0, 0xB1, 0xB2, 0xD5, 0xD6, 0xD7);
     public static final Set<Integer> OPCODES_UNCONTINUING = Set.of(0x34, 0x3C, 0x40, 0xB0);
-    public static final Map<String, Map<Integer, ScriptField>> ENUMERATIONS = new HashMap<>();
     public static final Map<Integer, ScriptField> COMP_OPERATORS = new HashMap<>();
     public static final List<String> INDEX_ENUMS_ONLY = List.of("var", "saveData", "battleVar");
+    public final Map<String, Map<Integer, ScriptField>> ENUMERATIONS = new HashMap<>();
 
-    private static boolean initialized = false;
+    private static boolean initializedStatics = false;
 
-    public static void initialize() {
-        if (initialized) {
+    private ScriptConstants() {}
+
+    public static void staticInitialize() {
+        if (initializedStatics) {
             return;
         }
-        initialized = true;
-
-        FUNCSPACES = new String[0x10];
-        FUNCSPACES[0x0] = "Common";
-        FUNCSPACES[0x1] = "Math";
-        FUNCSPACES[0x2] = "Unknown2";
-        FUNCSPACES[0x3] = "Unknown3";
-        FUNCSPACES[0x4] = "SgEvent";
-        FUNCSPACES[0x5] = "ChEvent";
-        FUNCSPACES[0x6] = "Camera";
-        FUNCSPACES[0x7] = "Battle";
-        FUNCSPACES[0x8] = "Map";
-        FUNCSPACES[0x9] = "Mount";
-        FUNCSPACES[0xA] = "UnknownA";
-        FUNCSPACES[0xB] = "Movie";
-        FUNCSPACES[0xC] = "Debug";
-        FUNCSPACES[0xD] = "AbilityMap";
-        FUNCSPACES[0xE] = "UnknownE";
-        FUNCSPACES[0xF] = "UnknownF";
+        initializedStatics = true;
 
         OPCODE_LABELS = new String[0x100];
         OPCODE_LABELS[0x00] = "NOP";
@@ -269,8 +254,8 @@ public abstract class ScriptConstants {
         putCompOperator(0x0D, "<= (unsigned)", "bool", "OPLSEU");
         putCompOperator(0x0E, ">=", "bool", "OPGTE");
         putCompOperator(0x0F, "<=", "bool", "OPLSE");
-        putCompOperator(0x10, "OP-B-ON", "unknown", "OPBON");
-        putCompOperator(0x11, "OP-B-OFF", "unknown", "OPBOFF");
+        putCompOperator(0x10, "OP-B-ON", "int", "OPBON");
+        putCompOperator(0x11, "OP-B-OFF", "int", "OPBOFF");
         putCompOperator(0x12, "<<", "int", "OPSLL");
         putCompOperator(0x13, ">>", "int", "OPSRL");
         putCompOperator(0x14, "+", "int", "OPADD");
@@ -278,6 +263,31 @@ public abstract class ScriptConstants {
         putCompOperator(0x16, "*", "int", "OPMUL");
         putCompOperator(0x17, "/", "int", "OPDIV");
         putCompOperator(0x18, "mod", "int", "OPMOD");
+    }
+
+    private static void putCompOperator(int idx, String name, String type, String internalName) {
+        ScriptField field = new ScriptField(name, type, internalName, idx);
+        COMP_OPERATORS.put(idx, field);
+    }
+
+    public void initialize() {
+        FUNCSPACES = new String[0x10];
+        FUNCSPACES[0x0] = "Common";
+        FUNCSPACES[0x1] = "Math";
+        FUNCSPACES[0x2] = "Unknown2";
+        FUNCSPACES[0x3] = "Unknown3";
+        FUNCSPACES[0x4] = "SgEvent";
+        FUNCSPACES[0x5] = "ChEvent";
+        FUNCSPACES[0x6] = "Camera";
+        FUNCSPACES[0x7] = "Battle";
+        FUNCSPACES[0x8] = "Map";
+        FUNCSPACES[0x9] = "Mount";
+        FUNCSPACES[0xA] = "UnknownA";
+        FUNCSPACES[0xB] = "Movie";
+        FUNCSPACES[0xC] = "Debug";
+        FUNCSPACES[0xD] = "AbilityMap";
+        FUNCSPACES[0xE] = "UnknownE";
+        FUNCSPACES[0xF] = "UnknownF";
 
         addEnumsFromAllCsvsInFolder(new File(ENUM_CSV_ROOT));
 
@@ -1447,75 +1457,185 @@ public abstract class ScriptConstants {
         putCommandProperty(0x000A, "targetType", "targetType");
     }
 
-    public static Map<Integer, ScriptField> getEnumMap(String type) {
+    public Map<Integer, ScriptField> getEnumMap(String type) {
         return ENUMERATIONS.computeIfAbsent(type, (t) -> new HashMap<>());
     }
 
-    private static void putEnum(String type, int idx, String name) {
+    public Map<String, List<OpcodeChoice>> getOpcodeChoices() {
+        Map<String, List<OpcodeChoice>> map = new HashMap<>();
+        List<OpcodeChoice> lineEnderOpcodeChoices = new ArrayList<>();
+        lineEnderOpcodeChoices.add(new OpcodeChoice(0));
+        for (int lineEnderOpcode : ScriptConstants.OPCODE_ENDLINE) {
+            lineEnderOpcodeChoices.add(new OpcodeChoice(lineEnderOpcode));
+        }
+        map.put("void", lineEnderOpcodeChoices);
+        for (Map.Entry<Integer, ScriptField> entry : ScriptConstants.COMP_OPERATORS.entrySet()) {
+            List<OpcodeChoice> list = map.computeIfAbsent(entry.getValue().type, k -> new ArrayList<>());
+            list.add(new OpcodeChoice(entry.getKey()));
+        }
+        /*
+        OPCODE_LABELS[0x19] = "OPNOT";
+        OPCODE_LABELS[0x1A] = "OPUMINUS";
+        OPCODE_LABELS[0x1B] = "OPFIXADRS";
+        OPCODE_LABELS[0x1C] = "OPBNOT";
+        OPCODE_LABELS[0x1D] = "LABEL";
+        OPCODE_LABELS[0x1E] = "TAG";
+        OPCODE_LABELS[0x1F] = "PUSHV";
+        OPCODE_LABELS[0x20] = "POPV";
+        OPCODE_LABELS[0x21] = "POPVL";
+        OPCODE_LABELS[0x22] = "PUSHAR";
+        OPCODE_LABELS[0x23] = "POPAR";
+        OPCODE_LABELS[0x24] = "POPARL";
+        OPCODE_LABELS[0x25] = "POPA";
+        OPCODE_LABELS[0x26] = "PUSHA";
+        OPCODE_LABELS[0x27] = "PUSHARP";
+        OPCODE_LABELS[0x28] = "PUSHX";
+        OPCODE_LABELS[0x29] = "PUSHY";
+        OPCODE_LABELS[0x2A] = "POPX";
+        OPCODE_LABELS[0x2B] = "REPUSH";
+        OPCODE_LABELS[0x2C] = "POPY";
+        OPCODE_LABELS[0x2D] = "PUSHI";
+        OPCODE_LABELS[0x2E] = "PUSHII";
+        OPCODE_LABELS[0x2F] = "PUSHF";
+        OPCODE_LABELS[0x30] = "JMP";
+        OPCODE_LABELS[0x31] = "CJMP";
+        OPCODE_LABELS[0x32] = "NCJMP";
+        OPCODE_LABELS[0x33] = "JSR";
+        OPCODE_LABELS[0x34] = "RTS";
+        OPCODE_LABELS[0x35] = "CALL";
+        OPCODE_LABELS[0x36] = "REQ";
+        OPCODE_LABELS[0x37] = "REQSW";
+        OPCODE_LABELS[0x38] = "REQEW";
+        OPCODE_LABELS[0x39] = "PREQ";
+        OPCODE_LABELS[0x3A] = "PREQSW";
+        OPCODE_LABELS[0x3B] = "PREQEW";
+        OPCODE_LABELS[0x3C] = "RET";
+        OPCODE_LABELS[0x3D] = "RETN";
+        OPCODE_LABELS[0x3E] = "RETT";
+        OPCODE_LABELS[0x3F] = "RETTN";
+        OPCODE_LABELS[0x40] = "HALT";
+        OPCODE_LABELS[0x41] = "PUSHN";
+        OPCODE_LABELS[0x42] = "PUSHT";
+        OPCODE_LABELS[0x43] = "PUSHVP";
+        OPCODE_LABELS[0x44] = "PUSHFIX";
+        OPCODE_LABELS[0x45] = "FREQ";
+        OPCODE_LABELS[0x46] = "TREQ";
+        OPCODE_LABELS[0x47] = "BREQ";
+        OPCODE_LABELS[0x48] = "BFREQ";
+        OPCODE_LABELS[0x49] = "BTREQ";
+        OPCODE_LABELS[0x4A] = "FREQSW";
+        OPCODE_LABELS[0x4B] = "TREQSW";
+        OPCODE_LABELS[0x4C] = "BREQSW";
+        OPCODE_LABELS[0x4D] = "BFREQSW";
+        OPCODE_LABELS[0x4E] = "BTREQSW";
+        OPCODE_LABELS[0x4F] = "FREQEW";
+        OPCODE_LABELS[0x50] = "TREQEW";
+        OPCODE_LABELS[0x51] = "BREQEW";
+        OPCODE_LABELS[0x52] = "BFREQEW";
+        OPCODE_LABELS[0x53] = "BTREQEW";
+        OPCODE_LABELS[0x54] = "DRET";
+        OPCODE_LABELS[0x55] = "POPXJMP";
+        OPCODE_LABELS[0x56] = "POPXCJMP";
+        OPCODE_LABELS[0x57] = "POPXNCJMP";
+        OPCODE_LABELS[0x58] = "CALLPOPA";
+        OPCODE_LABELS[0x59] = "POPI0";
+        OPCODE_LABELS[0x5A] = "POPI1";
+        OPCODE_LABELS[0x5B] = "POPI2";
+        OPCODE_LABELS[0x5C] = "POPI3";
+        OPCODE_LABELS[0x5D] = "POPF0";
+        OPCODE_LABELS[0x5E] = "POPF1";
+        OPCODE_LABELS[0x5F] = "POPF2";
+        OPCODE_LABELS[0x60] = "POPF3";
+        OPCODE_LABELS[0x61] = "POPF4";
+        OPCODE_LABELS[0x62] = "POPF5";
+        OPCODE_LABELS[0x63] = "POPF6";
+        OPCODE_LABELS[0x64] = "POPF7";
+        OPCODE_LABELS[0x65] = "POPF8";
+        OPCODE_LABELS[0x66] = "POPF9";
+        OPCODE_LABELS[0x67] = "PUSHI0";
+        OPCODE_LABELS[0x68] = "PUSHI1";
+        OPCODE_LABELS[0x69] = "PUSHI2";
+        OPCODE_LABELS[0x6A] = "PUSHI3";
+        OPCODE_LABELS[0x6B] = "PUSHF0";
+        OPCODE_LABELS[0x6C] = "PUSHF1";
+        OPCODE_LABELS[0x6D] = "PUSHF2";
+        OPCODE_LABELS[0x6E] = "PUSHF3";
+        OPCODE_LABELS[0x6F] = "PUSHF4";
+        OPCODE_LABELS[0x70] = "PUSHF5";
+        OPCODE_LABELS[0x71] = "PUSHF6";
+        OPCODE_LABELS[0x72] = "PUSHF7";
+        OPCODE_LABELS[0x73] = "PUSHF8";
+        OPCODE_LABELS[0x74] = "PUSHF9";
+        OPCODE_LABELS[0x75] = "PUSHAINTER";
+        OPCODE_LABELS[0x76] = "SYSTEM";
+        OPCODE_LABELS[0x77] = "REQWAIT";
+        OPCODE_LABELS[0x78] = "PREQWAIT";
+        OPCODE_LABELS[0x79] = "REQCHG";
+        OPCODE_LABELS[0x7A] = "ACTREQ";
+         */
+        return map;
+    }
+
+    private void putEnum(String type, int idx, String name) {
         putEnum(type, idx, name, null);
     }
 
-    private static void putEnum(String type, int idx, String name, String internalName) {
+    private void putEnum(String type, int idx, String name, String internalName) {
         ScriptField field = new ScriptField(name, type, internalName, idx);
         getEnumMap(type).put(idx, field);
     }
 
-    private static void putCompOperator(int idx, String name, String type, String internalName) {
-        ScriptField field = new ScriptField(name, type, internalName, idx);
-        COMP_OPERATORS.put(idx, field);
-    }
-
-    private static void putSaveDataVariable(int idx, String name, String type, String indexType) {
+    private void putSaveDataVariable(int idx, String name, String type, String indexType) {
         ScriptField field = new ScriptField(name, type);
         field.idx = idx;
         field.indexType = indexType;
         getEnumMap("saveData").put(idx, field);
     }
 
-    private static void putSaveDataVariable(int idx, String name, String type) {
+    private void putSaveDataVariable(int idx, String name, String type) {
         putSaveDataVariable(idx, name, type, "unknown");
     }
 
-    private static void putBattleVariable(int idx, String name, String type, String indexType) {
+    private void putBattleVariable(int idx, String name, String type, String indexType) {
         ScriptField field = new ScriptField(name, type);
         field.idx = idx;
         field.indexType = indexType;
         getEnumMap("battleVar").put(idx, field);
     }
 
-    private static void putBattleVariable(int idx, String name, String type) {
+    private void putBattleVariable(int idx, String name, String type) {
         putBattleVariable(idx, name, type, "unknown");
     }
 
-    private static void putBattleActorProperty(int idx, String name, String type, String internalName, boolean getterOnly) {
+    private void putBattleActorProperty(int idx, String name, String type, String internalName, boolean getterOnly) {
         ScriptField field = new ScriptField(name, type, internalName, idx);
         getEnumMap("btlChrProperty").put(idx, field);
     }
 
-    private static void putBattleActorProperty(int idx, String name, String type, String internalName) {
+    private void putBattleActorProperty(int idx, String name, String type, String internalName) {
         ScriptField field = new ScriptField(name, type, internalName, idx);
         getEnumMap("btlChrProperty").put(idx, field);
     }
 
-    private static void putMotionProperty(int idx, String name, String internalName) {
+    private void putMotionProperty(int idx, String name, String internalName) {
         ScriptField field = new ScriptField(name, "float", internalName, idx);
         getEnumMap("motionProperty").put(idx, field);
     }
 
-    private static void putCommandProperty(int idx, String name, String type) {
+    private void putCommandProperty(int idx, String name, String type) {
         ScriptField field = new ScriptField(name, type);
         field.idx = idx;
         getEnumMap("commandProperty").put(idx, field);
     }
 
-    private static void putMaps(int offset, String name, int endIdx) {
+    private void putMaps(int offset, String name, int endIdx) {
         for (int i = 0; i <= endIdx; i++) {
             String idxStr = String.format("%02d", i);
             putEnum("map", offset + i, name + idxStr);
         }
     }
 
-    private static void addEnumsFromAllCsvsInFolder(File file) {
+    private void addEnumsFromAllCsvsInFolder(File file) {
         if (file.isDirectory()) {
             File[] files = file.listFiles();
             if (files == null) {
@@ -1533,7 +1653,7 @@ public abstract class ScriptConstants {
         }
     }
 
-    private static void addEnumsFromCsv(File file) throws IOException {
+    private void addEnumsFromCsv(File file) throws IOException {
         List<String[]> lines = FileAccessorWithMods.csvToList(file);
         for (String[] cells : lines) {
             if (cells.length >= 3) {
@@ -1561,5 +1681,12 @@ public abstract class ScriptConstants {
             return null;
         }
         return s.trim();
+    }
+
+    public static record OpcodeChoice(int opcode) {
+        @Override
+        public String toString() {
+            return String.format("%02X: %s", opcode, ScriptConstants.OPCODE_LABELS[opcode]);
+        }
     }
 }

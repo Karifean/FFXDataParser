@@ -61,8 +61,9 @@ public class DataReadingManager {
     public static void initializeInternals() {
         CHARSETS.forEach((charset) -> prepareCharset(charset));
         LOCALIZATIONS.forEach((key, value) -> prepareStringMacros(getLocalizationRoot(key) + "menu/macrodic.dcp", key, false));
-        ScriptConstants.initialize();
-        ScriptFuncLib.initialize();
+        ScriptConstants.staticInitialize();
+        ScriptConstants.FFX.initialize();
+        ScriptFuncLib.FFX.initialize();
     }
 
     public static void readAndPrepareDataModel() {

@@ -37,7 +37,7 @@ public class ScriptFuncAccessor extends ScriptFunc {
         this.self = subjectType == null;
         this.write = write;
         this.fixedPredicate = null;
-        this.accessMap = ScriptConstants.getEnumMap(predicateType);
+        this.accessMap = ScriptConstants.FFX.getEnumMap(predicateType);
     }
 
     public String getType(List<StackObject> params) {

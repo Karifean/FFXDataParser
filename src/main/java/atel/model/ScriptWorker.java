@@ -31,7 +31,7 @@ public class ScriptWorker {
     public int privateDataOffset;
     public int sharedDataOffset;
 
-    public ScriptJump[] entryPoints;
+    public List<ScriptJump> entryPoints;
     public ScriptJump[] jumps;
     public ScriptVariable[] variableDeclarations;
     public int[] refFloats;
@@ -66,6 +66,25 @@ public class ScriptWorker {
         sharedDataOffset = read4Bytes(headerBytes, 0x30);
     }
 
+    public ScriptWorker(AtelScriptObject parentScript, int workerIndex, ScriptWorker prototypeWorker, int eventWorkerType) {
+        this.parentScript = parentScript;
+        this.workerIndex = workerIndex;
+        this.eventWorkerType = eventWorkerType;
+        variablesCount = 0;
+        refIntCount = parentScript.refInts.length;
+        refFloatCount = parentScript.refFloats.length;
+        entryPointCount = 0;
+        jumpCount = 0;
+        alwaysZero0C = 0;
+        privateDataLength = 0;
+        alwaysZero28 = 0;
+        variableDeclarationsOffset = prototypeWorker.variableDeclarationsOffset;
+        refIntsOffset = prototypeWorker.refIntsOffset;
+        refFloatsOffset = prototypeWorker.refFloatsOffset;
+        sharedDataOffset = prototypeWorker.sharedDataOffset;
+        parseReferences(parentScript.getBytes());
+    }
+
     public int[] toBytes() {
         int[] headerBytes = new int[ScriptWorker.LENGTH];
         write2Bytes(headerBytes, 0x00, eventWorkerType);
@@ -90,7 +109,7 @@ public class ScriptWorker {
     public List<ScriptLine> getLines() {
         List<ScriptLine> list = new ArrayList<>();
         Set<ScriptJump> touchedEntryPoints = new HashSet<>();
-        List<ScriptJump> sortedEntryPoints = Arrays.stream(entryPoints).sorted(Comparator.comparingInt(e -> e.addr)).toList();
+        List<ScriptJump> sortedEntryPoints = entryPoints.stream().sorted(Comparator.comparingInt(e -> e.addr)).toList();
         for (ScriptJump entryPoint : sortedEntryPoints) {
             if (!touchedEntryPoints.contains(entryPoint)) {
                 List<ScriptLine> lines = entryPoint.getLines();
@@ -131,11 +150,19 @@ public class ScriptWorker {
         return "{ " + full + " }";
     }
 
+    public ScriptJump getEntryPoint(int index) {
+        return index >= 0 && index < entryPoints.size() ? entryPoints.get(index) : null;
+    }
+
+    public List<ScriptJump> getEntryPoints() {
+        return entryPoints;
+    }
+
     public String getEntryPointsLine() {
-        if (entryPoints == null || entryPoints.length == 0) {
+        if (entryPoints == null || entryPoints.isEmpty()) {
             return null;
         }
-        return Arrays.stream(entryPoints).map(e -> "e" + StringHelper.formatHex2(e.jumpIndex) + "=" + StringHelper.formatHex4(e.addr)).collect(Collectors.joining(" "));
+        return entryPoints.stream().map(e -> "e" + StringHelper.formatHex2(e.jumpIndex) + "=" + StringHelper.formatHex4(e.addr)).collect(Collectors.joining(" "));
     }
 
     public String getJumpsLine() {
@@ -145,11 +172,13 @@ public class ScriptWorker {
         return Arrays.stream(jumps).map(j -> "j" + StringHelper.formatHex2(j.jumpIndex) + "=" + StringHelper.formatHex4(j.addr)).collect(Collectors.joining(" "));
     }
 
-    public void setJumpTargets(List<ScriptLine> jumpTargets) {
+    public void setJumpTargets(Map<ScriptLine, ScriptJump> jumpTargets) {
         int jumpTargetCount = jumpTargets.size();
         jumps = new ScriptJump[jumpTargetCount];
-        for (int i = 0; i < jumpTargetCount; i++) {
-            jumps[i] = new ScriptJump(this, jumpTargets.get(i).offset, i, false);
+        for(Map.Entry<ScriptLine, ScriptJump> entry : jumpTargets.entrySet()) {
+            ScriptJump jump = entry.getValue();
+            jump.addr = entry.getKey().offset;
+            jumps[jump.jumpIndex] = jump;
         }
     }
 
@@ -160,7 +189,7 @@ public class ScriptWorker {
         for (int i = 0; i < slotCount; i++) {
             int entryPointIndex = read2Bytes(payload, i * 2);
             entryPointBattleSlotArray[i] = entryPointIndex;
-            ScriptJump entryPoint = entryPointIndex != 0xFFFF && entryPointIndex < entryPoints.length ? entryPoints[entryPointIndex] : null;
+            ScriptJump entryPoint = entryPointIndex != 0xFFFF ? getEntryPoint(entryPointIndex) : null;
             if (entryPoint != null) {
                 entryPoint.setBattleWorkerEntryPointSlot(i);
             }
@@ -174,8 +203,8 @@ public class ScriptWorker {
         int[] bytes = new int[battleWorkerTypeSlotCount * 2 + 2];
         write2Bytes(bytes, 0, battleWorkerTypeSlotCount);
         Map<Integer, Integer> slotToEntryPointIndexMap = new HashMap<>();
-        for (int i = 0; i < entryPoints.length; i++) {
-            ScriptJump entryPoint = entryPoints[i];
+        for (int i = 0; i < entryPoints.size(); i++) {
+            ScriptJump entryPoint = getEntryPoint(i);
             if (entryPoint.battleWorkerEntryPointSlot != null) {
                 slotToEntryPointIndexMap.put(entryPoint.battleWorkerEntryPointSlot, i);
             }
@@ -207,7 +236,7 @@ public class ScriptWorker {
             variableDeclarations[varIdx] = scriptVariable;
             scriptVariable.inferredType = "float".equals(scriptVariable.getFormatType()) ? "float" : "unknown";
             if (scriptVariable.location == 0) {
-                ScriptField entry = ScriptConstants.getEnumMap("saveData").get(scriptVariable.offset + SAVEDATA_ATEL_OFFSET);
+                ScriptField entry = ScriptConstants.FFX.getEnumMap("saveData").get(scriptVariable.offset + SAVEDATA_ATEL_OFFSET);
                 if (entry != null) {
                     scriptVariable.declaredType = entry.type;
                 }
@@ -227,11 +256,11 @@ public class ScriptWorker {
         for (int i = 0; i < refFloatCount; i++) {
             refFloats[i] = read4Bytes(bytes, refFloatsOffset + i * 4);
         }
-        entryPoints = new ScriptJump[entryPointCount];
+        entryPoints = new ArrayList<>(entryPointCount);
         for (int i = 0; i < entryPointCount; i++) {
             int addr = read4Bytes(bytes, scriptEntryPointsOffset + i * 4);
             ScriptJump entryPoint = new ScriptJump(this, addr, i, true);
-            entryPoints[i] = entryPoint;
+            entryPoints.add(entryPoint);
         }
         jumps = new ScriptJump[jumpCount];
         for (int i = 0; i < jumpCount; i++) {
@@ -251,7 +280,11 @@ public class ScriptWorker {
         Map<Integer, ScriptLine> linesByOffset = new HashMap<>();
         Stack<Integer> offsetsToParse = new Stack<>();
         for (ScriptJump entryPoint : entryPoints) {
-            offsetsToParse.push(entryPoint.addr);
+            int addr = entryPoint.addr;
+            if (addr < 0) {
+                continue;
+            }
+            offsetsToParse.push(addr);
             ScriptLine predecessor = null;
             while (!offsetsToParse.isEmpty()) {
                 int offset = offsetsToParse.pop();
@@ -312,9 +345,11 @@ public class ScriptWorker {
                     }
                     Integer branchIndex = instruction.getBranchIndex();
                     if (branchIndex != null) {
-                        ScriptJump jump = jumps[branchIndex];
+                        ScriptJump jump = getJump(branchIndex);
                         scriptLine.branch = jump;
-                        offsetsToParse.push(jump.addr);
+                        if (jump != null) {
+                            offsetsToParse.push(jump.addr);
+                        }
                     }
                     if (scriptLine.continues()) {
                         predecessor = scriptLine;
@@ -324,11 +359,23 @@ public class ScriptWorker {
                     }
                 }
             }
-            entryPoint.targetLine = linesByOffset.get(entryPoint.addr);
+            entryPoint.targetLine = linesByOffset.get(addr);
         }
         for (ScriptJump jump : jumps) {
             jump.targetLine = linesByOffset.get(jump.addr);
         }
+    }
+
+    public void addBlankEntryPoints() {
+        ScriptJump init = new ScriptJump(this, -1, 0, true);
+        entryPoints.add(init);
+        ScriptInstruction initIns = new ScriptInstruction(-1, 0x3C);
+        init.targetLine = new ScriptLine(this, -1, List.of(initIns), initIns, List.of(init));
+
+        ScriptJump main = new ScriptJump(this, -1, 1, true);
+        entryPoints.add(main);
+        ScriptInstruction mainIns = new ScriptInstruction(-1, 0xD8, 0x5F, 0x00);
+        main.targetLine = new ScriptLine(this, -1, List.of(mainIns), mainIns, List.of(main));
     }
 
     private void collectJumps(int cursor, Map<Integer, List<ScriptJump>> scriptJumpsByDestination, List<ScriptJump> jumpsOnLine, boolean isArgByte) {

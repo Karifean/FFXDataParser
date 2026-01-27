@@ -2,6 +2,7 @@ package main;
 
 import atel.AtelScriptObject;
 import atel.model.*;
+import gui.GuiMain;
 import model.*;
 import atel.EncounterFile;
 import atel.EventFile;
@@ -9,7 +10,6 @@ import atel.MonsterFile;
 import reading.BytesHelper;
 import reading.FileAccessorWithMods;
 
-import java.io.File;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -17,7 +17,6 @@ import java.util.stream.IntStream;
 import static main.DataReadingManager.*;
 import static main.DataWritingManager.writeDataObjectsInAllLocalizations;
 import static reading.FileAccessorWithMods.GAME_FILES_ROOT;
-import static reading.FileAccessorWithMods.MODS_FOLDER;
 
 public class Main {
 
@@ -55,6 +54,7 @@ public class Main {
     private static final String MODE_ADD_ATEL_SPACE = "ADD_ATEL_SPACE";
     private static final String MODE_REMAKE_SIZE_TABLE = "REMAKE_SIZE_TABLE";
     private static final String MODE_RECOMPILE = "RECOMPILE";
+    private static final String MODE_GUI = "GUI";
     private static final String MODE_CUSTOM = "CUSTOM";
 
     private static final boolean SKIP_BLITZBALL_EVENTS_FOLDER = true;
@@ -259,12 +259,10 @@ public class Main {
                 break;
             case MODE_MAKE_AUTOHASTE_MOD:
                 for (int monsterIndex = 1; monsterIndex <= 346; monsterIndex++) {
-                    String mIndexString = "m" + StringHelper.formatDec3(monsterIndex);
                     MonsterFile monster = DataAccess.getMonster(monsterIndex + 0x1000);
                     if (monster != null) {
                         monster.monsterStatData.autoStatusesTemporal |= 0x0800;
-                        String path = GAME_FILES_ROOT + MODS_FOLDER + PATH_MONSTER_FOLDER + '_' + mIndexString + '/' + mIndexString + ".bin";
-                        FileAccessorWithMods.writeByteArrayToFile(path, monster.toBytes());
+                        monster.writeToMods(false, false);
                     }
                 }
                 break;
@@ -419,31 +417,22 @@ public class Main {
                     return;
                 }
                 ScriptWorker worker = scriptObject.getWorker(workerIndex);
-                List<ScriptJump> entryPointList = Arrays.stream(worker.entryPoints).collect(Collectors.toCollection(ArrayList::new));
+                List<ScriptJump> entryPointList = worker.entryPoints;
                 int offset = scriptObject.scriptCodeLength;
                 ScriptJump newEntryPoint = new ScriptJump(worker, offset, entryPointList.size(), true);
                 ScriptInstruction noopInstruction = new ScriptInstruction(offset, 0x00, count);
                 ScriptInstruction endInstruction = new ScriptInstruction(offset + count, 0x3C);
-                newEntryPoint.targetLine = new ScriptLine(worker, offset, new ArrayList<>(List.of(noopInstruction, endInstruction)), endInstruction, new ArrayList<>(List.of(newEntryPoint)));
+                newEntryPoint.targetLine = new ScriptLine(worker, offset, List.of(noopInstruction, endInstruction), endInstruction, List.of(newEntryPoint));
                 entryPointList.add(newEntryPoint);
-                worker.entryPoints = entryPointList.toArray(l -> new ScriptJump[l]);
                 if (eventFileToSpace != null) {
                     System.out.println("Added entry point " + newEntryPoint.getLabel() + " with " + count + " bytes of 00 to event " + id);
-                    int[] bytes = eventFileToSpace.toBytes();
-                    String shortened = id.substring(0, 2);
-                    String path = GAME_FILES_ROOT + MODS_FOLDER + PATH_ORIGINALS_EVENT + shortened + '/' + id + '/' + id + ".ebp";
-                    FileAccessorWithMods.writeByteArrayToFile(path, bytes);
+                    eventFileToSpace.writeToMods(false, false);
                 } else if (encounterFileToSpace != null) {
                     System.out.println("Added entry point " + newEntryPoint.getLabel() + " with " + count + " bytes of 00 to encounter " + id);
-                    int[] bytes = encounterFileToSpace.toBytes();
-                    String path = GAME_FILES_ROOT + MODS_FOLDER + PATH_ORIGINALS_ENCOUNTER + id + '/' + id + ".bin";
-                    FileAccessorWithMods.writeByteArrayToFile(path, bytes);
+                    encounterFileToSpace.writeToMods(false, false);
                 } else {
                     System.out.println("Added entry point " + newEntryPoint.getLabel() + " with " + count + " bytes of 00 to monster " + id);
-                    String mIndexString = "m" + StringHelper.formatDec3(Integer.parseInt(id, 10));
-                    int[] bytes = monsterFileToSpace.toBytes();
-                    String path = GAME_FILES_ROOT + MODS_FOLDER + PATH_MONSTER_FOLDER + '_' + mIndexString + '/' + mIndexString + ".bin";
-                    FileAccessorWithMods.writeByteArrayToFile(path, bytes);
+                    monsterFileToSpace.writeToMods(false, false);
                 }
                 break;
             case MODE_RECOMPILE:
@@ -452,35 +441,27 @@ public class Main {
                         EncounterFile encounterFile = DataAccess.getEncounter(variableId);
                         if (encounterFile != null) {
                             encounterFile.parseScript();
-                            int[] bytes = encounterFile.toBytes();
-                            String path = GAME_FILES_ROOT + MODS_FOLDER + PATH_ORIGINALS_ENCOUNTER + variableId + '/' + variableId + ".bin";
-                            FileAccessorWithMods.writeByteArrayToFile(path, bytes);
+                            encounterFile.writeToMods(false, false);
                         }
                     } else if (variableId.length() == 4 && variableId.startsWith("m")) {
                         int monsterIndex = Integer.parseInt(variableId.substring(1), 10);
                         MonsterFile monster = DataAccess.getMonster(monsterIndex + 0x1000);
                         if (monster != null) {
                             monster.parseScript();
-                            int[] bytes = monster.toBytes();
-                            String path = GAME_FILES_ROOT + MODS_FOLDER + PATH_MONSTER_FOLDER + '_' + variableId + '/' + variableId + ".bin";
-                            FileAccessorWithMods.writeByteArrayToFile(path, bytes);
+                            monster.writeToMods(false, false);
                         }
                     } else {
                         EventFile eventFile = DataAccess.getEvent(variableId);
                         if (eventFile != null) {
                             eventFile.parseScript();
-                            int[] bytes = eventFile.toBytes();
-                            String shortened = variableId.substring(0, 2);
-                            String path = GAME_FILES_ROOT + MODS_FOLDER + PATH_ORIGINALS_EVENT + shortened + '/' + variableId + '/' + variableId + ".ebp";
-                            FileAccessorWithMods.writeByteArrayToFile(path, bytes);
+                            eventFile.writeToMods(false, false);
                         }
                     }
                 }
                 break;
             case MODE_REMAKE_SIZE_TABLE:
                 String sizeTablePath = "ffx_ps2/ffx/proj/prog/cdidx/jp/sizetbl.vita.bin";
-                File orig = FileAccessorWithMods.resolveFile(sizeTablePath, false);
-                int[] bytes = BytesHelper.fileToBytes(orig);
+                int[] bytes = BytesHelper.fileToBytes(sizeTablePath, false);
                 if (bytes == null) {
                     System.err.println("bytes are null");
                     return;
@@ -492,7 +473,7 @@ public class Main {
                         BytesHelper.write4Bytes(bytes, monstersStartOffset + monsterIndex * 0x04, monster.binaryLength);
                     }
                 }
-                FileAccessorWithMods.writeByteArrayToFile(GAME_FILES_ROOT + MODS_FOLDER + sizeTablePath, bytes);
+                FileAccessorWithMods.writeByteArrayToMods(sizeTablePath, bytes);
                 break;
             case MODE_CUSTOM:
                 readDirectAtelScriptObject("menu/menumain.bin", true);
@@ -527,20 +508,20 @@ public class Main {
                 }
                 System.out.println("--- MONSTERS ---");
                 if (CsvEditExecutor.editMonsters(true)) {
-                    List<MonsterStatDataObject> list = IntStream.range(0, 366).mapToObj(i -> DataAccess.getMonster(Math.min(i, 360) + 0x1000).monsterStatData).toList();
-                    MonsterStatDataObject[] statData = list.toArray(i -> new MonsterStatDataObject[i]);
-                    System.out.println("--- monster1.bin ---");
-                    writeDataObjectsInAllLocalizations("battle/kernel/monster1.bin", statData, MonsterStatDataObject.LENGTH, 0, 101, false);
-                    System.out.println("--- monster2.bin ---");
-                    writeDataObjectsInAllLocalizations("battle/kernel/monster2.bin", statData, MonsterStatDataObject.LENGTH, 101, 181, false);
-                    System.out.println("--- monster3.bin ---");
-                    writeDataObjectsInAllLocalizations("battle/kernel/monster3.bin", statData, MonsterStatDataObject.LENGTH, 181, 366, false);
+                    DataWritingManager.writeMonsterStringsForAllLocalizations(false);
                 }
                 System.out.println("--- EVENTS ---");
                 CsvEditExecutor.editAndSaveEventStrings(true);
                 System.out.println("--- ENCOUNTERS ---");
                 CsvEditExecutor.editAndSaveEncounterStrings(true);
                 break;
+            case MODE_GUI:
+                System.out.println("UI starting");
+                try {
+                    GuiMain.main(args);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             default:
                 break;
         }

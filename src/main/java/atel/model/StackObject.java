@@ -133,7 +133,7 @@ public class StackObject {
         if ("encounter".equals(type)) {
             int map = (valueSigned & 0xFFFF0000) >> 16;
             int encIdx = valueSigned & 0x0000FFFF;
-            ScriptField mapObj = ScriptConstants.getEnumMap("map").get(map);
+            ScriptField mapObj = ScriptConstants.FFX.getEnumMap("map").get(map);
             if (mapObj == null) {
                 return '?' + type + ':' + valueSigned + hexSuffix;
             } else {
@@ -151,7 +151,7 @@ public class StackObject {
             if (valueSigned == 0) {
                 return "Null Command" + hexSuffix;
             } else if (valueSigned <= 0x11) {
-                return "Switch/Summon:" + ScriptConstants.getEnumMap("playerChar").get(valueSigned) + hexSuffix;
+                return "Switch/Summon:" + ScriptConstants.FFX.getEnumMap("playerChar").get(valueSigned) + hexSuffix;
             } else {
                 CommandDataObject ability = DataAccess.getCommand(valueSigned);
                 return (ability != null ? '"'+ability.getName(localization)+'"' : "NullCmd") + hexSuffix;
@@ -261,7 +261,7 @@ public class StackObject {
         } else if (type.endsWith("BitfieldNegated")) {
             return negatedBitfieldToString(type.substring(0, type.length() - 7), valueUnsigned) + hexSuffix;
         }
-        if (ScriptConstants.ENUMERATIONS.containsKey(type)) {
+        if (ScriptConstants.FFX.ENUMERATIONS.containsKey(type)) {
             return enumToString(type, valueSigned);
         }
         return null;
@@ -293,7 +293,7 @@ public class StackObject {
             if (lb == 0x20) {
                 lbs = "AirshipPassword";
             } else if (lb <= 0x11) {
-                lbs = ScriptConstants.getEnumMap("playerChar").get(lb).name;
+                lbs = ScriptConstants.FFX.getEnumMap("playerChar").get(lb).name;
             } else {
                 lbs = "?" + lb;
             }
@@ -317,8 +317,8 @@ public class StackObject {
     }
 
     public static ScriptField enumToScriptField(String type, int value) {
-        if (ScriptConstants.ENUMERATIONS.containsKey(type)) {
-            Map<Integer, ScriptField> map = ScriptConstants.ENUMERATIONS.get(type);
+        if (ScriptConstants.FFX.ENUMERATIONS.containsKey(type)) {
+            Map<Integer, ScriptField> map = ScriptConstants.FFX.ENUMERATIONS.get(type);
             ScriptField enumTarget = map.get(value);
             if (enumTarget != null) {
                 return enumTarget;
@@ -349,7 +349,7 @@ public class StackObject {
         if (value == 0) {
             return bits;
         }
-        Map<Integer, ScriptField> map = type != null ? ScriptConstants.ENUMERATIONS.getOrDefault(type, Collections.emptyMap()) : Collections.emptyMap();
+        Map<Integer, ScriptField> map = type != null ? ScriptConstants.FFX.ENUMERATIONS.getOrDefault(type, Collections.emptyMap()) : Collections.emptyMap();
         String format = (value & 0xFFFF0000) != 0 ? "b%08X" : "b%04X";
         for (int bit = 0x01; bit <= value && bit > 0; bit = bit << 1) {
             if ((value & bit) != 0) {
@@ -371,7 +371,7 @@ public class StackObject {
 
     public static List<ScriptField> negatedBitfieldToList(String type, int valueUnsigned) {
         List<ScriptField> bits = new ArrayList<>();
-        Map<Integer, ScriptField> map = type != null ? ScriptConstants.ENUMERATIONS.getOrDefault(type, Collections.emptyMap()) : Collections.emptyMap();
+        Map<Integer, ScriptField> map = type != null ? ScriptConstants.FFX.ENUMERATIONS.getOrDefault(type, Collections.emptyMap()) : Collections.emptyMap();
         String format = (valueUnsigned & 0xFFFF0000) != 0 ? "b%08X" : "b%04X";
         int max = (valueUnsigned & 0xFFFF0000) != 0 ? 0x80000000 : 0x8000;
         for (int bit = 0x01; true; bit = bit << 1) {

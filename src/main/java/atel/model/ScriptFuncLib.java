@@ -1,11 +1,17 @@
 package atel.model;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
-public abstract class ScriptFuncLib {
-    private static ScriptFunc[] FUNCS;
+public class ScriptFuncLib {
+    public static ScriptFuncLib FFX = new ScriptFuncLib();
+    private ScriptFunc[] FUNCS;
 
-    private static boolean initialized = false;
+    private boolean initialized = false;
+
+    private ScriptFuncLib() {}
 
     private static ScriptField p(int index) {
         return p("p" + index, "unknown");
@@ -19,11 +25,11 @@ public abstract class ScriptFuncLib {
         return new ScriptField(name, type);
     }
 
-    private static ScriptFunc putUnknownFunc(int idx, String internalName, int inputs) {
+    private ScriptFunc putUnknownFunc(int idx, String internalName, int inputs) {
         return putUnknownFunc(idx, internalName, "unknown", inputs);
     }
 
-    private static ScriptFunc putUnknownFunc(int idx, String internalName, String returnType, int inputs) {
+    private ScriptFunc putUnknownFunc(int idx, String internalName, String returnType, int inputs) {
         ScriptField[] inputList = new ScriptField[inputs];
         for (int i = 0; i < inputs; i++) {
             inputList[i] = p(i+1);
@@ -31,27 +37,27 @@ public abstract class ScriptFuncLib {
         return putUnknownFunc(idx, internalName, returnType, inputList);
     }
 
-    private static ScriptFunc putUnknownFunc(int idx, String internalName, String returnType, ScriptField... inputList) {
+    private ScriptFunc putUnknownFunc(int idx, String internalName, String returnType, ScriptField... inputList) {
         ScriptFunc func = new ScriptFunc(null, returnType, internalName, inputList);
         return putFuncWithIdx(idx, func);
     }
 
-    private static ScriptFunc putUnknownFunc(int idx, int inputs) {
+    private ScriptFunc putUnknownFunc(int idx, int inputs) {
         return putUnknownFunc(idx, null, inputs);
     }
 
-    private static ScriptFunc putFuncWithIdx(int idx, ScriptFunc func) {
+    private ScriptFunc putFuncWithIdx(int idx, ScriptFunc func) {
         func.idx = idx;
         func.funcspace = idx / 0x1000;
         FUNCS[idx] = func;
         return func;
     }
 
-    public static ScriptFunc get(int idx, List<StackObject> params) {
+    public ScriptFunc get(int idx, List<StackObject> params) {
         return FUNCS[idx];
     }
 
-    public static void initialize() {
+    public void initialize() {
         if (initialized) {
             return;
         }
@@ -1242,5 +1248,24 @@ public abstract class ScriptFuncLib {
         putUnknownFunc(0xC057, 1);
         putUnknownFunc(0xC058, 1);
         putUnknownFunc(0xC05B, 1);
+    }
+
+    public Map<String, Map<Integer, List<ScriptFuncChoice>>> getCallChoices() {
+        Map<String, Map<Integer, List<ScriptFuncChoice>>> map = new HashMap<>();
+        for (ScriptFunc func : FUNCS) {
+            if (func != null) {
+                Map<Integer, List<ScriptFuncChoice>> funcSpaceMap = map.computeIfAbsent(func.type, k -> new HashMap<>());
+                List<ScriptFuncChoice> list = funcSpaceMap.computeIfAbsent(func.funcspace, k -> new ArrayList<>());
+                list.add(new ScriptFuncChoice(func));
+            }
+        }
+        return map;
+    }
+
+    public static record ScriptFuncChoice(ScriptFunc func) {
+        @Override
+        public String toString() {
+            return String.format("%04X: %s", func.idx, func.getLabel());
+        }
     }
 }

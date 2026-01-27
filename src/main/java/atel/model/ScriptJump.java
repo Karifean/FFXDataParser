@@ -8,13 +8,13 @@ import model.CommandDataObject;
 import java.util.*;
 
 public class ScriptJump {
-    private static final boolean OPTIMIZE_REDUNDANT_B0_INSTRUCTIONS = false;
+    private static final boolean OPTIMIZE_REDUNDANT_B0_INSTRUCTIONS = true;
 
     public ScriptWorker parentWorker;
     public AtelScriptObject parentScript;
     public int addr;
     public final int workerIndex;
-    public final int jumpIndex;
+    public int jumpIndex;
     public final boolean isEntryPoint;
 
     public String rAType;
@@ -163,17 +163,17 @@ public class ScriptJump {
         int battleWorkerSlot = parentWorker.purposeSlot != null ? parentWorker.purposeSlot : -1;
         int battleWorkerEntryPointSlot = this.battleWorkerEntryPointSlot != null ? this.battleWorkerEntryPointSlot : -1;
         if (battleWorkerType == 0) {
-            ScriptField s = ScriptConstants.getEnumMap("cameraHandlerTag").get(battleWorkerEntryPointSlot);
+            ScriptField s = ScriptConstants.FFX.getEnumMap("cameraHandlerTag").get(battleWorkerEntryPointSlot);
             if (s != null) {
                 return "Cam" + s.getLabel();
             }
         } else if (battleWorkerType == 1) {
-            ScriptField s = ScriptConstants.getEnumMap("motionHandlerTag").get(battleWorkerEntryPointSlot);
+            ScriptField s = ScriptConstants.FFX.getEnumMap("motionHandlerTag").get(battleWorkerEntryPointSlot);
             if (s != null) {
                 return "Motion" + s.getLabel();
             }
         } else if (battleWorkerType == 2) {
-            ScriptField s = ScriptConstants.getEnumMap("combatHandlerTag").get(battleWorkerEntryPointSlot);
+            ScriptField s = ScriptConstants.FFX.getEnumMap("combatHandlerTag").get(battleWorkerEntryPointSlot);
             if (s != null) {
                 String prefix = "";
                 if (battleWorkerSlot >= 0x25 && battleWorkerSlot <= 0x28) {
@@ -187,7 +187,7 @@ public class ScriptJump {
                 return prefix + s.getLabel();
             }
         } else if (battleWorkerType == 3) {
-            ScriptField s = ScriptConstants.getEnumMap("battleGruntHandlerTag").get(battleWorkerEntryPointSlot);
+            ScriptField s = ScriptConstants.FFX.getEnumMap("battleGruntHandlerTag").get(battleWorkerEntryPointSlot);
             if (s != null) {
                 return "Grunt" + s.getLabel();
             }
@@ -195,14 +195,14 @@ public class ScriptJump {
             return "btlScene" + StringHelper.formatHex2(battleWorkerEntryPointSlot);
         } else if (battleWorkerType == 5) {
             if (battleWorkerSlot >= 0x6D && battleWorkerSlot <= 0x7E) {
-                ScriptField s = ScriptConstants.getEnumMap("voiceHandlerTag").get(battleWorkerEntryPointSlot);
+                ScriptField s = ScriptConstants.FFX.getEnumMap("voiceHandlerTag").get(battleWorkerEntryPointSlot);
                 if (s != null) {
                     String chr = StackObject.enumToScriptField("playerChar", battleWorkerSlot - 0x6D).getName();
                     return chr + "Voice" + s.getLabel();
                 }
             }
         } else if (battleWorkerType == 6) {
-            ScriptField s = ScriptConstants.getEnumMap("battleStartEndHookTag").get(battleWorkerEntryPointSlot);
+            ScriptField s = ScriptConstants.FFX.getEnumMap("battleStartEndHookTag").get(battleWorkerEntryPointSlot);
             if (s != null) {
                 return "Hook" + s.getLabel();
             }

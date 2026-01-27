@@ -32,7 +32,7 @@ public class AtelScriptObject {
     private int battleWorkerSlotCount;
 
     private int[] actualScriptCodeBytes;
-    private ScriptWorker[] workers;
+    private List<ScriptWorker> workers;
     public int[] refFloats;
     public int[] refInts;
     public ScriptVariable[] variableDeclarations;
@@ -125,7 +125,7 @@ public class AtelScriptObject {
         }
         int cursor = 0;
         for (ScriptWorker worker : workers) {
-            List<ScriptLine> workerJumpTargets = new ArrayList<>();
+            Map<ScriptLine, ScriptJump> workerJumpTargets = new HashMap<>();
             List<ScriptLine> workerLines = worker.getLines();
             for (ScriptLine line : workerLines) {
                 line.rereference(cursor, workerJumpTargets, newVariableDeclarations, newRefInts, newRefFloats);
@@ -146,22 +146,22 @@ public class AtelScriptObject {
             worker.variablesCount = varCount;
             worker.refIntCount = refIntsArray.length;
             worker.refFloatCount = refFloatsArray.length;
-            worker.entryPointCount = worker.entryPoints.length;
+            worker.entryPointCount = worker.entryPoints.size();
             worker.jumpCount = worker.jumps.length;
         }
         int[] staticHeaderBytes = new int[STATIC_HEADER_LENGTH];
         write4Bytes(staticHeaderBytes, 0x00, scriptCodeLength);
-        int amountOfType2or3Scripts = (int) Arrays.stream(workers).filter(w -> w.eventWorkerType == 2 || w.eventWorkerType == 3).count();
+        int amountOfType2or3Scripts = (int) workers.stream().filter(w -> w.eventWorkerType == 2 || w.eventWorkerType == 3).count();
         write2Bytes(staticHeaderBytes, 0x14, amountOfType2or3Scripts);
-        int amountOfType4Scripts = (int) Arrays.stream(workers).filter(w -> w.eventWorkerType == 4).count();
+        int amountOfType4Scripts = (int) workers.stream().filter(w -> w.eventWorkerType == 4).count();
         write2Bytes(staticHeaderBytes, 0x16, amountOfType4Scripts);
         write2Bytes(staticHeaderBytes, 0x18, mainScriptIndex);
         write2Bytes(staticHeaderBytes, 0x1A, unknown1A);
-        int amountOfType5Scripts = (int) Arrays.stream(workers).filter(w -> w.eventWorkerType == 5).count();
+        int amountOfType5Scripts = (int) workers.stream().filter(w -> w.eventWorkerType == 5).count();
         write2Bytes(staticHeaderBytes, 0x1C, amountOfType5Scripts);
-        int workerCount = workers.length;
+        int workerCount = workers.size();
         write2Bytes(staticHeaderBytes, 0x34, workerCount);
-        int actorCount = (int) Arrays.stream(workers).filter(w -> w.eventWorkerType != 0).count();
+        int actorCount = (int) workers.stream().filter(w -> w.eventWorkerType != 0).count();
         write2Bytes(staticHeaderBytes, 0x36, actorCount);
         int workerHeaderLength = workerCount * (ScriptWorker.LENGTH + 4);
         int[] workerHeaderBytes = new int[workerHeaderLength];
@@ -260,10 +260,10 @@ public class AtelScriptObject {
         int jumpTableCursor = 0;
         int[] jumpTableBytes = new int[jumpTableLength];
         for (int i = 0; i < workerCount; i++) {
-            ScriptWorker worker = workers[i];
+            ScriptWorker worker = getWorker(i);
             worker.scriptEntryPointsOffset = newJumpTablesOffset + jumpTableCursor;
             for (int j = 0; j < worker.entryPointCount; j++) {
-                write4Bytes(jumpTableBytes, jumpTableCursor, worker.entryPoints[j].addr);
+                write4Bytes(jumpTableBytes, jumpTableCursor, worker.getEntryPoint(j).addr);
                 jumpTableCursor += 4;
             }
             worker.jumpsOffset = newJumpTablesOffset + jumpTableCursor;
@@ -359,11 +359,11 @@ public class AtelScriptObject {
 
     private void parseWorkers() {
         scriptJumpsByDestination = new HashMap<>();
-        workers = new ScriptWorker[namespaceCount];
+        workers = new ArrayList<>(namespaceCount);
         for (int i = 0; i < namespaceCount; i++) {
             int offset = read4Bytes(0x38 + i * 4);
             ScriptWorker scriptWorker = new ScriptWorker(this, i, Arrays.copyOfRange(bytes, offset, offset + ScriptWorker.LENGTH));
-            workers[i] = scriptWorker;
+            workers.add(scriptWorker);
             scriptWorker.parseReferences(bytes);
             for (ScriptJump entryPoint : scriptWorker.entryPoints) {
                 scriptJumpsByDestination.computeIfAbsent(entryPoint.addr, (x) -> new ArrayList<>()).add(entryPoint);
@@ -439,6 +439,41 @@ public class AtelScriptObject {
         }
     }
 
+    public String getDeclarationsAsString() {
+        List<String> lines = new ArrayList<>();
+        for (int i = 0; i < variableDeclarations.length; i++) {
+            String index = String.format("%02X", i);
+            ScriptVariable vr = variableDeclarations[i];
+            StringBuilder stringBuilder = new StringBuilder(index).append('=');
+            boolean anyDeclaration = false;
+            if (vr.declaredLabel != null) {
+                anyDeclaration = true;
+                stringBuilder.append(vr.declaredLabel);
+            }
+            stringBuilder.append('=');
+            if (vr.declaredType != null) {
+                anyDeclaration = true;
+                stringBuilder.append(vr.declaredType);
+            } else if (vr.inferredType != null && !"unknown".equals(vr.inferredType)) {
+                anyDeclaration = true;
+                stringBuilder.append(vr.inferredType);
+            }
+            stringBuilder.append('=');
+            if (vr.declaredIndexType != null) {
+                anyDeclaration = true;
+                stringBuilder.append(vr.declaredIndexType);
+            }
+            if (anyDeclaration) {
+                String str = stringBuilder.toString();
+                while (str.endsWith("=")) {
+                    str = str.substring(0, str.length() - 1);
+                }
+                lines.add(str);
+            }
+        }
+        return String.join("\n", lines);
+    }
+
     public void setStrings(List<LocalizedFieldStringObject> strings) {
         this.strings = strings;
     }
@@ -460,7 +495,11 @@ public class AtelScriptObject {
     }
 
     public ScriptWorker getWorker(int workerIndex) {
-        return workerIndex >= 0 && workerIndex < workers.length ? workers[workerIndex] : null;
+        return workerIndex >= 0 && workerIndex < workers.size() ? workers.get(workerIndex) : null;
+    }
+
+    public List<ScriptWorker> getWorkers() {
+        return workers;
     }
 
     private void syncVarIntFloatTables() {
@@ -551,8 +590,8 @@ public class AtelScriptObject {
         int[] battleWorkerMappingHeaderBytes = new int[headerLength];
         Arrays.fill(battleWorkerMappingHeaderBytes, 0xFF);
         List<Integer> workerIndexes = new ArrayList<>();
-        for (int i = 0; i < workers.length; i++) {
-            ScriptWorker worker = workers[i];
+        for (int i = 0; i < workers.size(); i++) {
+            ScriptWorker worker = getWorker(i);
             if (worker.purposeSlot != null) {
                 battleWorkerMappingHeaderBytes[worker.purposeSlot + 2] = workerIndexes.size();
                 workerIndexes.add(i);
@@ -765,7 +804,7 @@ public class AtelScriptObject {
         if (opcode == 0x00 || opcode == 0x1D || opcode == 0x1E) { // NOP, LABEL, TAG
             // No handling yet, they should probably be written a certain way parsed out but are never actually used
         } else {
-            ScriptWorker currentWorker = workers[currentWorkerIndex];
+            ScriptWorker currentWorker = getWorker(currentWorkerIndex);
             if (opcode >= 0x01 && opcode <= 0x18) {
                 ScriptField op = ScriptConstants.COMP_OPERATORS.get(opcode);
                 String resultType = op.type;
@@ -863,10 +902,12 @@ public class AtelScriptObject {
                     cmd += "AndAwaitEnd";
                 }
                 String level = p1.expression ? ""+p1 : ""+p1.valueSigned;
-                boolean direct = !p2.expression && !p3.expression && isWeakType(p2.type) && isWeakType(p3.type) && p2.valueSigned < workers.length && p3.valueSigned < workers[p2.valueSigned].entryPoints.length;
+                ScriptWorker worker = getWorker(p2.valueSigned);
+                ScriptJump entryPoint = worker != null ? worker.getEntryPoint(p3.valueSigned) : null;
+                boolean direct = !p2.expression && !p3.expression && isWeakType(p2.type) && isWeakType(p3.type) && entryPoint != null;
                 String w = p2.expression ? "(" + p2 + ")" : format2Or4Byte(p2.valueSigned);
                 String e = p3.expression ? "(" + p3 + ")" : format2Or4Byte(p3.valueSigned);
-                String scriptLabel = direct ? workers[p2.valueSigned].entryPoints[p3.valueSigned].getLabel() : ("w" + w + "e" + e);
+                String scriptLabel = direct ? entryPoint.getLabel() : ("w" + w + "e" + e);
                 String content = cmd + " " + scriptLabel + " (Level " + level + ")";
                 stack.push(new StackObject(currentWorker, ins, "worker", true, content));
             } else if (opcode == 0x39) { // PREQ
@@ -913,19 +954,22 @@ public class AtelScriptObject {
                 stackObject.referenceIndex = tempIndex;
                 stack.push(stackObject);
             } else if (opcode == 0x77) { // REQWAIT / WAIT_DELETE
-                boolean direct = !p1.expression && !p2.expression && isWeakType(p1.type) && isWeakType(p2.type) && p1.valueSigned < workers.length && p2.valueSigned < workers[p1.valueSigned].entryPoints.length;
+                ScriptWorker worker = getWorker(p1.valueSigned);
+                ScriptJump entryPoint = worker != null ? worker.getEntryPoint(p2.valueSigned) : null;
+                boolean direct = !p1.expression && !p2.expression && isWeakType(p1.type) && isWeakType(p2.type) && entryPoint != null;
                 String w = p1.expression ? "(" + p1 + ")" : format2Or4Byte(p1.valueSigned);
                 String e = p2.expression ? "(" + p2 + ")" : format2Or4Byte(p2.valueSigned);
-                String scriptLabel = direct ? workers[p1.valueSigned].entryPoints[p2.valueSigned].getLabel() : ("w" + w + "e" + e);
+                String scriptLabel = direct ? entryPoint.getLabel() : ("w" + w + "e" + e);
                 textScriptLine += "await " + scriptLabel + ";";
             } else if (opcode == 0x78) { // Never used: PREQWAIT / WAIT_SPEC_DELETE
             } else if (opcode == 0x79) { // REQCHG / EDIT_ENTRY_TABLE
-                ScriptJump[] entryPoints = currentWorker.entryPoints;
                 int oldIdx = p2.valueSigned + 2;
                 int newIdx = p3.valueSigned;
-                boolean direct = !p2.expression && !p3.expression && isWeakType(p2.type) && isWeakType(p3.type) && oldIdx < entryPoints.length && newIdx < entryPoints.length;
-                String oldScriptLabel = direct ? entryPoints[oldIdx].getLabel() : ("e" + (p2.expression ? "(" + p2 + ")" : format2Or4Byte(oldIdx)));
-                String newScriptLabel = direct ? entryPoints[newIdx].getLabel() : ("e" + (p3.expression ? "(" + p3 + ")" : format2Or4Byte(newIdx)));
+                ScriptJump oldEntryPoint = currentWorker.getEntryPoint(oldIdx);
+                ScriptJump newEntryPoint = currentWorker.getEntryPoint(newIdx);
+                boolean direct = !p2.expression && !p3.expression && isWeakType(p2.type) && isWeakType(p3.type) && oldEntryPoint != null && newEntryPoint != null;
+                String oldScriptLabel = direct ? oldEntryPoint.getLabel() : ("e" + (p2.expression ? "(" + p2 + ")" : format2Or4Byte(oldIdx)));
+                String newScriptLabel = direct ? newEntryPoint.getLabel() : ("e" + (p3.expression ? "(" + p3 + ")" : format2Or4Byte(newIdx)));
                 String tableHolder = p1.expression ? ""+p1 : ""+p1.valueSigned;
                 if (p1.parentInstruction.opcode == 0xA7) {
                     addVarType(p1.valueSigned, "workerEventTable");
@@ -1014,10 +1058,7 @@ public class AtelScriptObject {
     }
 
     private ScriptJump referenceJump(int argv) {
-        if (workers == null || workers.length <= currentWorkerIndex) {
-            return null;
-        }
-        ScriptWorker worker = workers[currentWorkerIndex];
+        ScriptWorker worker = getWorker(currentWorkerIndex);
         if (worker == null || worker.jumps == null || worker.jumps.length <= argv) {
             return null;
         }
@@ -1067,7 +1108,7 @@ public class AtelScriptObject {
     }
 
     protected ScriptFunc getAndTypeFuncCall(int idx, List<StackObject> params) {
-        ScriptFunc func = ScriptFuncLib.get(idx, params);
+        ScriptFunc func = ScriptFuncLib.FFX.get(idx, params);
         if (func == null) {
             func = new ScriptFunc("Unknown:" + StringHelper.formatHex4(idx), "unknown", null, false);
         }
@@ -1173,7 +1214,7 @@ public class AtelScriptObject {
     }
 
     protected int getFunctionParamCount(int idx) {
-        ScriptFunc func = ScriptFuncLib.get(idx, null);
+        ScriptFunc func = ScriptFuncLib.FFX.get(idx, null);
         if (func == null) {
             warningsOnLine.add("Undefined stackpops for func " + StringHelper.formatHex4(idx));
             return 0;
@@ -1285,7 +1326,7 @@ public class AtelScriptObject {
     }
 
     public String workersString() {
-        if (workers == null || workers.length == 0) {
+        if (workers == null || workers.isEmpty()) {
             return "No Workers";
         }
         List<String> lines = new ArrayList<>();
@@ -1322,13 +1363,13 @@ public class AtelScriptObject {
         }
         lines.add(namespaceCount > 1 ? namespaceCount + " Workers Total" : "1 Worker Total");
         for (int i = 0; i < namespaceCount; i++) {
-            lines.add("w" + StringHelper.formatHex2(i) + ": " + workers[i].getNonCommonString());
+            lines.add("w" + StringHelper.formatHex2(i) + ": " + getWorker(i).getNonCommonString());
         }
         lines.add("Variables (" + variableDeclarations.length + " at offset " + StringHelper.formatHex4(variableStructsTableOffset) + ")");
         if (variableDeclarations.length > 0) {
             List<String> refsStrings = new ArrayList<>();
             for (int i = 0; i < variableDeclarations.length; i++) {
-                refsStrings.add("Variable " + StringHelper.formatHex2(i) + ": " + variableDeclarations[i] + " [" + String.format("%016X", variableDeclarations[i].fullBytes) + "h]");
+                refsStrings.add("Variable " + StringHelper.formatHex2(i) + ": " + variableDeclarations[i]);
             }
             lines.add(String.join("\n", refsStrings));
         }
@@ -1354,7 +1395,7 @@ public class AtelScriptObject {
             lines.add("- Jump Table -");
             for (int i = 0; i < namespaceCount; i++) {
                 lines.add("w" + StringHelper.formatHex2(i));
-                ScriptWorker h = workers[i];
+                ScriptWorker h = getWorker(i);
                 lines.add(h.getEntryPointsLine());
                 lines.add(h.getJumpsLine());
             }

@@ -7,11 +7,14 @@ import reading.Chunk;
 import model.MonsterLootDataObject;
 import model.MonsterStatDataObject;
 import reading.BytesHelper;
+import reading.FileAccessorWithMods;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import static main.DataReadingManager.PATH_MONSTER_FOLDER;
+import static main.DataReadingManager.PATH_ORIGINALS_ENCOUNTER;
 import static reading.BytesHelper.read4Bytes;
 
 /**
@@ -63,7 +66,11 @@ public class MonsterFile implements Nameable {
     }
 
     public void parseScript() {
-        if (monsterScript != null) {
+        parseScript(false);
+    }
+
+    public void parseScript(boolean force) {
+        if (monsterScript != null && (force || !scriptParsed)) {
             scriptParsed = true;
             monsterScript.parseScript();
         }
@@ -87,6 +94,19 @@ public class MonsterFile implements Nameable {
         int[] bytes = BytesHelper.chunksToBytes(chunks, 0x08, 0x30, 0x10);
         binaryLength = bytes.length;
         return bytes;
+    }
+
+    public void writeToMods(boolean writeStrings, boolean writeDeclarations) {
+        String mIndexString = "m" + scriptId;
+        String path = PATH_MONSTER_FOLDER + '_' + mIndexString + '/' + mIndexString;
+        int[] bytes = toBytes();
+        FileAccessorWithMods.writeByteArrayToMods(path + ".bin", bytes);
+        if (writeStrings) {
+            DataWritingManager.writeMonsterStringsForAllLocalizations(false);
+        }
+        if (writeDeclarations) {
+            FileAccessorWithMods.writeStringToMods(path + ".dcl", monsterScript.getDeclarationsAsString());
+        }
     }
 
     @Override

@@ -41,7 +41,7 @@ public class ScriptFunc extends ScriptField {
 
     @Override
     public String toString() {
-        String groupStr = idx != null ? ScriptConstants.FUNCSPACES[idx / 0x1000] + '.' : "";
+        String groupStr = idx != null ? ScriptConstants.FFX.FUNCSPACES[idx / 0x1000] + '.' : "";
         if (isNameless()) {
             return groupStr + getHexIndex();
         }
