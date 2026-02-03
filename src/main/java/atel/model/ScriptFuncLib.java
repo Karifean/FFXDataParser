@@ -1,5 +1,10 @@
 package atel.model;
 
+import javafx.event.ActionEvent;
+import javafx.scene.control.Menu;
+import javafx.scene.control.MenuButton;
+import javafx.scene.control.MenuItem;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -343,7 +348,8 @@ public class ScriptFuncLib {
         putUnknownFunc(0x016C, 0);
         putFuncWithIdx(0x016D, new ScriptFunc(p("bgm")));
         putUnknownFunc(0x016E, 2);
-        putUnknownFunc(0x016F, 1);
+        putFuncWithIdx(0x016F, new ScriptFunc("updateSavedRoomAndSpawnpoint", "unknown", null, p("spawnpoint", "int")));
+        putFuncWithIdx(0x0170, new ScriptFunc("updateSavedRoomAndSpawnpoint", "unknown", null, p("room"), p("spawnpoint", "int"))); // Never used
         putFuncWithIdx(0x0171, new ScriptFunc("fillPartyMemberHp", "unknown", null, p("playerChar")));
         putFuncWithIdx(0x0172, new ScriptFunc("fillPartyMemberMp", "unknown", null, p("playerChar")));
         putFuncWithIdx(0x0174, new ScriptFunc("VelocityPitch", "unknown", null, false));
@@ -1250,16 +1256,28 @@ public class ScriptFuncLib {
         putUnknownFunc(0xC05B, 1);
     }
 
-    public Map<String, Map<Integer, List<ScriptFuncChoice>>> getCallChoices() {
-        Map<String, Map<Integer, List<ScriptFuncChoice>>> map = new HashMap<>();
+    public MenuButton getCallChoices(FuncChoiceAction action, String type) {
+        Map<Integer, List<ScriptFuncChoice>> map = new HashMap<>();
+        List<String> allowedTypes = List.of("unknown", "void", "bool", "int", "uint");
+        boolean checkType = type != null && !allowedTypes.contains(type);
         for (ScriptFunc func : FUNCS) {
-            if (func != null) {
-                Map<Integer, List<ScriptFuncChoice>> funcSpaceMap = map.computeIfAbsent(func.type, k -> new HashMap<>());
-                List<ScriptFuncChoice> list = funcSpaceMap.computeIfAbsent(func.funcspace, k -> new ArrayList<>());
+            if (func != null && (!checkType || type.equals(func.type))) {
+                List<ScriptFuncChoice> list = map.computeIfAbsent(func.funcspace, k -> new ArrayList<>());
                 list.add(new ScriptFuncChoice(func));
             }
         }
-        return map;
+        MenuButton menuButton = new MenuButton();
+        for (Map.Entry<Integer, List<ScriptFuncChoice>> subEntry : map.entrySet()) {
+            Menu menu = new Menu(ScriptConstants.FFX.FUNCSPACES[subEntry.getKey()]);
+            for (ScriptFuncChoice choice : subEntry.getValue()) {
+                MenuItem menuItem = new MenuItem(choice.func.getOptionLabel());
+                menuItem.setOnAction(actionEvent -> action.act(choice, actionEvent));
+                menuItem.setUserData(choice);
+                menu.getItems().add(menuItem);
+            }
+            menuButton.getItems().add(menu);
+        }
+        return menuButton;
     }
 
     public static record ScriptFuncChoice(ScriptFunc func) {
@@ -1267,5 +1285,9 @@ public class ScriptFuncLib {
         public String toString() {
             return String.format("%04X: %s", func.idx, func.getLabel());
         }
+    }
+
+    public interface FuncChoiceAction {
+        void act(ScriptFuncChoice choice, ActionEvent event);
     }
 }

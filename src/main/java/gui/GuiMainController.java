@@ -11,7 +11,6 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
 import javafx.scene.input.KeyEvent;
-import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import main.DataAccess;
@@ -22,7 +21,8 @@ import java.util.*;
 import static gui.GuiMain.mainLocalization;
 
 public class GuiMainController implements Initializable {
-    private static final String LEGAL_CHARS = "0123456789ABCDEFabcdef ";
+    private static final String LEGAL_HEX_CHARS = "0123456789ABCDEFabcdef ";
+    private static final String LEGAL_INT_CHARS = "0123456789";
 
     @FXML
     ListView<String> eventList;
@@ -57,9 +57,6 @@ public class GuiMainController implements Initializable {
     List<ScriptLine> scriptLines;
     int selectedLineIndex = -1;
     ScriptLine selectedLine;
-
-    Map<String, List<ScriptConstants.OpcodeChoice>> opcodeChoices = ScriptConstants.FFX.getOpcodeChoices();
-    Map<String, Map<Integer, List<ScriptFuncLib.ScriptFuncChoice>>> callChoices = ScriptFuncLib.FFX.getCallChoices();
 
     private boolean choosingBranchTarget = false;
 
@@ -205,7 +202,6 @@ public class GuiMainController implements Initializable {
     }
 
     public void adaptToSelectedEntryPoint() {
-        scriptLineList.getItems().clear();
         if (selectedEntryPoint == null) {
             scriptState = null;
             scriptLines = null;
@@ -229,16 +225,23 @@ public class GuiMainController implements Initializable {
     }
 
     public void onLineSelected(String label) {
-        selectedLineIndex = -1;
-        selectedLine = null;
+        int index = -1;
         if (label != null && label.length() > 2) {
             try {
-                selectedLineIndex = Integer.parseInt(label.substring(1).split(":")[0], 10);
-                selectedLine = scriptLines.get(selectedLineIndex);
+                index = Integer.parseInt(label.substring(1).split(":")[0], 10);
             } catch (NumberFormatException e) {
                 e.printStackTrace();
             }
         }
+        if (choosingBranchTarget) {
+            choosingBranchTarget = false;
+            setBranchTarget(index);
+            scriptLineList.getSelectionModel().select(selectedLineIndex);
+            return;
+        }
+        selectedLineIndex = index;
+        selectedLine = index < 0 ? null : scriptLines.get(selectedLineIndex);
+        System.out.println("selecting line index " + index + " ergo line: " + selectedLine);
         adaptToSelectedLine();
     }
 
@@ -248,7 +251,7 @@ public class GuiMainController implements Initializable {
             hexLineInput.setText("");
             hexLineInput.setDisable(true);
             branchLineInput.setText("");
-            branchLineLabel.setText("None");
+            branchLineLabel.setText("-");
             branchLineInput.setDisable(true);
             branchLineLabel.setDisable(true);
             branchLineButton.setDisable(true);
@@ -261,10 +264,10 @@ public class GuiMainController implements Initializable {
             ScriptLine targetLine = selectedLine.branch.targetLine;
             int lineIndex = scriptLines.indexOf(targetLine);
             branchLineInput.setText(lineIndex < 0 ? "" : String.valueOf(lineIndex));
-            branchLineLabel.setText(lineIndex < 0 ? "None" : targetLine.lineEnder.asString(scriptState));
+            branchLineLabel.setText(lineIndex < 0 ? "-" : targetLine.lineEnder.asString(scriptState));
         } else {
             branchLineInput.setText("");
-            branchLineLabel.setText("None");
+            branchLineLabel.setText("-");
         }
         boolean cannotBranch = selectedLine.lineEnder.getBranchIndex() == null;
         branchLineInput.setDisable(cannotBranch);
@@ -276,21 +279,23 @@ public class GuiMainController implements Initializable {
         if (selectedLine == null || selectedLine.lineEnder == null) {
             return;
         }
-        ChoiceBox<ScriptConstants.OpcodeChoice> lineEnderChoiceBox = new ChoiceBox<>();
-        List<ScriptConstants.OpcodeChoice> lineEnderChoices = opcodeChoices.get("void");
-        lineEnderChoiceBox.getItems().addAll(lineEnderChoices);
-        int lineEndOpcode = selectedLine.lineEnder.opcode;
-        Optional<ScriptConstants.OpcodeChoice> selected = lineEnderChoices.stream().filter(oc -> oc.opcode() == lineEndOpcode).findAny();
-        if (selected.isPresent()) {
-            lineEnderChoiceBox.setValue(selected.get());
-        } else {
-            ScriptConstants.OpcodeChoice newChoice = new ScriptConstants.OpcodeChoice(lineEndOpcode);
-            lineEnderChoiceBox.getItems().add(newChoice);
-            lineEnderChoiceBox.setValue(newChoice);
+        lineGuiVbox.getChildren().add(new GuiAtelLineTree(this, selectedLine, scriptState).create());
+    }
+
+    public void changeInstructionOpcode(ScriptInstruction instruction, Integer opcode, Integer argv) {
+        if (opcode != null && opcode >= 0x00) {
+            selectedLine.changeInstructionOpcode(instruction, opcode, argv != null ? argv : 0);
+            adaptLineToChangedInstructions();
         }
-        HBox hBox = new HBox();
-        hBox.getChildren().add(lineEnderChoiceBox);
-        lineGuiVbox.getChildren().add(hBox);
+    }
+
+    public void changeInstructionArgv(ScriptInstruction instruction, Integer argv) {
+        if (argv != null) {
+            System.out.println("instructionBefore " + instruction + " / line=" + selectedLine);
+            selectedLine.changeInstructionArgv(instruction, argv);
+            System.out.println("instructionAfter " + instruction + " / line=" + selectedLine);
+            adaptLineToChangedInstructions();
+        }
     }
 
     @FXML
@@ -335,6 +340,34 @@ public class GuiMainController implements Initializable {
     }
 
     @FXML
+    public void onBranchLineInputAction(ActionEvent event) {
+        sanitizeBranchLineInput();
+        try {
+            int newIndex = Integer.parseInt(branchLineInput.getText(), 10);
+            setBranchTarget(newIndex);
+        } catch (NumberFormatException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void setBranchTarget(int newIndex) {
+        if (newIndex < 0 || newIndex >= scriptLines.size()) {
+            return;
+        }
+        ScriptWorker worker = selectedLine.parentWorker;
+        ScriptJump branch = new ScriptJump(worker, -1, worker.jumpCount, false);
+        selectedLine.branch = branch;
+        selectedLine.lineEnder.setArgv(branch.jumpIndex);
+        worker.jumps.add(branch);
+        worker.jumpCount++;
+        ScriptLine newTargetLine = scriptLines.get(newIndex);
+        branch.targetLine = newTargetLine;
+        newTargetLine.incomingJumps.add(branch);
+        branchLineLabel.setText(newTargetLine.lineEnder.asString(scriptState));
+        scriptLineList.getItems().set(selectedLineIndex, String.format("#%d: %s", selectedLineIndex, selectedLine.lineEnder.asString(scriptState)));
+    }
+
+    @FXML
     public void onHexLineInputAction(ActionEvent event) {
         sanitizeHexLineInput();
         String hexLineString = hexLineInput.getText().replace(" ", "");
@@ -363,7 +396,7 @@ public class GuiMainController implements Initializable {
             }
             int offset = i;
             int opcode = bytes.get(i);
-            lastWasLineEnder = ScriptConstants.OPCODE_ENDLINE.contains(opcode);
+            lastWasLineEnder = ScriptOpcode.OPCODES[opcode].isLineEnd;
             if (opcode >= 0x80 && opcode < 0xFF) {
                 isOnlyNop = false;
                 i++;
@@ -378,6 +411,8 @@ public class GuiMainController implements Initializable {
                     } else {
                         instruction.dereferencedArg = 0;
                     }
+                } else if (opcode == 0xAE) {
+                    instruction.dereferencedArg = instruction.argv;
                 } else if (opcode == 0xAF) {
                     if (instruction.argv < selectedAtelObject.refFloats.length) {
                         instruction.dereferencedArg = selectedAtelObject.refFloats[instruction.argv];
@@ -410,13 +445,26 @@ public class GuiMainController implements Initializable {
     private void setLineToInstructionsList(List<ScriptInstruction> instructions) {
         boolean isLast = selectedLineIndex == scriptLines.size() - 1;
         selectedLine.setInstructions(instructions, isLast ? null : scriptLines.get(selectedLineIndex + 1));
+        adaptLineToChangedInstructions();
+    }
+
+    private void adaptLineToChangedInstructions() {
+        boolean isLast = selectedLineIndex == scriptLines.size() - 1;
+        Integer branchIndex = !selectedLine.instructions.isEmpty() ? selectedLine.instructions.getLast().getBranchIndex() : null;
+        if (branchIndex != null) {
+            ScriptJump jump = selectedLine.parentWorker.getJump(branchIndex);
+            selectedLine.branch = jump;
+            int lineIndex = jump != null ? scriptLines.indexOf(jump.targetLine) : -1;
+            branchLineInput.setText(lineIndex < 0 ? "" : String.valueOf(lineIndex));
+            branchLineLabel.setText(lineIndex < 0 ? "-" : jump.targetLine.lineEnder.asString(scriptState));
+        }
         if (isLast && selectedLine.continues()) {
             ScriptInstruction retInstruction = new ScriptInstruction(0, 0x3C);
+            ScriptLine finalLine = new ScriptLine(selectedLine.parentWorker, 0, List.of(retInstruction), List.of());
             scriptLineList.getItems().add(String.format("#%d: %s", scriptLines.size(), retInstruction.asString(scriptState)));
-            ScriptLine finalLine = new ScriptLine(selectedLine.parentWorker, 0, List.of(retInstruction), retInstruction, List.of());
-            scriptLines.add(finalLine);
             finalLine.predecessor = selectedLine;
             selectedLine.successor = finalLine;
+            scriptLines.add(finalLine);
         }
         scriptLineList.getItems().set(selectedLineIndex, String.format("#%d: %s", selectedLineIndex, selectedLine.lineEnder.asString(scriptState)));
         adaptToSelectedLine();
@@ -433,7 +481,7 @@ public class GuiMainController implements Initializable {
         String original = hexLineInput.getText().toUpperCase();
         for (int i = 0; i < original.length(); i++) {
             char ch = original.charAt(i);
-            if (LEGAL_CHARS.indexOf(ch) >= 0) {
+            if (LEGAL_HEX_CHARS.indexOf(ch) >= 0) {
                 sanitizer.append(ch);
             }
         }
@@ -443,9 +491,30 @@ public class GuiMainController implements Initializable {
     }
 
     @FXML
+    public void onBranchLineInputTyped(KeyEvent event) {
+        sanitizeBranchLineInput();
+    }
+
+    private void sanitizeBranchLineInput() {
+        StringBuilder sanitizer = new StringBuilder();
+        int caretPosition = branchLineInput.getCaretPosition();
+        String original = branchLineInput.getText();
+        for (int i = 0; i < original.length(); i++) {
+            char ch = original.charAt(i);
+            if (LEGAL_INT_CHARS.indexOf(ch) >= 0) {
+                sanitizer.append(ch);
+            }
+        }
+        String sanitized = sanitizer.toString();
+        branchLineInput.setText(sanitized);
+        branchLineInput.positionCaret(caretPosition);
+    }
+
+    @FXML
     public void onAddLine() {
+        System.out.println("onAddLine selectedLineIndex=" + selectedLineIndex + " and line=" + selectedLine);
         ScriptInstruction blankIns = new ScriptInstruction(0, 0x00);
-        ScriptLine newLine = new ScriptLine(selectedEntryPoint.parentWorker, -1, List.of(blankIns), blankIns, List.of());
+        ScriptLine newLine = new ScriptLine(selectedEntryPoint.parentWorker, -1, List.of(blankIns), List.of());
         if (selectedLineIndex < 0 || selectedLineIndex >= scriptLines.size() - 1) {
             scriptLines.add(0, newLine);
             ScriptLine previousStartLine = selectedEntryPoint.targetLine;
@@ -455,8 +524,9 @@ public class GuiMainController implements Initializable {
             setScriptLines();
             scriptLineList.getSelectionModel().select(0);
         } else {
-            ScriptLine nextLine = scriptLines.get(selectedLineIndex + 1);
-            scriptLines.add(selectedLineIndex + 1, newLine);
+            int nextLineIndex = selectedLineIndex + 1;
+            ScriptLine nextLine = scriptLines.get(nextLineIndex);
+            scriptLines.add(nextLineIndex, newLine);
             if (selectedLine.continues()) {
                 selectedLine.successor = newLine;
                 newLine.predecessor = selectedLine;
@@ -468,7 +538,7 @@ public class GuiMainController implements Initializable {
                 nextLine.predecessor = null;
             }
             setScriptLines();
-            scriptLineList.getSelectionModel().select(selectedLineIndex + 1);
+            scriptLineList.getSelectionModel().select(nextLineIndex);
         }
     }
 
@@ -487,8 +557,9 @@ public class GuiMainController implements Initializable {
         nextLine.predecessor = selectedLine.predecessor;
         nextLine.incomingJumps.addAll(selectedLine.incomingJumps);
         selectedLine.incomingJumps.forEach(j -> j.targetLine = nextLine);
+        int previousLineIndex = selectedLineIndex > 0 ? selectedLineIndex - 1 : 0;
         if (selectedLineIndex > 0) {
-            ScriptLine previousLine = scriptLines.get(selectedLineIndex - 1);
+            ScriptLine previousLine = scriptLines.get(previousLineIndex);
             if (previousLine.continues()) {
                 previousLine.successor = nextLine;
                 nextLine.predecessor = previousLine;
@@ -496,7 +567,7 @@ public class GuiMainController implements Initializable {
         }
         scriptLines.remove(selectedLine);
         setScriptLines();
-        scriptLineList.getSelectionModel().select(selectedLineIndex > 0 ? selectedLineIndex - 1 : 0);
+        scriptLineList.getSelectionModel().select(previousLineIndex);
     }
 
     private static record TreeEntry(GuiMainController ctrl, String type, ScriptWorker worker, ScriptJump entryPoint) {
@@ -507,7 +578,7 @@ public class GuiMainController implements Initializable {
                 case "bg" -> "Encounter General";
                 case "mg" -> "Monster General";
                 case "sg" -> "Script General";
-                case "wr" -> worker.getIndexLabel();
+                case "wr" -> worker.getLabel(mainLocalization);
                 case "wg" -> "Worker General";
                 case "e" -> entryPoint.getLabel();
                 default -> "";

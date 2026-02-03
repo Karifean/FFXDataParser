@@ -147,7 +147,7 @@ public class AtelScriptObject {
             worker.refIntCount = refIntsArray.length;
             worker.refFloatCount = refFloatsArray.length;
             worker.entryPointCount = worker.entryPoints.size();
-            worker.jumpCount = worker.jumps.length;
+            worker.jumpCount = worker.jumps.size();
         }
         int[] staticHeaderBytes = new int[STATIC_HEADER_LENGTH];
         write4Bytes(staticHeaderBytes, 0x00, scriptCodeLength);
@@ -268,7 +268,7 @@ public class AtelScriptObject {
             }
             worker.jumpsOffset = newJumpTablesOffset + jumpTableCursor;
             for (int j = 0; j < worker.jumpCount; j++) {
-                write4Bytes(jumpTableBytes, jumpTableCursor, worker.jumps[j].addr);
+                write4Bytes(jumpTableBytes, jumpTableCursor, worker.getJump(j).addr);
                 jumpTableCursor += 4;
             }
             if (worker.privateDataLength > 0 && hasWorkerLocalPrivateData) {
@@ -661,7 +661,7 @@ public class AtelScriptObject {
             lineInstructions.add(instruction);
             instructions.add(instruction);
             if (getLineEnd(opcode)) {
-                ScriptLine scriptLine = new ScriptLine(null, currentScriptLineOffset, lineInstructions, instruction, jumpsOnLine);
+                ScriptLine scriptLine = new ScriptLine(null, currentScriptLineOffset, lineInstructions, jumpsOnLine);
                 jumpsOnLine.forEach(j -> j.targetLine = scriptLine);
                 scriptLines.add(scriptLine);
                 lineCount++;
@@ -806,7 +806,7 @@ public class AtelScriptObject {
         } else {
             ScriptWorker currentWorker = getWorker(currentWorkerIndex);
             if (opcode >= 0x01 && opcode <= 0x18) {
-                ScriptField op = ScriptConstants.COMP_OPERATORS.get(opcode);
+                ScriptOpcode op = ScriptOpcode.OPCODES[opcode];
                 String resultType = op.type;
                 String p1s = p1.toString();
                 String p2s = p2.toString();
@@ -848,7 +848,7 @@ public class AtelScriptObject {
                 if (p2.maybeBracketize) {
                     p2s = '(' + p2s + ')';
                 }
-                String content = p1s + ' ' + op.name + ' ' + p2s;
+                String content = String.format(op.format, p1s, p2s);
                 StackObject stackObject = new StackObject(currentWorker, ins, resultType, true, content);
                 stackObject.maybeBracketize = true;
                 stack.push(stackObject);
@@ -1059,10 +1059,10 @@ public class AtelScriptObject {
 
     private ScriptJump referenceJump(int argv) {
         ScriptWorker worker = getWorker(currentWorkerIndex);
-        if (worker == null || worker.jumps == null || worker.jumps.length <= argv) {
+        if (worker == null) {
             return null;
         }
-        return referenceJump(worker.jumps[argv]);
+        return referenceJump(worker.getJump(argv));
     }
 
     private ScriptJump referenceJump(ScriptJump jump) {
@@ -1205,12 +1205,7 @@ public class AtelScriptObject {
     }
 
     protected int getStackPops(int opcode) {
-        int stackpops = ScriptConstants.OPCODE_STACKPOPS[opcode];
-        if (stackpops < 0) {
-            warningsOnLine.add("Undefined stackpops for opcode " + StringHelper.formatHex2(opcode));
-            return 0;
-        }
-        return stackpops;
+        return ScriptOpcode.OPCODES[opcode].inputs.size();
     }
 
     protected int getFunctionParamCount(int idx) {
@@ -1223,7 +1218,7 @@ public class AtelScriptObject {
     }
 
     protected static boolean getLineEnd(int opcode) {
-        return ScriptConstants.OPCODE_ENDLINE.contains(opcode);
+        return ScriptOpcode.OPCODES[opcode].isLineEnd;
     }
 
     protected void inferBooleans() {

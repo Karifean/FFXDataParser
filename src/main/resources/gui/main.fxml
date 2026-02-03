@@ -244,7 +244,7 @@
                                                                   <Insets bottom="4.0" top="4.0" />
                                                                </padding>
                                                             </Label>
-                                                            <TextField fx:id="branchLineInput" disable="true" minHeight="26.0" minWidth="60.0" prefHeight="26.0" prefWidth="60.0" promptText="Line #" HBox.hgrow="NEVER">
+                                                            <TextField fx:id="branchLineInput" disable="true" onAction="#onBranchLineInputAction" onKeyTyped="#onBranchLineInputTyped" minHeight="26.0" minWidth="60.0" prefHeight="26.0" prefWidth="60.0" promptText="Line #" HBox.hgrow="NEVER">
                                                                <HBox.margin>
                                                                   <Insets left="10.0" right="10.0" />
                                                                </HBox.margin>

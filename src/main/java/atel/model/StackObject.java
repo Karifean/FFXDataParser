@@ -78,20 +78,20 @@ public class StackObject {
     }
 
     public static String asString(String localization, StackObject obj) {
-        return asString(localization, obj.type, obj.rawType, obj.valueSigned, obj.valueUnsigned, obj.parentWorker);
+        return asString(localization, obj.type, obj.rawType, obj.valueSigned, obj.valueUnsigned, obj.parentWorker, ScriptField.PRINT_WITH_HEX_SUFFIX);
     }
 
     public static String asString(String localization, String type, int value) {
-        return asString(localization, type, null, value, value, null);
+        return asString(localization, type, null, value, value, null, ScriptField.PRINT_WITH_HEX_SUFFIX);
     }
 
-    public static String asString(String localization, String type, String rawType, int valueSigned, int valueUnsigned, ScriptWorker parentWorker) {
+    public static String asString(String localization, String type, String rawType, int valueSigned, int valueUnsigned, ScriptWorker parentWorker, boolean withHexSuffix) {
         String format = "int32".equals(rawType) ? "%08X" : ((valueSigned & 0xFFFFFF00) != 0 ? "%04X" : "%02X");
         String hex = String.format(format, valueSigned);
         if (!"int32".equals(rawType) && hex.length() == 8 && hex.startsWith("FFFF")) {
             hex = hex.substring(4);
         }
-        String hexSuffix = ScriptField.PRINT_WITH_HEX_SUFFIX ? " [" + hex + "h]" : "";
+        String hexSuffix = withHexSuffix ? " [" + hex + "h]" : "";
         if (type == null || "unknown".equals(type) || type.startsWith("int")) {
             return valueSigned + hexSuffix;
         }

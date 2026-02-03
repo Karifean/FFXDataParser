@@ -10,9 +10,9 @@ public class ScriptInstruction {
     private static final boolean INFER_BITWISE_OPS_AS_BITFIELDS = false;
 
     public int offset;
-    public final int opcode;
-    public final boolean hasArgs;
-    public final int length;
+    public int opcode;
+    public boolean hasArgs;
+    public int length;
     public int arg1;
     public int arg2;
     public int argv;
@@ -72,8 +72,21 @@ public class ScriptInstruction {
         return newOffset + length;
     }
 
+    public void setOpcode(int newOpcode) {
+        setOpcode(newOpcode, 0);
+    }
+
+    public void setOpcode(int newOpcode, int argv) {
+        opcode = newOpcode;
+        ScriptOpcode opcodeObj = ScriptOpcode.OPCODES[newOpcode];
+        hasArgs = opcodeObj.hasArgs;
+        length = hasArgs ? 3 : 1;
+        setArgv(argv);
+    }
+
     public void setArgv(int newArgv) {
         argv =  newArgv;
+        argvSigned = newArgv;
         arg1 =  newArgv & 0xFF;
         arg2 = (newArgv & 0xFF00) >> 8;
     }
@@ -119,7 +132,7 @@ public class ScriptInstruction {
     }
 
     public String getOpcodeLabel() {
-        return ScriptConstants.OPCODE_LABELS[opcode];
+        return ScriptOpcode.OPCODES[opcode].name;
     }
 
     public String getArgLabel() {
@@ -134,7 +147,7 @@ public class ScriptInstruction {
     }
 
     public Integer getBranchIndex() {
-        if (ScriptConstants.OPCODE_BRANCHING.contains(opcode)) {
+        if (ScriptOpcode.OPCODES[opcode].branches) {
             return argv;
         } else {
             return null;
@@ -142,23 +155,63 @@ public class ScriptInstruction {
     }
 
     public int getStackPops() {
-        if (ScriptConstants.OPCODE_CALLING.contains(opcode)) {
+        if (ScriptOpcode.OPCODES[opcode].isCall) {
             ScriptFunc func = ScriptFuncLib.FFX.get(argv, null);
             if (func == null) {
                 return 0;
             }
             return func.inputs != null ? func.inputs.size() : 0;
         } else {
-            return ScriptConstants.OPCODE_STACKPOPS[opcode];
+            return ScriptOpcode.OPCODES[opcode].inputs.size();
         }
+    }
+
+    public ScriptInstruction getInput(int index) {
+        if (inputs == null || index < 0 || index >= inputs.size()) {
+            return null;
+        }
+        return inputs.get(index);
+    }
+
+    public String getInputType(ScriptState state, int index) {
+        if (index < 0 || index >= getStackPops()) {
+            return null;
+        }
+        ScriptOpcode op = ScriptOpcode.OPCODES[opcode];
+        if (op.isCall) {
+            ScriptFunc func = ScriptFuncLib.FFX.get(argv, null);
+            if (func == null || func.inputs == null) {
+                return "unknown";
+            }
+            return func.inputs.get(index).type;
+        }
+        if (opcode == 0xA0 || opcode == 0xA1 || opcode == 0xA3 || opcode == 0xA4 || opcode == 0xA7) {
+            if (index == 0 && (opcode == 0xA3 || opcode == 0xA4 || opcode == 0xA7)) {
+                return getVariableIndexType(argv);
+            } else {
+                return getVariableType(argv);
+            }
+        }
+        return op.inputs.get(index).type;
+    }
+
+    public String getInputLabel(int index) {
+        if (index < 0 || index >= getStackPops()) {
+            return null;
+        }
+        ScriptOpcode op = ScriptOpcode.OPCODES[opcode];
+        if (op.isCall) {
+            ScriptFunc func = ScriptFuncLib.FFX.get(argv, null);
+            if (func == null || func.inputs == null) {
+                return "unknown";
+            }
+            return func.inputs.get(index).getLabel();
+        }
+        return op.inputs.get(index).getLabel();
     }
 
     public void setUpInputs(Stack<ScriptInstruction> stack) {
         int stackpops = getStackPops();
-        if (stackpops <= 0) {
-            inputs = List.of();
-            return;
-        }
         inputs = new ArrayList<>(stackpops);
         for (int i = 0; i < stackpops; i++) {
             inputs.add(0, stack.pop());
@@ -169,8 +222,33 @@ public class ScriptInstruction {
         if (opcode == 0x2B) {
             stack.push(inputs.get(0));
         }
-        if (hasOutput(opcode)) {
+        String outputType = ScriptOpcode.OPCODES[opcode].type;
+        if (outputType != null && !"void".equals(outputType)) {
             stack.push(this);
+        }
+    }
+
+    public String getOutputType(ScriptState state) {
+        if (opcode == 0x26) {
+            return state.rAType;
+        } else if (opcode == 0x28) {
+            return state.rXType;
+        } else if (opcode == 0x29) {
+            return state.rYType;
+        } else if (opcode == 0x2B) {
+            return getInput(0).getOutputType(state);
+        } else if (opcode >= 0x67 && opcode <= 0x6A) {
+            return state.tempITypes.getOrDefault(opcode - 0x67, "int");
+        } else if (opcode == 0x9F || opcode == 0xA2) {
+            return state.parentScript.getVariableType(argv);
+        } else if (opcode == 0xB5) {
+            Stack<StackObject> stack = new Stack<>();
+            inputsToStackObjects(state, stack);
+            List<StackObject> params = popParamsForFunc(stack);
+            ScriptFunc func = getFunc(params);
+            return func.getType(params);
+        } else {
+            return ScriptOpcode.OPCODES[opcode].type;
         }
     }
 
@@ -179,7 +257,7 @@ public class ScriptInstruction {
         inputsToStackObjects(state, stack);
         if (opcode == 0xD8) { // CALLPOPA / FUNC
             List<StackObject> params = popParamsForFunc(stack);
-            ScriptFunc func = getAndTypeFuncCall(argv, params);
+            ScriptFunc func = getFunc(params);
             state.rAType = func.getType(params);
             String call = func.callD8(params);
             return call + ';';
@@ -280,7 +358,11 @@ public class ScriptInstruction {
                 return "<No target line>";
             } else if (jump.targetLine.parentWorker == parentWorker) {
                 int lineIndex = state.lines.indexOf(jump.targetLine);
-                return "Line #" + lineIndex;
+                if (lineIndex >= 0) {
+                    return "Line #" + lineIndex;
+                } else {
+                    return "<Unknown target line>";
+                }
             } else {
                 int lineIndex = jump.targetLine.parentWorker.getLines().indexOf(jump.targetLine);
                 return "Script " + jump.targetLine.parentWorker.getIndexLabel() + " Line #" + lineIndex;
@@ -294,7 +376,7 @@ public class ScriptInstruction {
         inputsToStackObjects(state, stack);
         if (opcode == 0xB5) { // CALL / FUNC_RET
             List<StackObject> params = popParamsForFunc(stack);
-            ScriptFunc func = getAndTypeFuncCall(argv, params);
+            ScriptFunc func = getFunc(params);
             StackObject stackObject = new StackObject(parentWorker, this, func.getType(params), true, func.callB5(params));
             stackObject.referenceIndex = argv;
             return stackObject;
@@ -309,7 +391,7 @@ public class ScriptInstruction {
                 break;
         }
         if (opcode >= 0x01 && opcode <= 0x18) {
-            ScriptField op = ScriptConstants.COMP_OPERATORS.get(opcode);
+            ScriptOpcode op = ScriptOpcode.OPCODES[opcode];
             String resultType = op.type;
             String p1s = p1.toString();
             String p2s = p2.toString();
@@ -351,7 +433,7 @@ public class ScriptInstruction {
             if (p2.maybeBracketize) {
                 p2s = '(' + p2s + ')';
             }
-            String content = p1s + ' ' + op.name + ' ' + p2s;
+            String content = String.format(op.format, p1s, p2s);
             StackObject stackObject = new StackObject(parentWorker, this, resultType, true, content);
             stackObject.maybeBracketize = true;
             return stackObject;
@@ -430,14 +512,14 @@ public class ScriptInstruction {
             stackObject.referenceIndex = argv;
             return stackObject;
         } else if (opcode == 0xAD) { // PUSHI / CONST_INT
-            int refInt = parentWorker.refInts[argv];
+            int refInt = dereferencedArg != null ? dereferencedArg : parentWorker.refInts[argv];
             StackObject stackObject = new StackObject(parentWorker, this, "int32", refInt, refInt);
             stackObject.referenceIndex = argv;
             return stackObject;
         } else if (opcode == 0xAE) { // PUSHII / IMM
             return new StackObject(parentWorker, this, "int16", argvSigned, argv);
         } else if (opcode == 0xAF) { // PUSHF / CONST_FLOAT
-            int refFloat = parentWorker.refFloats[argv];
+            int refFloat = dereferencedArg != null ? dereferencedArg : parentWorker.refFloats[argv];
             StackObject stackObject = new StackObject(parentWorker, this, "float", refFloat, refFloat);
             stackObject.referenceIndex = argv;
             return stackObject;
@@ -478,53 +560,12 @@ public class ScriptInstruction {
         return params;
     }
 
-    private ScriptFunc getAndTypeFuncCall(int idx, List<StackObject> params) {
-        ScriptFunc func = ScriptFuncLib.FFX.get(idx, params);
+    private ScriptFunc getFunc(List<StackObject> params) {
+        ScriptFunc func = ScriptFuncLib.FFX.get(argv, params);
         if (func == null) {
-            func = new ScriptFunc("Unknown:" + StringHelper.formatHex4(idx), "unknown", null, false);
-        }
-        List<ScriptField> inputs = func.inputs;
-        if (inputs != null && !inputs.isEmpty() && !params.isEmpty()) {
-            int len = Math.min(inputs.size(), params.size());
-            for (int i = 0; i < len; i++) {
-                typed(params.get(i), inputs.get(i).type);
-            }
+            func = new ScriptFunc("Unknown:" + StringHelper.formatHex4(argv), "unknown", null, false);
         }
         return func;
-    }
-
-    public static boolean hasOutput(int opcode) {
-        if (opcode >= 0x01 && opcode <= 0x1A) {
-            return true;
-        } else if (opcode == 0x1C) { // OPBNOT / NOT
-            return true;
-        } else if (opcode == 0x26) { // PUSHA / GET_RETURN_VALUE
-            return true;
-        } else if (opcode == 0x28) { // PUSHX / GET_TEST
-            return true;
-        } else if (opcode == 0x29) { // PUSHY / GET_CASE
-            return true;
-        } else if (opcode == 0x2B) { // REPUSH / COPY
-            return true;
-        } else if (opcode >= 0x36 && opcode <= 0x39) { // REQ / SIG_NOACK
-            return true;
-        } else if (opcode == 0x46) { // TREQ
-            return true;
-        } else if (opcode >= 0x67 && opcode <= 0x74) { // PUSHI0..3 / GET_INT
-            return true;
-        } else if (opcode == 0x9F) { // PUSHV / GET_DATUM
-            return true;
-        } else if (opcode == 0xA2) { // PUSHAR / GET_DATUM_INDEX
-            return true;
-        } else if (opcode == 0xA7) { // PUSHARP / GET_DATUM_DESC
-            return true;
-        } else if (opcode >= 0xAD && opcode <= 0xAF) { // PUSHI / CONST_INT
-            return true;
-        } else if (opcode == 0xB5) { // CALL / FUNC_RET
-            return true;
-        } else { // SYSTEM
-            return false;
-        }
     }
 
     protected String resolveType(ScriptState state, StackObject obj) {
@@ -559,6 +600,14 @@ public class ScriptInstruction {
     public String getVariableType(int index) {
         if (parentWorker.variableDeclarations != null && index >= 0 && index < parentWorker.variableDeclarations.length) {
             return parentWorker.variableDeclarations[index].getType();
+        }
+        addWarning("Variable index " + StringHelper.formatHex2(index) + " out of bounds!");
+        return "unknown";
+    }
+
+    public String getVariableIndexType(int index) {
+        if (parentWorker.variableDeclarations != null && index >= 0 && index < parentWorker.variableDeclarations.length) {
+            return parentWorker.variableDeclarations[index].getArrayIndexType();
         }
         addWarning("Variable index " + StringHelper.formatHex2(index) + " out of bounds!");
         return "unknown";

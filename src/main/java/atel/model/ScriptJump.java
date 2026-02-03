@@ -49,13 +49,6 @@ public class ScriptJump {
         return getLabel() + " (" + StringHelper.formatHex4(addr) + ")";
     }
 
-    public List<ScriptInstruction> toInstructionList() {
-        List<ScriptInstruction> list = new ArrayList<>();
-        List<ScriptLine> lines = getLines();
-        lines.forEach(line -> list.addAll(line.instructions));
-        return list;
-    }
-
     public List<ScriptLine> getLines() {
         List<ScriptLine> list = new ArrayList<>();
         Stack<ScriptLine> linesToCheck = new Stack<>();
@@ -65,6 +58,9 @@ public class ScriptJump {
             ScriptLine cursor = linesToCheck.pop();
             while (cursor.predecessor != null && !list.contains(cursor.predecessor)) {
                 cursor = cursor.predecessor;
+            }
+            while (cursor.successor != null && cursor.incomingJumps.isEmpty()) {
+                cursor = cursor.successor;
             }
             while (cursor != null && !list.contains(cursor)) {
                 if (OPTIMIZE_REDUNDANT_B0_INSTRUCTIONS && lastLine != null && !lastLine.continues() && lastLine.branch != null && cursor.equals(lastLine.branch.targetLine)) {

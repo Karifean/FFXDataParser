@@ -6,6 +6,7 @@ import atel.EventFile;
 import atel.MonsterFile;
 import atel.model.ScriptConstants;
 import atel.model.ScriptFuncLib;
+import atel.model.ScriptOpcode;
 import model.*;
 import model.spheregrid.SphereGridLayoutDataObject;
 import model.spheregrid.SphereGridNodeTypeDataObject;
@@ -61,8 +62,8 @@ public class DataReadingManager {
     public static void initializeInternals() {
         CHARSETS.forEach((charset) -> prepareCharset(charset));
         LOCALIZATIONS.forEach((key, value) -> prepareStringMacros(getLocalizationRoot(key) + "menu/macrodic.dcp", key, false));
-        ScriptConstants.staticInitialize();
         ScriptConstants.FFX.initialize();
+        ScriptOpcode.initialize();
         ScriptFuncLib.FFX.initialize();
     }
 

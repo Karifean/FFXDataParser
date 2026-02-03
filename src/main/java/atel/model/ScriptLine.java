@@ -27,12 +27,12 @@ public class ScriptLine {
 
     private boolean malformed = false;
 
-    public ScriptLine(ScriptWorker parentWorker, int offset, List<ScriptInstruction> instructions, ScriptInstruction lineEnder, List<ScriptJump> incomingJumps) {
+    public ScriptLine(ScriptWorker parentWorker, int offset, List<ScriptInstruction> instructions, List<ScriptJump> incomingJumps) {
         this.parentWorker = parentWorker;
         this.parentScript = parentWorker != null ? parentWorker.parentScript : null;
         this.offset = offset;
         this.instructions = instructions != null ? new ArrayList<>(instructions) : new ArrayList<>();
-        this.lineEnder = lineEnder;
+        this.lineEnder = instructions != null && !instructions.isEmpty() ? instructions.getLast() : null;
         this.incomingJumps = new ArrayList<>(incomingJumps);
         if (instructions != null && !instructions.isEmpty()) {
             instructions.forEach(ins -> ins.setParentLine(this));
@@ -84,7 +84,57 @@ public class ScriptLine {
         if (lineEnder.opcode == 0xD8 && lineEnder.argv == 0x5F) {
             return false;
         }
-        return !ScriptConstants.OPCODES_UNCONTINUING.contains(lineEnder.opcode);
+        return ScriptOpcode.OPCODES[lineEnder.opcode].continues;
+    }
+
+    public void changeInstructionOpcode(ScriptInstruction ins, int opcode, int argv) {
+        int index = instructions.indexOf(ins);
+        if (index < 0) {
+            throw new IllegalArgumentException("Cannot find instruction " + ins);
+        }
+        boolean wasClone = ins.opcode == 0x2B;
+        boolean isClone = opcode == 0x2B;
+        int oldStackPops = ins.getStackPops();
+        ins.setOpcode(opcode, argv);
+        int newStackPops = ins.getStackPops();
+        if (wasClone && !isClone) {
+            ScriptInstruction newInstruction = new ScriptInstruction(-1, 0xAE, 0, 0);
+            newInstruction.setParentLine(this);
+            instructions.add(index + 1, newInstruction);
+        } else if (isClone && !wasClone) {
+            newStackPops--;
+        }
+        adaptToStackPopsChange(index, newStackPops - oldStackPops);
+    }
+
+    public void changeInstructionArgv(ScriptInstruction ins, int argv) {
+        int index = instructions.indexOf(ins);
+        if (index < 0) {
+            throw new IllegalArgumentException("Cannot find instruction " + ins);
+        }
+        int oldStackPops = ins.getStackPops();
+        ins.setArgv(argv);
+        int newStackPops = ins.getStackPops();
+        adaptToStackPopsChange(index, newStackPops - oldStackPops);
+    }
+
+    private void adaptToStackPopsChange(int instructionIndex, int diff) {
+        System.out.println("adaptToStackPopsChange diff=" + diff);
+        if (diff == 0) {
+            return;
+        }
+        if (diff > 0) {
+            for (int i = 0; i < diff; i++) {
+                ScriptInstruction newInstruction = new ScriptInstruction(-1, 0xAE, 0, 0);
+                newInstruction.setParentLine(this);
+                instructions.add(instructionIndex, newInstruction);
+            }
+        } else {
+            for (int i = 0; i < -diff; i++) {
+                instructions.remove(instructionIndex - 1);
+            }
+        }
+        setUpInputs();
     }
 
     public void setInstructions(List<ScriptInstruction> instructions, ScriptLine nextInList) {

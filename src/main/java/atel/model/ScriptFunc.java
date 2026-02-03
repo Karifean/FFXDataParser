@@ -4,10 +4,8 @@ import main.StringHelper;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Function;
 
-public class ScriptFunc extends ScriptField {
-    public List<ScriptField> inputs;
+public class ScriptFunc extends ScriptOpcode {
     public int funcspace;
 
     public ScriptFunc(String name, String type, String internalName, boolean brackets) {
@@ -26,12 +24,8 @@ public class ScriptFunc extends ScriptField {
     }
 
     public ScriptFunc(ScriptField... inputs) {
-        super(null, "unknown");
+        super(null, "unknown", null);
         this.inputs = List.of(inputs);
-    }
-
-    public String getType(List<StackObject> params) {
-        return type;
     }
 
     @Override
@@ -46,6 +40,14 @@ public class ScriptFunc extends ScriptField {
             return groupStr + getHexIndex();
         }
         return groupStr + super.toString();
+    }
+
+    public String getOptionLabel() {
+        String hexIndex = getHexIndex();
+        if (isNameless()) {
+            return hexIndex;
+        }
+        return hexIndex + ": " + getLabel();
     }
 
     public String callB5(List<StackObject> params) {
@@ -77,15 +79,5 @@ public class ScriptFunc extends ScriptField {
 
     protected boolean isNameless() {
         return (name == null || name.isEmpty()) && (internalName == null || internalName.isEmpty());
-    }
-
-    public StackObject getTypedParam(int index, List<StackObject> params, List<StackObject> earlierParams) {
-        StackObject obj = params.get(index);
-        String paramType = inputs.get(index).type;
-        boolean doNotRetype = obj == null || obj.expression || "unknown".equals(paramType) || ("int".equals(paramType) && (obj.type.startsWith("int") || obj.type.startsWith("uint")));
-        if (doNotRetype) {
-            return obj;
-        }
-        return new StackObject(paramType, obj);
     }
 }

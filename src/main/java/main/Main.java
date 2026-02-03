@@ -11,7 +11,6 @@ import reading.BytesHelper;
 import reading.FileAccessorWithMods;
 
 import java.util.*;
-import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import static main.DataReadingManager.*;
@@ -422,7 +421,7 @@ public class Main {
                 ScriptJump newEntryPoint = new ScriptJump(worker, offset, entryPointList.size(), true);
                 ScriptInstruction noopInstruction = new ScriptInstruction(offset, 0x00, count);
                 ScriptInstruction endInstruction = new ScriptInstruction(offset + count, 0x3C);
-                newEntryPoint.targetLine = new ScriptLine(worker, offset, List.of(noopInstruction, endInstruction), endInstruction, List.of(newEntryPoint));
+                newEntryPoint.targetLine = new ScriptLine(worker, offset, List.of(noopInstruction, endInstruction), List.of(newEntryPoint));
                 entryPointList.add(newEntryPoint);
                 if (eventFileToSpace != null) {
                     System.out.println("Added entry point " + newEntryPoint.getLabel() + " with " + count + " bytes of 00 to event " + id);
