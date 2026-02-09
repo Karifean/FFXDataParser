@@ -53,6 +53,15 @@ public class ScriptInstruction {
         this.argvSigned = argv < 0x8000 ? argv : (argv - 0x10000);
     }
 
+    public ScriptInstruction(ScriptLine line, int opcode, int argv) {
+        this.offset = -1;
+        this.opcode = opcode;
+        this.hasArgs = ScriptOpcode.OPCODES[opcode].hasArgs;
+        this.length = hasArgs ? 3 : 1;
+        setArgv(argv);
+        setParentLine(line);
+    }
+
     public void setParentLine(ScriptLine line) {
         this.parentLine = line;
         this.parentWorker = line.parentWorker;
@@ -66,6 +75,10 @@ public class ScriptInstruction {
         }
         if (opcode == 0xAF && dereferencedArg != null) {
             int index = BytesHelper.findOrAppend(refFloats, dereferencedArg);
+            setArgv(index);
+        }
+        if (((opcode >= 0x9F && opcode <= 0xA4) || opcode == 0xA7) && dereferencedVar != null) {
+            int index = BytesHelper.findOrAppend(variableDeclarations, dereferencedVar);
             setArgv(index);
         }
         this.offset = newOffset;
@@ -86,7 +99,7 @@ public class ScriptInstruction {
 
     public void setArgv(int newArgv) {
         argv =  newArgv;
-        argvSigned = newArgv;
+        argvSigned = newArgv < 0x8000 ? newArgv : (newArgv - 0x10000);
         arg1 =  newArgv & 0xFF;
         arg2 = (newArgv & 0xFF00) >> 8;
     }
@@ -147,7 +160,7 @@ public class ScriptInstruction {
     }
 
     public Integer getBranchIndex() {
-        if (ScriptOpcode.OPCODES[opcode].branches) {
+        if (ScriptOpcode.OPCODES[opcode] != null && ScriptOpcode.OPCODES[opcode].branches) {
             return argv;
         } else {
             return null;
@@ -155,14 +168,18 @@ public class ScriptInstruction {
     }
 
     public int getStackPops() {
-        if (ScriptOpcode.OPCODES[opcode].isCall) {
+        return getStackPops(opcode, argv);
+    }
+
+    public static int getStackPops(int opcode, int argv) {
+        ScriptOpcode opcodeObj = ScriptOpcode.OPCODES[opcode];
+        if (opcodeObj == null) {
+            return 0;
+        } else if (opcodeObj.isCall) {
             ScriptFunc func = ScriptFuncLib.FFX.get(argv, null);
-            if (func == null) {
-                return 0;
-            }
-            return func.inputs != null ? func.inputs.size() : 0;
+            return func != null && func.inputs != null ? func.inputs.size() : 0;
         } else {
-            return ScriptOpcode.OPCODES[opcode].inputs.size();
+            return opcodeObj.inputs.size();
         }
     }
 
@@ -174,6 +191,10 @@ public class ScriptInstruction {
     }
 
     public String getInputType(ScriptState state, int index) {
+        return getInputType(state, index, false);
+    }
+
+    public String getInputType(ScriptState state, int index, boolean preventRecursion) {
         if (index < 0 || index >= getStackPops()) {
             return null;
         }
@@ -183,16 +204,42 @@ public class ScriptInstruction {
             if (func == null || func.inputs == null) {
                 return "unknown";
             }
-            return func.inputs.get(index).type;
+            return func.getInputType(index, inputs);
         }
-        if (opcode == 0xA0 || opcode == 0xA1 || opcode == 0xA3 || opcode == 0xA4 || opcode == 0xA7) {
-            if (index == 0 && (opcode == 0xA3 || opcode == 0xA4 || opcode == 0xA7)) {
+        if (opcode == 0xA2 || opcode == 0xA7) {
+            return getVariableIndexType(argv);
+        }
+        if (opcode == 0xA0 || opcode == 0xA1 || opcode == 0xA3 || opcode == 0xA4) {
+            if (index == 0 && (opcode == 0xA3 || opcode == 0xA4)) {
                 return getVariableIndexType(argv);
             } else {
                 return getVariableType(argv);
             }
         }
-        return op.inputs.get(index).type;
+        if (!preventRecursion && (opcode >= 0x03 && opcode <= 0x05)) {
+            int other = index == 0 ? 1 : 0;
+            String otherType = inputs.get(other).getOutputType(state);
+            System.out.println("check otherType=" + otherType);
+            if (otherType.startsWith("bitfield") || otherType.endsWith("Bitfield")) {
+                return otherType;
+            }
+        }
+        String declaredInputType = op.inputs.get(index).type;
+        if (!declaredInputType.equals("unknown")) {
+            return declaredInputType;
+        }
+        if (opcode == 0x26) {
+            return state.rAType;
+        } else if (opcode == 0x28) {
+            return state.rXType;
+        } else if (opcode == 0x29) {
+            return state.rYType;
+        }
+        if (!preventRecursion && (opcode == 0x06 || opcode == 0x07)) {
+            int other = index == 0 ? 1 : 0;
+            return inputs.get(other).getOutputType(state);
+        }
+        return "int";
     }
 
     public String getInputLabel(int index) {
@@ -222,7 +269,8 @@ public class ScriptInstruction {
         if (opcode == 0x2B) {
             stack.push(inputs.get(0));
         }
-        String outputType = ScriptOpcode.OPCODES[opcode].type;
+        ScriptOpcode opcodeObj = ScriptOpcode.OPCODES[opcode];
+        String outputType = opcodeObj != null ? opcodeObj.type : null;
         if (outputType != null && !"void".equals(outputType)) {
             stack.push(this);
         }
@@ -598,16 +646,18 @@ public class ScriptInstruction {
     }
 
     public String getVariableType(int index) {
-        if (parentWorker.variableDeclarations != null && index >= 0 && index < parentWorker.variableDeclarations.length) {
-            return parentWorker.variableDeclarations[index].getType();
+        ScriptVariable variable = parentWorker.getVariable(index);
+        if (variable != null) {
+            return variable.getType();
         }
         addWarning("Variable index " + StringHelper.formatHex2(index) + " out of bounds!");
         return "unknown";
     }
 
     public String getVariableIndexType(int index) {
-        if (parentWorker.variableDeclarations != null && index >= 0 && index < parentWorker.variableDeclarations.length) {
-            return parentWorker.variableDeclarations[index].getArrayIndexType();
+        ScriptVariable variable = parentWorker.getVariable(index);
+        if (variable != null) {
+            return variable.getArrayIndexType();
         }
         addWarning("Variable index " + StringHelper.formatHex2(index) + " out of bounds!");
         return "unknown";
@@ -618,8 +668,9 @@ public class ScriptInstruction {
     }
 
     public String getVariableLabel(int index) {
-        if (parentWorker.variableDeclarations != null && index >= 0 && index < parentWorker.variableDeclarations.length) {
-            return parentWorker.variableDeclarations[index].getLabel(parentWorker);
+        ScriptVariable variable = parentWorker.getVariable(index);
+        if (variable != null) {
+            return variable.getLabel(parentWorker);
         }
         String hexIdx = StringHelper.formatHex2(index);
         addWarning("Variable index " + hexIdx + " out of bounds!");
@@ -629,8 +680,9 @@ public class ScriptInstruction {
     private String ensureVariableValidWithArray(ScriptState state, int index, StackObject p1) {
         String varLabel = getVariableLabel(index);
         String indexType = resolveType(state, p1);
-        if (isWeakType(indexType) && (parentWorker.variableDeclarations != null && index >= 0 && index < parentWorker.variableDeclarations.length)) {
-            indexType = parentWorker.variableDeclarations[index].getArrayIndexType();
+        ScriptVariable variable = parentWorker.getVariable(index);
+        if (isWeakType(indexType) && variable != null) {
+            indexType = variable.getArrayIndexType();
         }
         String arrayIndex = !p1.expression && isWeakType(indexType) ? ""+p1.valueSigned : typed(p1, indexType);
         return varLabel + '[' + arrayIndex + ']';

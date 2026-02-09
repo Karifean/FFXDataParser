@@ -9,7 +9,7 @@ import java.util.stream.Stream;
 public class FieldString {
 
     public static List<FieldString> fromStringData(int[] bytes, boolean print, String charset) {
-        if (bytes == null || bytes.length <= 0) {
+        if (bytes == null || bytes.length <= 1) {
             return new ArrayList<>();
         }
         int first = bytes[0x00] + bytes[0x01] * 0x100;

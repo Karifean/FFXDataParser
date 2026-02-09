@@ -92,7 +92,7 @@ public class MonsterStatDataObject implements Nameable, Writable, Localized<Mons
 
     int extraStatusImmunities;
 
-    int[] abilityList;
+    public int[] commandList;
 
     public int forcedAction;
     public int monsterIdx;
@@ -244,9 +244,9 @@ public class MonsterStatDataObject implements Nameable, Writable, Localized<Mons
         autoStatusesExtra = read2Bytes(bytes, 0x4C);
         extraStatusImmunities = read2Bytes(bytes, 0x4E);
 
-        abilityList = new int[16];
+        commandList = new int[16];
         for (int i = 0; i < 16; i++) {
-            abilityList[i] = read2Bytes(bytes, 0x50 + i * 2);
+            commandList[i] = read2Bytes(bytes, 0x50 + i * 2);
         }
 
         forcedAction = read2Bytes(bytes, 0x70);
@@ -391,7 +391,7 @@ public class MonsterStatDataObject implements Nameable, Writable, Localized<Mons
         write2Bytes(array, 0x4E, extraStatusImmunities);
 
         for (int i = 0; i < 16; i++) {
-            write2Bytes(array, 0x50 + i * 2, abilityList[i]);
+            write2Bytes(array, 0x50 + i * 2, commandList[i]);
         }
 
         write2Bytes(array, 0x70, forcedAction);
@@ -485,7 +485,7 @@ public class MonsterStatDataObject implements Nameable, Writable, Localized<Mons
         list.add("Poison Damage=" + poisonDamage + "%");
         list.add(autoBuffs());
         List<String> abilities = new ArrayList<>();
-        for (int skill : abilityList) {
+        for (int skill : commandList) {
             if (skill > 0) {
                 abilities.add(asMove(skill));
             }
@@ -501,7 +501,7 @@ public class MonsterStatDataObject implements Nameable, Writable, Localized<Mons
         list.add("Doom Counter=" + doomCounter);
         list.add("CTB Icon Type=" + StackObject.enumToString("ctbIconType", ctbIconType));
         if (monsterArenaIdx != 0xFF) {
-            list.add("Captured Monster Index=" + monsterArenaIdx + " [" + StringHelper.formatHex2(monsterArenaIdx) + "h]");
+            list.add("Captured Monster Index=" + StringHelper.hex2WithSuffix(monsterArenaIdx));
         } else {
             list.add("Cannot be Captured");
         }

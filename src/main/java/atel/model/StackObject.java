@@ -213,16 +213,7 @@ public class StackObject {
             if (valueSigned == 0) {
                 return enumValue.toString();
             }
-            String filePrefix = switch (valueSigned >> 12) {
-                case 0 -> "pc/c";
-                case 1 -> "mon/m";
-                case 2 -> "npc/n";
-                case 3 -> "sum/s";
-                case 4 -> "wep/w";
-                case 5 -> "obj/f";
-                case 6 -> "skl/k";
-                default -> null;
-            };
+            String filePrefix = getModelFilePrefix(valueSigned);
             if (filePrefix != null) {
                 String enumLabel = enumValue.getName(localization) != null ? " (" + enumValue.getLabel() + ")" : "";
                 return filePrefix + StringHelper.formatDec3(valueSigned & 0x0FFF) + enumLabel + hexSuffix;
@@ -242,6 +233,9 @@ public class StackObject {
                 return "None" + hexSuffix;
             }
             return String.format("magic_%04d", valueSigned) + hexSuffix;
+        }
+        if ("btlScene".equals(type)) {
+            return String.format("btlScene%02X", valueSigned) + hexSuffix;
         }
         if ("blitzTech".equals(type) || "blitzTechP1".equals(type)) {
             return StringHelper.MACRO_LOOKUP.get(0x800 + valueSigned).getLocalizedString(localization) + hexSuffix;
@@ -399,5 +393,18 @@ public class StackObject {
     public static String negatedBitfieldToString(String type, int valueUnsigned) {
         List<ScriptField> bits = negatedBitfieldToList(type, valueUnsigned);
         return negatedBitsToString(bits);
+    }
+
+    public static String getModelFilePrefix(int value) {
+        return switch (value >> 12) {
+            case 0 -> "pc/c";
+            case 1 -> "mon/m";
+            case 2 -> "npc/n";
+            case 3 -> "sum/s";
+            case 4 -> "wep/w";
+            case 5 -> "obj/f";
+            case 6 -> "skl/k";
+            default -> null;
+        };
     }
 }

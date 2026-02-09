@@ -42,8 +42,8 @@ public class ScriptOpcode extends ScriptField {
         putOpcode(0x16, "Multiply", "int", "OPMUL", "%s * %s", p("a", "int"), p("b", "int"));
         putOpcode(0x17, "Divide", "int", "OPDIV", "%s / %s", p("a", "int"), p("b", "int"));
         putOpcode(0x18, "Modulo", "int", "OPMOD", "%s mod %s", p("a", "int"), p("b", "int"));
-        putOpcode(0x19, "NOT", "bool", "OPNOT", "!%s", p("a", "bool"));
-        putOpcode(0x1A, "Negate", "int", "OPUMINUS", "-%s", p("a", "int"));
+        putOpcode(0x19, "NOT", "bool", "OPNOT", "!%s", p("cond", "bool"));
+        putOpcode(0x1A, "Negate", "int", "OPUMINUS", "-%s", p("int", "int"));
         putOpcode(0x1B, "OPFIXADRS");
         putOpcode(0x1C, "bitwise NOT", "int", "OPBNOT", "~%s", p("a", "int"));
         putOpcode(0x1D, "LABEL");
@@ -241,8 +241,8 @@ public class ScriptOpcode extends ScriptField {
             endChoices.add(opcodeChoice(0x3C, "Return", action));
             endChoices.add(opcodeChoice(0x40, "Halt", action));
             endChoices.add(opcodeChoice(0x54, "Direct Return", action));
-            endChoices.add(opcodeChoice(0x3D, "RETN", action));
-            endChoices.add(opcodeChoice(0x3E, "RETT", action));
+            // endChoices.add(opcodeChoice(0x3D, "RETN", action));
+            // endChoices.add(opcodeChoice(0x3E, "RETT", action));
             endChoices.add(opcodeChoice(0x3F, "RETTN", action));
             Menu setTempIRoot = opcodeChoice("Set temp integer");
             assigmentChoices.add(setTempIRoot);
@@ -280,8 +280,8 @@ public class ScriptOpcode extends ScriptField {
             branchChoices.add(opcodeChoice(0xD6, "Jump if condition met", action));
             branchChoices.add(opcodeChoice(0xD7, "Jump if condition not met", action));
             branchChoices.add(opcodeChoice(0xB3, "Jump to subroutine (worker)", action));
-            branchChoices.add(opcodeChoice(0xB1, "Jump if last condition met", action));
-            branchChoices.add(opcodeChoice(0xB2, "Jump if last condition not met", action));
+            // branchChoices.add(opcodeChoice(0xB1, "Jump if last condition met", action));
+            // branchChoices.add(opcodeChoice(0xB2, "Jump if last condition not met", action));
             voidRootChoices.add(opcodeChoice(0xF6, "System (Marker?)", action));
             return voidRoot;
         }
@@ -295,7 +295,9 @@ public class ScriptOpcode extends ScriptField {
         getValueChildren.add(opcodeChoice(0xA2, "Get array item", action));
         getValueChildren.add(opcodeChoice(0x29, "case (rY)", action));
         getValueChildren.add(opcodeChoice(-2, "Convert from Integer", action));
-        getValueChildren.add(opcodeChoice(0x2B, "Clone", action));
+        MenuItem cloneItem = opcodeChoice(0x2B, "Clone", action);
+        cloneItem.setDisable(true);
+        getValueChildren.add(cloneItem);
 
         if (type.equals("bool")) {
             MenuButton boolRoot = new MenuButton();
@@ -366,7 +368,9 @@ public class ScriptOpcode extends ScriptField {
             tempIChoices.add(opcodeChoice(0x68, "Temp integer I1", action));
             tempIChoices.add(opcodeChoice(0x69, "Temp integer I2", action));
             tempIChoices.add(opcodeChoice(0x6A, "Temp integer I3", action));
-            intRootChoices.add(opcodeChoice(0x2B, "Clone", action));
+            MenuItem clone = opcodeChoice(0x2B, "Clone", action);
+            clone.setDisable(true);
+            intRootChoices.add(clone);
             intRootChoices.add(opcodeChoice(-2, "Convert", action));
             return intRoot;
         }
@@ -406,7 +410,7 @@ public class ScriptOpcode extends ScriptField {
         if (type.equals("pointer")) {
             MenuButton pointerRoot = new MenuButton();
             ObservableList<MenuItem> pointerRootChoices = pointerRoot.getItems();
-            pointerRootChoices.add(opcodeChoice(0x27, "Get array pointer", action));
+            pointerRootChoices.add(opcodeChoice(0xA7, "Get array pointer", action));
             MenuItem valueAE = opcodeChoice(0xAE, "Value", action);
             pointerRootChoices.add(valueAE);
             pointerRoot.setText(valueAE.getText());

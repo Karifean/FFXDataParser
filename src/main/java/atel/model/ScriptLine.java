@@ -81,6 +81,9 @@ public class ScriptLine {
     }
 
     public boolean continues() {
+        if (lineEnder == null || ScriptOpcode.OPCODES[lineEnder.opcode] == null) {
+            return false;
+        }
         if (lineEnder.opcode == 0xD8 && lineEnder.argv == 0x5F) {
             return false;
         }
@@ -98,13 +101,12 @@ public class ScriptLine {
         ins.setOpcode(opcode, argv);
         int newStackPops = ins.getStackPops();
         if (wasClone && !isClone) {
-            ScriptInstruction newInstruction = new ScriptInstruction(-1, 0xAE, 0, 0);
-            newInstruction.setParentLine(this);
+            ScriptInstruction newInstruction = new ScriptInstruction(this, 0xAE, 0);
             instructions.add(index + 1, newInstruction);
         } else if (isClone && !wasClone) {
             newStackPops--;
         }
-        adaptToStackPopsChange(index, newStackPops - oldStackPops);
+        adaptToStackPopsChange(ins, newStackPops - oldStackPops);
     }
 
     public void changeInstructionArgv(ScriptInstruction ins, int argv) {
@@ -115,26 +117,37 @@ public class ScriptLine {
         int oldStackPops = ins.getStackPops();
         ins.setArgv(argv);
         int newStackPops = ins.getStackPops();
-        adaptToStackPopsChange(index, newStackPops - oldStackPops);
+        adaptToStackPopsChange(ins, newStackPops - oldStackPops);
     }
 
-    private void adaptToStackPopsChange(int instructionIndex, int diff) {
+    private void adaptToStackPopsChange(ScriptInstruction ins, int diff) {
+        int instructionIndex = instructions.indexOf(ins);
+        if (instructionIndex < 0) {
+            throw new IllegalArgumentException("Cannot find instruction " + ins);
+        }
         System.out.println("adaptToStackPopsChange diff=" + diff);
         if (diff == 0) {
             return;
         }
         if (diff > 0) {
             for (int i = 0; i < diff; i++) {
-                ScriptInstruction newInstruction = new ScriptInstruction(-1, 0xAE, 0, 0);
-                newInstruction.setParentLine(this);
+                ScriptInstruction newInstruction = new ScriptInstruction(this, 0xAE, 0);
                 instructions.add(instructionIndex, newInstruction);
             }
         } else {
-            for (int i = 0; i < -diff; i++) {
-                instructions.remove(instructionIndex - 1);
+            List<ScriptInstruction> inputsToRemove = ins.inputs.subList(ins.inputs.size() + diff, ins.inputs.size());
+            for (ScriptInstruction inputToRemove : inputsToRemove) {
+                deleteInstruction(inputToRemove);
             }
         }
         setUpInputs();
+    }
+
+    public void deleteInstruction(ScriptInstruction instruction) {
+        if (instruction.opcode != 0x2B) {
+            instruction.inputs.forEach(input -> deleteInstruction(input));
+        }
+        instructions.remove(instruction);
     }
 
     public void setInstructions(List<ScriptInstruction> instructions, ScriptLine nextInList) {
@@ -165,6 +178,12 @@ public class ScriptLine {
             for (ScriptInstruction instruction : instructions) {
                 instruction.setUpInputs(stack);
                 instruction.pushOutput(stack);
+            }
+            if (!stack.isEmpty()) {
+                malformed = true;
+                warnings.add("Malformed (Stack not empty)");
+            } else {
+                malformed = false;
             }
         } catch (EmptyStackException e) {
             malformed = true;

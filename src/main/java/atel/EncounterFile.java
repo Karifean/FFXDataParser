@@ -1,5 +1,6 @@
 package atel;
 
+import atel.model.ScriptConstants;
 import main.DataWritingManager;
 import main.StringHelper;
 import model.BattleAreasPositionsDataObject;
@@ -167,6 +168,17 @@ public class EncounterFile implements Nameable {
         if (writeDeclarations) {
             FileAccessorWithMods.writeStringToMods(path + ".dcl", encounterScript.getDeclarationsAsString());
         }
+    }
+
+    public int getIndex() {
+        String[] split = scriptId.split("_");
+        String map = split[0];
+        Integer baseInt = ScriptConstants.FFX.MAPS_IN_REVERSE.get(map);
+        if (baseInt == null) {
+            return -1;
+        }
+        int enc = split.length > 1 ? Integer.parseInt(split[1]) : 0;
+        return (baseInt << 16) | enc;
     }
 
     public String getName(String localization) {

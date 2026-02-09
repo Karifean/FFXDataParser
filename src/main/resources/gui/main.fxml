@@ -33,6 +33,7 @@
 -->
 
 <?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Accordion?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ListView?>
@@ -44,7 +45,10 @@
 <?import javafx.scene.control.SplitPane?>
 <?import javafx.scene.control.Tab?>
 <?import javafx.scene.control.TabPane?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
 <?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.TitledPane?>
 <?import javafx.scene.control.ToolBar?>
 <?import javafx.scene.control.TreeView?>
 <?import javafx.scene.layout.AnchorPane?>
@@ -53,6 +57,7 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.paint.Color?>
 <?import javafx.scene.text.Font?>
+<?import javafx.scene.text.Text?>
 
 <VBox prefHeight="600.0" prefWidth="900.0" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="gui.GuiMainController">
   <children>
@@ -95,7 +100,7 @@
         </Menu>
       </menus>
     </MenuBar>
-    <SplitPane dividerPositions="0.25111358574610243, 0.6018930957683741" focusTraversable="true" prefHeight="-1.0" prefWidth="-1.0" VBox.vgrow="ALWAYS">
+    <SplitPane dividerPositions="0.2, 0.4" focusTraversable="true" prefHeight="-1.0" prefWidth="-1.0" VBox.vgrow="ALWAYS">
       <items>
         <AnchorPane>
                <children>
@@ -185,7 +190,6 @@
                                     <ToolBar prefHeight="40.0" prefWidth="200.0">
                                       <items>
                                         <Button mnemonicParsing="false" onAction="#onSave" text="Save" />
-                                          <Button layoutX="10.0" layoutY="12.0" mnemonicParsing="false" onAction="#onAddWorker" text="Add Worker" />
                                       </items>
                                     </ToolBar>
                                  </children>
@@ -196,94 +200,194 @@
                   </ScrollPane>
         </children>
       </AnchorPane>
-        <AnchorPane>
+        <AnchorPane fx:id="rightPane">
           <children>
-                  <ScrollPane fitToHeight="true" fitToWidth="true" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
-                    <content>
-                      <AnchorPane minHeight="0.0" minWidth="0.0">
-                           <children>
-                              <VBox prefHeight="200.0" prefWidth="100.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                  <VBox fx:id="atelCodeDetail" prefHeight="200.0" prefWidth="100.0" visible="false" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                     <children>
+                        <SplitPane dividerPositions="0.5096065873741995" orientation="VERTICAL" VBox.vgrow="ALWAYS">
+                          <items>
+                            <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="100.0" prefWidth="160.0">
                                  <children>
-                                    <SplitPane dividerPositions="0.5096065873741995" orientation="VERTICAL" VBox.vgrow="ALWAYS">
-                                      <items>
-                                        <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="100.0" prefWidth="160.0">
+                                    <VBox AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                                       <children>
+                                          <ListView fx:id="scriptLineList" VBox.vgrow="ALWAYS" />
+                                          <ToolBar prefHeight="40.0" prefWidth="200.0">
+                                            <items>
+                                              <Button mnemonicParsing="false" onAction="#onAddLine" text="+" />
+                                                <Button layoutX="10.0" layoutY="12.0" mnemonicParsing="false" onAction="#onRemoveLine" text="-" />
+                                            </items>
+                                          </ToolBar>
+                                       </children>
+                                    </VBox>
+                                 </children>
+                              </AnchorPane>
+                            <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="100.0" prefWidth="160.0">
+                                 <children>
+                                    <VBox AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                                       <children>
+                                          <VBox fx:id="lineGuiVbox" VBox.vgrow="ALWAYS">
                                              <children>
-                                                <VBox AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                                                <HBox fx:id="branchHbox" prefWidth="200.0">
                                                    <children>
-                                                      <ListView fx:id="scriptLineList" VBox.vgrow="ALWAYS" />
-                                                      <ToolBar prefHeight="40.0" prefWidth="200.0">
-                                                        <items>
-                                                          <Button mnemonicParsing="false" onAction="#onAddLine" text="+" />
-                                                            <Button layoutX="10.0" layoutY="12.0" mnemonicParsing="false" onAction="#onRemoveLine" text="-" />
-                                                        </items>
-                                                      </ToolBar>
-                                                   </children>
-                                                </VBox>
-                                             </children>
-                                          </AnchorPane>
-                                        <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="100.0" prefWidth="160.0">
-                                             <children>
-                                                <VBox AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
-                                                   <children>
-                                                      <ScrollPane fitToHeight="true" fitToWidth="true" prefHeight="200.0" prefWidth="200.0" VBox.vgrow="ALWAYS">
-                                                        <content>
-                                                          <AnchorPane minHeight="0.0" minWidth="0.0">
-                                                               <children>
-                                                                  <VBox fx:id="lineGuiVbox" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
-                                                               </children>
-                                                            </AnchorPane>
-                                                        </content>
-                                                      </ScrollPane>
-                                                      <HBox prefWidth="200.0">
+                                                      <Label disable="true" minHeight="26.0" minWidth="45.0" prefHeight="26.0" prefWidth="45.0" text="To Line" HBox.hgrow="NEVER">
+                                                         <HBox.margin>
+                                                            <Insets left="10.0" />
+                                                         </HBox.margin>
+                                                         <padding>
+                                                            <Insets bottom="4.0" top="4.0" />
+                                                         </padding>
+                                                      </Label>
+                                                      <TextField fx:id="branchLineInput" disable="true" minHeight="26.0" minWidth="60.0" onAction="#onBranchLineInputAction" onKeyTyped="#onBranchLineInputTyped" prefHeight="26.0" prefWidth="60.0" promptText="Line #" HBox.hgrow="NEVER">
+                                                         <HBox.margin>
+                                                            <Insets />
+                                                         </HBox.margin>
+                                                      </TextField>
+                                                      <Button fx:id="branchLineButton" disable="true" minHeight="26.0" minWidth="52.0" mnemonicParsing="false" onAction="#onChooseBranchTarget" prefHeight="26.0" prefWidth="52.0" text="Select" HBox.hgrow="NEVER">
+                                                         <HBox.margin>
+                                                            <Insets left="10.0" right="10.0" />
+                                                         </HBox.margin>
+                                                      </Button>
+                                                      <Pane HBox.hgrow="ALWAYS">
                                                          <children>
-                                                            <Label disable="true" minHeight="26.0" minWidth="80.0" prefHeight="26.0" prefWidth="80.0" text="Branch Target" HBox.hgrow="NEVER">
-                                                               <HBox.margin>
-                                                                  <Insets />
-                                                               </HBox.margin>
+                                                            <Label fx:id="branchLineLabel" text="None">
                                                                <padding>
                                                                   <Insets bottom="4.0" top="4.0" />
                                                                </padding>
                                                             </Label>
-                                                            <TextField fx:id="branchLineInput" disable="true" onAction="#onBranchLineInputAction" onKeyTyped="#onBranchLineInputTyped" minHeight="26.0" minWidth="60.0" prefHeight="26.0" prefWidth="60.0" promptText="Line #" HBox.hgrow="NEVER">
-                                                               <HBox.margin>
-                                                                  <Insets left="10.0" right="10.0" />
-                                                               </HBox.margin>
-                                                            </TextField>
-                                                            <Pane HBox.hgrow="ALWAYS">
-                                                               <children>
-                                                                  <Label fx:id="branchLineLabel" text="None">
-                                                                     <padding>
-                                                                        <Insets bottom="4.0" top="4.0" />
-                                                                     </padding>
-                                                                  </Label>
-                                                               </children>
-                                                               <HBox.margin>
-                                                                  <Insets left="10.0" right="10.0" />
-                                                               </HBox.margin>
-                                                            </Pane>
-                                                            <Button fx:id="branchLineButton" disable="true" minHeight="26.0" minWidth="52.0" mnemonicParsing="false" onAction="#onChooseBranchTarget" prefHeight="26.0" prefWidth="52.0" text="Select" HBox.hgrow="NEVER" />
                                                          </children>
-                                                      </HBox>
-                                                      <HBox layoutX="10.0" layoutY="10.0" prefWidth="200.0">
-                                                         <children>
-                                                            <TextField fx:id="hexLineInput" disable="true" onAction="#onHexLineInputAction" onKeyTyped="#onHexLineInputTyped" HBox.hgrow="ALWAYS">
-                                                               <font>
-                                                                  <Font name="Courier New" size="10.0" />
-                                                               </font>
-                                                            </TextField>
-                                                         </children>
-                                                      </HBox>
+                                                      </Pane>
                                                    </children>
-                                                </VBox>
+                                                   <VBox.margin>
+                                                      <Insets left="10.0" right="10.0" />
+                                                   </VBox.margin>
+                                                </HBox>
                                              </children>
-                                          </AnchorPane>
-                                      </items>
-                                    </SplitPane>
+                                          </VBox>
+                                          <HBox layoutX="10.0" layoutY="10.0" prefWidth="200.0">
+                                             <children>
+                                                <TextField fx:id="hexLineInput" disable="true" onAction="#onHexLineInputAction" onKeyTyped="#onHexLineInputTyped" HBox.hgrow="ALWAYS">
+                                                   <font>
+                                                      <Font name="Courier New" size="10.0" />
+                                                   </font>
+                                                </TextField>
+                                             </children>
+                                          </HBox>
+                                       </children>
+                                    </VBox>
                                  </children>
-                              </VBox>
-                           </children></AnchorPane>
-                    </content>
-                  </ScrollPane>
+                              </AnchorPane>
+                          </items>
+                        </SplitPane>
+                     </children>
+                  </VBox>
+                  <VBox fx:id="workerGeneralDetail" prefHeight="200.0" prefWidth="100.0" visible="false" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                     <children>
+                        <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Worker General">
+                           <VBox.margin>
+                              <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+                           </VBox.margin>
+                        </Text>
+                        <Accordion VBox.vgrow="ALWAYS">
+                          <panes>
+                            <TitledPane animated="false" text="Entry Points">
+                              <content>
+                                <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+                                       <children>
+                                          <VBox prefHeight="200.0" prefWidth="100.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                                             <children>
+                                                <TableView fx:id="tableEntryPoints" prefHeight="200.0" prefWidth="200.0" VBox.vgrow="ALWAYS">
+                                                   <columns>
+                                                      <TableColumn fx:id="tableEntryPointsColumnIndex" editable="false" prefWidth="75.0" sortable="false" text="Index" />
+                                                      <TableColumn fx:id="tableEntryPointsColumnType" editable="false" prefWidth="217.0" sortable="false" text="Type/Purpose" />
+                                                      <TableColumn fx:id="tableEntryPointsColumnDelete" prefWidth="75.0" text="Delete" />
+                                                   </columns>
+                                                </TableView>
+                                                <ToolBar prefHeight="40.0" prefWidth="200.0">
+                                                  <items>
+                                                    <Button mnemonicParsing="false" onAction="#onAddEntryPoint" text="Add Entry Point" />
+                                                  </items>
+                                                </ToolBar>
+                                             </children>
+                                          </VBox>
+                                       </children>
+                                    </AnchorPane>
+                              </content>
+                            </TitledPane>
+                            <TitledPane animated="false" expanded="false" text="Private Data">
+                              <content>
+                                <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0" />
+                              </content>
+                            </TitledPane>
+                          </panes>
+                        </Accordion>
+                     </children>
+                  </VBox>
+                  <VBox fx:id="scriptGeneralDetail" layoutX="30.0" layoutY="60.0" prefHeight="200.0" prefWidth="100.0" visible="false" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                     <children>
+                        <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Script General">
+                           <VBox.margin>
+                              <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+                           </VBox.margin>
+                        </Text>
+                        <Accordion VBox.vgrow="ALWAYS">
+                          <panes>
+                            <TitledPane animated="false" text="Workers">
+                              <content>
+                                <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+                                       <children>
+                                          <VBox prefHeight="200.0" prefWidth="100.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                                             <children>
+                                                <TableView fx:id="tableWorkers" prefHeight="200.0" prefWidth="200.0" VBox.vgrow="ALWAYS">
+                                                  <columns>
+                                                    <TableColumn fx:id="tableWorkersColumnIndex" editable="false" prefWidth="75.0" sortable="false" text="Index" />
+                                                    <TableColumn fx:id="tableWorkersColumnType" editable="false" prefWidth="217.0" sortable="false" text="Type/Purpose" />
+                                                      <TableColumn fx:id="tableWorkersColumnDelete" prefWidth="75.0" text="Delete" />
+                                                  </columns>
+                                                </TableView>
+                                                <ToolBar prefHeight="40.0" prefWidth="200.0">
+                                                  <items>
+                                                    <Button mnemonicParsing="false" onAction="#onAddWorker" text="Add Worker" />
+                                                  </items>
+                                                </ToolBar>
+                                             </children>
+                                          </VBox>
+                                       </children>
+                                    </AnchorPane>
+                              </content>
+                            </TitledPane>
+                            <TitledPane animated="false" expanded="false" text="Variables">
+                              <content>
+                                <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+                                       <children>
+                                          <VBox AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                                             <children>
+                                                <TableView fx:id="tableVariables" prefHeight="200.0" prefWidth="200.0" VBox.vgrow="ALWAYS">
+                                                  <columns>
+                                                    <TableColumn fx:id="tableVariablesColumnIndex" editable="false" prefWidth="51.0" sortable="false" text="Index" />
+                                                    <TableColumn fx:id="tableVariablesColumnLabel" prefWidth="99.0" sortable="false" text="Label" />
+                                                      <TableColumn fx:id="tableVariablesColumnLocation" editable="false" prefWidth="75.0" sortable="false" text="Location" />
+                                                      <TableColumn fx:id="tableVariablesColumnOffset" editable="false" prefWidth="75.0" sortable="false" text="Offset" />
+                                                      <TableColumn fx:id="tableVariablesColumnType" editable="false" prefWidth="75.0" sortable="false" text="Type" />
+                                                      <TableColumn fx:id="tableVariablesColumnFormat" editable="false" prefWidth="75.0" sortable="false" text="Format" />
+                                                      <TableColumn fx:id="tableVariablesColumnArray" editable="false" prefWidth="75.0" sortable="false" text="Array" />
+                                                      <TableColumn fx:id="tableVariablesColumnDelete" editable="false" prefWidth="75.0" sortable="false" text="Delete" />
+                                                  </columns>
+                                                </TableView>
+                                                <ToolBar prefHeight="40.0" prefWidth="200.0">
+                                                  <items>
+                                                    <Button mnemonicParsing="false" onAction="#onAddVariable" text="Add Variable" />
+                                                  </items>
+                                                </ToolBar>
+                                             </children>
+                                          </VBox>
+                                       </children>
+                                    </AnchorPane>
+                              </content>
+                            </TitledPane>
+                          </panes>
+                        </Accordion>
+                     </children>
+                  </VBox>
           </children>
         </AnchorPane>
       </items>

@@ -99,6 +99,22 @@ public class ScriptFuncAccessor extends ScriptFunc {
         return "Set " + callB5(params) + ' ' + write + ' ' + typed;
     }
 
+    @Override
+    public String getInputType(int index, List<ScriptInstruction> instructionInputs) {
+        if (index == valueParamIndex) {
+            ScriptInstruction predParam = instructionInputs.get(predicateParamIndex);
+            ScriptField predicate = fixedPredicate != null ? fixedPredicate : (predParam == null || predParam.opcode != 0xAE) ? null : accessMap.get(predParam.argvSigned);
+            return predicate != null ? predicate.type : "unknown";
+        }
+        if (index == predicateParamIndex) {
+            return predicateType;
+        }
+        if (index == subjectParamIndex) {
+            return subjectType;
+        }
+        return super.getInputType(index, instructionInputs);
+    }
+
     private void setInputs(String subjectType, boolean write, boolean propAsInput, ScriptField[] extras) {
         inputs = new ArrayList<>();
         ScriptField propertyField = new ScriptField("property");

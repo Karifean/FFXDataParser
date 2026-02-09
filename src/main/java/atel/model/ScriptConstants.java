@@ -15,6 +15,7 @@ public class ScriptConstants {
     public String[] FUNCSPACES;
     public static final List<String> INDEX_ENUMS_ONLY = List.of("var", "saveData", "battleVar");
     public final Map<String, Map<Integer, ScriptField>> ENUMERATIONS = new HashMap<>();
+    public final Map<String, Integer> MAPS_IN_REVERSE = new HashMap<>();
 
     private ScriptConstants() {}
 
@@ -252,6 +253,7 @@ public class ScriptConstants {
         putEnum("battleWorkerType", 0x0A, "MagicCameraHandler-Monmagic2");
 
         putEnum("battleWorkerSlot", 0x00, "?BattleCameras");
+        putEnum("battleWorkerSlot", 0x04, "?MonsterMotionHandles1");
         for (int i = 0; i <= 0x11; i++) {
             String chr = StackObject.enumToScriptField("playerChar", i).getName();
             if (i >= 0x0E) {
@@ -263,12 +265,15 @@ public class ScriptConstants {
         putEnum("battleWorkerSlot", 0x3D, "MonsterAi");
         putEnum("battleWorkerSlot", 0x3E, "BtlScene0-7");
         putEnum("battleWorkerSlot", 0x3F, "BtlScene8+ (Voice)");
+        putEnum("battleWorkerSlot", 0x40, "?MonsterMotionHandles2");
         for (int i = 0; i < 3; i++) {
             putEnum("battleWorkerSlot", 0x41 + i, "MagicCam3-" + i);
             putEnum("battleWorkerSlot", 0x44 + i, "MagicCam2-" + i);
             putEnum("battleWorkerSlot", 0x47 + i, "MagicCam4-" + i);
             putEnum("battleWorkerSlot", 0x4A + i, "MagicCam6-" + i);
         }
+        putEnum("battleWorkerSlot", 0x6C, "?StartEndHooks1");
+        putEnum("battleWorkerSlot", 0x89, "?StartEndHooks2");
 
         putEnum("combatHandlerTag", 0x00, "onTurn");
         putEnum("combatHandlerTag", 0x01, "preTurn");
@@ -557,6 +562,9 @@ public class ScriptConstants {
         putMaps(0x024E, "omeg", 1);
         putMaps(0x0259, "zzzz", 3);
         putMaps(0x0262, "tori", 3);
+        for (Map.Entry<Integer, ScriptField> mapEntry : getEnumMap("map").entrySet()) {
+            MAPS_IN_REVERSE.put(mapEntry.getValue().name, mapEntry.getKey());
+        }
 
         putEnum("sfx", 0x80000005, "?NewGameChime");
         putEnum("sfx", 0x80000009, "TreasureChestOpening");
@@ -800,7 +808,7 @@ public class ScriptConstants {
         putEnum("btlChr", -2, "ActiveChrs", "CHR_ACTIVE"); // 0xFFFE
         putEnum("btlChr", -1, "Actor:Null", "CHR_NOP"); // 0xFFFF
 
-        for (int i = 0; i <= 0x0013; i++) {
+        for (int i = 0; i <= 0x13; i++) {
             getEnumMap("ctbIconType").put(i, getEnumMap("playerChar").get(i));
         }
         putEnum("ctbIconType", 0x14, "Monster");

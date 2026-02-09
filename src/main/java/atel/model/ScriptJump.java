@@ -17,9 +17,9 @@ public class ScriptJump {
     public int jumpIndex;
     public final boolean isEntryPoint;
 
-    public String rAType;
-    public String rXType;
-    public String rYType;
+    public String rAType = "unknown";
+    public String rXType = "unknown";
+    public String rYType = "unknown";
     public Map<Integer, String> tempITypes = new HashMap<>();
     public List<ScriptJump> reachableFrom;
     public boolean hardMisaligned = false;
@@ -53,7 +53,6 @@ public class ScriptJump {
         List<ScriptLine> list = new ArrayList<>();
         Stack<ScriptLine> linesToCheck = new Stack<>();
         linesToCheck.push(targetLine);
-        ScriptLine lastLine = null;
         while (!linesToCheck.isEmpty()) {
             ScriptLine cursor = linesToCheck.pop();
             while (cursor.predecessor != null && !list.contains(cursor.predecessor)) {
@@ -63,13 +62,6 @@ public class ScriptJump {
                 cursor = cursor.successor;
             }
             while (cursor != null && !list.contains(cursor)) {
-                if (OPTIMIZE_REDUNDANT_B0_INSTRUCTIONS && lastLine != null && !lastLine.continues() && lastLine.branch != null && cursor.equals(lastLine.branch.targetLine)) {
-                    if (lastLine.incomingJumps != null && !lastLine.incomingJumps.isEmpty()) {
-                        cursor.incomingJumps.addAll(lastLine.incomingJumps);
-                        lastLine.incomingJumps = new ArrayList<>();
-                    }
-                    list.remove(list.size() - 1);
-                }
                 list.add(cursor);
                 ScriptJump branch = cursor.branch;
                 if (branch != null) {
@@ -77,13 +69,16 @@ public class ScriptJump {
                         linesToCheck.add(0, branch.targetLine);
                     } else {
                         linesToCheck.push(branch.targetLine);
-                        if (OPTIMIZE_REDUNDANT_B0_INSTRUCTIONS && cursor.incomingJumps != null && !cursor.incomingJumps.isEmpty()) {
-                            branch.targetLine.incomingJumps.addAll(cursor.incomingJumps);
-                            cursor.incomingJumps = new ArrayList<>();
+                        if (OPTIMIZE_REDUNDANT_B0_INSTRUCTIONS) {
+                            List<ScriptJump> selfIncomingJumps = cursor.incomingJumps;
+                            if (selfIncomingJumps != null && !selfIncomingJumps.isEmpty()) {
+                                branch.targetLine.incomingJumps.addAll(selfIncomingJumps);
+                                selfIncomingJumps.forEach(j -> j.targetLine = branch.targetLine);
+                                cursor.incomingJumps = new ArrayList<>();
+                            }
                         }
                     }
                 }
-                lastLine = cursor;
                 cursor = cursor.continues() ? cursor.successor : null;
             }
         }
@@ -137,6 +132,10 @@ public class ScriptJump {
         }
     }
 
+    public String getIndexLabel() {
+        return "w" + StringHelper.formatHex2(parentWorker.workerIndex) + "e" + StringHelper.formatHex2(jumpIndex);
+    }
+
     public void setTypes(ScriptState state) {
         this.rAType = state.rAType;
         this.rXType = state.rXType;
@@ -152,6 +151,29 @@ public class ScriptJump {
 
     public void setBattleWorkerEntryPointSlot(int entryPointSlot) {
         battleWorkerEntryPointSlot = entryPointSlot;
+    }
+
+    public boolean canDelete() {
+        if (!isEntryPoint) {
+            return true;
+        }
+        if (jumpIndex <= 1) {
+            return false;
+        }
+        if (parentWorker.battleWorkerType != null) {
+            return true;
+        }
+        if (parentWorker.eventWorkerType == 5) {
+            return jumpIndex > 2;
+        } else if (parentWorker.eventWorkerType == 6) {
+            return jumpIndex > 3;
+        } else if (parentWorker.eventWorkerType == 1) {
+            return jumpIndex > 5;
+        } else if (parentWorker.eventWorkerType == 2 || parentWorker.eventWorkerType == 3) {
+            return jumpIndex > 7;
+        } else {
+            return true;
+        }
     }
 
     private String battleWorkerEntryPointToString() {
@@ -238,7 +260,13 @@ public class ScriptJump {
         return "e" + StringHelper.formatHex2(eventWorkerEntryPoint);
     }
 
-    private static String eventWorkerEntryPointToString(int eventWorkerType, int eventWorkerEntryPoint) {
+    public static String eventWorkerEntryPointToString(int eventWorkerType, int eventWorkerEntryPoint) {
+        if (eventWorkerEntryPoint == 0) {
+            return "init";
+        }
+        if (eventWorkerEntryPoint == 1) {
+            return "main";
+        }
         return switch (eventWorkerType) {
             case 1 -> // FieldObject
                     switch (eventWorkerEntryPoint) {

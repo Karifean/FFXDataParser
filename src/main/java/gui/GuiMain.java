@@ -29,8 +29,8 @@ public class GuiMain extends Application {
     public void start(Stage primaryStage) throws IOException {
         URL fxmlUrl = getClass().getResource("/gui/main.fxml");
         Parent root = FXMLLoader.load(Objects.requireNonNull(fxmlUrl));
-        primaryStage.setTitle("FFX ATEL Editor");
-        primaryStage.setScene(new Scene(root, 900, 600));
+        primaryStage.setTitle("FFX Atelier");
+        primaryStage.setScene(new Scene(root, 1366, 768));
         primaryStage.show();
     }
 }

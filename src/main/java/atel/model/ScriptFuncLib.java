@@ -30,32 +30,36 @@ public class ScriptFuncLib {
         return new ScriptField(name, type);
     }
 
-    private ScriptFunc putUnknownFunc(int idx, String internalName, int inputs) {
-        return putUnknownFunc(idx, internalName, "unknown", inputs);
+    private void putUnknownFunc(int idx, String internalName, int inputs) {
+        putUnknownFunc(idx, internalName, "unknown", inputs);
     }
 
-    private ScriptFunc putUnknownFunc(int idx, String internalName, String returnType, int inputs) {
+    private void putUnknownFunc(int idx, String internalName, String returnType, int inputs) {
         ScriptField[] inputList = new ScriptField[inputs];
         for (int i = 0; i < inputs; i++) {
             inputList[i] = p(i+1);
         }
-        return putUnknownFunc(idx, internalName, returnType, inputList);
+        putUnknownFunc(idx, internalName, returnType, inputList);
     }
 
-    private ScriptFunc putUnknownFunc(int idx, String internalName, String returnType, ScriptField... inputList) {
+    private void putUnknownFunc(int idx, String internalName, String returnType, ScriptField... inputList) {
         ScriptFunc func = new ScriptFunc(null, returnType, internalName, inputList);
-        return putFuncWithIdx(idx, func);
+        putFuncWithIdx(idx, func);
     }
 
-    private ScriptFunc putUnknownFunc(int idx, int inputs) {
-        return putUnknownFunc(idx, null, inputs);
+    private void putUnknownFunc(int idx, int inputs) {
+        putUnknownFunc(idx, null, inputs);
     }
 
-    private ScriptFunc putFuncWithIdx(int idx, ScriptFunc func) {
+    private void putFuncWithIdx(int idx, ScriptFunc func) {
         func.idx = idx;
         func.funcspace = idx / 0x1000;
         FUNCS[idx] = func;
-        return func;
+    }
+
+    private void putVoidWithIdx(int idx, ScriptFunc func) {
+        putFuncWithIdx(idx, func);
+        func.canCallAsVoid = true;
     }
 
     public ScriptFunc get(int idx, List<StackObject> params) {
@@ -68,27 +72,27 @@ public class ScriptFuncLib {
         }
         initialized = true;
         FUNCS = new ScriptFunc[0x10000];
-        putFuncWithIdx(0x0000, new ScriptFunc("wait", "unknown", null, p("frames", "int")));
-        putFuncWithIdx(0x0001, new ScriptFunc("loadModel", "unknown", null, p("model")));
-        putFuncWithIdx(0x0002, new ScriptFunc("attachToCamera", "unknown", null, p("ID", "int"), p("int"), p("unused", "int")));
-        putFuncWithIdx(0x0003, new ScriptFunc("attachToSomething?", "unknown", null, p("int"))); // arg always zero?
-        putFuncWithIdx(0x0004, new ScriptFunc("attachToMapGroup", "unknown", null, p("groupIndex", "int")));
-        putFuncWithIdx(0x0005, new ScriptFunc("unloadActor", "unknown", null, true));
+        putVoidWithIdx(0x0000, new ScriptFunc("wait", "unknown", null, p("frames", "int")));
+        putVoidWithIdx(0x0001, new ScriptFunc("loadModel", "unknown", null, p("model")));
+        putVoidWithIdx(0x0002, new ScriptFunc("attachToCamera", "unknown", null, p("ID", "int"), p("int"), p("unused", "int")));
+        putVoidWithIdx(0x0003, new ScriptFunc("attachToSomething?", "unknown", null, p("int"))); // arg always zero?
+        putVoidWithIdx(0x0004, new ScriptFunc("attachToMapGroup", "unknown", null, p("groupIndex", "int")));
+        putVoidWithIdx(0x0005, new ScriptFunc("unloadActor", "unknown", null, true));
         putUnknownFunc(0x0006, 3);
         putUnknownFunc(0x0007, 1);
         putFuncWithIdx(0x0010, new ScriptFunc("getEntranceIndex", "int", null, true));
-        putFuncWithIdx(0x0011, new ScriptFunc("transitionToRoom?", "unknown", null, p("room"), p("spawnpoint", "int")));
+        putVoidWithIdx(0x0011, new ScriptFunc("transitionToRoom?", "unknown", null, p("room"), p("spawnpoint", "int")));
         putUnknownFunc(0x0012, 2);
-        putFuncWithIdx(0x0013, new ScriptFunc("setPosition", "unknown", null, p("x", "float"), p("y", "float"), p("z", "float")));
-        putFuncWithIdx(0x0015, new ScriptFunc("setDestination", "unknown", null, p("x", "float"), p("y", "float"), p("z", "float")));
-        putFuncWithIdx(0x0016, new ScriptFunc("setMovementSpeed", "unknown", null, p("speed", "float")));
+        putVoidWithIdx(0x0013, new ScriptFunc("setPosition", "unknown", null, p("x", "float"), p("y", "float"), p("z", "float")));
+        putVoidWithIdx(0x0015, new ScriptFunc("setDestination", "unknown", null, p("x", "float"), p("y", "float"), p("z", "float")));
+        putVoidWithIdx(0x0016, new ScriptFunc("setMovementSpeed", "unknown", null, p("speed", "float")));
         putUnknownFunc(0x0017, 1); // noclip: set motion threshold/radius, used for collision and checking if a destination is reached
-        putFuncWithIdx(0x0018, new ScriptFunc("startMotion", "unknown", null, p("activeBits", "int"), p("flags", "bitfield"), p("targetWorker", "worker")));
-        putFuncWithIdx(0x0019, new ScriptFunc("startRotation", "unknown", null, p("activeBits", "int"), p("flags", "bitfield"), p("targetWorker", "worker"))); // see noclip for flags
-        putFuncWithIdx(0x001A, new ScriptFunc("waitForMotion", "unknown", null));
-        putFuncWithIdx(0x001B, new ScriptFunc("waitForRotation", "unknown", null));
-        putFuncWithIdx(0x001C, new ScriptFunc("setMotionTiming", "unknown", null, p("currTime?", "float"), p("duration?", "int")));
-        putFuncWithIdx(0x001D, new ScriptFunc("setRotationTiming", "unknown", null, p("currTime?", "float"), p("duration?", "int")));
+        putVoidWithIdx(0x0018, new ScriptFunc("startMotion", "unknown", null, p("activeBits", "int"), p("flags", "bitfield"), p("targetWorker", "worker")));
+        putVoidWithIdx(0x0019, new ScriptFunc("startRotation", "unknown", null, p("activeBits", "int"), p("flags", "bitfield"), p("targetWorker", "worker"))); // see noclip for flags
+        putVoidWithIdx(0x001A, new ScriptFunc("waitForMotion", "unknown", null));
+        putVoidWithIdx(0x001B, new ScriptFunc("waitForRotation", "unknown", null));
+        putVoidWithIdx(0x001C, new ScriptFunc("setMotionTiming", "unknown", null, p("currTime?", "float"), p("duration?", "int")));
+        putVoidWithIdx(0x001D, new ScriptFunc("setRotationTiming", "unknown", null, p("currTime?", "float"), p("duration?", "int")));
         putFuncWithIdx(0x001F, new ScriptFunc("destinationToYaw", "float", null));
         putFuncWithIdx(0x0020, new ScriptFunc("destinationToPitch", "float", null));
         putUnknownFunc(0x0021, 1);
@@ -104,7 +108,7 @@ public class ScriptFuncLib {
         putFuncWithIdx(0x002E, new ScriptFunc("setRotationSpeed1", "unknown", null, p("float")));
         putFuncWithIdx(0x002F, new ScriptFunc("setRotationSpeed2", "unknown", null, p("float")));
         putFuncWithIdx(0x0030, new ScriptFunc("setRotationSpeed3", "unknown", null, p("float")));
-        putFuncWithIdx(0x0033, new ScriptFunc("getWorkerIndex", "int", null, p("worker"))); // maybe arg is only useful for battle, would be just echoed back in events
+        putFuncWithIdx(0x0033, new ScriptFunc("getWorkerIndex", "worker", null, p("worker")));
         putFuncWithIdx(0x0034, new ScriptFunc("enableFieldInteraction", "unknown", null, p("type", "fieldInteraction")));
         putFuncWithIdx(0x0035, new ScriptFunc("disableFieldInteraction", "unknown", null, p("type", "fieldInteraction")));
         putFuncWithIdx(0x0036, new ScriptFunc("stopMotion", "unknown", null, p("worker")));
@@ -721,7 +725,7 @@ public class ScriptFuncLib {
         putUnknownFunc(0x6000, "camSleep", 1);
         putUnknownFunc(0x6001, "camWakeUp", 1);
         putUnknownFunc(0x6002, "camSetPos", 3);
-        putUnknownFunc(0x6003, "camGetPos", 3);
+        putFuncWithIdx(0x6003, new ScriptFunc(null, "unknown", "camGetPos", p("xDest", "pointer"), p("yDest", "pointer"), p("zDest", "pointer")));
         putUnknownFunc(0x6004, "camSetPolar", 3);
         putUnknownFunc(0x6005, "camSetPolarOffset", 3);
         putUnknownFunc(0x6006, "camSetHypot", 6);
@@ -751,7 +755,7 @@ public class ScriptFuncLib {
         putUnknownFunc(0x601E, "camSetDataPoint2", 2);
         putUnknownFunc(0x601F, "camSetDataPointHypot2", 4);
         putUnknownFunc(0x6020, "refSetPos", 3);
-        putUnknownFunc(0x6021, "refGetPos", 3);
+        putFuncWithIdx(0x6021, new ScriptFunc(null, "unknown", "refGetPos", p("xDest", "pointer"), p("yDest", "pointer"), p("zDest", "pointer")));
         putUnknownFunc(0x6022, "refSetPolar", 3);
         putUnknownFunc(0x6023, "refSetPolarOffset", 3);
         putUnknownFunc(0x6024, "refSetHypot", 6);
@@ -851,13 +855,13 @@ public class ScriptFuncLib {
         putUnknownFunc(0x6082, "camSetShake4", 5);
         putUnknownFunc(0x6083, "refSetShake5", 5);
         putUnknownFunc(0x6084, "camSetShake5", 5);
-        putUnknownFunc(0x6085, "camGetRealPos", 3);
-        putUnknownFunc(0x6086, "refGetRealPos", 3);
+        putVoidWithIdx(0x6085, new ScriptFunc(null, "unknown", "camGetRealPos", p("xDest", "pointer"), p("yDest", "pointer"), p("zDest", "pointer")));
+        putVoidWithIdx(0x6086, new ScriptFunc(null, "unknown", "refGetRealPos", p("xDest", "pointer"), p("yDest", "pointer"), p("zDest", "pointer")));
         putUnknownFunc(0x6087, "refReset", 0);
         putUnknownFunc(0x6088, "camReset", 0);
         putUnknownFunc(0x7000, "btlTerminateAction", 0);
         putUnknownFunc(0x7001, "btlSetRandPosFlag", 1);
-        putFuncWithIdx(0x7002, new ScriptFunc("launchBattle", "unknown", "btlExe", p("encounter"), p("transition", "battleTransition")));
+        putVoidWithIdx(0x7002, new ScriptFunc("launchBattle", "unknown", "btlExe", p("encounter"), p("transition", "battleTransition")));
         putUnknownFunc(0x7003, "btlDirTarget", 2);
         putUnknownFunc(0x7004, "btlSetDirRate", 1);
         putFuncWithIdx(0x7005, new ScriptFunc("isWater?", "int", "btlGetWater", false));
@@ -1261,7 +1265,7 @@ public class ScriptFuncLib {
         List<String> allowedTypes = List.of("unknown", "void", "bool", "int", "uint");
         boolean checkType = type != null && !allowedTypes.contains(type);
         for (ScriptFunc func : FUNCS) {
-            if (func != null && (!checkType || type.equals(func.type))) {
+            if (func != null && (!checkType || type.equals(func.type) || allowedTypes.contains(func.type))) {
                 List<ScriptFuncChoice> list = map.computeIfAbsent(func.funcspace, k -> new ArrayList<>());
                 list.add(new ScriptFuncChoice(func));
             }

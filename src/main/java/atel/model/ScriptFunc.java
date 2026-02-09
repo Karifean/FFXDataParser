@@ -7,6 +7,7 @@ import java.util.List;
 
 public class ScriptFunc extends ScriptOpcode {
     public int funcspace;
+    public boolean canCallAsVoid = false;
 
     public ScriptFunc(String name, String type, String internalName, boolean brackets) {
         super(name, type, internalName);
@@ -75,6 +76,10 @@ public class ScriptFunc extends ScriptOpcode {
 
     public String callD8(List<StackObject> params) {
         return "call " + callB5(params);
+    }
+
+    public String getInputType(int index, List<ScriptInstruction> instructionInputs) {
+        return inputs.get(index).type;
     }
 
     protected boolean isNameless() {

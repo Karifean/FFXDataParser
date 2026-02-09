@@ -12,8 +12,8 @@ import static reading.BytesHelper.*;
 public class ScriptWorker {
     public static final int LENGTH = 0x34;
 
-    public final int workerIndex;
-    public final int eventWorkerType;
+    public int workerIndex;
+    public int eventWorkerType;
     public int variablesCount;
     public int refIntCount;
     public int refFloatCount;
@@ -33,7 +33,7 @@ public class ScriptWorker {
 
     public List<ScriptJump> entryPoints;
     public List<ScriptJump> jumps;
-    public ScriptVariable[] variableDeclarations;
+    public List<ScriptVariable> variableDeclarations;
     public int[] refFloats;
     public int[] refInts;
     public int[] privateDataBytes;
@@ -140,7 +140,7 @@ public class ScriptWorker {
                 if (isPlayer) {
                     descriptor += " - Player";
                 } else {
-                    int modelId = initLines.stream().map(l -> l.lineEnder).filter(l -> l.opcode == 0xD8 && l.argv == 0x01 && l.inputs != null && !l.inputs.isEmpty() && l.inputs.getFirst().opcode == 0xAE).mapToInt(l -> l.inputs.getFirst().argv).findAny().orElse(-1);
+                    int modelId = initLines.stream().map(l -> l.lineEnder).filter(l -> l.opcode == 0xD8 && (l.argv == 0x01 || l.argv == 0x134) && l.inputs != null && !l.inputs.isEmpty() && l.inputs.getFirst().opcode == 0xAE).mapToInt(l -> l.inputs.getFirst().argv).findAny().orElse(-1);
                     if (modelId != -1) {
                         descriptor += " - " + StackObject.asString(localization, "model", null, modelId, modelId, this, false);
                     }
@@ -177,6 +177,9 @@ public class ScriptWorker {
         if (battleWorkerType != null) {
             list.add("Battle");
             list.add("Type=" + StackObject.enumToString("battleWorkerType", battleWorkerType));
+            if (eventWorkerType != 2) {
+                list.add("EventType (not 2?)=" + StackObject.enumToString("eventWorkerType", eventWorkerType));
+            }
         } else {
             list.add("Event");
             list.add("Type=" + StackObject.enumToString("eventWorkerType", eventWorkerType));
@@ -213,6 +216,13 @@ public class ScriptWorker {
             return null;
         }
         return jumps.stream().map(j -> "j" + StringHelper.formatHex2(j.jumpIndex) + "=" + StringHelper.formatHex4(j.addr)).collect(Collectors.joining(" "));
+    }
+
+    public ScriptVariable getVariable(int index) {
+        if (variableDeclarations != null && index >= 0 && index < variableDeclarations.size()) {
+            return variableDeclarations.get(index);
+        }
+        return null;
     }
 
     public void setJumpTargets(Map<ScriptLine, ScriptJump> jumpTargets) {
@@ -264,6 +274,69 @@ public class ScriptWorker {
         this.purposeSlot = purposeSlot;
     }
 
+    public void setPurposeSlotAndInferType(int slot) {
+        this.purposeSlot = slot;
+        battleWorkerType = getTypeForSlot(slot);
+        battleWorkerTypeSlotCount = getSlotCountForType(battleWorkerType);
+    }
+
+    public static Integer getTypeForSlot(int slot) {
+        if (slot == 0x00) {
+            return 0;
+        }
+        if ((slot >= 0x3 && slot <= 0x23) || slot == 0x40) {
+            return 1;
+        }
+        if ((slot >= 0x17 && slot <= 0x3A) || slot == 0x3D) {
+            return 2;
+        }
+        if ((slot >= 0x4F && slot <= 0x5D) || slot == 0x4D) {
+            return 3;
+        }
+        if (slot == 0x3E || slot == 0x3F) {
+            return 4;
+        }
+        if (slot >= 0x6D && slot <= 0x7E) {
+            return 5;
+        }
+        if (slot == 0x6C || slot == 0x89) {
+            return 6;
+        }
+        if (slot == 0x41 || slot == 0x42 || slot == 0x43) {
+            return 7;
+        }
+        if (slot == 0x44 || slot == 0x45 || slot == 0x46) {
+            return 8;
+        }
+        if (slot == 0x47 || slot == 0x48 || slot == 0x49) {
+            return 9;
+        }
+        if (slot == 0x4A || slot == 0x4B || slot == 0x4C) {
+            return 10;
+        }
+        return null;
+    }
+
+    public static Integer getSlotCountForType(Integer type) {
+        if (type == null) {
+            return null;
+        }
+        return switch (type) {
+            case 0x0 -> 0x8D;
+            case 0x1 -> 0x51;
+            case 0x2 -> 0x15;
+            case 0x3 -> 0xC;
+            case 0x4 -> 0x18;
+            case 0x5 -> 0x10;
+            case 0x6 -> 0x6;
+            case 0x7 -> 0x13E;
+            case 0x8 -> 0x6D;
+            case 0x9 -> 0x12C;
+            case 0xA -> 0xF6;
+            default -> null;
+        };
+    }
+
     public ScriptJump getJump(int idx) {
         if (jumps == null || idx < 0 || idx >= jumps.size()) {
             return null;
@@ -272,12 +345,12 @@ public class ScriptWorker {
     }
 
     public void parseReferences(int[] bytes) {
-        variableDeclarations = new ScriptVariable[variablesCount];
+        variableDeclarations = new ArrayList<>(variablesCount);
         for (int varIdx = 0; varIdx < variablesCount; varIdx++) {
             int lb = read4Bytes(bytes, variableDeclarationsOffset + varIdx * 8);
             int hb = read4Bytes(bytes, variableDeclarationsOffset + varIdx * 8 + 4);
             ScriptVariable scriptVariable = new ScriptVariable(this, varIdx, lb, hb);
-            variableDeclarations[varIdx] = scriptVariable;
+            variableDeclarations.add(scriptVariable);
             scriptVariable.inferredType = "float".equals(scriptVariable.getFormatType()) ? "float" : "unknown";
             if (scriptVariable.location == 0) {
                 ScriptField entry = ScriptConstants.FFX.getEnumMap("saveData").get(scriptVariable.offset + SAVEDATA_ATEL_OFFSET);
@@ -363,7 +436,7 @@ public class ScriptWorker {
                             } else if (opcode == 0xAF) {
                                 instruction.dereferencedArg = refFloats[instruction.argv];
                             } else if ((opcode >= 0x9F && opcode <= 0xA4) || opcode == 0xA7) {
-                                instruction.dereferencedVar = variableDeclarations[instruction.argv];
+                                instruction.dereferencedVar = variableDeclarations.get(instruction.argv);
                             }
                         } else if (opcode == 0x00) {
                             int count = 0;
@@ -380,7 +453,7 @@ public class ScriptWorker {
                         instruction.incomingJumps = jumpsOnInstruction;
                         jumpsOnLine.addAll(jumpsOnInstruction);
                         lineInstructions.add(instruction);
-                    } while (!ScriptOpcode.OPCODES[opcode].isLineEnd);
+                    } while (ScriptOpcode.OPCODES[opcode] != null && !ScriptOpcode.OPCODES[opcode].isLineEnd);
                     ScriptLine scriptLine = new ScriptLine(this, offset, lineInstructions, jumpsOnLine);
                     linesByOffset.put(offset, scriptLine);
                     if (predecessor != null) {
@@ -410,7 +483,7 @@ public class ScriptWorker {
         }
     }
 
-    public void addBlankEntryPoints() {
+    public void addBlankEntryPoints(boolean isEventWorker) {
         ScriptJump init = new ScriptJump(this, -1, 0, true);
         entryPoints.add(init);
         ScriptInstruction initIns = new ScriptInstruction(-1, 0x3C);
@@ -420,6 +493,22 @@ public class ScriptWorker {
         entryPoints.add(main);
         ScriptInstruction mainIns = new ScriptInstruction(-1, 0xD8, 0x5F, 0x00);
         main.targetLine = new ScriptLine(this, -1, List.of(mainIns), List.of(main));
+
+        if (isEventWorker) {
+            for (int i = 2; i < 8; i++) {
+                ScriptJump extra = new ScriptJump(this, -1, i, true);
+                entryPoints.add(extra);
+                ScriptInstruction ins = new ScriptInstruction(-1, 0x3C);
+                extra.targetLine = new ScriptLine(this, -1, List.of(ins), List.of(extra));
+            }
+        }
+    }
+
+    public void addBlankEntryPoint() {
+        ScriptJump extra = new ScriptJump(this, -1, entryPoints.size(), true);
+        entryPoints.add(extra);
+        ScriptInstruction ins = new ScriptInstruction(-1, 0x3C);
+        extra.targetLine = new ScriptLine(this, -1, List.of(ins), List.of(extra));
     }
 
     private void collectJumps(int cursor, Map<Integer, List<ScriptJump>> scriptJumpsByDestination, List<ScriptJump> jumpsOnLine, boolean isArgByte) {

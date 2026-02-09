@@ -11,9 +11,12 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
 import javafx.scene.input.KeyEvent;
+import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import main.DataAccess;
+import model.strings.LocalizedFieldStringObject;
 
 import java.net.URL;
 import java.util.*;
@@ -35,9 +38,19 @@ public class GuiMainController implements Initializable {
     @FXML
     TreeView<TreeEntry> middleTree;
     @FXML
+    AnchorPane rightPane;
+    @FXML
+    VBox atelCodeDetail;
+    @FXML
+    VBox scriptGeneralDetail;
+    @FXML
+    VBox workerGeneralDetail;
+    @FXML
     ListView<String> scriptLineList;
     @FXML
     VBox lineGuiVbox;
+    @FXML
+    HBox branchHbox;
     @FXML
     TextField branchLineInput;
     @FXML
@@ -47,11 +60,47 @@ public class GuiMainController implements Initializable {
     @FXML
     TextField hexLineInput;
 
+    @FXML
+    TableView<ScriptWorker> tableWorkers;
+    @FXML
+    TableColumn<ScriptWorker, String> tableWorkersColumnIndex;
+    @FXML
+    TableColumn<ScriptWorker, ScriptWorker> tableWorkersColumnType;
+    @FXML
+    TableColumn<ScriptWorker, ScriptWorker> tableWorkersColumnDelete;
+    @FXML
+    TableView<ScriptVariable> tableVariables;
+    @FXML
+    TableColumn<ScriptVariable, String> tableVariablesColumnIndex;
+    @FXML
+    TableColumn<ScriptVariable, ScriptVariable> tableVariablesColumnLabel;
+    @FXML
+    TableColumn<ScriptVariable, ScriptVariable> tableVariablesColumnLocation;
+    @FXML
+    TableColumn<ScriptVariable, ScriptVariable> tableVariablesColumnOffset;
+    @FXML
+    TableColumn<ScriptVariable, ScriptVariable> tableVariablesColumnType;
+    @FXML
+    TableColumn<ScriptVariable, ScriptVariable> tableVariablesColumnFormat;
+    @FXML
+    TableColumn<ScriptVariable, ScriptVariable> tableVariablesColumnArray;
+    @FXML
+    TableColumn<ScriptVariable, ScriptVariable> tableVariablesColumnDelete;
+    @FXML
+    TableView<ScriptJump> tableEntryPoints;
+    @FXML
+    TableColumn<ScriptJump, String> tableEntryPointsColumnIndex;
+    @FXML
+    TableColumn<ScriptJump, ScriptJump> tableEntryPointsColumnType;
+    @FXML
+    TableColumn<ScriptJump, ScriptJump> tableEntryPointsColumnDelete;
+
     EventFile selectedEvent;
     EncounterFile selectedEncounter;
     MonsterFile selectedMonster;
     AtelScriptObject selectedMisc;
     AtelScriptObject selectedAtelObject;
+    ScriptWorker selectedWorker;
     ScriptJump selectedEntryPoint;
     ScriptState scriptState;
     List<ScriptLine> scriptLines;
@@ -68,6 +117,8 @@ public class GuiMainController implements Initializable {
         middleTree.getSelectionModel().selectedItemProperty().addListener((o, s, newValue) -> onTreeEntrySelected(newValue));
         scriptLineList.getSelectionModel().selectedItemProperty().addListener((o, s, newValue) -> onLineSelected(newValue));
         makeLists();
+        lineGuiVbox.getChildren().remove(branchHbox);
+        GuiTableSetup.setUpTables(this);
     }
 
     public void makeLists() {
@@ -142,8 +193,14 @@ public class GuiMainController implements Initializable {
         selectedMonster = null;
         selectedMisc = null;
         selectedAtelObject = null;
+        selectedWorker = null;
+        selectedEntryPoint = null;
+        atelCodeDetail.setVisible(false);
+        workerGeneralDetail.setVisible(false);
+        scriptGeneralDetail.setVisible(false);
         choosingBranchTarget = false;
         onLineSelected(null);
+        GuiAtelLineTree.clearDividersCache();
     }
 
     public void makeTree() {
@@ -172,7 +229,7 @@ public class GuiMainController implements Initializable {
         }
         TreeItem<TreeEntry> atelGeneralItem = treeItem("sg");
         rootChildren.add(atelGeneralItem);
-        for (ScriptWorker worker : selectedAtelObject.getWorkers()) {
+        for (ScriptWorker worker : selectedAtelObject.workers) {
             TreeItem<TreeEntry> workerTreeItem = treeItem("wr", worker, null);
             rootChildren.add(workerTreeItem);
             workerTreeItem.getChildren().add(treeItem("wg", worker, null));
@@ -181,6 +238,7 @@ public class GuiMainController implements Initializable {
                 workerTreeItem.getChildren().add(entryPointItem);
             }
         }
+        setScriptDetail();
     }
 
     private TreeItem<TreeEntry> treeItem(String type) {
@@ -193,10 +251,23 @@ public class GuiMainController implements Initializable {
 
     public void onTreeEntrySelected(TreeItem<TreeEntry> item) {
         System.out.println("tree entry selected: " + item);
+        selectedWorker = null;
         selectedEntryPoint = null;
         choosingBranchTarget = false;
+        atelCodeDetail.setVisible(false);
+        workerGeneralDetail.setVisible(false);
+        scriptGeneralDetail.setVisible(false);
         if (item != null) {
-            selectedEntryPoint = item.getValue().entryPoint();
+            TreeEntry entry = item.getValue();
+            selectedWorker = entry.worker();
+            selectedEntryPoint = entry.entryPoint();
+            if (selectedEntryPoint != null) {
+                atelCodeDetail.setVisible(true);
+            } else if (selectedWorker != null) {
+                workerGeneralDetail.setVisible(true);
+            } else if ("sg".equals(entry.type())) {
+                scriptGeneralDetail.setVisible(true);
+            }
         }
         adaptToSelectedEntryPoint();
     }
@@ -211,6 +282,7 @@ public class GuiMainController implements Initializable {
             scriptState.writeJumpsAsIndexedLines = true;
         }
         setScriptLines();
+        setWorkerDetail();
     }
 
     public void setScriptLines() {
@@ -221,6 +293,30 @@ public class GuiMainController implements Initializable {
         for (int i = 0; i < scriptLines.size(); i++) {
             ScriptLine line = scriptLines.get(i);
             scriptLineList.getItems().add(String.format("#%d: %s", i, line.lineEnder.asString(scriptState)));
+        }
+    }
+
+    public void setWorkerDetail() {
+        tableEntryPoints.getItems().clear();
+        if (selectedWorker == null) {
+            return;
+        }
+        for (ScriptJump entryPoint : selectedWorker.entryPoints) {
+            tableEntryPoints.getItems().add(entryPoint);
+        }
+    }
+
+    public void setScriptDetail() {
+        tableWorkers.getItems().clear();
+        tableVariables.getItems().clear();
+        if (selectedAtelObject == null) {
+            return;
+        }
+        for (ScriptWorker worker : selectedAtelObject.workers) {
+            tableWorkers.getItems().add(worker);
+        }
+        for (ScriptVariable vr : selectedAtelObject.variableDeclarations) {
+            tableVariables.getItems().add(vr);
         }
     }
 
@@ -279,7 +375,12 @@ public class GuiMainController implements Initializable {
         if (selectedLine == null || selectedLine.lineEnder == null) {
             return;
         }
-        lineGuiVbox.getChildren().add(new GuiAtelLineTree(this, selectedLine, scriptState).create());
+        ScriptState tempState = new ScriptState(selectedEntryPoint);
+        tempState.writeJumpsAsIndexedLines = true;
+        for (int i = 0; i < selectedLineIndex; i++) {
+            scriptLines.get(i).lineEnder.asString(tempState);
+        }
+        lineGuiVbox.getChildren().add(new GuiAtelLineTree(this, selectedLine, tempState).create());
     }
 
     public void changeInstructionOpcode(ScriptInstruction instruction, Integer opcode, Integer argv) {
@@ -298,14 +399,62 @@ public class GuiMainController implements Initializable {
         }
     }
 
+    public int addString(String inputType) {
+        LocalizedFieldStringObject obj = new LocalizedFieldStringObject();
+        obj.setAllLocalizedContentToNothing();
+        if ("system01String".equals(inputType)) {
+            EncounterFile sys01 = DataAccess.getEncounter("system01");
+            int idx = sys01.strings.size();
+            sys01.strings.add(obj);
+            return idx;
+        } else {
+            if (selectedEvent != null) {
+                if (selectedEvent.strings == null) {
+                    selectedEvent.strings = new ArrayList<>();
+                }
+                int idx = selectedEvent.strings.size();
+                selectedEvent.strings.add(obj);
+                return idx;
+            }
+            if (selectedEncounter != null) {
+                if (selectedEncounter.strings == null) {
+                    selectedEncounter.strings = new ArrayList<>();
+                }
+                int idx = selectedEncounter.strings.size();
+                selectedEncounter.strings.add(obj);
+                return idx;
+            }
+        }
+        return 0;
+    }
+
+    public void editString(int index, String type) {
+        if (selectedEvent == null && selectedEncounter == null) {
+            return;
+        }
+        LocalizedFieldStringObject obj;
+        if (selectedEvent != null) {
+            if (selectedEvent.strings == null || index >= selectedEvent.strings.size()) {
+                return;
+            }
+            obj = selectedEvent.strings.get(index);
+        } else {
+            if (selectedEncounter.strings == null || index >= selectedEncounter.strings.size()) {
+                return;
+            }
+            obj = selectedEncounter.strings.get(index);
+        }
+        System.out.println("editString (" + index + ") = " + obj);
+    }
+
     @FXML
     public void onSave() {
         if (selectedEvent != null) {
-            selectedEvent.writeToMods(false, true);
+            selectedEvent.writeToMods(true, true);
             System.out.println("saved selected event");
         }
         if (selectedEncounter != null) {
-            selectedEncounter.writeToMods(false, true);
+            selectedEncounter.writeToMods(true, true);
             System.out.println("saved selected encounter");
         }
         if (selectedMonster != null) {
@@ -318,19 +467,102 @@ public class GuiMainController implements Initializable {
     @FXML
     public void onAddWorker() {
         System.out.println("onAddWorker");
-        List<ScriptWorker> workers = selectedAtelObject.getWorkers();
+        List<ScriptWorker> workers = selectedAtelObject.workers;
         if (workers.isEmpty()) {
             return;
         }
-        ScriptWorker worker = new ScriptWorker(selectedAtelObject, workers.size(), workers.getFirst(), selectedEvent == null ? 2 : 0);
+        boolean isEventWorker = selectedEvent != null;
+        ScriptWorker worker = new ScriptWorker(selectedAtelObject, workers.size(), workers.getFirst(), isEventWorker ? 0 : 2);
         workers.add(worker);
-        worker.addBlankEntryPoints();
-        makeTree();
-        Optional<TreeItem<TreeEntry>> workerTreeItem = middleTree.getRoot().getChildren().stream().filter(w -> w.getValue().worker == worker).findAny();
-        workerTreeItem.ifPresent(item -> {
-            item.setExpanded(true);
-            middleTree.getSelectionModel().select(item.getChildren().getFirst());
-        });
+        worker.addBlankEntryPoints(isEventWorker);
+        setScriptDetail();
+        TreeItem<TreeEntry> treeItem = treeItem("wr", worker, null);
+        treeItem.getChildren().add(treeItem("wg", worker, null));
+        for (ScriptJump entryPoint : worker.getEntryPoints()) {
+            TreeItem<TreeEntry> entryPointItem = treeItem("e", worker, entryPoint);
+            treeItem.getChildren().add(entryPointItem);
+        }
+        middleTree.getRoot().getChildren().add(treeItem);
+    }
+
+    public void onDeleteWorker(ScriptWorker worker) {
+        System.out.println("onDeleteWorker " + worker);
+        middleTree.getRoot().getChildren().stream().filter(i -> i.getValue().worker() == worker).findAny().ifPresent(wr -> middleTree.getRoot().getChildren().remove(wr));
+        AtelScriptObject parentScript = worker.parentScript;
+        parentScript.workers.remove(worker);
+        for (int i = 0; i < parentScript.workers.size(); i++) {
+            parentScript.getWorker(i).workerIndex = i;
+        }
+        worker.parentScript = null;
+        setScriptDetail();
+        middleTree.refresh();
+    }
+
+    public void setWorkerEventType(ScriptWorker worker, int type) {
+        worker.eventWorkerType = type;
+        setScriptDetail();
+        middleTree.refresh();
+    }
+
+    public void setWorkerBattleSlot(ScriptWorker worker, int slot) {
+        if (worker.purposeSlot != null) {
+            selectedAtelObject.workers.stream().filter(f -> f.purposeSlot != null && f.purposeSlot == slot).findAny().ifPresent(f -> f.setPurposeSlotAndInferType(worker.purposeSlot));
+        }
+        worker.setPurposeSlotAndInferType(slot);
+        setScriptDetail();
+        middleTree.refresh();
+    }
+
+    public void setBattleWorkerEntryPointType(ScriptJump ep, int slot) {
+        ep.parentWorker.entryPoints.stream().filter(f -> f.battleWorkerEntryPointSlot != null && f.battleWorkerEntryPointSlot == slot).findAny().ifPresent(f -> f.setBattleWorkerEntryPointSlot(ep.battleWorkerEntryPointSlot));
+        ep.setBattleWorkerEntryPointSlot(slot);
+        setWorkerDetail();
+        middleTree.refresh();
+    }
+
+    public void onDeleteEntryPoint(ScriptJump entryPoint) {
+        System.out.println("onDeleteEntryPoint " + entryPoint);
+        if (!entryPoint.canDelete()) {
+            return;
+        }
+        ScriptWorker parentWorker = entryPoint.parentWorker;
+        middleTree.getRoot().getChildren().stream().filter(i -> i.getValue().worker() == parentWorker).findAny().ifPresent(wr -> wr.getChildren().stream().filter(e -> e.getValue().entryPoint() == entryPoint).findAny().ifPresent(child -> wr.getChildren().remove(child)));
+        parentWorker.entryPoints.remove(entryPoint);
+        for (int i = 0; i < parentWorker.entryPoints.size(); i++) {
+            parentWorker.getEntryPoint(i).jumpIndex = i;
+        }
+        entryPoint.parentWorker = null;
+        setWorkerDetail();
+        middleTree.refresh();
+    }
+
+    @FXML
+    public void onAddVariable() {
+        if (selectedAtelObject == null) {
+            return;
+        }
+        selectedAtelObject.addNewVariable();
+        setScriptDetail();
+    }
+
+    public void onDeleteVariable(ScriptVariable vr) {
+        if (selectedAtelObject == null) {
+            return;
+        }
+        selectedAtelObject.variableDeclarations.remove(vr);
+        for (int i = 0; i < selectedAtelObject.variableDeclarations.size(); i++) {
+            selectedAtelObject.getVariable(i).index = i;
+        }
+        setScriptDetail();
+    }
+
+    @FXML
+    public void onAddEntryPoint() {
+        if (selectedWorker == null) {
+            return;
+        }
+        selectedWorker.addBlankEntryPoint();
+        setWorkerDetail();
     }
 
     @FXML
@@ -420,9 +652,7 @@ public class GuiMainController implements Initializable {
                         instruction.dereferencedArg = 0;
                     }
                 } else if ((opcode >= 0x9F && opcode <= 0xA4) || opcode == 0xA7) {
-                    if (instruction.argv < selectedAtelObject.variableDeclarations.length) {
-                        instruction.dereferencedVar = selectedAtelObject.variableDeclarations[instruction.argv];
-                    }
+                    instruction.dereferencedVar = selectedAtelObject.getVariable(instruction.argv);
                 }
             } else if (opcode == 0x00) {
                 int count = 1;

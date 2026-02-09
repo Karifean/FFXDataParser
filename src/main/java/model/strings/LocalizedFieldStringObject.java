@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import static main.DataReadingManager.DEFAULT_LOCALIZATION;
+import static main.DataReadingManager.LOCALIZATIONS;
 
 public class LocalizedFieldStringObject {
     private final Map<String, FieldString> contents = new HashMap<>();
@@ -16,6 +17,15 @@ public class LocalizedFieldStringObject {
 
     public LocalizedFieldStringObject(String localization, FieldString content) {
         setLocalizedContent(localization, content);
+    }
+
+    public void setAllLocalizedContentToNothing() {
+        int[] dummyBytes = { 0 };
+        LOCALIZATIONS.keySet().forEach(l -> {
+            FieldString fieldString = new FieldString(StringHelper.localizationToCharset(l), 0, 0, dummyBytes);
+            fieldString.setRegularString("");
+            setLocalizedContent(l, fieldString);
+        });
     }
 
     public void setLocalizedContent(String localization, FieldString content) {

@@ -12,7 +12,7 @@ import static reading.BytesHelper.write3Bytes;
 public class ScriptVariable {
     public static final int LENGTH = 0x8;
     public static final int SAVEDATA_ATEL_OFFSET = 0x1EC;
-    public final int index;
+    public int index;
     public final int offset;
     public final int formatLocationByte;
     public final int format;
@@ -222,6 +222,10 @@ public class ScriptVariable {
         }
         String offsetStr = prefix + StringHelper.formatHex4(offset + offsetBonus);
         return locationToLabel(location) + offsetStr;
+    }
+
+    public String getIndexLabel() {
+        return "var" + StringHelper.formatHex2(index);
     }
 
     public String getDereference() {

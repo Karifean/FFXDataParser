@@ -268,14 +268,14 @@ public class Main {
             case MODE_READ_BLITZBALL_STATS:
                 EventFile event = DataAccess.getEvent("bltz0002");
                 event.parseScript();
-                List<StackObject> hpValues = event.eventScript.variableDeclarations[0x126].values;
-                List<StackObject> atValues = event.eventScript.variableDeclarations[0x128].values;
-                List<StackObject> enValues = event.eventScript.variableDeclarations[0x129].values;
-                List<StackObject> paValues = event.eventScript.variableDeclarations[0x12A].values;
-                List<StackObject> shValues = event.eventScript.variableDeclarations[0x12B].values;
-                List<StackObject> blValues = event.eventScript.variableDeclarations[0x12C].values;
-                List<StackObject> caValues = event.eventScript.variableDeclarations[0x12D].values;
-                List<StackObject> spValues = event.eventScript.variableDeclarations[0x12E].values;
+                List<StackObject> hpValues = event.eventScript.getVariable(0x126).values;
+                List<StackObject> atValues = event.eventScript.getVariable(0x128).values;
+                List<StackObject> enValues = event.eventScript.getVariable(0x129).values;
+                List<StackObject> paValues = event.eventScript.getVariable(0x12A).values;
+                List<StackObject> shValues = event.eventScript.getVariable(0x12B).values;
+                List<StackObject> blValues = event.eventScript.getVariable(0x12C).values;
+                List<StackObject> caValues = event.eventScript.getVariable(0x12D).values;
+                List<StackObject> spValues = event.eventScript.getVariable(0x12E).values;
                 for (int i = 0; i < 0x3C; i++) {
                     System.out.println("- " + StackObject.enumToString("blitzballPlayer", i) + " -");
                     int baseOffset = i * 4;
@@ -292,7 +292,7 @@ public class Main {
                 DataAccess.EVENTS.values().forEach(e -> {
                     e.parseScript();
                     Map<Integer, String> matcherMap = new HashMap<>();
-                    Arrays.stream(e.eventScript.variableDeclarations).forEach(d -> {
+                    e.eventScript.variableDeclarations.stream().forEach(d -> {
                         if (d.values.isEmpty() || d.values.size() < 100) {
                             return;
                         }

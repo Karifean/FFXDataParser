@@ -32,10 +32,10 @@ public class AtelScriptObject {
     private int battleWorkerSlotCount;
 
     private int[] actualScriptCodeBytes;
-    private List<ScriptWorker> workers;
+    public List<ScriptWorker> workers;
     public int[] refFloats;
     public int[] refInts;
-    public ScriptVariable[] variableDeclarations;
+    public List<ScriptVariable> variableDeclarations;
     private int variableStructsTableOffset;
     private int intTableOffset;
     private int floatTableOffset;
@@ -106,8 +106,8 @@ public class AtelScriptObject {
     public AtelScriptObjectBytes toBytes() {
         List<Integer> scriptBytesList = new ArrayList<>();
         List<ScriptVariable> newVariableDeclarations;
-        if (variableDeclarations != null && variableDeclarations.length > 0) {
-            newVariableDeclarations = new ArrayList<>(Arrays.stream(variableDeclarations).toList());
+        if (variableDeclarations != null && variableDeclarations.size() > 0) {
+            newVariableDeclarations = new ArrayList<>(variableDeclarations);
         }  else {
             newVariableDeclarations = new ArrayList<>();
         }
@@ -424,8 +424,8 @@ public class AtelScriptObject {
                 continue;
             }
             int index = Integer.parseInt(split[0], 16);
-            if (variableDeclarations != null && index >= 0 && index < variableDeclarations.length) {
-                ScriptVariable vr = variableDeclarations[index];
+            if (variableDeclarations != null && index >= 0 && index < variableDeclarations.size()) {
+                ScriptVariable vr = variableDeclarations.get(index);
                 vr.declaredLabel = "".equals(split[1]) ? null : split[1];
                 if (split.length > 2) {
                     vr.declaredType = "".equals(split[2]) ? null : split[2];
@@ -441,9 +441,9 @@ public class AtelScriptObject {
 
     public String getDeclarationsAsString() {
         List<String> lines = new ArrayList<>();
-        for (int i = 0; i < variableDeclarations.length; i++) {
+        for (int i = 0; i < variableDeclarations.size(); i++) {
             String index = String.format("%02X", i);
-            ScriptVariable vr = variableDeclarations[i];
+            ScriptVariable vr = variableDeclarations.get(i);
             StringBuilder stringBuilder = new StringBuilder(index).append('=');
             boolean anyDeclaration = false;
             if (vr.declaredLabel != null) {
@@ -498,10 +498,6 @@ public class AtelScriptObject {
         return workerIndex >= 0 && workerIndex < workers.size() ? workers.get(workerIndex) : null;
     }
 
-    public List<ScriptWorker> getWorkers() {
-        return workers;
-    }
-
     private void syncVarIntFloatTables() {
         variableStructsTableOffset = 0;
         intTableOffset = 0;
@@ -521,7 +517,7 @@ public class AtelScriptObject {
                 sharedDataOffset = worker.sharedDataOffset;
                 jumpTablesOffset = worker.scriptEntryPointsOffset;
             } else {
-                if (worker.variableDeclarationsOffset != variableStructsTableOffset || worker.variablesCount != variableDeclarations.length) {
+                if (worker.variableDeclarationsOffset != variableStructsTableOffset || worker.variablesCount != variableDeclarations.size()) {
                     System.err.println("WARNING, variables table mismatch!");
                 }
                 worker.variableDeclarations = variableDeclarations;
@@ -1123,10 +1119,13 @@ public class AtelScriptObject {
     }
 
     protected void addVarType(int var, String type) {
-        if (!gatheringInfo || variableDeclarations == null || var < 0 || var > variableDeclarations.length) {
+        if (!gatheringInfo) {
             return;
         }
-        variableDeclarations[var].inferType(type);
+        ScriptVariable variable = getVariable(var);
+        if (variable != null) {
+            variable.inferType(type);
+        }
     }
 
     protected String resolveType(StackObject obj) {
@@ -1164,28 +1163,42 @@ public class AtelScriptObject {
         }
     }
 
+    public ScriptVariable getVariable(int index) {
+        if (variableDeclarations != null && index >= 0 && index < variableDeclarations.size()) {
+            return variableDeclarations.get(index);
+        }
+        return null;
+    }
+
     public String getVariableType(int index) {
-        if (variableDeclarations != null && index >= 0 && index < variableDeclarations.length) {
-            return variableDeclarations[index].getType();
+        ScriptVariable variable = getVariable(index);
+        if (variable != null) {
+            return variable.getType();
         }
         warningsOnLine.add("Variable index " + StringHelper.formatHex2(index) + " out of bounds!");
         return "unknown";
     }
 
     public String getVariableLabel(int index) {
-        if (variableDeclarations != null && index >= 0 && index < variableDeclarations.length) {
-            return variableDeclarations[index].getLabel(getWorker(currentWorkerIndex));
+        ScriptVariable variable = getVariable(index);
+        if (variable != null) {
+            return variable.getLabel(getWorker(currentWorkerIndex));
         }
         String hexIdx = StringHelper.formatHex2(index);
         warningsOnLine.add("Variable index " + hexIdx + " out of bounds!");
         return "var" + hexIdx;
     }
 
+    public void addNewVariable() {
+        ScriptVariable newVar = new ScriptVariable(workers.getFirst(), variableDeclarations.size(), 0, 0);
+        variableDeclarations.add(newVar);
+    }
+
     private String ensureVariableValidWithArray(int index, StackObject p1) {
         String varLabel = getVariableLabel(index);
         String indexType = resolveType(p1);
-        if (isWeakType(indexType) && (variableDeclarations != null && index >= 0 && index < variableDeclarations.length)) {
-            indexType = variableDeclarations[index].getArrayIndexType();
+        if (isWeakType(indexType) && (variableDeclarations != null && index >= 0 && index < variableDeclarations.size())) {
+            indexType = variableDeclarations.get(index).getArrayIndexType();
         }
         String arrayIndex = !p1.expression && isWeakType(indexType) ? ""+p1.valueSigned : typed(p1, indexType);
         return varLabel + '[' + arrayIndex + ']';
@@ -1225,8 +1238,8 @@ public class AtelScriptObject {
         if (variableDeclarations == null) {
             return;
         }
-        for (int varIdx = 0; varIdx < variableDeclarations.length; varIdx++) {
-            ScriptVariable var = variableDeclarations[varIdx];
+        for (int varIdx = 0; varIdx < variableDeclarations.size(); varIdx++) {
+            ScriptVariable var = getVariable(varIdx);
             if (isWeakType(var.inferredType) && varEnums.containsKey(varIdx)) {
                 List<StackObject> enums = varEnums.get(varIdx);
                 if (enums.size() == 1 && !enums.get(0).expression) {
@@ -1360,11 +1373,11 @@ public class AtelScriptObject {
         for (int i = 0; i < namespaceCount; i++) {
             lines.add("w" + StringHelper.formatHex2(i) + ": " + getWorker(i).getNonCommonString());
         }
-        lines.add("Variables (" + variableDeclarations.length + " at offset " + StringHelper.formatHex4(variableStructsTableOffset) + ")");
-        if (variableDeclarations.length > 0) {
+        lines.add("Variables (" + variableDeclarations.size() + " at offset " + StringHelper.formatHex4(variableStructsTableOffset) + ")");
+        if (variableDeclarations.size() > 0) {
             List<String> refsStrings = new ArrayList<>();
-            for (int i = 0; i < variableDeclarations.length; i++) {
-                refsStrings.add("Variable " + StringHelper.formatHex2(i) + ": " + variableDeclarations[i]);
+            for (int i = 0; i < variableDeclarations.size(); i++) {
+                refsStrings.add("Variable " + StringHelper.formatHex2(i) + ": " + getVariable(i));
             }
             lines.add(String.join("\n", refsStrings));
         }
