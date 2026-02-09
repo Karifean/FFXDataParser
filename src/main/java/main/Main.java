@@ -59,12 +59,20 @@ public class Main {
     private static final boolean SKIP_BLITZBALL_EVENTS_FOLDER = true;
 
     public static void main(String[] args) {
-        String pathRoot = args[0];
-        if (!".".equals(pathRoot)) {
-            GAME_FILES_ROOT = pathRoot;
+        String mode;
+        List<String> realArgs;
+        if (args.length > 1) {
+            String pathRoot = args[0];
+            if (!".".equals(pathRoot)) {
+                GAME_FILES_ROOT = pathRoot;
+            }
+            mode = args[1];
+            realArgs = Arrays.asList(args).subList(2, args.length);
+        } else {
+            GAME_FILES_ROOT = "./";
+            mode = MODE_GUI;
+            realArgs = List.of();
         }
-        String mode = args[1];
-        List<String> realArgs = Arrays.asList(args).subList(2, args.length);
         initializeInternals();
         readAndPrepareDataModel();
         switch (mode) {

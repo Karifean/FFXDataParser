@@ -73,18 +73,22 @@ public abstract class StringHelper {
             return null;
         }
         List<Integer> bytes = new ArrayList<>();
-        if (indexValue > 1070) {
-            indexValue -= 1040;
-            bytes.add(0x04);
-        }
         if (indexValue >= 0x100) {
-            int byte1 = indexValue / 0xD0 + 0x2A;
-            int byte2 = indexValue % 0xD0;
-            bytes.add(byte1);
-            bytes.add(byte2);
-        } else {
-            bytes.add(indexValue);
+            int section = 0x2B;
+            do {
+                section++;
+                indexValue -= 0xD0;
+            } while (indexValue >= 0x100);
+            if (section >= 0x30) {
+                bytes.add(0x04);
+                if (section >= 0x31) {
+                    bytes.add(section - 0x05);
+                }
+            } else {
+                bytes.add(section);
+            }
         }
+        bytes.add(indexValue);
         return bytes;
     }
 
@@ -276,7 +280,11 @@ public abstract class StringHelper {
             return null;
         }
         int end = offset;
-        while (end < table.length && table[end] != 0x00) {
+        boolean lastTakesArgs = false;
+        boolean lastWas04 = false;
+        while (end < table.length && (table[end] != 0x00 || lastTakesArgs || lastWas04)) {
+            lastWas04 = table[end] == 0x04;
+            lastTakesArgs = !lastTakesArgs && table[end] >= 0x2B && table[end] <= 0x2F;
             end++;
         }
         return Arrays.copyOfRange(table, offset, end);
@@ -301,113 +309,6 @@ public abstract class StringHelper {
                 } else {
                     out.append(extraOffset != 0 ? "{UNKDBLCHR:04:" : "{UNKCHR:").append(formatHex2(idx)).append('}');
                 }
-            } else if (idx == 0x01) {
-                out.append("{PAUSE}");
-            } else if (idx == 0x03) {
-                out.append(WRITE_LINEBREAKS_AS_COMMANDS ? "{\\n}" : '\n');
-            } else if (idx == 0x04) {
-                extraFiveSections = true;
-            } else if (idx == 0x07) {
-                offset++;
-                if (offset >= table.length) {
-                    break;
-                }
-                int pixels = table[offset] - 0x30;
-                out.append("{SPACE:").append(formatHex2(pixels)).append('}');
-            } else if (idx == 0x09) {
-                offset++;
-                if (offset >= table.length) {
-                    break;
-                }
-                int varIdx = table[offset] - 0x30;
-                out.append("{TIME:").append(formatHex2(varIdx)).append('}');
-            } else if (idx == 0x0A) {
-                offset++;
-                if (offset >= table.length) {
-                    break;
-                }
-                int clr = table[offset];
-                out.append(getColorString(clr));
-                anyColorization = true;
-            } else if (idx == 0x0B) {
-                offset++;
-                if (offset >= table.length) {
-                    break;
-                }
-                int ctrlIdx = table[offset];
-                out.append("{CTRL:").append(formatHex2(ctrlIdx)).append(':').append(getControllerInput(ctrlIdx)).append('}');
-            } else if (idx == 0x10) {
-                offset++;
-                if (offset >= table.length) {
-                    break;
-                }
-                int rawValue = table[offset];
-                if (rawValue == 0xFF) {
-                    out.append("{CHOICE-END}");
-                } else {
-                    int choiceIdx = rawValue - 0x30;
-                    out.append("{CHOICE:").append(formatHex2(choiceIdx)).append('}');
-                }
-            } else if (idx == 0x12) {
-                offset++;
-                if (offset >= table.length) {
-                    break;
-                }
-                int varIdx = table[offset] - 0x30;
-                out.append("{VAR:").append(formatHex2(varIdx)).append('}');
-            } else if (idx == 0x13 && table[offset+1] <= 0x43) {
-                offset++;
-                if (offset >= table.length) {
-                    break;
-                }
-                int pcIdx = table[offset] - 0x30;
-                out.append("{PC:").append(formatHex2(pcIdx)).append(':').append(getPlayerChar(pcIdx)).append('}');
-            } else if (idx >= 0x13 && idx <= 0x22) {
-                int section = idx - 0x13;
-                offset++;
-                if (offset >= table.length) {
-                    break;
-                }
-                int line = table[offset] - 0x30;
-                out.append("{MCR:s").append(formatHex2(section)).append('l').append(formatHex2(line));
-                if (!MACRO_LOOKUP.isEmpty()) {
-                    out.append(':');
-                    int index = section * 0x100 + line;
-                    if (MACRO_LOOKUP.containsKey(index)) {
-                        out.append('"').append(MACRO_LOOKUP.get(index).getLocalizedContent(localization)).append('"');
-                    } else {
-                        out.append("<Missing>");
-                    }
-                }
-                out.append('}');
-            } else if (idx == 0x23) {
-                offset++;
-                if (offset >= table.length) {
-                    break;
-                }
-                int varIdx = table[offset] - 0x30;
-                out.append("{KEY:").append(formatHex2(varIdx));
-                try {
-                    KeyItemDataObject keyItem = DataAccess.getKeyItem(varIdx + 0xA000);
-                    if (keyItem != null) {
-                        out.append(':').append('"').append(keyItem.getName(localization)).append('"');
-                    }
-                } catch (UnsupportedOperationException ignored) {}
-                out.append('}');
-            } else if (idx == 0x28) {
-                offset++;
-                if (offset >= table.length) {
-                    break;
-                }
-                int varIdx = table[offset] - 0x30;
-                out.append("{CMD:28:").append(formatHex2(varIdx)).append('}');
-            } else if (idx == 0x2A) {
-                offset++;
-                if (offset >= table.length) {
-                    break;
-                }
-                int varIdx = table[offset] - 0x30;
-                out.append("{CMD:2A:").append(formatHex2(varIdx)).append('}');
             } else if (idx >= 0x2B) {
                 int section = idx - 0x2B;
                 offset++;
@@ -425,12 +326,136 @@ public abstract class StringHelper {
                             .append(formatHex2(lowByte)).append('}');
                 }
             } else {
-                offset++;
-                if (offset >= table.length) {
-                    break;
+                if (extraOffset != 0) {
+                    Character chr = byteToChar(idx + extraOffset, charset);
+                    if (chr != null) {
+                        out.append(chr);
+                    } else {
+                        out.append("{UNKDBLCHR:04:").append(formatHex2(idx)).append('}');
+                    }
+                } else if (idx == 0x01) {
+                    out.append("{PAUSE}");
+                } else if (idx == 0x03) {
+                    out.append(WRITE_LINEBREAKS_AS_COMMANDS ? "{\\n}" : '\n');
+                } else if (idx == 0x04) {
+                    extraFiveSections = true;
+                } else if (idx == 0x07) {
+                    offset++;
+                    if (offset >= table.length) {
+                        break;
+                    }
+                    int pixels = table[offset] - 0x30;
+                    out.append("{SPACE:").append(formatHex2(pixels)).append('}');
+                } else if (idx == 0x09) {
+                    offset++;
+                    if (offset >= table.length) {
+                        break;
+                    }
+                    int varIdx = table[offset] - 0x30;
+                    out.append("{TIME:").append(formatHex2(varIdx)).append('}');
+                } else if (idx == 0x0A) {
+                    offset++;
+                    if (offset >= table.length) {
+                        break;
+                    }
+                    int clr = table[offset];
+                    out.append(getColorString(clr));
+                    anyColorization = true;
+                } else if (idx == 0x0B) {
+                    offset++;
+                    if (offset >= table.length) {
+                        break;
+                    }
+                    int ctrlIdx = table[offset];
+                    out.append("{CTRL:").append(formatHex2(ctrlIdx)).append(':').append(getControllerInput(ctrlIdx)).append('}');
+                } else if (idx == 0x10) {
+                    offset++;
+                    if (offset >= table.length) {
+                        break;
+                    }
+                    int rawValue = table[offset];
+                    if (rawValue == 0xFF) {
+                        out.append("{CHOICE-END}");
+                    } else {
+                        int choiceIdx = rawValue - 0x30;
+                        out.append("{CHOICE:").append(formatHex2(choiceIdx)).append('}');
+                    }
+                } else if (idx == 0x12) {
+                    offset++;
+                    if (offset >= table.length) {
+                        break;
+                    }
+                    int varIdx = table[offset] - 0x30;
+                    out.append("{VAR:").append(formatHex2(varIdx)).append('}');
+                } else if (idx == 0x13 && table[offset+1] <= 0x43) {
+                    offset++;
+                    if (offset >= table.length) {
+                        break;
+                    }
+                    int pcIdx = table[offset] - 0x30;
+                    out.append("{PC:").append(formatHex2(pcIdx)).append(':').append(getPlayerChar(pcIdx)).append('}');
+                } else if (idx >= 0x13 && idx <= 0x22) {
+                    int section = idx - 0x13;
+                    offset++;
+                    if (offset >= table.length) {
+                        break;
+                    }
+                    int line = table[offset] - 0x30;
+                    out.append("{MCR:s").append(formatHex2(section)).append('l').append(formatHex2(line));
+                    if (!MACRO_LOOKUP.isEmpty()) {
+                        out.append(':');
+                        int index = section * 0x100 + line;
+                        if (MACRO_LOOKUP.containsKey(index)) {
+                            out.append('"').append(MACRO_LOOKUP.get(index).getLocalizedContent(localization)).append('"');
+                        } else {
+                            out.append("<Missing>");
+                        }
+                    }
+                    out.append('}');
+                } else if (idx == 0x23) {
+                    offset++;
+                    if (offset >= table.length) {
+                        break;
+                    }
+                    int varIdx = table[offset];
+                    out.append("{KEY:").append(formatHex2(varIdx));
+                    try {
+                        KeyItemDataObject keyItem = DataAccess.getKeyItem(varIdx + 0xA000 - 0x30);
+                        if (keyItem != null) {
+                            out.append(':').append('"').append(keyItem.getName(localization)).append('"');
+                        }
+                    } catch (UnsupportedOperationException ignored) {
+                    }
+                    out.append('}');
+                } else if (idx == 0x27) {
+                    offset++;
+                    if (offset >= table.length) {
+                        break;
+                    }
+                    int arg = table[offset];
+                    out.append("{UNK27:").append(formatHex2(arg)).append('}');
+                } else if (idx == 0x28) {
+                    offset++;
+                    if (offset >= table.length) {
+                        break;
+                    }
+                    int varIdx = table[offset] - 0x30;
+                    out.append("{CMD:28:").append(formatHex2(varIdx)).append('}');
+                } else if (idx == 0x2A) {
+                    offset++;
+                    if (offset >= table.length) {
+                        break;
+                    }
+                    int varIdx = table[offset] - 0x30;
+                    out.append("{CMD:2A:").append(formatHex2(varIdx)).append('}');
+                } else {
+                    offset++;
+                    if (offset >= table.length) {
+                        break;
+                    }
+                    int varIdx = table[offset] - 0x30;
+                    out.append("{CMD:").append(formatHex2(idx)).append(':').append(formatHex2(varIdx)).append('}');
                 }
-                int varIdx = table[offset] - 0x30;
-                out.append("{CMD:").append(formatHex2(idx)).append(':').append(formatHex2(varIdx)).append('}');
             }
             offset++;
         }
@@ -514,8 +539,17 @@ public abstract class StringHelper {
             int line = Integer.parseInt(cmd.substring(10, 12), 16) + 0x30;
             return List.of(section, line);
         } else if (cmd.startsWith("KEY:")) {
-            int keyItemIdx = Integer.parseInt(cmd.substring(4, 6), 16) + 0x30;
+            int keyItemIdx = Integer.parseInt(cmd.substring(4, 6), 16);
             return List.of(0x23, keyItemIdx);
+        } else if (cmd.startsWith("KEY04:")) {
+            int keyItemIdx = Integer.parseInt(cmd.substring(6, 8), 16);
+            return List.of(0x04, 0x23, keyItemIdx);
+        } else if (cmd.startsWith("UNK27:")) {
+            int arg = Integer.parseInt(cmd.substring(6, 8), 16);
+            return List.of(0x27, arg);
+        } else if (cmd.startsWith("UNK0427:")) {
+            int arg = Integer.parseInt(cmd.substring(8, 10), 16);
+            return List.of(0x04, 0x27, arg);
         } else if (cmd.startsWith("CMD:")) {
             int cmdIdx = Integer.parseInt(cmd.substring(4, 6), 16);
             int arg = Integer.parseInt(cmd.substring(7, 9), 16) + 0x30;

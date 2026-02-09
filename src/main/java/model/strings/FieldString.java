@@ -4,6 +4,7 @@ import main.StringHelper;
 import reading.BytesHelper;
 
 import java.util.*;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class FieldString {
@@ -22,6 +23,15 @@ public class FieldString {
                 FieldString out = new FieldString(charset, regularHeader, simplifiedHeader, bytes);
                 if (print) {
                     System.out.printf("String %s: %s%n", StringHelper.hex2WithSuffix(i), out);
+                    String stringR = Arrays.stream(out.regularBytes).mapToObj(b -> StringHelper.formatHex2(b)).collect(Collectors.joining(" "));
+                    List<Integer> byteList = StringHelper.stringToByteList(out.getRegularString(), charset);
+                    String stringW = byteList.stream().map(b -> StringHelper.formatHex2(b)).collect(Collectors.joining(" "));
+                    if (!stringW.equals(stringR)) {
+                        System.out.println("Unequal!");
+                        System.out.printf("BytesR: %s%n", stringR);
+                        System.out.printf("BytesW: %s%n", stringW);
+                        System.out.printf("StringW%s: %s%n", StringHelper.hex2WithSuffix(i), new FieldString(charset, 0, 0, BytesHelper.intListToArray(byteList)).getRegularString());
+                    }
                 }
                 strings.add(out);
             }

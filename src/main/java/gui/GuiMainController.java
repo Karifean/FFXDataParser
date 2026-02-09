@@ -452,11 +452,11 @@ public class GuiMainController implements Initializable {
     @FXML
     public void onSave() {
         if (selectedEvent != null) {
-            selectedEvent.writeToMods(false, true);
+            selectedEvent.writeToMods(true, true);
             System.out.println("saved selected event");
         }
         if (selectedEncounter != null) {
-            selectedEncounter.writeToMods(false, true);
+            selectedEncounter.writeToMods(true, true);
             System.out.println("saved selected encounter");
         }
         if (selectedMonster != null) {
