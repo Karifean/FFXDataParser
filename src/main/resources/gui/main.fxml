@@ -55,7 +55,6 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Pane?>
 <?import javafx.scene.layout.VBox?>
-<?import javafx.scene.paint.Color?>
 <?import javafx.scene.text.Font?>
 <?import javafx.scene.text.Text?>
 
@@ -363,13 +362,13 @@
                                              <children>
                                                 <TableView fx:id="tableVariables" prefHeight="200.0" prefWidth="200.0" VBox.vgrow="ALWAYS">
                                                   <columns>
-                                                    <TableColumn fx:id="tableVariablesColumnIndex" editable="false" prefWidth="51.0" sortable="false" text="Index" />
-                                                    <TableColumn fx:id="tableVariablesColumnLabel" prefWidth="99.0" sortable="false" text="Label" />
-                                                      <TableColumn fx:id="tableVariablesColumnLocation" editable="false" prefWidth="75.0" sortable="false" text="Location" />
+                                                    <TableColumn fx:id="tableVariablesColumnIndex" editable="false" prefWidth="45.0" sortable="false" text="Index" />
+                                                    <TableColumn fx:id="tableVariablesColumnLabel" prefWidth="150.0" sortable="false" text="Label" />
+                                                      <TableColumn fx:id="tableVariablesColumnLocation" editable="false" prefWidth="120.0" sortable="false" text="Location" />
                                                       <TableColumn fx:id="tableVariablesColumnOffset" editable="false" prefWidth="75.0" sortable="false" text="Offset" />
-                                                      <TableColumn fx:id="tableVariablesColumnType" editable="false" prefWidth="75.0" sortable="false" text="Type" />
-                                                      <TableColumn fx:id="tableVariablesColumnFormat" editable="false" prefWidth="75.0" sortable="false" text="Format" />
-                                                      <TableColumn fx:id="tableVariablesColumnArray" editable="false" prefWidth="75.0" sortable="false" text="Array" />
+                                                      <TableColumn fx:id="tableVariablesColumnType" editable="false" prefWidth="100.0" sortable="false" text="Type" />
+                                                      <TableColumn fx:id="tableVariablesColumnFormat" editable="false" sortable="false" text="Format" />
+                                                      <TableColumn fx:id="tableVariablesColumnArray" editable="false" prefWidth="125.0" sortable="false" text="Array" />
                                                       <TableColumn fx:id="tableVariablesColumnDelete" editable="false" prefWidth="75.0" sortable="false" text="Delete" />
                                                   </columns>
                                                 </TableView>
@@ -392,22 +391,5 @@
         </AnchorPane>
       </items>
     </SplitPane>
-    <HBox id="HBox" alignment="CENTER_LEFT" spacing="5.0" VBox.vgrow="NEVER">
-      <children>
-        <Label maxHeight="1.7976931348623157E308" maxWidth="-1.0" text="Left status" HBox.hgrow="ALWAYS">
-          <font>
-            <Font size="11.0" fx:id="x3" />
-          </font>
-          <textFill>
-            <Color red="0.625" green="0.625" blue="0.625" fx:id="x4" />
-          </textFill>
-        </Label>
-        <Pane prefHeight="-1.0" prefWidth="-1.0" HBox.hgrow="ALWAYS" />
-        <Label font="$x3" maxWidth="-1.0" text="Right status" textFill="$x4" HBox.hgrow="NEVER" />
-      </children>
-      <padding>
-        <Insets bottom="3.0" left="3.0" right="3.0" top="3.0" />
-      </padding>
-    </HBox>
   </children>
 </VBox>

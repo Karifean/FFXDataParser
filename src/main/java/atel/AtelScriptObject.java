@@ -1191,6 +1191,10 @@ public class AtelScriptObject {
 
     public void addNewVariable() {
         ScriptVariable newVar = new ScriptVariable(workers.getFirst(), variableDeclarations.size(), 0, 0);
+        newVar.location = 3;
+        newVar.format = 3;
+        newVar.declaredType = "int";
+        newVar.elementCount = 1;
         variableDeclarations.add(newVar);
     }
 

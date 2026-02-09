@@ -13,13 +13,13 @@ public class ScriptVariable {
     public static final int LENGTH = 0x8;
     public static final int SAVEDATA_ATEL_OFFSET = 0x1EC;
     public int index;
-    public final int offset;
+    public int offset;
     public final int formatLocationByte;
-    public final int format;
-    public final int location;
+    public int format;
+    public int location;
     public final int unknownBit;
-    public final int elementCount;
-    public final int elementSize;
+    public int elementCount;
+    public int elementSize;
     public final List<StackObject> values = new ArrayList<>();
 
     public ScriptWorker parentWorker;
@@ -148,6 +148,10 @@ public class ScriptVariable {
         String elements = elementSize > 1 ? elementCount + "=" + (elementCount / elementSize) + "*" + elementSize + "bytes" : ""+elementCount;
         String arrayIndex = "[" + elements + "]";
         return myType + arrayIndex + rawTypeSuffix;
+    }
+
+    public boolean canRename() {
+        return location >= 2;
     }
 
     public String getLabel(ScriptWorker worker) {

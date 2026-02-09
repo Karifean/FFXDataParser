@@ -15,7 +15,6 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import main.DataAccess;
-import model.CommandDataObject;
 import model.MonsterStatDataObject;
 import model.strings.FieldString;
 import model.strings.LocalizedFieldStringObject;
@@ -53,12 +52,7 @@ public class GuiAtelLineTree {
         vBox.getChildren().add(hBox);
         MenuButton opcodeSelect = makeOpcodeSelect(inputType, input);
         hBox.getChildren().add(opcodeSelect);
-        OpcodeChoice selectedOpcodeItem = (OpcodeChoice) opcodeSelect.getUserData();
-        if (selectedOpcodeItem.opcode() == -2) {
-            MenuButton typeSelect = makeTypeSelect(inputType, input);
-            hBox.getChildren().add(typeSelect);
-        }
-        Node opcodeArgInput = makeOpcodeArgInput(selectedOpcodeItem, inputType, input);
+        Node opcodeArgInput = makeOpcodeArgInput(inputType, input);
         if (opcodeArgInput != null) {
             hBox.getChildren().add(opcodeArgInput);
         }
@@ -73,16 +67,6 @@ public class GuiAtelLineTree {
             opcodeSelect.setUserData(selected.getUserData());
         }
         return opcodeSelect;
-    }
-
-    private MenuButton makeTypeSelect(String inputType, ScriptInstruction input) {
-        String selected = input.getOutputType(state);
-        MenuButton typeSelect = new MenuButton(selected);
-        List<String> types = ScriptConstants.FFX.ENUMERATIONS.keySet().stream().filter(s -> !inputType.equals(s)).toList();
-        for (String t : types) {
-            typeSelect.getItems().add(new MenuItem(t));
-        }
-        return typeSelect;
     }
 
     private MenuItem findSelectedOpcodeItem(MenuButton opcodeSelect, ScriptInstruction input) {
@@ -104,7 +88,7 @@ public class GuiAtelLineTree {
         return null;
     }
 
-    private Node makeOpcodeArgInput(OpcodeChoice selectedOption, String inputType, ScriptInstruction input) {
+    private Node makeOpcodeArgInput(String inputType, ScriptInstruction input) {
         int opcode = input.opcode;
         if (opcode == 0xD8 || opcode == 0xB5) {
             MenuButton funcSelect = ScriptFuncLib.FFX.getCallChoices((choice, event) -> onIntArgvChanged(input, choice.func() != null ? choice.func().idx : null, event), inputType);
@@ -116,7 +100,7 @@ public class GuiAtelLineTree {
             return funcSelect;
         }
         if (opcode == 0xAD || opcode == 0xAE || opcode == 0xAF || opcode == 0xF6) {
-            int val = opcode == 0xAE ? input.argvSigned : input.dereferencedArg;
+            int val = opcode == 0xAE ? input.argvSigned : (input.dereferencedArg == null ? 0 : input.dereferencedArg);
             String content = opcode == 0xAF ? String.valueOf(Float.intBitsToFloat(val)) : String.valueOf(val);
             final boolean isFloat = opcode == 0xAF || "float".equals(inputType);
             TextField textField = new TextField(content);
@@ -263,17 +247,17 @@ public class GuiAtelLineTree {
             }
             enumMenu.getItems().add(itembin);
         } else if ("localString".equals(inputType) || "system01String".equals(inputType)) {
-            AtelScriptObject target = "system01String".equals(inputType) ? DataAccess.getEncounter("system01").encounterScript : controller.selectedAtelObject;
-            if (target.strings != null) {
-                if (selected >= 0 && selected < target.strings.size()) {
-                    LocalizedFieldStringObject obj = target.strings.get(selected);
+            List<LocalizedFieldStringObject> strings = "system01String".equals(inputType) ? DataAccess.getEncounter("system_01").strings : controller.selectedAtelObject.strings;
+            if (strings != null) {
+                if (selected >= 0 && selected < strings.size()) {
+                    LocalizedFieldStringObject obj = strings.get(selected);
                     String selectedStr = obj.getLocalizedString(mainLocalization);
                     if (selectedStr != null) {
                         enumMenu.setText(selectedStr);
                     }
                 }
-                for (int i = 0; i < target.strings.size(); i++) {
-                    LocalizedFieldStringObject str = target.strings.get(i);
+                for (int i = 0; i < strings.size(); i++) {
+                    LocalizedFieldStringObject str = strings.get(i);
                     FieldString localizedContent = str.getLocalizedContent(mainLocalization);
                     String label = localizedContent != null ? localizedContent.getString() : "<Missing!>";
                     if (label.length() > 100) {
@@ -508,6 +492,14 @@ public class GuiAtelLineTree {
             return;
         }
         instruction.dereferencedArg = argv;
+        if (scriptLine.parentWorker.refFloats != null) {
+            for (int i = 0; i < scriptLine.parentWorker.refFloats.length; i++) {
+                if (scriptLine.parentWorker.refFloats[i] == argv) {
+                    controller.changeInstructionOpcode(instruction, 0xAF, i);
+                    return;
+                }
+            }
+        }
         controller.changeInstructionOpcode(instruction, 0xAF, scriptLine.parentWorker.refFloatCount++);
     }
 
@@ -516,16 +508,19 @@ public class GuiAtelLineTree {
             return;
         }
         boolean isImmediate = argv <= 32767 && argv >= -32768;
-        boolean wasImmediate = instruction.opcode != 0xAD;
         if (isImmediate) {
             instruction.dereferencedArg = null;
-            if (wasImmediate) {
-                controller.changeInstructionArgv(instruction, argv);
-            } else {
-                controller.changeInstructionOpcode(instruction, 0xAE, argv);
-            }
+            controller.changeInstructionOpcode(instruction, 0xAE, argv);
         } else {
             instruction.dereferencedArg = argv;
+            if (scriptLine.parentWorker.refInts != null) {
+                for (int i = 0; i < scriptLine.parentWorker.refInts.length; i++) {
+                    if (scriptLine.parentWorker.refInts[i] == argv) {
+                        controller.changeInstructionOpcode(instruction, 0xAD, i);
+                        return;
+                    }
+                }
+            }
             controller.changeInstructionOpcode(instruction, 0xAD, scriptLine.parentWorker.refIntCount++);
         }
     }

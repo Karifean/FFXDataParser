@@ -294,7 +294,7 @@ public class ScriptOpcode extends ScriptField {
         getValueChildren.add(opcodeChoice(0x9F, "Get variable", action));
         getValueChildren.add(opcodeChoice(0xA2, "Get array item", action));
         getValueChildren.add(opcodeChoice(0x29, "case (rY)", action));
-        getValueChildren.add(opcodeChoice(-2, "Convert from Integer", action));
+        // getValueChildren.add(opcodeChoice(-2, "Convert from Integer", action));
         MenuItem cloneItem = opcodeChoice(0x2B, "Clone", action);
         cloneItem.setDisable(true);
         getValueChildren.add(cloneItem);
@@ -322,57 +322,6 @@ public class ScriptOpcode extends ScriptField {
             comparisonChoices.add(opcodeChoice(0x0C, "Greater or equal (unsigned)", action));
             comparisonChoices.add(opcodeChoice(0x0D, "Less or equal (unsigned)", action));
             return boolRoot;
-        }
-
-        if (type.equals("int") || type.equals("uint")) {
-            MenuButton intRoot = new MenuButton();
-            ObservableList<MenuItem> intRootChoices = intRoot.getItems();
-            Menu getIntValueRoot = opcodeChoice("Value");
-            intRootChoices.add(getIntValueRoot);
-            ObservableList<MenuItem> getIntValueChildren = getIntValueRoot.getItems();
-            MenuItem valueAE = opcodeChoice(0xAE, "Value", action);
-            getIntValueChildren.add(valueAE);
-            intRoot.setText(valueAE.getText());
-            intRoot.setUserData(valueAE.getUserData());
-            getIntValueChildren.add(opcodeChoice(0xB5, "Call", action));
-            getIntValueChildren.add(opcodeChoice(0x9F, "Get variable", action));
-            getIntValueChildren.add(opcodeChoice(0xA2, "Get array item", action));
-            getIntValueChildren.add(opcodeChoice(0x26, "Last call result (rA)", action));
-            getIntValueChildren.add(opcodeChoice(0x28, "test (rX)", action));
-            getIntValueChildren.add(opcodeChoice(0x29, "case (rY)", action));
-            Menu arithmeticRoot = opcodeChoice("Arithmetic");
-            intRootChoices.add(arithmeticRoot);
-            ObservableList<MenuItem> arithmeticChoices = arithmeticRoot.getItems();
-            arithmeticChoices.add(opcodeChoice(0x14, "Add", action));
-            arithmeticChoices.add(opcodeChoice(0x15, "Subtract", action));
-            arithmeticChoices.add(opcodeChoice(0x16, "Multiply", action));
-            arithmeticChoices.add(opcodeChoice(0x17, "Divide", action));
-            arithmeticChoices.add(opcodeChoice(0x18, "Modulo", action));
-            arithmeticChoices.add(opcodeChoice(0x1A, "Negate", action));
-            Menu bitOpsRoot = opcodeChoice("Bitwise Operations");
-            intRootChoices.add(bitOpsRoot);
-            ObservableList<MenuItem> bitOpsChoices = bitOpsRoot.getItems();
-            bitOpsChoices.add(opcodeChoice(0x05, "& bitwise AND", action));
-            bitOpsChoices.add(opcodeChoice(0x03, "| bitwise OR", action));
-            bitOpsChoices.add(opcodeChoice(0x04, "^ bitwise XOR", action));
-            bitOpsChoices.add(opcodeChoice(0x1C, "~ bitwise NOT", action));
-            bitOpsChoices.add(opcodeChoice(0x12, "<< Shift left by", action));
-            bitOpsChoices.add(opcodeChoice(0x13, ">> Shift right by", action));
-            bitOpsChoices.add(opcodeChoice(0x10, "Turn on bit", action));
-            bitOpsChoices.add(opcodeChoice(0x11, "Turn off bit", action));
-
-            Menu tempIRoot = opcodeChoice("Temp Variables");
-            intRootChoices.add(tempIRoot);
-            ObservableList<MenuItem> tempIChoices = tempIRoot.getItems();
-            tempIChoices.add(opcodeChoice(0x67, "Temp integer I0", action));
-            tempIChoices.add(opcodeChoice(0x68, "Temp integer I1", action));
-            tempIChoices.add(opcodeChoice(0x69, "Temp integer I2", action));
-            tempIChoices.add(opcodeChoice(0x6A, "Temp integer I3", action));
-            MenuItem clone = opcodeChoice(0x2B, "Clone", action);
-            clone.setDisable(true);
-            intRootChoices.add(clone);
-            intRootChoices.add(opcodeChoice(-2, "Convert", action));
-            return intRoot;
         }
 
         if (type.equals("float")) {
@@ -403,7 +352,7 @@ public class ScriptOpcode extends ScriptField {
             tempFChoices.add(opcodeChoice(0x73, "Temp float F8", action));
             tempFChoices.add(opcodeChoice(0x74, "Temp float F9", action));
 
-            floatRootChoices.add(opcodeChoice(-2, "Convert from Integer", action));
+            // floatRootChoices.add(opcodeChoice(-2, "Convert from Integer", action));
             return floatRoot;
         }
 
@@ -411,7 +360,7 @@ public class ScriptOpcode extends ScriptField {
             MenuButton pointerRoot = new MenuButton();
             ObservableList<MenuItem> pointerRootChoices = pointerRoot.getItems();
             pointerRootChoices.add(opcodeChoice(0xA7, "Get array pointer", action));
-            MenuItem valueAE = opcodeChoice(0xAE, "Value", action);
+            MenuItem valueAE = opcodeChoice(0xAE, "Direct", action);
             pointerRootChoices.add(valueAE);
             pointerRoot.setText(valueAE.getText());
             pointerRoot.setUserData(valueAE.getUserData());
@@ -428,12 +377,57 @@ public class ScriptOpcode extends ScriptField {
             return runningRoot;
         }
 
-        MenuButton unkRoot = new MenuButton();
-        ObservableList<MenuItem> unkRootChoices = unkRoot.getItems();
-        unkRootChoices.add(getValueRoot);
-        unkRoot.setText(directAE.getText());
-        unkRoot.setUserData(directAE.getUserData());
-        return unkRoot;
+
+
+        MenuButton intRoot = new MenuButton();
+        ObservableList<MenuItem> intRootChoices = intRoot.getItems();
+        Menu getIntValueRoot = opcodeChoice("Value");
+        intRootChoices.add(getIntValueRoot);
+        ObservableList<MenuItem> getIntValueChildren = getIntValueRoot.getItems();
+        MenuItem valueAE = opcodeChoice(0xAE, "Direct", action);
+        getIntValueChildren.add(valueAE);
+        intRoot.setText(valueAE.getText());
+        intRoot.setUserData(valueAE.getUserData());
+        getIntValueChildren.add(opcodeChoice(0xB5, "Call", action));
+        getIntValueChildren.add(opcodeChoice(0x9F, "Get variable", action));
+        getIntValueChildren.add(opcodeChoice(0xA2, "Get array item", action));
+        getIntValueChildren.add(opcodeChoice(0x26, "Last call result (rA)", action));
+        getIntValueChildren.add(opcodeChoice(0x28, "test (rX)", action));
+        getIntValueChildren.add(opcodeChoice(0x29, "case (rY)", action));
+        getIntValueChildren.add(opcodeChoice(0xAF, "Float", action));
+        Menu arithmeticRoot = opcodeChoice("Arithmetic");
+        intRootChoices.add(arithmeticRoot);
+        ObservableList<MenuItem> arithmeticChoices = arithmeticRoot.getItems();
+        arithmeticChoices.add(opcodeChoice(0x14, "Add", action));
+        arithmeticChoices.add(opcodeChoice(0x15, "Subtract", action));
+        arithmeticChoices.add(opcodeChoice(0x16, "Multiply", action));
+        arithmeticChoices.add(opcodeChoice(0x17, "Divide", action));
+        arithmeticChoices.add(opcodeChoice(0x18, "Modulo", action));
+        arithmeticChoices.add(opcodeChoice(0x1A, "Negate", action));
+        Menu bitOpsRoot = opcodeChoice("Bitwise Operations");
+        intRootChoices.add(bitOpsRoot);
+        ObservableList<MenuItem> bitOpsChoices = bitOpsRoot.getItems();
+        bitOpsChoices.add(opcodeChoice(0x05, "& bitwise AND", action));
+        bitOpsChoices.add(opcodeChoice(0x03, "| bitwise OR", action));
+        bitOpsChoices.add(opcodeChoice(0x04, "^ bitwise XOR", action));
+        bitOpsChoices.add(opcodeChoice(0x1C, "~ bitwise NOT", action));
+        bitOpsChoices.add(opcodeChoice(0x12, "<< Shift left by", action));
+        bitOpsChoices.add(opcodeChoice(0x13, ">> Shift right by", action));
+        bitOpsChoices.add(opcodeChoice(0x10, "Turn on bit", action));
+        bitOpsChoices.add(opcodeChoice(0x11, "Turn off bit", action));
+
+        Menu tempIRoot = opcodeChoice("Temp Variables");
+        intRootChoices.add(tempIRoot);
+        ObservableList<MenuItem> tempIChoices = tempIRoot.getItems();
+        tempIChoices.add(opcodeChoice(0x67, "Temp integer I0", action));
+        tempIChoices.add(opcodeChoice(0x68, "Temp integer I1", action));
+        tempIChoices.add(opcodeChoice(0x69, "Temp integer I2", action));
+        tempIChoices.add(opcodeChoice(0x6A, "Temp integer I3", action));
+        MenuItem clone = opcodeChoice(0x2B, "Clone", action);
+        clone.setDisable(true);
+        intRootChoices.add(clone);
+        // intRootChoices.add(opcodeChoice(-2, "Convert", action));
+        return intRoot;
         /*
         OPCODE_LABELS[0x39] = "PREQ";
         OPCODE_LABELS[0x3A] = "PREQSW";

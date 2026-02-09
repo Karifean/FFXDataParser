@@ -504,11 +504,12 @@ public class ScriptWorker {
         }
     }
 
-    public void addBlankEntryPoint() {
+    public ScriptJump addBlankEntryPoint() {
         ScriptJump extra = new ScriptJump(this, -1, entryPoints.size(), true);
         entryPoints.add(extra);
         ScriptInstruction ins = new ScriptInstruction(-1, 0x3C);
         extra.targetLine = new ScriptLine(this, -1, List.of(ins), List.of(extra));
+        return extra;
     }
 
     private void collectJumps(int cursor, Map<Integer, List<ScriptJump>> scriptJumpsByDestination, List<ScriptJump> jumpsOnLine, boolean isArgByte) {

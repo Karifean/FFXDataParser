@@ -5,6 +5,7 @@ import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.ObservableList;
 import javafx.scene.control.*;
+import javafx.scene.layout.HBox;
 import javafx.scene.text.Text;
 
 import java.util.HashMap;
@@ -36,6 +37,8 @@ public class GuiTableSetup {
                             workerTypeChoiceBox.setText(StackObject.enumToString("eventWorkerType", w.eventWorkerType));
                             addEventWorkerTypeChoices(controller, workerTypeChoiceBox.getItems(), w);
                         }
+                    } else {
+                        workerTypeChoiceBox.setText("");
                     }
                 }
             }
@@ -57,6 +60,164 @@ public class GuiTableSetup {
             }
         });
         controller.tableVariablesColumnIndex.setCellValueFactory(cdf -> new SimpleStringProperty(cdf.getValue().getIndexLabel()));
+        controller.tableVariablesColumnLabel.setCellValueFactory(cdf -> new SimpleObjectProperty<>(cdf.getValue()));
+        controller.tableVariablesColumnLabel.setCellFactory(col -> new TableCell<>() {
+            final TextField input = new TextField();
+            @Override
+            protected void updateItem(ScriptVariable vr, boolean empty) {
+                super.updateItem(vr, empty);
+                if (empty) {
+                    setGraphic(null);
+                } else {
+                    setGraphic(input);
+                    if (vr != null) {
+                        boolean canRename = vr.canRename();
+                        input.setDisable(!canRename);
+                        input.setPromptText(vr.getLabel(null));
+                        if (canRename) {
+                            input.setText(vr.declaredLabel);
+                            input.setOnAction(actionEvent -> controller.onRenameVariable(vr, input.getText()));
+                        } else {
+                            input.setText("");
+                        }
+                    } else {
+                        input.setDisable(true);
+                        input.setText("");
+                    }
+                }
+            }
+        });
+        controller.tableVariablesColumnType.setCellValueFactory(cdf -> new SimpleObjectProperty<>(cdf.getValue()));
+        controller.tableVariablesColumnType.setCellFactory(col -> new TableCell<>() {
+            final TextField input = new TextField();
+            @Override
+            protected void updateItem(ScriptVariable vr, boolean empty) {
+                super.updateItem(vr, empty);
+                if (empty) {
+                    setGraphic(null);
+                } else {
+                    setGraphic(input);
+                    if (vr != null) {
+                        input.setText(vr.getType());
+                        input.setOnAction(actionEvent -> controller.onChangeVariableType(vr, input.getText()));
+                    } else {
+                        input.setText("");
+                    }
+                }
+            }
+        });
+        controller.tableVariablesColumnLocation.setCellValueFactory(cdf -> new SimpleObjectProperty<>(cdf.getValue()));
+        controller.tableVariablesColumnLocation.setCellFactory(col -> new TableCell<>() {
+            final MenuButton variableLocationChoiceBox = new MenuButton();
+            @Override
+            protected void updateItem(ScriptVariable vr, boolean empty) {
+                super.updateItem(vr, empty);
+                if (empty) {
+                    setGraphic(null);
+                } else {
+                    setGraphic(variableLocationChoiceBox);
+                    ObservableList<MenuItem> items = variableLocationChoiceBox.getItems();
+                    items.clear();
+                    for (int i = 0; i <= 6; i++) {
+                        final int loc = i;
+                        MenuItem item = new MenuItem(ScriptVariable.locationToString(loc));
+                        item.setOnAction(actionEvent -> controller.onChangeVariableLocation(vr, loc));
+                        items.add(item);
+                    }
+                    if (vr != null) {
+                        variableLocationChoiceBox.setText(ScriptVariable.locationToString(vr.location));
+                    } else {
+                        variableLocationChoiceBox.setText("");
+                    }
+                }
+            }
+        });
+        controller.tableVariablesColumnOffset.setCellValueFactory(cdf -> new SimpleObjectProperty<>(cdf.getValue()));
+        controller.tableVariablesColumnOffset.setCellFactory(col -> new TableCell<>() {
+            final TextField input = new TextField();
+            @Override
+            protected void updateItem(ScriptVariable vr, boolean empty) {
+                super.updateItem(vr, empty);
+                if (empty) {
+                    setGraphic(null);
+                } else {
+                    setGraphic(input);
+                    if (vr != null) {
+                        input.setText(String.format("%d", vr.offset));
+                        input.setOnAction(actionEvent -> controller.onChangeVariableOffset(vr, input.getText()));
+                    } else {
+                        input.setText("");
+                    }
+                }
+            }
+        });
+        controller.tableVariablesColumnArray.setCellValueFactory(cdf -> new SimpleObjectProperty<>(cdf.getValue()));
+        controller.tableVariablesColumnArray.setCellFactory(col -> new TableCell<>() {
+            final HBox hbox = new HBox();
+            final CheckBox checkBox = new CheckBox();
+            final TextField elementCountInput = new TextField();
+            final TextField elementSizeInput = new TextField();
+            @Override
+            protected void updateItem(ScriptVariable vr, boolean empty) {
+                super.updateItem(vr, empty);
+                if (empty) {
+                    setGraphic(null);
+                } else {
+                    setGraphic(hbox);
+                    if (hbox.getChildren().isEmpty()) {
+                        hbox.getChildren().add(checkBox);
+                        hbox.getChildren().add(elementCountInput);
+                        hbox.getChildren().add(elementSizeInput);
+                        hbox.setSpacing(10);
+                        elementCountInput.setPrefWidth(30);
+                        elementSizeInput.setPrefWidth(30);
+                    }
+                    if (vr != null) {
+                        boolean isArray = vr.elementCount > 1;
+                        checkBox.setSelected(isArray);
+                        elementCountInput.setText(String.format("%d", vr.elementCount));
+                        elementSizeInput.setText(vr.elementSize > 0 ? String.format("%d", vr.elementSize) : "");
+                        elementCountInput.setVisible(isArray);
+                        elementSizeInput.setVisible(isArray);
+                        checkBox.setOnAction(actionEvent -> controller.onChangeVariableArrayValues(vr, checkBox.isSelected(), vr.elementCount <= 1 ? 2 : vr.elementCount, vr.elementSize));
+                        elementCountInput.setOnAction(actionEvent -> controller.onChangeVariableArrayValues(vr, true, Integer.parseInt(elementCountInput.getText(), 10), vr.elementSize));
+                        elementSizeInput.setOnAction(actionEvent -> controller.onChangeVariableArrayValues(vr, true, vr.elementCount, Integer.parseInt(elementSizeInput.getText(), 10)));
+                    } else {
+                        checkBox.setSelected(false);
+                        elementCountInput.setText("");
+                        elementSizeInput.setText("");
+                        elementCountInput.setVisible(false);
+                        elementSizeInput.setVisible(false);
+                    }
+                }
+            }
+        });
+        controller.tableVariablesColumnFormat.setCellValueFactory(cdf -> new SimpleObjectProperty<>(cdf.getValue()));
+        controller.tableVariablesColumnFormat.setCellFactory(col -> new TableCell<>() {
+            final MenuButton variableFormatChoiceBox = new MenuButton();
+            @Override
+            protected void updateItem(ScriptVariable vr, boolean empty) {
+                super.updateItem(vr, empty);
+                if (empty) {
+                    setGraphic(null);
+                } else {
+                    setGraphic(variableFormatChoiceBox);
+                    ObservableList<MenuItem> items = variableFormatChoiceBox.getItems();
+                    items.clear();
+                    for (int i = 0; i <= 6; i++) {
+                        final int format = i;
+                        MenuItem item = new MenuItem(ScriptVariable.formatToType(format));
+                        item.setOnAction(actionEvent -> controller.onChangeVariableFormat(vr, format));
+                        items.add(item);
+                    }
+                    if (vr != null) {
+                        variableFormatChoiceBox.setText(ScriptVariable.formatToType(vr.format));
+                    } else {
+                        variableFormatChoiceBox.setText("");
+                    }
+                }
+            }
+        });
         controller.tableVariablesColumnDelete.setCellValueFactory(cdf -> new SimpleObjectProperty<>(cdf.getValue()));
         controller.tableVariablesColumnDelete.setCellFactory(col -> new TableCell<>() {
             final Button delButton = new Button("Delete");

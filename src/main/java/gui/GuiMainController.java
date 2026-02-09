@@ -392,9 +392,7 @@ public class GuiMainController implements Initializable {
 
     public void changeInstructionArgv(ScriptInstruction instruction, Integer argv) {
         if (argv != null) {
-            System.out.println("instructionBefore " + instruction + " / line=" + selectedLine);
             selectedLine.changeInstructionArgv(instruction, argv);
-            System.out.println("instructionAfter " + instruction + " / line=" + selectedLine);
             adaptLineToChangedInstructions();
         }
     }
@@ -403,7 +401,7 @@ public class GuiMainController implements Initializable {
         LocalizedFieldStringObject obj = new LocalizedFieldStringObject();
         obj.setAllLocalizedContentToNothing();
         if ("system01String".equals(inputType)) {
-            EncounterFile sys01 = DataAccess.getEncounter("system01");
+            EncounterFile sys01 = DataAccess.getEncounter("system_01");
             int idx = sys01.strings.size();
             sys01.strings.add(obj);
             return idx;
@@ -429,20 +427,24 @@ public class GuiMainController implements Initializable {
     }
 
     public void editString(int index, String type) {
-        if (selectedEvent == null && selectedEncounter == null) {
-            return;
-        }
         LocalizedFieldStringObject obj;
-        if (selectedEvent != null) {
-            if (selectedEvent.strings == null || index >= selectedEvent.strings.size()) {
-                return;
-            }
-            obj = selectedEvent.strings.get(index);
+        if ("system01String".equals(type)) {
+            obj = DataAccess.getEncounter("system_01").strings.get(index);
         } else {
-            if (selectedEncounter.strings == null || index >= selectedEncounter.strings.size()) {
+            if (selectedEvent == null && selectedEncounter == null) {
                 return;
             }
-            obj = selectedEncounter.strings.get(index);
+            if (selectedEvent != null) {
+                if (selectedEvent.strings == null || index >= selectedEvent.strings.size()) {
+                    return;
+                }
+                obj = selectedEvent.strings.get(index);
+            } else {
+                if (selectedEncounter.strings == null || index >= selectedEncounter.strings.size()) {
+                    return;
+                }
+                obj = selectedEncounter.strings.get(index);
+            }
         }
         System.out.println("editString (" + index + ") = " + obj);
     }
@@ -450,11 +452,11 @@ public class GuiMainController implements Initializable {
     @FXML
     public void onSave() {
         if (selectedEvent != null) {
-            selectedEvent.writeToMods(true, true);
+            selectedEvent.writeToMods(false, true);
             System.out.println("saved selected event");
         }
         if (selectedEncounter != null) {
-            selectedEncounter.writeToMods(true, true);
+            selectedEncounter.writeToMods(false, true);
             System.out.println("saved selected encounter");
         }
         if (selectedMonster != null) {
@@ -472,7 +474,7 @@ public class GuiMainController implements Initializable {
             return;
         }
         boolean isEventWorker = selectedEvent != null;
-        ScriptWorker worker = new ScriptWorker(selectedAtelObject, workers.size(), workers.getFirst(), isEventWorker ? 0 : 2);
+        ScriptWorker worker = new ScriptWorker(selectedAtelObject, workers.size(), workers.getFirst(), isEventWorker ? 1 : 2);
         workers.add(worker);
         worker.addBlankEntryPoints(isEventWorker);
         setScriptDetail();
@@ -545,6 +547,49 @@ public class GuiMainController implements Initializable {
         setScriptDetail();
     }
 
+    public void onRenameVariable(ScriptVariable vr, String label) {
+        vr.declaredLabel = label;
+        setScriptDetail();
+    }
+
+    public void onChangeVariableType(ScriptVariable vr, String type) {
+        vr.declaredType = type == null || type.isBlank() ? null : type;
+        setScriptDetail();
+    }
+
+    public void onChangeVariableLocation(ScriptVariable vr, int location) {
+        vr.location = location;
+        if (!vr.canRename()) {
+            vr.declaredLabel = null;
+        }
+        setScriptDetail();
+    }
+
+    public void onChangeVariableOffset(ScriptVariable vr, String offsetStr) {
+        try {
+            vr.offset = Integer.parseInt(offsetStr, 10);
+            setScriptDetail();
+        } catch (NumberFormatException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void onChangeVariableFormat(ScriptVariable vr, int format) {
+        vr.format = format;
+        if (format == 6) {
+            vr.declaredType = "float";
+        } else if ("float".equals(vr.declaredType)) {
+            vr.declaredType = "int";
+        }
+        setScriptDetail();
+    }
+
+    public void onChangeVariableArrayValues(ScriptVariable vr, boolean isArray, int elementCount, int elementSize) {
+        vr.elementCount = isArray ? elementCount : 1;
+        vr.elementSize = isArray ? elementSize : 0;
+        setScriptDetail();
+    }
+
     public void onDeleteVariable(ScriptVariable vr) {
         if (selectedAtelObject == null) {
             return;
@@ -561,7 +606,9 @@ public class GuiMainController implements Initializable {
         if (selectedWorker == null) {
             return;
         }
-        selectedWorker.addBlankEntryPoint();
+        ScriptJump entryPoint = selectedWorker.addBlankEntryPoint();
+        TreeItem<TreeEntry> item = treeItem("e", selectedWorker, entryPoint);
+        middleTree.getRoot().getChildren().stream().filter(i -> i.getValue().worker() == selectedWorker).findAny().ifPresent(wr -> wr.getChildren().add(item));
         setWorkerDetail();
     }
 
