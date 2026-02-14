@@ -62,7 +62,14 @@
                 <artifactId>javafx-maven-plugin</artifactId>
                 <version>0.0.8</version>
                 <configuration>
-                    <mainClass>gui.GuiMain</mainClass>
+                    <mainClass>main.Main</mainClass>
+                    <stripDebug>true</stripDebug>
+                    <compress>2</compress>
+                    <noHeaderFiles>true</noHeaderFiles>
+                    <noManPages>true</noManPages>
+                    <launcher>ffx-atelier-fx</launcher>
+                    <jlinkImageName>ffx-atelier</jlinkImageName>
+                    <jlinkZipName>ffx-atelier-zip</jlinkZipName>
                 </configuration>
             </plugin>
             <!--plugin>
