@@ -16,6 +16,7 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import main.DataAccess;
+import main.DataReadingManager;
 import model.strings.LocalizedFieldStringObject;
 
 import java.net.URL;
@@ -27,6 +28,8 @@ public class GuiMainController implements Initializable {
     private static final String LEGAL_HEX_CHARS = "0123456789ABCDEFabcdef ";
     private static final String LEGAL_INT_CHARS = "0123456789";
 
+    @FXML
+    Menu languageMenu;
     @FXML
     ListView<String> eventList;
     @FXML
@@ -119,6 +122,12 @@ public class GuiMainController implements Initializable {
         makeLists();
         lineGuiVbox.getChildren().remove(branchHbox);
         GuiTableSetup.setUpTables(this);
+        for (Map.Entry<String, String> locale : DataReadingManager.LOCALIZATIONS.entrySet()) {
+            final String localeId = locale.getKey();
+            MenuItem item = new MenuItem(locale.getValue());
+            item.setOnAction(actionEvent -> setLocalization(localeId));
+            languageMenu.getItems().add(item);
+        }
     }
 
     public void makeLists() {
@@ -148,13 +157,22 @@ public class GuiMainController implements Initializable {
         miscList.getItems().add(DataAccess.MENUMAIN.scriptId);
     }
 
+    public void setLocalization(String loc) {
+        mainLocalization = loc;
+        makeLists();
+        makeTree();
+    }
+
     public void onEventSelected(String label) {
         System.out.println("event selected: " + label);
-        String eventId = label.split(" ")[0];
         clearSelection();
+        if (label == null) {
+            return;
+        }
+        String eventId = label.split(" ")[0];
         selectedEvent = DataAccess.getEvent(eventId);
         if (selectedEvent == null) {
-            throw new RuntimeException("Monster not found");
+            throw new RuntimeException("Event not found");
         }
         selectedEvent.parseScript();
         selectedAtelObject = selectedEvent.eventScript;
@@ -163,11 +181,14 @@ public class GuiMainController implements Initializable {
 
     public void onEncounterSelected(String label) {
         System.out.println("encounter selected: " + label);
-        String encounterId = label.split(" ")[0];
         clearSelection();
+        if (label == null) {
+            return;
+        }
+        String encounterId = label.split(" ")[0];
         selectedEncounter = DataAccess.getEncounter(encounterId);
         if (selectedEncounter == null) {
-            throw new RuntimeException("Monster not found");
+            throw new RuntimeException("Encounter not found");
         }
         selectedEncounter.parseScript();
         selectedAtelObject = selectedEncounter.encounterScript;
@@ -176,8 +197,11 @@ public class GuiMainController implements Initializable {
 
     public void onMonsterSelected(String label) {
         System.out.println("monster selected: " + label);
-        String monsterId = label.split(" ")[0].substring(1);
         clearSelection();
+        if (label == null) {
+            return;
+        }
+        String monsterId = label.split(" ")[0].substring(1);
         selectedMonster = DataAccess.getMonster(monsterId);
         if (selectedMonster == null) {
             throw new RuntimeException("Monster not found");
@@ -280,6 +304,7 @@ public class GuiMainController implements Initializable {
             scriptState = new ScriptState(selectedEntryPoint);
             scriptLines = scriptState.lines;
             scriptState.writeJumpsAsIndexedLines = true;
+            scriptState.localization = mainLocalization;
         }
         setScriptLines();
         setWorkerDetail();
@@ -377,6 +402,7 @@ public class GuiMainController implements Initializable {
         }
         ScriptState tempState = new ScriptState(selectedEntryPoint);
         tempState.writeJumpsAsIndexedLines = true;
+        tempState.localization = mainLocalization;
         for (int i = 0; i < selectedLineIndex; i++) {
             scriptLines.get(i).lineEnder.asString(tempState);
         }

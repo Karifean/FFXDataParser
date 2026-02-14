@@ -15,6 +15,7 @@ public class ScriptState {
     public String rYType;
     public Map<Integer, String> tempITypes;
     public boolean writeJumpsAsIndexedLines = false;
+    public String localization = null;
 
     public final List<ScriptLine> lines;
 
@@ -39,5 +40,6 @@ public class ScriptState {
         this.rYType = state.rYType;
         this.tempITypes = new HashMap<>(state.tempITypes);
         this.writeJumpsAsIndexedLines = state.writeJumpsAsIndexedLines;
+        this.localization = state.localization;
     }
 }

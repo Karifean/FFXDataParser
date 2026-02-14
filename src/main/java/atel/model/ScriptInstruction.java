@@ -307,7 +307,7 @@ public class ScriptInstruction {
             List<StackObject> params = popParamsForFunc(stack);
             ScriptFunc func = getFunc(params);
             state.rAType = func.getType(params);
-            String call = func.callD8(params);
+            String call = func.callD8(params, state);
             return call + ';';
         }
         StackObject p1 = null, p2 = null, p3 = null;
@@ -425,7 +425,7 @@ public class ScriptInstruction {
         if (opcode == 0xB5) { // CALL / FUNC_RET
             List<StackObject> params = popParamsForFunc(stack);
             ScriptFunc func = getFunc(params);
-            StackObject stackObject = new StackObject(parentWorker, this, func.getType(params), true, func.callB5(params));
+            StackObject stackObject = new StackObject(parentWorker, this, func.getType(params), true, func.callB5(params, state));
             stackObject.referenceIndex = argv;
             return stackObject;
         }

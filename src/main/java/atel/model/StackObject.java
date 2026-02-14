@@ -60,6 +60,19 @@ public class StackObject {
         this.referenceIndex = obj.referenceIndex;
     }
 
+    public String asString(ScriptState state) {
+        if (expression) {
+            return content;
+        }
+        String localization = state != null && state.localization != null ? state.localization : DEFAULT_LOCALIZATION;
+        String valueString = asString(localization, this);
+        if (valueString != null) {
+            return valueString;
+        } else {
+            return asString(localization, new StackObject(rawType, this));
+        }
+    }
+
     @Override
     public String toString() {
         if (expression) {

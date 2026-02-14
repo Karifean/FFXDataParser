@@ -51,7 +51,7 @@ public class ScriptFunc extends ScriptOpcode {
         return hexIndex + ": " + getLabel();
     }
 
-    public String callB5(List<StackObject> params) {
+    public String callB5(List<StackObject> params, ScriptState state) {
         int len = params.size();
         if (len != (inputs == null ? 0 : inputs.size())) {
             return "ERROR, func " + this + " called with " + len + " params but needs " + (inputs == null ? 0 : inputs.size()) + "!";
@@ -69,13 +69,13 @@ public class ScriptFunc extends ScriptOpcode {
         for (int i = 0; i < len; i++) {
             StackObject typed = getTypedParam(i, params, typedParams);
             typedParams.add(typed);
-            str.append(inputs.get(i).name).append('=').append(typed).append(", ");
+            str.append(inputs.get(i).name).append('=').append(typed.asString(state)).append(", ");
         }
         return str.substring(0, str.length() - 2) + ')';
     }
 
-    public String callD8(List<StackObject> params) {
-        return "call " + callB5(params);
+    public String callD8(List<StackObject> params, ScriptState state) {
+        return "call " + callB5(params, state);
     }
 
     public String getInputType(int index, List<ScriptInstruction> instructionInputs) {

@@ -1030,9 +1030,9 @@ public class AtelScriptObject {
                 ScriptWorker worker = getWorker(argv);
                 textScriptLine += "Jump to subroutine " + (worker != null ? worker.getIndexLabel() : ("w" + StringHelper.formatHex2(argv)));
             } else if (opcode == 0xB5) { // CALL / FUNC_RET
+                StackObject stackObject = new StackObject(currentWorker, ins, func.getType(params), true, func.callB5(params, null));
                 List<StackObject> params = popParamsForFunc(argv);
                 ScriptFunc func = getAndTypeFuncCall(argv, params);
-                StackObject stackObject = new StackObject(currentWorker, ins, func.getType(params), true, func.callB5(params));
                 stackObject.referenceIndex = argv;
                 stack.push(stackObject);
             } else if (opcode == 0xD6) { // POPXCJMP / SET_BNEZ
@@ -1045,7 +1045,7 @@ public class AtelScriptObject {
                 List<StackObject> params = popParamsForFunc(argv);
                 ScriptFunc func = getAndTypeFuncCall(argv, params);
                 currentRAType = func.getType(params);
-                String call = func.callD8(params);
+                String call = func.callD8(params, null);
                 textScriptLine += call + ';';
             } else if (opcode == 0xF6) { // SYSTEM
                 textScriptLine += "System " + StringHelper.formatHex2(argv);
