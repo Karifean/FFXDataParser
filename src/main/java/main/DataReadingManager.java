@@ -330,7 +330,7 @@ public class DataReadingManager {
             return null;
         }
         monsterFile.monsterScript.addVariableNamings(declarations.get(monsterFile.scriptId));
-        addVariableNamings(monsterFile.monsterScript, PATH_MONSTER_FOLDER + midPath + ".dcl");
+        addVariableNamings(monsterFile.monsterScript, PATH_MONSTER_FOLDER + midPath + ".dcl.csv");
         return monsterFile;
     }
 
@@ -369,7 +369,7 @@ public class DataReadingManager {
         List<LocalizedFieldStringObject> localizedStrings = StringHelper.readLocalizedStringFiles("battle/btl/" + endPath);
         encounterFile.addLocalizations(localizedStrings);
         encounterFile.encounterScript.addVariableNamings(declarations.get(encounterFile.scriptId));
-        addVariableNamings(encounterFile.encounterScript, PATH_ORIGINALS_ENCOUNTER + midPath + ".dcl");
+        addVariableNamings(encounterFile.encounterScript, PATH_ORIGINALS_ENCOUNTER + midPath + ".dcl.csv");
         return encounterFile;
     }
 
@@ -409,7 +409,7 @@ public class DataReadingManager {
         List<LocalizedFieldStringObject> localizedStrings = StringHelper.readLocalizedStringFiles("event/obj_ps3/" + midPath + ".bin");
         eventFile.addLocalizations(localizedStrings);
         eventFile.eventScript.addVariableNamings(declarations.get(eventFile.scriptId));
-        addVariableNamings(eventFile.eventScript, PATH_ORIGINALS_EVENT + midPath + ".dcl");
+        addVariableNamings(eventFile.eventScript, PATH_ORIGINALS_EVENT + midPath + ".dcl.csv");
         return eventFile;
     }
 
@@ -543,8 +543,8 @@ public class DataReadingManager {
             return;
         }
         try {
-            List<String> namingLines = FileAccessorWithMods.textFileToLineList(file);
-            script.addVariableNamings(namingLines);
+            List<String[]> namingLines = FileAccessorWithMods.csvToList(file);
+            script.addVariableNamingsCsv(namingLines);
         } catch (IOException | NumberFormatException e) {
             System.err.println("Got Exception in reading name declarations");
             e.printStackTrace();

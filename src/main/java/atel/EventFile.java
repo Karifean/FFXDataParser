@@ -116,9 +116,7 @@ public class EventFile implements Nameable {
         chunks.add(unknownChunk2Bytes);
         chunks.add(ftcxBytes);
         chunks.add(DataWritingManager.stringsToStringFileBytes(strings, "us"));
-        int[] bytes = BytesHelper.chunksToBytes(chunks, -1, 0x40, 0x10);
-        binaryLength = bytes.length;
-        return bytes;
+        return BytesHelper.chunksToBytes(chunks, -1, 0x40, 0x10);
     }
 
     public void writeToMods(boolean writeStrings, boolean writeDeclarations) {
@@ -126,11 +124,12 @@ public class EventFile implements Nameable {
         String path = PATH_ORIGINALS_EVENT + shortened + '/' + scriptId + '/' + scriptId;
         int[] bytes = toBytes();
         FileAccessorWithMods.writeByteArrayToMods(path + ".ebp", bytes);
+        binaryLength = bytes.length;
         if (writeStrings) {
             DataWritingManager.writeEventStringsForAllLocalizations(this, false);
         }
         if (writeDeclarations) {
-            FileAccessorWithMods.writeStringToMods(path + ".dcl", eventScript.getDeclarationsAsString());
+            FileAccessorWithMods.writeStringToMods(path + ".dcl.csv", eventScript.getDeclarationsAsString());
         }
     }
 

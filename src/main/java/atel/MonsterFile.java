@@ -91,9 +91,7 @@ public class MonsterFile implements Nameable {
         chunks.add(monsterLootData.toBytes(null));
         chunks.add(audioBytesApparently);
         chunks.add(DataWritingManager.dataObjectWithStringsToBytes(monsterStatData, "us"));
-        int[] bytes = BytesHelper.chunksToBytes(chunks, 0x08, 0x30, 0x10);
-        binaryLength = bytes.length;
-        return bytes;
+        return BytesHelper.chunksToBytes(chunks, 0x08, 0x30, 0x10);
     }
 
     public void writeToMods(boolean writeStrings, boolean writeDeclarations) {
@@ -101,11 +99,12 @@ public class MonsterFile implements Nameable {
         String path = PATH_MONSTER_FOLDER + '_' + mIndexString + '/' + mIndexString;
         int[] bytes = toBytes();
         FileAccessorWithMods.writeByteArrayToMods(path + ".bin", bytes);
+        binaryLength = bytes.length;
         if (writeStrings) {
             DataWritingManager.writeMonsterStringsForAllLocalizations(false);
         }
         if (writeDeclarations) {
-            FileAccessorWithMods.writeStringToMods(path + ".dcl", monsterScript.getDeclarationsAsString());
+            FileAccessorWithMods.writeStringToMods(path + ".dcl.csv", monsterScript.getDeclarationsAsString());
         }
     }
 

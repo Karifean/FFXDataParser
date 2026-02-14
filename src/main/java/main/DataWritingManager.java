@@ -2,23 +2,24 @@ package main;
 
 import atel.EncounterFile;
 import atel.EventFile;
+import atel.MonsterFile;
 import model.MonsterStatDataObject;
-import model.strings.*;
 import model.Writable;
+import model.strings.FieldString;
+import model.strings.KeyedString;
+import model.strings.LocalizedFieldStringObject;
+import reading.BytesHelper;
 import reading.FileAccessorWithMods;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import static main.DataReadingManager.LOCALIZATIONS;
 import static main.DataReadingManager.getLocalizationRoot;
-import static reading.FileAccessorWithMods.GAME_FILES_ROOT;
-import static reading.FileAccessorWithMods.MODS_FOLDER;
 
 public class DataWritingManager {
 
@@ -135,6 +136,23 @@ public class DataWritingManager {
             fullBytes[i] = bytes.get(i);
         }
         return fullBytes;
+    }
+
+    public static void remakeSizeTable() {
+        String sizeTablePath = "ffx_ps2/ffx/proj/prog/cdidx/jp/sizetbl.vita.bin";
+        int[] bytes = BytesHelper.fileToBytes(sizeTablePath, false);
+        if (bytes == null) {
+            System.err.println("cannot remake size table");
+            return;
+        }
+        int monstersStartOffset = 0x88E0;
+        for (int monsterIndex = 0; monsterIndex <= 360; monsterIndex++) {
+            MonsterFile monster = DataAccess.getMonster(monsterIndex + 0x1000);
+            if (monster != null) {
+                BytesHelper.write4Bytes(bytes, monstersStartOffset + monsterIndex * 0x04, monster.binaryLength);
+            }
+        }
+        FileAccessorWithMods.writeByteArrayToMods(sizeTablePath, bytes);
     }
 
     private static void add2Bytes(List<Integer> array, int value) {

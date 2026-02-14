@@ -153,20 +153,19 @@ public class EncounterFile implements Nameable {
         chunks.add(DataWritingManager.stringsToStringFileBytes(strings, "jp"));
         chunks.add(ftcxBytes);
         chunks.add(DataWritingManager.stringsToStringFileBytes(strings, "us"));
-        int[] bytes = BytesHelper.chunksToBytes(chunks, 0x08, 0x40, 0x10);
-        binaryLength = bytes.length;
-        return bytes;
+        return BytesHelper.chunksToBytes(chunks, 0x08, 0x40, 0x10);
     }
 
     public void writeToMods(boolean writeStrings, boolean writeDeclarations) {
         String path = PATH_ORIGINALS_ENCOUNTER + scriptId + '/' + scriptId;
         int[] bytes = toBytes();
         FileAccessorWithMods.writeByteArrayToMods(path + ".bin", bytes);
+        binaryLength = bytes.length;
         if (writeStrings) {
             DataWritingManager.writeEncounterStringsForAllLocalizations(this, false);
         }
         if (writeDeclarations) {
-            FileAccessorWithMods.writeStringToMods(path + ".dcl", encounterScript.getDeclarationsAsString());
+            FileAccessorWithMods.writeStringToMods(path + ".dcl.csv", encounterScript.getDeclarationsAsString());
         }
     }
 

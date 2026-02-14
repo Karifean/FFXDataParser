@@ -467,20 +467,7 @@ public class Main {
                 }
                 break;
             case MODE_REMAKE_SIZE_TABLE:
-                String sizeTablePath = "ffx_ps2/ffx/proj/prog/cdidx/jp/sizetbl.vita.bin";
-                int[] bytes = BytesHelper.fileToBytes(sizeTablePath, false);
-                if (bytes == null) {
-                    System.err.println("bytes are null");
-                    return;
-                }
-                int monstersStartOffset = 0x88E0;
-                for (int monsterIndex = 0; monsterIndex <= 360; monsterIndex++) {
-                    MonsterFile monster = DataAccess.getMonster(monsterIndex + 0x1000);
-                    if (monster != null) {
-                        BytesHelper.write4Bytes(bytes, monstersStartOffset + monsterIndex * 0x04, monster.binaryLength);
-                    }
-                }
-                FileAccessorWithMods.writeByteArrayToMods(sizeTablePath, bytes);
+                DataWritingManager.remakeSizeTable();
                 break;
             case MODE_CUSTOM:
                 readDirectAtelScriptObject("menu/menumain.bin", true);

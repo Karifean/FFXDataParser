@@ -76,7 +76,8 @@ public class GuiTableSetup {
                         input.setPromptText(vr.getLabel(null));
                         if (canRename) {
                             input.setText(vr.declaredLabel);
-                            input.setOnAction(actionEvent -> controller.onRenameVariable(vr, input.getText()));
+                            input.setOnKeyTyped(ev -> controller.sanitizeLabelInput(input));
+                            input.setOnAction(actionEvent -> controller.onRenameVariable(vr, input));
                         } else {
                             input.setText("");
                         }

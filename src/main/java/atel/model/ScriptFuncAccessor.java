@@ -47,7 +47,8 @@ public class ScriptFuncAccessor extends ScriptFunc {
         return predicate != null ? predicate.type : "unknown";
     }
 
-    public String callB5(List<StackObject> params) {
+    @Override
+    public String callB5(List<StackObject> params, ScriptState state) {
         int len = params.size();
         if (len != (inputs == null ? 0 : inputs.size())) {
             return "ERROR, func " + name + " called with " + len + " params but needs " + (inputs == null ? 0 : inputs.size()) + "!";
@@ -61,7 +62,7 @@ public class ScriptFuncAccessor extends ScriptFunc {
         } else {
             StackObject subjectParam = params.get(subjectParamIndex);
             StackObject typed = subjectParam.expression || "unknown".equals(subjectType) ? subjectParam : new StackObject(subjectType, subjectParam);
-            str.append(typed);
+            str.append(typed.asString(state));
         }
         str.append('.');
         StackObject predParam = predicateParamIndex >= 0 && predicateParamIndex < params.size() ? params.get(predicateParamIndex) : null;
@@ -70,7 +71,7 @@ public class ScriptFuncAccessor extends ScriptFunc {
             str.append(predicate);
         } else {
             StackObject typed = predParam.expression || "unknown".equals(predicateType) ? predParam : new StackObject(predicateType, predParam);
-            String typedString = typed.toString();
+            String typedString = typed.asString(state);
             if (typed.maybeBracketize) {
                 typedString = '(' + typedString + ')';
             }
@@ -83,7 +84,7 @@ public class ScriptFuncAccessor extends ScriptFunc {
                     StackObject obj = params.get(i);
                     String paramType = inputs.get(i).type;
                     StackObject typed = obj.expression || "unknown".equals(paramType) ? obj : new StackObject(paramType, obj);
-                    str.append(inputs.get(i)).append('=').append(typed).append(", ");
+                    str.append(inputs.get(i)).append('=').append(typed.asString(state)).append(", ");
                 }
             }
             return str.substring(0, str.length() - 2) + ')';
@@ -92,11 +93,12 @@ public class ScriptFuncAccessor extends ScriptFunc {
         }
     }
 
-    public String callD8(List<StackObject> params) {
+    @Override
+    public String callD8(List<StackObject> params, ScriptState state) {
         StackObject valParam = valueParamIndex >= 0 && valueParamIndex < params.size() ? params.get(valueParamIndex) : null;
         String paramType = getType(params);
         StackObject typed = valParam == null || valParam.expression || "unknown".equals(paramType) ? valParam : new StackObject(paramType, valParam);
-        return "Set " + callB5(params) + ' ' + write + ' ' + typed;
+        return "Set " + callB5(params, state) + ' ' + write + ' ' + typed;
     }
 
     @Override

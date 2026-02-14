@@ -439,18 +439,44 @@ public class AtelScriptObject {
         }
     }
 
+    public void addVariableNamingsCsv(List<String[]> namings) {
+        if (namings == null || namings.isEmpty()) {
+            return;
+        }
+        for (String[] split : namings) {
+            if (split.length < 3) {
+                continue;
+            }
+            if ("var".equals(split[0])) {
+                int index = Integer.parseInt(split[1], 16);
+                if (variableDeclarations != null && index >= 0 && index < variableDeclarations.size()) {
+                    ScriptVariable vr = variableDeclarations.get(index);
+                    vr.declaredLabel = "".equals(split[2]) ? null : split[2];
+                    if (split.length > 3) {
+                        vr.declaredType = "".equals(split[3]) ? null : split[3];
+                        if (split.length > 4) {
+                            vr.declaredIndexType = "".equals(split[4]) ? null : split[4];
+                        }
+                    }
+                } else {
+                    System.err.println("Variable naming declaration out of bounds: " + StringHelper.formatHex2(index));
+                }
+            }
+        }
+    }
+
     public String getDeclarationsAsString() {
         List<String> lines = new ArrayList<>();
         for (int i = 0; i < variableDeclarations.size(); i++) {
             String index = String.format("%02X", i);
             ScriptVariable vr = variableDeclarations.get(i);
-            StringBuilder stringBuilder = new StringBuilder(index).append('=');
+            StringBuilder stringBuilder = new StringBuilder("var,").append(index).append(',');
             boolean anyDeclaration = false;
             if (vr.declaredLabel != null) {
                 anyDeclaration = true;
                 stringBuilder.append(vr.declaredLabel);
             }
-            stringBuilder.append('=');
+            stringBuilder.append(',');
             if (vr.declaredType != null) {
                 anyDeclaration = true;
                 stringBuilder.append(vr.declaredType);
@@ -458,14 +484,14 @@ public class AtelScriptObject {
                 anyDeclaration = true;
                 stringBuilder.append(vr.inferredType);
             }
-            stringBuilder.append('=');
+            stringBuilder.append(',');
             if (vr.declaredIndexType != null) {
                 anyDeclaration = true;
                 stringBuilder.append(vr.declaredIndexType);
             }
             if (anyDeclaration) {
                 String str = stringBuilder.toString();
-                while (str.endsWith("=")) {
+                while (str.endsWith(",")) {
                     str = str.substring(0, str.length() - 1);
                 }
                 lines.add(str);

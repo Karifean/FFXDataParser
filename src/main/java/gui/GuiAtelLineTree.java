@@ -102,7 +102,7 @@ public class GuiAtelLineTree {
         if (opcode == 0xAD || opcode == 0xAE || opcode == 0xAF || opcode == 0xF6) {
             int val = opcode == 0xAE ? input.argvSigned : (input.dereferencedArg == null ? 0 : input.dereferencedArg);
             String content = opcode == 0xAF ? String.valueOf(Float.intBitsToFloat(val)) : String.valueOf(val);
-            final boolean isFloat = opcode == 0xAF || "float".equals(inputType);
+            final boolean isFloat = opcode == 0xAF;
             TextField textField = new TextField(content);
             textField.setPrefWidth(100);
             textField.setOnAction(actionEvent -> {
@@ -508,10 +508,18 @@ public class GuiAtelLineTree {
             return;
         }
         boolean isImmediate = argv <= 32767 && argv >= -32768;
+        int opcode = instruction.opcode;
         if (isImmediate) {
             instruction.dereferencedArg = null;
-            controller.changeInstructionOpcode(instruction, 0xAE, argv);
-        } else {
+            if (opcode == 0xAD) {
+                controller.changeInstructionOpcode(instruction, 0xAE, argv);
+            } else {
+                if ((opcode >= 0x9F && opcode <= 0xA4) || opcode == 0xA7) {
+                    instruction.dereferencedVar = scriptLine.parentWorker.getVariable(argv);
+                }
+                controller.changeInstructionArgv(instruction, argv);
+            }
+        } else if (opcode == 0xAD || opcode == 0xAE) {
             instruction.dereferencedArg = argv;
             if (scriptLine.parentWorker.refInts != null) {
                 for (int i = 0; i < scriptLine.parentWorker.refInts.length; i++) {
@@ -522,6 +530,8 @@ public class GuiAtelLineTree {
                 }
             }
             controller.changeInstructionOpcode(instruction, 0xAD, scriptLine.parentWorker.refIntCount++);
+        } else {
+            System.out.println("Cannot put argument that's not an int16 on this opcode");
         }
     }
 

@@ -17,6 +17,7 @@ import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import main.DataAccess;
 import main.DataReadingManager;
+import main.DataWritingManager;
 import model.strings.LocalizedFieldStringObject;
 
 import java.net.URL;
@@ -27,6 +28,7 @@ import static gui.GuiMain.mainLocalization;
 public class GuiMainController implements Initializable {
     private static final String LEGAL_HEX_CHARS = "0123456789ABCDEFabcdef ";
     private static final String LEGAL_INT_CHARS = "0123456789";
+    private static final String LEGAL_LABEL_CHARS = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyzäöüÄÖÜ-.+#";
 
     @FXML
     Menu languageMenu;
@@ -488,6 +490,7 @@ public class GuiMainController implements Initializable {
         if (selectedMonster != null) {
             selectedMonster.writeToMods(false, true);
             System.out.println("saved selected monster");
+            DataWritingManager.remakeSizeTable();
         }
         makeTree();
     }
@@ -573,8 +576,9 @@ public class GuiMainController implements Initializable {
         setScriptDetail();
     }
 
-    public void onRenameVariable(ScriptVariable vr, String label) {
-        vr.declaredLabel = label;
+    public void onRenameVariable(ScriptVariable vr, TextField textField) {
+        sanitizeLabelInput(textField);
+        vr.declaredLabel = textField.getText();
         setScriptDetail();
     }
 
@@ -811,6 +815,21 @@ public class GuiMainController implements Initializable {
         String sanitized = sanitizer.toString();
         branchLineInput.setText(sanitized);
         branchLineInput.positionCaret(caretPosition);
+    }
+
+    public void sanitizeLabelInput(TextField textField) {
+        StringBuilder sanitizer = new StringBuilder();
+        int caretPosition = textField.getCaretPosition();
+        String original = textField.getText();
+        for (int i = 0; i < original.length(); i++) {
+            char ch = original.charAt(i);
+            if (LEGAL_LABEL_CHARS.indexOf(ch) >= 0) {
+                sanitizer.append(ch);
+            }
+        }
+        String sanitized = sanitizer.toString();
+        textField.setText(sanitized);
+        textField.positionCaret(caretPosition);
     }
 
     @FXML
