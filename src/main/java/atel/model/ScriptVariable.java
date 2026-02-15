@@ -128,6 +128,10 @@ public class ScriptVariable {
         }
     }
 
+    public void setDeclaredLabel(String label) {
+        declaredLabel = label != null && !label.isEmpty() ? label : null;
+    }
+
     @Override
     public String toString() {
         List<String> list = new ArrayList<>();

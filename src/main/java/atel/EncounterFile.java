@@ -2,7 +2,6 @@ package atel;
 
 import atel.model.ScriptConstants;
 import main.DataWritingManager;
-import main.StringHelper;
 import model.BattleAreasPositionsDataObject;
 import model.FormationDataObject;
 import model.Nameable;
@@ -17,8 +16,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static main.DataReadingManager.PATH_ORIGINALS_ENCOUNTER;
-import static main.DataReadingManager.PATH_ORIGINALS_EVENT;
-import static main.StringHelper.MACRO_LOOKUP;
 import static model.FormationDataObject.writeMonster;
 import static reading.BytesHelper.read4Bytes;
 
@@ -165,7 +162,7 @@ public class EncounterFile implements Nameable {
             DataWritingManager.writeEncounterStringsForAllLocalizations(this, false);
         }
         if (writeDeclarations) {
-            FileAccessorWithMods.writeStringToMods(path + ".dcl.csv", encounterScript.getDeclarationsAsString());
+            FileAccessorWithMods.writeStringToMods(path + ".dcl.csv", encounterScript.getDeclarationsAsCsvString());
         }
     }
 

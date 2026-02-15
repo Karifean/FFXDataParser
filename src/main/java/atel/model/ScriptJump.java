@@ -26,7 +26,7 @@ public class ScriptJump {
     public ScriptLine targetLine;
     public Integer battleWorkerEntryPointSlot;
 
-    private String label;
+    public String declaredLabel;
 
     public ScriptJump(ScriptWorker parentWorker, int addr, int jumpIndex, boolean isEntryPoint) {
         this.parentWorker = parentWorker;
@@ -42,7 +42,11 @@ public class ScriptJump {
     }
 
     public String getLabel() {
-        return label != null ? label : getDefaultLabel();
+        return declaredLabel != null ? declaredLabel : getDefaultLabel();
+    }
+
+    public void setDeclaredLabel(String label) {
+        declaredLabel = label != null && !label.isEmpty() ? label : null;
     }
 
     public String getLabelWithAddr() {
@@ -116,7 +120,7 @@ public class ScriptJump {
         if (!isEntryPoint) {
             return "j" + StringHelper.formatHex2(jumpIndex);
         } else {
-            String wPrefix = "w" + StringHelper.formatHex2(parentWorker.workerIndex);
+            String wPrefix = parentWorker.getReferenceLabel();
             if (jumpIndex == 0) {
                 return wPrefix + "init";
             } else if (jumpIndex == 1) {
@@ -272,18 +276,18 @@ public class ScriptJump {
                     switch (eventWorkerEntryPoint) {
                         case 2 -> "talk";
                         case 3 -> "scout";
-                        case 4 -> "fo?c";
+                        case 4 -> "?cross"; // cross on FieldObject maybe does something?
                         case 5 -> "touch";
                         default -> null;
                     };
             case 2 -> // PlayerEdge
                     switch (eventWorkerEntryPoint) {
-                        case 2 -> "pe?t";
-                        case 3 -> "pe?s";
+                        case 2 -> "?talk"; // talk on PlayerEdge probably does nothing?
+                        case 3 -> "?scout"; // scout on PlayerEdge probably does nothing?
                         case 4 -> "cross";
                         case 5 -> "touch";
-                        case 6 -> "pe?e";
-                        case 7 -> "pe?l";
+                        case 6 -> "?enter"; // enter on PlayerEdge probably does work
+                        case 7 -> "?leave"; // leave on PlayerEdge probably does nothing?
                         default -> null;
                     };
             case 3 -> // PlayerZone

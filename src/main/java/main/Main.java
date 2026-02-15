@@ -69,7 +69,7 @@ public class Main {
             mode = args[1];
             realArgs = Arrays.asList(args).subList(2, args.length);
         } else {
-            GAME_FILES_ROOT = "./";
+            GAME_FILES_ROOT = "../files/";
             mode = MODE_GUI;
             realArgs = List.of();
         }

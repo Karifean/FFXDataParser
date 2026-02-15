@@ -129,7 +129,7 @@ public class EventFile implements Nameable {
             DataWritingManager.writeEventStringsForAllLocalizations(this, false);
         }
         if (writeDeclarations) {
-            FileAccessorWithMods.writeStringToMods(path + ".dcl.csv", eventScript.getDeclarationsAsString());
+            FileAccessorWithMods.writeStringToMods(path + ".dcl.csv", eventScript.getDeclarationsAsCsvString());
         }
     }
 

@@ -447,10 +447,11 @@ public class AtelScriptObject {
             if (split.length < 3) {
                 continue;
             }
-            if ("var".equals(split[0])) {
-                int index = Integer.parseInt(split[1], 16);
-                if (variableDeclarations != null && index >= 0 && index < variableDeclarations.size()) {
-                    ScriptVariable vr = variableDeclarations.get(index);
+            String type = split[0];
+            int index = Integer.parseInt(split[1], 16);
+            if ("var".equals(type)) {
+                ScriptVariable vr = getVariable(index);
+                if (vr != null) {
                     vr.declaredLabel = "".equals(split[2]) ? null : split[2];
                     if (split.length > 3) {
                         vr.declaredType = "".equals(split[3]) ? null : split[3];
@@ -458,14 +459,26 @@ public class AtelScriptObject {
                             vr.declaredIndexType = "".equals(split[4]) ? null : split[4];
                         }
                     }
-                } else {
-                    System.err.println("Variable naming declaration out of bounds: " + StringHelper.formatHex2(index));
+                }
+            } else if ("worker".equals(type)) {
+                ScriptWorker worker = getWorker(index);
+                if (worker != null) {
+                    worker.declaredLabel = "".equals(split[2]) ? null : split[2];
+                }
+            } else if ("entrypoint".equals(type) && split.length >= 4) {
+                ScriptWorker worker = getWorker(index);
+                if (worker != null) {
+                    int epIndex = Integer.parseInt(split[2], 16);
+                    ScriptJump entryPoint = worker.getEntryPoint(epIndex);
+                    if (entryPoint != null) {
+                        entryPoint.declaredLabel = "".equals(split[3]) ? null : split[3];
+                    }
                 }
             }
         }
     }
 
-    public String getDeclarationsAsString() {
+    public String getDeclarationsAsCsvString() {
         List<String> lines = new ArrayList<>();
         for (int i = 0; i < variableDeclarations.size(); i++) {
             String index = String.format("%02X", i);
@@ -495,6 +508,18 @@ public class AtelScriptObject {
                     str = str.substring(0, str.length() - 1);
                 }
                 lines.add(str);
+            }
+        }
+        for (int i = 0; i < workers.size(); i++) {
+            ScriptWorker worker = workers.get(i);
+            if (worker.declaredLabel != null && !worker.declaredLabel.isEmpty()) {
+                lines.add("worker," + String.format("%02X", i) + "," + worker.declaredLabel);
+            }
+            for (int j = 0; j < worker.entryPoints.size(); j++) {
+                ScriptJump entryPoint = worker.entryPoints.get(j);
+                if (entryPoint.declaredLabel != null && !entryPoint.declaredLabel.isEmpty()) {
+                    lines.add("entrypoint," + String.format("%02X", i) + "," + String.format("%02X", j) + "," + entryPoint.declaredLabel);
+                }
             }
         }
         return String.join("\n", lines);

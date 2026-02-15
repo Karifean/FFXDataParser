@@ -77,6 +77,8 @@ public class GuiMainController implements Initializable {
     @FXML
     TableColumn<ScriptWorker, String> tableWorkersColumnIndex;
     @FXML
+    TableColumn<ScriptWorker, ScriptWorker> tableWorkersColumnLabel;
+    @FXML
     TableColumn<ScriptWorker, ScriptWorker> tableWorkersColumnType;
     @FXML
     TableColumn<ScriptWorker, ScriptWorker> tableWorkersColumnDelete;
@@ -102,6 +104,8 @@ public class GuiMainController implements Initializable {
     TableView<ScriptJump> tableEntryPoints;
     @FXML
     TableColumn<ScriptJump, String> tableEntryPointsColumnIndex;
+    @FXML
+    TableColumn<ScriptJump, ScriptJump> tableEntryPointsColumnLabel;
     @FXML
     TableColumn<ScriptJump, ScriptJump> tableEntryPointsColumnType;
     @FXML
@@ -587,6 +591,20 @@ public class GuiMainController implements Initializable {
         middleTree.refresh();
     }
 
+    public void onRenameWorker(ScriptWorker w, TextField textField) {
+        sanitizeLabelInput(textField);
+        w.setDeclaredLabel(textField.getText());
+        setScriptDetail();
+        middleTree.refresh();
+    }
+
+    public void onRenameJump(ScriptJump ep, TextField textField) {
+        sanitizeLabelInput(textField);
+        ep.setDeclaredLabel(textField.getText());
+        setWorkerDetail();
+        middleTree.refresh();
+    }
+
     public void onDeleteEntryPoint(ScriptJump entryPoint) {
         System.out.println("onDeleteEntryPoint " + entryPoint);
         if (!entryPoint.canDelete()) {
@@ -614,7 +632,7 @@ public class GuiMainController implements Initializable {
 
     public void onRenameVariable(ScriptVariable vr, TextField textField) {
         sanitizeLabelInput(textField);
-        vr.declaredLabel = textField.getText();
+        vr.setDeclaredLabel(textField.getText());
         setScriptDetail();
     }
 

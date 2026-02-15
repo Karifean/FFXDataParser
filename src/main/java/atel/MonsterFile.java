@@ -14,7 +14,6 @@ import java.util.Arrays;
 import java.util.List;
 
 import static main.DataReadingManager.PATH_MONSTER_FOLDER;
-import static main.DataReadingManager.PATH_ORIGINALS_ENCOUNTER;
 import static reading.BytesHelper.read4Bytes;
 
 /**
@@ -104,7 +103,7 @@ public class MonsterFile implements Nameable {
             DataWritingManager.writeMonsterStringsForAllLocalizations(false);
         }
         if (writeDeclarations) {
-            FileAccessorWithMods.writeStringToMods(path + ".dcl.csv", monsterScript.getDeclarationsAsString());
+            FileAccessorWithMods.writeStringToMods(path + ".dcl.csv", monsterScript.getDeclarationsAsCsvString());
         }
     }
 

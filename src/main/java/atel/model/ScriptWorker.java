@@ -45,6 +45,8 @@ public class ScriptWorker {
 
     public AtelScriptObject parentScript;
 
+    public String declaredLabel;
+
     public ScriptWorker(AtelScriptObject parentScript, int workerIndex, int[] headerBytes) {
         this.parentScript = parentScript;
         this.workerIndex = workerIndex;
@@ -125,7 +127,15 @@ public class ScriptWorker {
         return getIndexLabel();
     }
 
+    public void setDeclaredLabel(String label) {
+        declaredLabel = label != null && !label.isEmpty() ? label : null;
+    }
+
     public String getLabel(String localization) {
+        return declaredLabel != null ? declaredLabel : getDefaultLabel(localization);
+    }
+
+    public String getDefaultLabel(String localization) {
         String indexLabel = getIndexLabel();
         String descriptor = null;
         if (purposeSlot != null) {
@@ -166,6 +176,10 @@ public class ScriptWorker {
         } else {
             return indexLabel;
         }
+    }
+
+    public String getReferenceLabel() {
+        return declaredLabel != null ? declaredLabel : getIndexLabel();
     }
 
     public String getIndexLabel() {

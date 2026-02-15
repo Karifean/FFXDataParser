@@ -17,6 +17,29 @@ public class GuiTableSetup {
 
     public static void setUpTables(GuiMainController controller) {
         controller.tableWorkersColumnIndex.setCellValueFactory(cdf -> new SimpleStringProperty(cdf.getValue().getIndexLabel()));
+        controller.tableWorkersColumnLabel.setCellValueFactory(cdf -> new SimpleObjectProperty<>(cdf.getValue()));
+        controller.tableWorkersColumnLabel.setCellFactory(col -> new TableCell<>() {
+            final TextField input = new TextField();
+            @Override
+            protected void updateItem(ScriptWorker w, boolean empty) {
+                super.updateItem(w, empty);
+                if (empty) {
+                    setGraphic(null);
+                } else {
+                    setGraphic(input);
+                    if (w != null) {
+                        input.setDisable(false);
+                        input.setPromptText(w.getDefaultLabel(mainLocalization));
+                        input.setText(w.declaredLabel != null ? w.declaredLabel : "");
+                        input.setOnKeyTyped(ev -> controller.sanitizeLabelInput(input));
+                        input.setOnAction(actionEvent -> controller.onRenameWorker(w, input));
+                    } else {
+                        input.setDisable(true);
+                        input.setText("");
+                    }
+                }
+            }
+        });
         controller.tableWorkersColumnType.setCellValueFactory(cdf -> new SimpleObjectProperty<>(cdf.getValue()));
         controller.tableWorkersColumnType.setCellFactory(col -> new TableCell<>() {
             final MenuButton workerTypeChoiceBox = new MenuButton();
@@ -235,22 +258,30 @@ public class GuiTableSetup {
                 }
             }
         });
-        controller.tableWorkersColumnDelete.setCellFactory(col -> new TableCell<>() {
-            final Button delButton = new Button("Delete");
+        controller.tableEntryPointsColumnIndex.setCellValueFactory(cdf -> new SimpleStringProperty(cdf.getValue().getIndexLabel()));
+        controller.tableEntryPointsColumnLabel.setCellValueFactory(cdf -> new SimpleObjectProperty<>(cdf.getValue()));
+        controller.tableEntryPointsColumnLabel.setCellFactory(col -> new TableCell<>() {
+            final TextField input = new TextField();
             @Override
-            protected void updateItem(ScriptWorker w, boolean empty) {
-                super.updateItem(w, empty);
+            protected void updateItem(ScriptJump ep, boolean empty) {
+                super.updateItem(ep, empty);
                 if (empty) {
                     setGraphic(null);
                 } else {
-                    setGraphic(delButton);
-                    if (w != null) {
-                        delButton.setOnAction(actionEvent -> controller.onDeleteWorker(w));
+                    setGraphic(input);
+                    if (ep != null) {
+                        input.setDisable(false);
+                        input.setPromptText(ep.getDefaultLabel());
+                        input.setText(ep.declaredLabel != null ? ep.declaredLabel : "");
+                        input.setOnKeyTyped(ev -> controller.sanitizeLabelInput(input));
+                        input.setOnAction(actionEvent -> controller.onRenameJump(ep, input));
+                    } else {
+                        input.setDisable(true);
+                        input.setText("");
                     }
                 }
             }
         });
-        controller.tableEntryPointsColumnIndex.setCellValueFactory(cdf -> new SimpleStringProperty(cdf.getValue().getIndexLabel()));
         controller.tableEntryPointsColumnType.setCellValueFactory(cdf -> new SimpleObjectProperty<>(cdf.getValue()));
         controller.tableEntryPointsColumnType.setCellFactory(col -> new TableCell<>() {
             final MenuButton entryPointTypeChoiceBox = new MenuButton();
