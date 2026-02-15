@@ -47,7 +47,7 @@ public class AtelScriptObject {
     private int jumpsEndAddress;
     private int amountOfType2or3Scripts;
     private int amountOfType4Scripts;
-    private int amountOfType5Scripts;
+    private int amountOfType5or6Scripts;
     private int areaNameBytes;
     private int areaNameIndexesOffset;
     private int scriptMetaStructOffset;
@@ -157,8 +157,8 @@ public class AtelScriptObject {
         write2Bytes(staticHeaderBytes, 0x16, amountOfType4Scripts);
         write2Bytes(staticHeaderBytes, 0x18, mainScriptIndex);
         write2Bytes(staticHeaderBytes, 0x1A, unknown1A);
-        int amountOfType5Scripts = (int) workers.stream().filter(w -> w.eventWorkerType == 5).count();
-        write2Bytes(staticHeaderBytes, 0x1C, amountOfType5Scripts);
+        int amountOfType5or6Scripts = (int) workers.stream().filter(w -> w.eventWorkerType == 5 || w.eventWorkerType == 6).count();
+        write2Bytes(staticHeaderBytes, 0x1C, amountOfType5or6Scripts);
         int workerCount = workers.size();
         write2Bytes(staticHeaderBytes, 0x34, workerCount);
         int actorCount = (int) workers.stream().filter(w -> w.eventWorkerType != 0).count();
@@ -309,7 +309,7 @@ public class AtelScriptObject {
         amountOfType4Scripts = read2Bytes(0x16);
         mainScriptIndex = read2Bytes(0x18);
         unknown1A = read2Bytes(0x1A);
-        amountOfType5Scripts = read2Bytes(0x1C);
+        amountOfType5or6Scripts = read2Bytes(0x1C);
         areaNameBytes = read2Bytes(0x1E);
         eventDataOffset = read4Bytes(0x20);
         unknownTable24Offset = read4Bytes(0x24);
