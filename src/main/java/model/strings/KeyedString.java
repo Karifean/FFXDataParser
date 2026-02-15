@@ -58,7 +58,11 @@ public class KeyedString {
     }
 
     public String getString() {
-        return StringHelper.bytesToString(bytes, charset);
+        return StringHelper.bytesToString(bytes, charset, true);
+    }
+
+    public String getStringMultiline() {
+        return StringHelper.bytesToString(bytes, charset, false);
     }
 
     public boolean isEmpty() {

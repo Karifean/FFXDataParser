@@ -28,7 +28,10 @@ public class GuiMain extends Application {
 
     public void start(Stage primaryStage) throws IOException {
         URL fxmlUrl = getClass().getResource("/gui/main.fxml");
-        Parent root = FXMLLoader.load(Objects.requireNonNull(fxmlUrl));
+        FXMLLoader fxmlLoader = new FXMLLoader(Objects.requireNonNull(fxmlUrl));
+        Parent root = fxmlLoader.load();
+        GuiMainController controller = fxmlLoader.getController();
+        controller.stage = primaryStage;
         primaryStage.setTitle("FFX Atelier");
         primaryStage.setScene(new Scene(root, 1366, 768));
         primaryStage.show();

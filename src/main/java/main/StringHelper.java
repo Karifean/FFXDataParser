@@ -27,7 +27,6 @@ public abstract class StringHelper {
     public static final String ANSI_WHITE = "\u001B[37m";
 
     public static final boolean COLORS_USE_CONSOLE_CODES = false;
-    public static final boolean WRITE_LINEBREAKS_AS_COMMANDS = true;
     public static final Map<String, Map<Integer, Character>> BYTE_TO_CHAR_MAPS = new HashMap<>();
     public static final Map<String, Map<Character, Integer>> CHAR_TO_BYTE_MAPS = new HashMap<>();
     public static final Map<Integer, LocalizedMacroStringObject> MACRO_LOOKUP = new HashMap<>();
@@ -256,22 +255,31 @@ public abstract class StringHelper {
         byteList.add(0x00);
     }
 
-    public static List<Integer> getInvalidCharacters(String string, String charset) {
-        List<Integer> indexList = new ArrayList<>();
+    public static InvalidChars getInvalidCharacters(String string, String charset) {
+        final List<Integer> indexList = new ArrayList<>();
+        final Set<Character> charList = new HashSet<>();
+        StringBuilder stringBuilder = new StringBuilder();
         for (int i = 0; i < string.length(); i++) {
             char chr = string.charAt(i);
             List<Integer> cmdBytes = chr == '{' ? parseCommand(string, i) : null;
             if (cmdBytes != null) {
                 i += string.substring(i).indexOf('}');
             } else if (charToBytes(chr, charset) == null) {
+                if (!charList.contains(chr)) {
+                    stringBuilder.append(chr);
+                    charList.add(chr);
+                }
                 indexList.add(i);
             }
         }
-        return indexList;
+        if (charList.isEmpty()) {
+            return null;
+        }
+        return new InvalidChars(stringBuilder.toString(), indexList);
     }
 
-    public static String bytesToString(int[] bytes, String localization) {
-        return getStringAtLookupOffset(bytes, 0, localization);
+    public static String bytesToString(int[] bytes, String localization, boolean toRead) {
+        return getStringAtLookupOffset(bytes, 0, localization, toRead);
     }
 
     public static int[] getStringBytesAtLookupOffset(int[] table, int offset) {
@@ -290,7 +298,7 @@ public abstract class StringHelper {
         return Arrays.copyOfRange(table, offset, end);
     }
 
-    public static String getStringAtLookupOffset(int[] table, int offset, String localization) {
+    public static String getStringAtLookupOffset(int[] table, int offset, String localization, boolean toRead) {
         if (table == null || offset < 0 || offset >= table.length) {
             return "";
         }
@@ -336,7 +344,7 @@ public abstract class StringHelper {
                 } else if (idx == 0x01) {
                     out.append("{PAUSE}");
                 } else if (idx == 0x03) {
-                    out.append(WRITE_LINEBREAKS_AS_COMMANDS ? "{\\n}" : '\n');
+                    out.append(toRead ? "{\\n}" : '\n');
                 } else if (idx == 0x04) {
                     extraFiveSections = true;
                 } else if (idx == 0x07) {
@@ -367,7 +375,11 @@ public abstract class StringHelper {
                         break;
                     }
                     int ctrlIdx = table[offset];
-                    out.append("{CTRL:").append(formatHex2(ctrlIdx)).append(':').append(getControllerInput(ctrlIdx)).append('}');
+                    out.append("{CTRL:").append(formatHex2(ctrlIdx));
+                    if (toRead) {
+                        out.append(':').append(getControllerInput(ctrlIdx));
+                    }
+                    out.append('}');
                 } else if (idx == 0x10) {
                     offset++;
                     if (offset >= table.length) {
@@ -393,7 +405,11 @@ public abstract class StringHelper {
                         break;
                     }
                     int pcIdx = table[offset] - 0x30;
-                    out.append("{PC:").append(formatHex2(pcIdx)).append(':').append(getPlayerChar(pcIdx)).append('}');
+                    out.append("{PC:").append(formatHex2(pcIdx));
+                    if (toRead) {
+                        out.append(':').append(getPlayerChar(pcIdx));
+                    }
+                    out.append('}');
                 } else if (idx >= 0x13 && idx <= 0x22) {
                     int section = idx - 0x13;
                     offset++;
@@ -402,7 +418,7 @@ public abstract class StringHelper {
                     }
                     int line = table[offset] - 0x30;
                     out.append("{MCR:s").append(formatHex2(section)).append('l').append(formatHex2(line));
-                    if (!MACRO_LOOKUP.isEmpty()) {
+                    if (!MACRO_LOOKUP.isEmpty() && toRead) {
                         out.append(':');
                         int index = section * 0x100 + line;
                         if (MACRO_LOOKUP.containsKey(index)) {
@@ -419,12 +435,14 @@ public abstract class StringHelper {
                     }
                     int varIdx = table[offset];
                     out.append("{KEY:").append(formatHex2(varIdx));
-                    try {
-                        KeyItemDataObject keyItem = DataAccess.getKeyItem(varIdx + 0xA000 - 0x30);
-                        if (keyItem != null) {
-                            out.append(':').append('"').append(keyItem.getName(localization)).append('"');
+                    if (toRead) {
+                        try {
+                            KeyItemDataObject keyItem = DataAccess.getKeyItem(varIdx + 0xA000 - 0x30);
+                            if (keyItem != null) {
+                                out.append(':').append('"').append(keyItem.getName(localization)).append('"');
+                            }
+                        } catch (UnsupportedOperationException ignored) {
                         }
-                    } catch (UnsupportedOperationException ignored) {
                     }
                     out.append('}');
                 } else if (idx == 0x27) {
@@ -501,72 +519,77 @@ public abstract class StringHelper {
         if (endIndex < 0) {
             return null;
         }
-        String cmd = substring.substring(1, endIndex);
-        if (cmd.equals("PAUSE")) {
-            return List.of(0x01);
-        } else if (cmd.equals("\\n")) {
-            return List.of(0x03);
-        } else if (cmd.startsWith("SPACE:")) {
-            int pixels = Integer.parseInt(cmd.substring(6), 16) + 0x30;
-            return List.of(0x07, pixels);
-        } else if (cmd.startsWith("TIME:")) {
-            int boxType = Integer.parseInt(cmd.substring(5), 16) + 0x30;
-            return List.of(0x09, boxType);
-        } else if (cmd.startsWith("CLR:")) {
-            return List.of(0x0A, colorToByte(cmd.substring(4)));
-        } else if (cmd.startsWith("COLOR:")) {
-            return List.of(0x0A, colorToByte(cmd.substring(6)));
-        } else if (cmd.startsWith("CTRL:")) {
-            int ctrlIdx = Integer.parseInt(cmd.substring(5, 7), 16);
-            return List.of(0x0B, ctrlIdx);
-        } else if (cmd.equals("CHOICE-END")) {
-            return List.of(0x10, 0xFF);
-        } if (cmd.startsWith("CHOICE:")) {
-            int choiceIdx = Integer.parseInt(cmd.substring(7), 16) + 0x30;
-            return List.of(0x10, choiceIdx);
-        } else if (cmd.startsWith("VAR:")) {
-            int varIdx = Integer.parseInt(cmd.substring(4), 16) + 0x30;
-            return List.of(0x12, varIdx);
-        } else if (cmd.startsWith("PC:")) {
-            int pc = Integer.parseInt(cmd.substring(3, 5), 16) + 0x30;
-            return List.of(0x13, pc);
-        } else if (cmd.startsWith("MCR:")) {
-            int section = Integer.parseInt(cmd.substring(5, 7), 16) + 0x13;
-            int line = Integer.parseInt(cmd.substring(8, 10), 16) + 0x30;
-            return List.of(section, line);
-        } else if (cmd.startsWith("MACRO:")) {
-            int section = Integer.parseInt(cmd.substring(7, 9), 16) + 0x13;
-            int line = Integer.parseInt(cmd.substring(10, 12), 16) + 0x30;
-            return List.of(section, line);
-        } else if (cmd.startsWith("KEY:")) {
-            int keyItemIdx = Integer.parseInt(cmd.substring(4, 6), 16);
-            return List.of(0x23, keyItemIdx);
-        } else if (cmd.startsWith("KEY04:")) {
-            int keyItemIdx = Integer.parseInt(cmd.substring(6, 8), 16);
-            return List.of(0x04, 0x23, keyItemIdx);
-        } else if (cmd.startsWith("UNK27:")) {
-            int arg = Integer.parseInt(cmd.substring(6, 8), 16);
-            return List.of(0x27, arg);
-        } else if (cmd.startsWith("UNK0427:")) {
-            int arg = Integer.parseInt(cmd.substring(8, 10), 16);
-            return List.of(0x04, 0x27, arg);
-        } else if (cmd.startsWith("CMD:")) {
-            int cmdIdx = Integer.parseInt(cmd.substring(4, 6), 16);
-            int arg = Integer.parseInt(cmd.substring(7, 9), 16) + 0x30;
-            return List.of(cmdIdx, arg);
-        } else if (cmd.startsWith("UNKCHR:")) {
-            int chr = Integer.parseInt(cmd.substring(7, 9), 16);
-            return List.of(chr);
-        } else if (cmd.startsWith("UNKDBLCHR:")) {
-            int a = Integer.parseInt(cmd.substring(10, 12), 16);
-            int b = Integer.parseInt(cmd.substring(13, 15), 16);
-            return List.of(a, b);
-        } else if (cmd.startsWith("UNKTPLCHR:")) {
-            int a = Integer.parseInt(cmd.substring(10, 12), 16);
-            int b = Integer.parseInt(cmd.substring(13, 15), 16);
-            int c = Integer.parseInt(cmd.substring(16, 18), 16);
-            return List.of(a, b, c);
-        } else {
+        try {
+            String cmd = substring.substring(1, endIndex);
+            if (cmd.equals("PAUSE")) {
+                return List.of(0x01);
+            } else if (cmd.equals("\\n")) {
+                return List.of(0x03);
+            } else if (cmd.startsWith("SPACE:")) {
+                int pixels = Integer.parseInt(cmd.substring(6), 16) + 0x30;
+                return List.of(0x07, pixels);
+            } else if (cmd.startsWith("TIME:")) {
+                int boxType = Integer.parseInt(cmd.substring(5), 16) + 0x30;
+                return List.of(0x09, boxType);
+            } else if (cmd.startsWith("CLR:")) {
+                return List.of(0x0A, colorToByte(cmd.substring(4)));
+            } else if (cmd.startsWith("COLOR:")) {
+                return List.of(0x0A, colorToByte(cmd.substring(6)));
+            } else if (cmd.startsWith("CTRL:")) {
+                int ctrlIdx = Integer.parseInt(cmd.substring(5, 7), 16);
+                return List.of(0x0B, ctrlIdx);
+            } else if (cmd.equals("CHOICE-END")) {
+                return List.of(0x10, 0xFF);
+            }
+            if (cmd.startsWith("CHOICE:")) {
+                int choiceIdx = Integer.parseInt(cmd.substring(7), 16) + 0x30;
+                return List.of(0x10, choiceIdx);
+            } else if (cmd.startsWith("VAR:")) {
+                int varIdx = Integer.parseInt(cmd.substring(4), 16) + 0x30;
+                return List.of(0x12, varIdx);
+            } else if (cmd.startsWith("PC:")) {
+                int pc = Integer.parseInt(cmd.substring(3, 5), 16) + 0x30;
+                return List.of(0x13, pc);
+            } else if (cmd.startsWith("MCR:")) {
+                int section = Integer.parseInt(cmd.substring(5, 7), 16) + 0x13;
+                int line = Integer.parseInt(cmd.substring(8, 10), 16) + 0x30;
+                return List.of(section, line);
+            } else if (cmd.startsWith("MACRO:")) {
+                int section = Integer.parseInt(cmd.substring(7, 9), 16) + 0x13;
+                int line = Integer.parseInt(cmd.substring(10, 12), 16) + 0x30;
+                return List.of(section, line);
+            } else if (cmd.startsWith("KEY:")) {
+                int keyItemIdx = Integer.parseInt(cmd.substring(4, 6), 16);
+                return List.of(0x23, keyItemIdx);
+            } else if (cmd.startsWith("KEY04:")) {
+                int keyItemIdx = Integer.parseInt(cmd.substring(6, 8), 16);
+                return List.of(0x04, 0x23, keyItemIdx);
+            } else if (cmd.startsWith("UNK27:")) {
+                int arg = Integer.parseInt(cmd.substring(6, 8), 16);
+                return List.of(0x27, arg);
+            } else if (cmd.startsWith("UNK0427:")) {
+                int arg = Integer.parseInt(cmd.substring(8, 10), 16);
+                return List.of(0x04, 0x27, arg);
+            } else if (cmd.startsWith("CMD:")) {
+                int cmdIdx = Integer.parseInt(cmd.substring(4, 6), 16);
+                int arg = Integer.parseInt(cmd.substring(7, 9), 16) + 0x30;
+                return List.of(cmdIdx, arg);
+            } else if (cmd.startsWith("UNKCHR:")) {
+                int chr = Integer.parseInt(cmd.substring(7, 9), 16);
+                return List.of(chr);
+            } else if (cmd.startsWith("UNKDBLCHR:")) {
+                int a = Integer.parseInt(cmd.substring(10, 12), 16);
+                int b = Integer.parseInt(cmd.substring(13, 15), 16);
+                return List.of(a, b);
+            } else if (cmd.startsWith("UNKTPLCHR:")) {
+                int a = Integer.parseInt(cmd.substring(10, 12), 16);
+                int b = Integer.parseInt(cmd.substring(13, 15), 16);
+                int c = Integer.parseInt(cmd.substring(16, 18), 16);
+                return List.of(a, b, c);
+            } else {
+                return null;
+            }
+        } catch (NumberFormatException | StringIndexOutOfBoundsException ignored) {
             return null;
         }
     }
@@ -616,4 +639,6 @@ public abstract class StringHelper {
         }
         return new String(stringBytes, StandardCharsets.UTF_8);
     }
+
+    public record InvalidChars(String chars, List<Integer> indices) {}
 }

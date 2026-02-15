@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.control.SplitPane?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.control.ToolBar?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Text?>
+
+
+<VBox prefHeight="480.0" prefWidth="640.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="gui.GuiStringEditController">
+   <children>
+      <ListView fx:id="langList" prefHeight="212.0" prefWidth="200.0" />
+    <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="100.0" prefWidth="160.0" VBox.vgrow="ALWAYS">
+         <children>
+            <SplitPane dividerPositions="0.5" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+               <items>
+                  <TextArea fx:id="textArea" onKeyTyped="#onTypeRegular" prefHeight="200.0" prefWidth="598.0" />
+                  <TextArea fx:id="textAreaSimplified" layoutX="10.0" layoutY="10.0" onKeyTyped="#onTypeSimplified" prefHeight="200.0" prefWidth="598.0" />
+               </items>
+            </SplitPane>
+         </children>
+      </AnchorPane>
+      <ToolBar prefHeight="30.0" prefWidth="200.0">
+        <items>
+            <Text fx:id="warnHint" fill="RED" strokeType="OUTSIDE" strokeWidth="0.0" />
+        </items>
+      </ToolBar>
+   </children>
+</VBox>

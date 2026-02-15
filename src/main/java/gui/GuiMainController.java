@@ -8,18 +8,25 @@ import atel.model.*;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
+import javafx.stage.Modality;
+import javafx.stage.Popup;
+import javafx.stage.Stage;
 import main.DataAccess;
 import main.DataReadingManager;
 import main.DataWritingManager;
 import model.strings.LocalizedFieldStringObject;
 
+import java.io.IOException;
 import java.net.URL;
 import java.util.*;
 
@@ -100,6 +107,7 @@ public class GuiMainController implements Initializable {
     @FXML
     TableColumn<ScriptJump, ScriptJump> tableEntryPointsColumnDelete;
 
+    Stage stage;
     EventFile selectedEvent;
     EncounterFile selectedEncounter;
     MonsterFile selectedMonster;
@@ -124,9 +132,9 @@ public class GuiMainController implements Initializable {
         makeLists();
         lineGuiVbox.getChildren().remove(branchHbox);
         GuiTableSetup.setUpTables(this);
-        for (Map.Entry<String, String> locale : DataReadingManager.LOCALIZATIONS.entrySet()) {
-            final String localeId = locale.getKey();
-            MenuItem item = new MenuItem(locale.getValue());
+        for (String locale : DataReadingManager.LOCALIZATIONS_LIST) {
+            final String localeId = locale;
+            MenuItem item = new MenuItem(DataReadingManager.LOCALIZATIONS.get(localeId));
             item.setOnAction(actionEvent -> setLocalization(localeId));
             languageMenu.getItems().add(item);
         }
@@ -456,8 +464,10 @@ public class GuiMainController implements Initializable {
 
     public void editString(int index, String type) {
         LocalizedFieldStringObject obj;
+        String title;
         if ("system01String".equals(type)) {
             obj = DataAccess.getEncounter("system_01").strings.get(index);
+            title = String.format("system_01 String %d", index);
         } else {
             if (selectedEvent == null && selectedEncounter == null) {
                 return;
@@ -467,14 +477,40 @@ public class GuiMainController implements Initializable {
                     return;
                 }
                 obj = selectedEvent.strings.get(index);
+                title = String.format("%s String %d", selectedEvent.scriptId, index);
             } else {
                 if (selectedEncounter.strings == null || index >= selectedEncounter.strings.size()) {
                     return;
                 }
                 obj = selectedEncounter.strings.get(index);
+                title = String.format("%s String %d", selectedEncounter.scriptId, index);
             }
         }
         System.out.println("editString (" + index + ") = " + obj);
+        try {
+            Stage popup = new Stage();
+            if (stage != null) {
+                popup.initOwner(stage);
+            }
+            popup.initModality(Modality.NONE);
+            URL fxmlUrl = getClass().getResource("/gui/stringedit.fxml");
+            FXMLLoader fxmlLoader = new FXMLLoader(Objects.requireNonNull(fxmlUrl));
+            Parent root = fxmlLoader.load();
+            GuiStringEditController controller = fxmlLoader.getController();
+            controller.fieldString = obj;
+            controller.setUpLangList();
+            popup.setTitle(title);
+            popup.setScene(new Scene(root, 640, 480));
+            popup.show();
+            popup.setOnCloseRequest(crq -> onStringEditClosed());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void onStringEditClosed() {
+        adaptToSelectedEntryPoint();
+        fillLineGuiVbox();
     }
 
     @FXML

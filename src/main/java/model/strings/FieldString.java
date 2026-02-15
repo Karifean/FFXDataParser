@@ -127,11 +127,19 @@ public class FieldString {
     }
 
     public String getRegularString() {
-        return StringHelper.bytesToString(regularBytes, charset);
+        return StringHelper.bytesToString(regularBytes, charset, true);
     }
 
     public String getSimplifiedString() {
-        return StringHelper.bytesToString(simplifiedBytes, charset);
+        return StringHelper.bytesToString(simplifiedBytes, charset, true);
+    }
+
+    public String getRegularStringMultiline() {
+        return StringHelper.bytesToString(regularBytes, charset, false);
+    }
+
+    public String getSimplifiedStringMultiline() {
+        return StringHelper.bytesToString(simplifiedBytes, charset, false);
     }
 
     public boolean hasDistinctSimplified() {
@@ -158,6 +166,10 @@ public class FieldString {
 
     public void setSimplifiedString(String str) {
         setSimplifiedString(str, null);
+    }
+
+    public void setSimplifiedUndistinct() {
+        simplifiedBytes = regularBytes;
     }
 
     public void setCharset(String newCharset) {

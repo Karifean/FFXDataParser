@@ -555,7 +555,7 @@ public class Main {
             bytes[i / 2] = idx == 0x00 ? 0x03 : idx;
         }
         bytes[str.length() / 2] = 0x00;
-        System.out.println(StringHelper.bytesToString(bytes, DEFAULT_LOCALIZATION));
+        System.out.println(StringHelper.bytesToString(bytes, DEFAULT_LOCALIZATION, true));
     }
 
     private static String blitzballGrowthToString(List<StackObject> values, int baseOffset) {

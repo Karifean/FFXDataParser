@@ -51,6 +51,7 @@ public class DataReadingManager {
             "us", "English"
     );
     public static final List<String> CHARSETS = List.of("ch", "cn", "jp", "kr", "us");
+    public static final List<String> LOCALIZATIONS_LIST = List.of("us", "de", "fr", "it", "sp", "jp", "ch", "kr");
 
     private static final boolean ALLOW_DAT_FILES = false;
     private static final boolean LOAD_EVENTS_AND_ENCOUNTERS = true;
