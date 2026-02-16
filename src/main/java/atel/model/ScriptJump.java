@@ -37,16 +37,12 @@ public class ScriptJump {
         this.isEntryPoint = isEntryPoint;
     }
 
-    public ScriptJump(ScriptJump other) {
-        this(other.parentWorker, -1, other.jumpIndex, false);
-    }
-
-    public ScriptJump cloneEntryPointRecursively() {
+    public ScriptJump cloneEntryPointRecursively(ScriptWorker targetWorker) {
         if (!isEntryPoint) {
             throw new IllegalStateException("Can only clone entry points!");
         }
-        ScriptJump clone = new ScriptJump(parentWorker, -1, parentWorker.entryPoints.size(), true);
-        clone.targetLine = targetLine.cloneRecursively(new HashMap<>());
+        ScriptJump clone = new ScriptJump(targetWorker, -1, targetWorker.entryPoints.size(), true);
+        clone.targetLine = targetLine.cloneRecursively(targetWorker, new HashMap<>());
         clone.targetLine.incomingJumps.add(clone);
         return clone;
     }

@@ -526,11 +526,11 @@ public class ScriptWorker {
         return extra;
     }
 
-    public ScriptWorker cloneRecursively() {
-        ScriptWorker clone = new ScriptWorker(parentScript, parentScript.workers.size(), this, eventWorkerType);
+    public ScriptWorker cloneRecursively(AtelScriptObject targetScript) {
+        ScriptWorker clone = new ScriptWorker(targetScript, targetScript.workers.size(), this, eventWorkerType);
         for (ScriptJump ep : entryPoints) {
             ScriptJump clonedEp = new ScriptJump(clone, -1, clone.entryPoints.size(), true);
-            clonedEp.targetLine = ep.targetLine.cloneRecursively(new HashMap<>());
+            clonedEp.targetLine = ep.targetLine.cloneRecursively(clone, new HashMap<>());
             clonedEp.targetLine.incomingJumps.add(clonedEp);
             clone.entryPoints.add(clonedEp);
         }

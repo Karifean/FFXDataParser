@@ -40,31 +40,30 @@ public class ScriptLine {
         }
     }
 
-    public ScriptLine cloneRecursively(Map<ScriptLine, ScriptLine> cloneMap) {
-        ScriptLine clone = new ScriptLine(parentWorker, -1, cloneInstructions(), List.of());
+    public ScriptLine cloneRecursively(ScriptWorker targetWorker, Map<ScriptLine, ScriptLine> cloneMap) {
+        ScriptLine clone = new ScriptLine(targetWorker, -1, cloneInstructions(), List.of());
         cloneMap.put(this, clone);
         if (clone.continues()) {
             ScriptLine clonedSuccessor;
             if (cloneMap.containsKey(successor)) {
                 clonedSuccessor = cloneMap.get(successor);
             } else {
-                clonedSuccessor = successor.cloneRecursively(cloneMap);
+                clonedSuccessor = successor.cloneRecursively(targetWorker, cloneMap);
             }
             clone.successor = clonedSuccessor;
             clonedSuccessor.predecessor = clone;
         }
         if (branch != null) {
-            ScriptJump clonedBranch = new ScriptJump(branch);
-            int jumpIndex = parentWorker.jumps.size();
-            clonedBranch.jumpIndex = jumpIndex;
-            parentWorker.jumps.add(clonedBranch);
+            int jumpIndex = targetWorker.jumps.size();
+            ScriptJump clonedBranch = new ScriptJump(targetWorker, -1, jumpIndex, false);
+            targetWorker.jumps.add(clonedBranch);
             clone.lineEnder.setArgv(jumpIndex);
             clone.branch = clonedBranch;
             ScriptLine clonedTarget;
             if (cloneMap.containsKey(branch.targetLine)) {
                 clonedTarget = cloneMap.get(branch.targetLine);
             } else {
-                clonedTarget = branch.targetLine.cloneRecursively(cloneMap);
+                clonedTarget = branch.targetLine.cloneRecursively(targetWorker, cloneMap);
             }
             clonedBranch.targetLine = clonedTarget;
             clonedTarget.incomingJumps.add(clonedBranch);

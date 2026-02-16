@@ -562,7 +562,7 @@ public class GuiMainController implements Initializable {
 
     public void onDuplicateWorker(ScriptWorker worker) {
         AtelScriptObject parentScript = worker.parentScript;
-        ScriptWorker clone = worker.cloneRecursively();
+        ScriptWorker clone = worker.cloneRecursively(parentScript);
         parentScript.workers.add(clone);
         setScriptDetail();
         TreeItem<TreeEntry> treeItem = treeItem("wr", clone, null);
@@ -635,7 +635,7 @@ public class GuiMainController implements Initializable {
 
     public void onDuplicateEntryPoint(ScriptJump entryPoint) {
         ScriptWorker parentWorker = entryPoint.parentWorker;
-        ScriptJump clone = entryPoint.cloneEntryPointRecursively();
+        ScriptJump clone = entryPoint.cloneEntryPointRecursively(parentWorker);
         parentWorker.entryPoints.add(clone);
         TreeItem<TreeEntry> item = treeItem("e", parentWorker, clone);
         middleTree.getRoot().getChildren().stream().filter(i -> i.getValue().worker() == parentWorker).findAny().ifPresent(wr -> wr.getChildren().add(item));
