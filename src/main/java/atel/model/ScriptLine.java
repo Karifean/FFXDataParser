@@ -40,6 +40,42 @@ public class ScriptLine {
         }
     }
 
+    public ScriptLine cloneRecursively(Map<ScriptLine, ScriptLine> cloneMap) {
+        ScriptLine clone = new ScriptLine(parentWorker, -1, cloneInstructions(), List.of());
+        cloneMap.put(this, clone);
+        if (clone.continues()) {
+            ScriptLine clonedSuccessor;
+            if (cloneMap.containsKey(successor)) {
+                clonedSuccessor = cloneMap.get(successor);
+            } else {
+                clonedSuccessor = successor.cloneRecursively(cloneMap);
+            }
+            clone.successor = clonedSuccessor;
+            clonedSuccessor.predecessor = clone;
+        }
+        if (branch != null) {
+            ScriptJump clonedBranch = new ScriptJump(branch);
+            int jumpIndex = parentWorker.jumps.size();
+            clonedBranch.jumpIndex = jumpIndex;
+            parentWorker.jumps.add(clonedBranch);
+            clone.lineEnder.setArgv(jumpIndex);
+            clone.branch = clonedBranch;
+            ScriptLine clonedTarget;
+            if (cloneMap.containsKey(branch.targetLine)) {
+                clonedTarget = cloneMap.get(branch.targetLine);
+            } else {
+                clonedTarget = branch.targetLine.cloneRecursively(cloneMap);
+            }
+            clonedBranch.targetLine = clonedTarget;
+            clonedTarget.incomingJumps.add(clonedBranch);
+        }
+        return clone;
+    }
+
+    public List<ScriptInstruction> cloneInstructions() {
+        return instructions.stream().map(ScriptInstruction::cloneInstruction).toList();
+    }
+
     public List<Integer> toBytesList() {
         List<Integer> list = new ArrayList<>();
         instructions.forEach(ins -> list.addAll(ins.toBytesList()));

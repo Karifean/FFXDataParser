@@ -62,6 +62,23 @@ public class ScriptInstruction {
         setParentLine(line);
     }
 
+    public ScriptInstruction(ScriptInstruction instruction) {
+        this.offset = instruction.offset;
+        this.opcode = instruction.opcode;
+        this.hasArgs = instruction.hasArgs;
+        this.length = instruction.length;
+        this.arg1 = instruction.arg1;
+        this.arg2 = instruction.arg2;
+        this.argv = instruction.argv;
+        this.argvSigned = instruction.argvSigned;
+        this.dereferencedArg = instruction.dereferencedArg;
+        this.dereferencedVar = instruction.dereferencedVar;
+    }
+
+    public ScriptInstruction cloneInstruction() {
+        return new ScriptInstruction(this);
+    }
+
     public void setParentLine(ScriptLine line) {
         this.parentLine = line;
         this.parentWorker = line.parentWorker;

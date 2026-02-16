@@ -81,6 +81,8 @@ public class GuiMainController implements Initializable {
     @FXML
     TableColumn<ScriptWorker, ScriptWorker> tableWorkersColumnType;
     @FXML
+    TableColumn<ScriptWorker, ScriptWorker> tableWorkersColumnDuplicate;
+    @FXML
     TableColumn<ScriptWorker, ScriptWorker> tableWorkersColumnDelete;
     @FXML
     TableView<ScriptVariable> tableVariables;
@@ -108,6 +110,8 @@ public class GuiMainController implements Initializable {
     TableColumn<ScriptJump, ScriptJump> tableEntryPointsColumnLabel;
     @FXML
     TableColumn<ScriptJump, ScriptJump> tableEntryPointsColumnType;
+    @FXML
+    TableColumn<ScriptJump, ScriptJump> tableEntryPointsColumnDuplicate;
     @FXML
     TableColumn<ScriptJump, ScriptJump> tableEntryPointsColumnDelete;
 
@@ -556,6 +560,15 @@ public class GuiMainController implements Initializable {
         middleTree.getRoot().getChildren().add(treeItem);
     }
 
+    public void onDuplicateWorker(ScriptWorker worker) {
+        System.out.println("onDuplicateWorker " + worker);
+        AtelScriptObject parentScript = worker.parentScript;
+        ScriptWorker clone = worker.cloneRecursively();
+        parentScript.workers.add(clone);
+        setScriptDetail();
+        makeTree();
+    }
+
     public void onDeleteWorker(ScriptWorker worker) {
         System.out.println("onDeleteWorker " + worker);
         middleTree.getRoot().getChildren().stream().filter(i -> i.getValue().worker() == worker).findAny().ifPresent(wr -> middleTree.getRoot().getChildren().remove(wr));
@@ -603,6 +616,15 @@ public class GuiMainController implements Initializable {
         ep.setDeclaredLabel(textField.getText());
         setWorkerDetail();
         middleTree.refresh();
+    }
+
+    public void onDuplicateEntryPoint(ScriptJump entryPoint) {
+        System.out.println("onDuplicateEntryPoint " + entryPoint);
+        ScriptWorker parentWorker = entryPoint.parentWorker;
+        ScriptJump clone = entryPoint.cloneEntryPointRecursively();
+        parentWorker.entryPoints.add(clone);
+        setWorkerDetail();
+        makeTree();
     }
 
     public void onDeleteEntryPoint(ScriptJump entryPoint) {

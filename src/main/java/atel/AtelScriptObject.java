@@ -23,7 +23,8 @@ public class AtelScriptObject {
     private static final boolean PRINT_JUMP_TABLE = false;
     private static final boolean INFER_BITWISE_OPS_AS_BITFIELDS = false;
     private static final boolean PRINT_CODE_BY_ENTRY_POINTS = false;
-    private static final boolean KEEP_EXISTING_REF_INTS_FLOATS_ORDER = true;
+    private static final boolean KEEP_EXISTING_REF_INTS_FLOATS_ORDER = false;
+    private static final boolean HACK_TO_ALLOW_ANY_WORKER_ORDERING = true;
 
     private final boolean hasWorkerLocalPrivateData;
     private final int[] bytes;
@@ -151,18 +152,25 @@ public class AtelScriptObject {
         }
         int[] staticHeaderBytes = new int[STATIC_HEADER_LENGTH];
         write4Bytes(staticHeaderBytes, 0x00, scriptCodeLength);
-        int amountOfType2or3Scripts = (int) workers.stream().filter(w -> w.eventWorkerType == 2 || w.eventWorkerType == 3).count();
-        write2Bytes(staticHeaderBytes, 0x14, amountOfType2or3Scripts);
-        int amountOfType4Scripts = (int) workers.stream().filter(w -> w.eventWorkerType == 4).count();
-        write2Bytes(staticHeaderBytes, 0x16, amountOfType4Scripts);
-        write2Bytes(staticHeaderBytes, 0x18, mainScriptIndex);
-        write2Bytes(staticHeaderBytes, 0x1A, unknown1A);
-        int amountOfType5or6Scripts = (int) workers.stream().filter(w -> w.eventWorkerType == 5 || w.eventWorkerType == 6).count();
-        write2Bytes(staticHeaderBytes, 0x1C, amountOfType5or6Scripts);
+        if (HACK_TO_ALLOW_ANY_WORKER_ORDERING) {
+            write2Bytes(staticHeaderBytes, 0x14, 0);
+            write2Bytes(staticHeaderBytes, 0x16, 0);
+            write2Bytes(staticHeaderBytes, 0x1C, 0);
+            write2Bytes(staticHeaderBytes, 0x36, 0);
+        } else {
+            int amountOfType2or3Scripts = (int) workers.stream().filter(w -> w.eventWorkerType == 2 || w.eventWorkerType == 3).count();
+            write2Bytes(staticHeaderBytes, 0x14, amountOfType2or3Scripts);
+            int amountOfType4Scripts = (int) workers.stream().filter(w -> w.eventWorkerType == 4).count();
+            write2Bytes(staticHeaderBytes, 0x16, amountOfType4Scripts);
+            int amountOfType5or6Scripts = (int) workers.stream().filter(w -> w.eventWorkerType == 5 || w.eventWorkerType == 6).count();
+            write2Bytes(staticHeaderBytes, 0x1C, amountOfType5or6Scripts);
+            int actorCount = (int) workers.stream().filter(w -> w.eventWorkerType != 0).count();
+            write2Bytes(staticHeaderBytes, 0x36, actorCount);
+        }
         int workerCount = workers.size();
         write2Bytes(staticHeaderBytes, 0x34, workerCount);
-        int actorCount = (int) workers.stream().filter(w -> w.eventWorkerType != 0).count();
-        write2Bytes(staticHeaderBytes, 0x36, actorCount);
+        write2Bytes(staticHeaderBytes, 0x18, mainScriptIndex);
+        write2Bytes(staticHeaderBytes, 0x1A, unknown1A);
         int workerHeaderLength = workerCount * (ScriptWorker.LENGTH + 4);
         int[] workerHeaderBytes = new int[workerHeaderLength];
         for (int i = 0; i < workerCount; i++) {

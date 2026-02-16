@@ -66,6 +66,25 @@ public class GuiTableSetup {
                 }
             }
         });
+        controller.tableWorkersColumnDuplicate.setCellValueFactory(cdf -> new SimpleObjectProperty<>(cdf.getValue()));
+        controller.tableWorkersColumnDuplicate.setCellFactory(col -> new TableCell<>() {
+            final Button dupeButton = new Button("Duplicate");
+            @Override
+            protected void updateItem(ScriptWorker w, boolean empty) {
+                super.updateItem(w, empty);
+                if (empty) {
+                    setGraphic(null);
+                } else {
+                    setGraphic(dupeButton);
+                    if (w != null) {
+                        dupeButton.setDisable(false);
+                        dupeButton.setOnAction(actionEvent -> controller.onDuplicateWorker(w));
+                    } else {
+                        dupeButton.setDisable(true);
+                    }
+                }
+            }
+        });
         controller.tableWorkersColumnDelete.setCellValueFactory(cdf -> new SimpleObjectProperty<>(cdf.getValue()));
         controller.tableWorkersColumnDelete.setCellFactory(col -> new TableCell<>() {
             final Button delButton = new Button("Delete");
@@ -303,6 +322,25 @@ public class GuiTableSetup {
                         }
                     } else {
                         setGraphic(null);
+                    }
+                }
+            }
+        });
+        controller.tableEntryPointsColumnDuplicate.setCellValueFactory(cdf -> new SimpleObjectProperty<>(cdf.getValue()));
+        controller.tableEntryPointsColumnDuplicate.setCellFactory(col -> new TableCell<>() {
+            final Button dupeButton = new Button("Duplicate");
+            @Override
+            protected void updateItem(ScriptJump ep, boolean empty) {
+                super.updateItem(ep, empty);
+                if (empty) {
+                    setGraphic(null);
+                } else {
+                    setGraphic(dupeButton);
+                    if (ep != null && ep.isEntryPoint) {
+                        dupeButton.setDisable(false);
+                        dupeButton.setOnAction(actionEvent -> controller.onDuplicateEntryPoint(ep));
+                    } else {
+                        dupeButton.setDisable(true);
                     }
                 }
             }

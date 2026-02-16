@@ -37,6 +37,20 @@ public class ScriptJump {
         this.isEntryPoint = isEntryPoint;
     }
 
+    public ScriptJump(ScriptJump other) {
+        this(other.parentWorker, -1, other.jumpIndex, false);
+    }
+
+    public ScriptJump cloneEntryPointRecursively() {
+        if (!isEntryPoint) {
+            throw new IllegalStateException("Can only clone entry points!");
+        }
+        ScriptJump clone = new ScriptJump(parentWorker, -1, parentWorker.entryPoints.size(), true);
+        clone.targetLine = targetLine.cloneRecursively(new HashMap<>());
+        clone.targetLine.incomingJumps.add(clone);
+        return clone;
+    }
+
     public void markAsHardMisaligned() {
         this.hardMisaligned = true;
     }
@@ -66,23 +80,32 @@ public class ScriptJump {
                 cursor = cursor.successor;
             }
             while (cursor != null && !list.contains(cursor)) {
-                list.add(cursor);
                 ScriptJump branch = cursor.branch;
                 if (branch != null) {
                     if (cursor.continues()) {
                         linesToCheck.add(0, branch.targetLine);
                     } else {
-                        linesToCheck.push(branch.targetLine);
                         if (OPTIMIZE_REDUNDANT_B0_INSTRUCTIONS) {
+                            if (!branch.targetLine.continues()) {
+                                cursor = branch.targetLine;
+                                while (cursor.branch != null && !cursor.branch.targetLine.continues()) {
+                                    cursor = branch.targetLine;
+                                }
+                            } else {
+                                linesToCheck.push(branch.targetLine);
+                            }
                             List<ScriptJump> selfIncomingJumps = cursor.incomingJumps;
                             if (selfIncomingJumps != null && !selfIncomingJumps.isEmpty()) {
                                 branch.targetLine.incomingJumps.addAll(selfIncomingJumps);
                                 selfIncomingJumps.forEach(j -> j.targetLine = branch.targetLine);
                                 cursor.incomingJumps = new ArrayList<>();
                             }
+                        } else {
+                            linesToCheck.push(branch.targetLine);
                         }
                     }
                 }
+                list.add(cursor);
                 cursor = cursor.continues() ? cursor.successor : null;
             }
         }

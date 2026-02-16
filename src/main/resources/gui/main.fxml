@@ -267,6 +267,7 @@
                                                       <TableColumn fx:id="tableEntryPointsColumnIndex" editable="false" prefWidth="75.0" sortable="false" text="Index" />
                                                       <TableColumn fx:id="tableEntryPointsColumnLabel" editable="false" prefWidth="217.0" sortable="false" text="Label" />
                                                       <TableColumn fx:id="tableEntryPointsColumnType" editable="false" prefWidth="217.0" sortable="false" text="Type/Purpose" />
+                                                      <TableColumn fx:id="tableEntryPointsColumnDuplicate" prefWidth="75.0" text="Duplicate" />
                                                       <TableColumn fx:id="tableEntryPointsColumnDelete" prefWidth="75.0" text="Delete" />
                                                    </columns>
                                                 </TableView>
@@ -310,6 +311,7 @@
                                                     <TableColumn fx:id="tableWorkersColumnIndex" editable="false" prefWidth="75.0" sortable="false" text="Index" />
                                                       <TableColumn fx:id="tableWorkersColumnLabel" editable="false" prefWidth="217.0" sortable="false" text="Label" />
                                                     <TableColumn fx:id="tableWorkersColumnType" editable="false" prefWidth="217.0" sortable="false" text="Type/Purpose" />
+                                                      <TableColumn fx:id="tableWorkersColumnDuplicate" prefWidth="75.0" text="Duplicate" />
                                                       <TableColumn fx:id="tableWorkersColumnDelete" prefWidth="75.0" text="Delete" />
                                                   </columns>
                                                 </TableView>

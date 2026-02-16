@@ -526,6 +526,17 @@ public class ScriptWorker {
         return extra;
     }
 
+    public ScriptWorker cloneRecursively() {
+        ScriptWorker clone = new ScriptWorker(parentScript, parentScript.workers.size(), this, eventWorkerType);
+        for (ScriptJump ep : entryPoints) {
+            ScriptJump clonedEp = new ScriptJump(clone, -1, clone.entryPoints.size(), true);
+            clonedEp.targetLine = ep.targetLine.cloneRecursively(new HashMap<>());
+            clonedEp.targetLine.incomingJumps.add(clonedEp);
+            clone.entryPoints.add(clonedEp);
+        }
+        return clone;
+    }
+
     private void collectJumps(int cursor, Map<Integer, List<ScriptJump>> scriptJumpsByDestination, List<ScriptJump> jumpsOnLine, boolean isArgByte) {
         if (!scriptJumpsByDestination.containsKey(cursor)) {
             return;
