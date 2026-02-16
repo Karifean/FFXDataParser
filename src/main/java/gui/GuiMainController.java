@@ -561,16 +561,20 @@ public class GuiMainController implements Initializable {
     }
 
     public void onDuplicateWorker(ScriptWorker worker) {
-        System.out.println("onDuplicateWorker " + worker);
         AtelScriptObject parentScript = worker.parentScript;
         ScriptWorker clone = worker.cloneRecursively();
         parentScript.workers.add(clone);
         setScriptDetail();
-        makeTree();
+        TreeItem<TreeEntry> treeItem = treeItem("wr", clone, null);
+        treeItem.getChildren().add(treeItem("wg", clone, null));
+        for (ScriptJump entryPoint : clone.getEntryPoints()) {
+            TreeItem<TreeEntry> entryPointItem = treeItem("e", clone, entryPoint);
+            treeItem.getChildren().add(entryPointItem);
+        }
+        middleTree.getRoot().getChildren().add(treeItem);
     }
 
     public void onDeleteWorker(ScriptWorker worker) {
-        System.out.println("onDeleteWorker " + worker);
         middleTree.getRoot().getChildren().stream().filter(i -> i.getValue().worker() == worker).findAny().ifPresent(wr -> middleTree.getRoot().getChildren().remove(wr));
         AtelScriptObject parentScript = worker.parentScript;
         parentScript.workers.remove(worker);
@@ -618,17 +622,27 @@ public class GuiMainController implements Initializable {
         middleTree.refresh();
     }
 
+    @FXML
+    public void onAddEntryPoint() {
+        if (selectedWorker == null) {
+            return;
+        }
+        ScriptJump entryPoint = selectedWorker.addBlankEntryPoint();
+        TreeItem<TreeEntry> item = treeItem("e", selectedWorker, entryPoint);
+        middleTree.getRoot().getChildren().stream().filter(i -> i.getValue().worker() == selectedWorker).findAny().ifPresent(wr -> wr.getChildren().add(item));
+        setWorkerDetail();
+    }
+
     public void onDuplicateEntryPoint(ScriptJump entryPoint) {
-        System.out.println("onDuplicateEntryPoint " + entryPoint);
         ScriptWorker parentWorker = entryPoint.parentWorker;
         ScriptJump clone = entryPoint.cloneEntryPointRecursively();
         parentWorker.entryPoints.add(clone);
+        TreeItem<TreeEntry> item = treeItem("e", parentWorker, clone);
+        middleTree.getRoot().getChildren().stream().filter(i -> i.getValue().worker() == parentWorker).findAny().ifPresent(wr -> wr.getChildren().add(item));
         setWorkerDetail();
-        makeTree();
     }
 
     public void onDeleteEntryPoint(ScriptJump entryPoint) {
-        System.out.println("onDeleteEntryPoint " + entryPoint);
         if (!entryPoint.canDelete()) {
             return;
         }
@@ -705,17 +719,6 @@ public class GuiMainController implements Initializable {
             selectedAtelObject.getVariable(i).index = i;
         }
         setScriptDetail();
-    }
-
-    @FXML
-    public void onAddEntryPoint() {
-        if (selectedWorker == null) {
-            return;
-        }
-        ScriptJump entryPoint = selectedWorker.addBlankEntryPoint();
-        TreeItem<TreeEntry> item = treeItem("e", selectedWorker, entryPoint);
-        middleTree.getRoot().getChildren().stream().filter(i -> i.getValue().worker() == selectedWorker).findAny().ifPresent(wr -> wr.getChildren().add(item));
-        setWorkerDetail();
     }
 
     @FXML
