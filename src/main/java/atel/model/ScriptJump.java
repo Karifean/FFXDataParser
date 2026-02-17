@@ -81,23 +81,14 @@ public class ScriptJump {
                     if (cursor.continues()) {
                         linesToCheck.add(0, branch.targetLine);
                     } else {
+                        linesToCheck.push(branch.targetLine);
                         if (OPTIMIZE_REDUNDANT_B0_INSTRUCTIONS) {
-                            if (!branch.targetLine.continues()) {
-                                cursor = branch.targetLine;
-                                while (cursor.branch != null && !cursor.branch.targetLine.continues()) {
-                                    cursor = branch.targetLine;
-                                }
-                            } else {
-                                linesToCheck.push(branch.targetLine);
-                            }
                             List<ScriptJump> selfIncomingJumps = cursor.incomingJumps;
                             if (selfIncomingJumps != null && !selfIncomingJumps.isEmpty()) {
                                 branch.targetLine.incomingJumps.addAll(selfIncomingJumps);
                                 selfIncomingJumps.forEach(j -> j.targetLine = branch.targetLine);
                                 cursor.incomingJumps = new ArrayList<>();
                             }
-                        } else {
-                            linesToCheck.push(branch.targetLine);
                         }
                     }
                 }
