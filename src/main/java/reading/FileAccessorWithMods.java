@@ -114,6 +114,5 @@ public class FileAccessorWithMods {
             System.err.println("Failed to create directories");
             e.printStackTrace();
         }
-
     }
 }

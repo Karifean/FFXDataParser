@@ -5,20 +5,22 @@ import main.StringHelper;
 import java.util.ArrayList;
 import java.util.List;
 
+import static reading.BytesHelper.read2Bytes;
+
 public class MacroString {
 
     public static List<MacroString> fromStringData(int[] bytes, String charset) {
         if (bytes == null || bytes.length <= 0) {
             return null;
         }
-        int first = bytes[0x00] + bytes[0x01] * 0x100;
+        int first = read2Bytes(bytes, 0);
         int count = first / 0x04;
         List<MacroString> strings = new ArrayList<>(count);
         try {
             for (int i = 0; i < count; i++) {
                 int headerOffset = i * 0x04;
-                int regularOffset = bytes[headerOffset] + bytes[headerOffset + 0x01] * 0x100;
-                int simplifiedOffset = bytes[headerOffset + 0x02] + bytes[headerOffset + 0x03] * 0x100;
+                int regularOffset = read2Bytes(bytes, headerOffset);
+                int simplifiedOffset = read2Bytes(bytes, headerOffset + 0x02);
                 MacroString out = new MacroString(charset, regularOffset, simplifiedOffset, bytes);
                 strings.add(out);
             }

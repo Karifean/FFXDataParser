@@ -66,21 +66,21 @@ public class GuiTableSetup {
                 }
             }
         });
-        controller.tableWorkersColumnDuplicate.setCellValueFactory(cdf -> new SimpleObjectProperty<>(cdf.getValue()));
-        controller.tableWorkersColumnDuplicate.setCellFactory(col -> new TableCell<>() {
-            final Button dupeButton = new Button("Duplicate");
+        controller.tableWorkersColumnCopy.setCellValueFactory(cdf -> new SimpleObjectProperty<>(cdf.getValue()));
+        controller.tableWorkersColumnCopy.setCellFactory(col -> new TableCell<>() {
+            final Button copyButton = new Button("Copy");
             @Override
             protected void updateItem(ScriptWorker w, boolean empty) {
                 super.updateItem(w, empty);
                 if (empty) {
                     setGraphic(null);
                 } else {
-                    setGraphic(dupeButton);
+                    setGraphic(copyButton);
                     if (w != null) {
-                        dupeButton.setDisable(false);
-                        dupeButton.setOnAction(actionEvent -> controller.onDuplicateWorker(w));
+                        copyButton.setDisable(false);
+                        copyButton.setOnAction(actionEvent -> controller.onCopyWorker(w));
                     } else {
-                        dupeButton.setDisable(true);
+                        copyButton.setDisable(true);
                     }
                 }
             }
@@ -261,6 +261,22 @@ public class GuiTableSetup {
                 }
             }
         });
+        controller.tableVariablesColumnCopy.setCellValueFactory(cdf -> new SimpleObjectProperty<>(cdf.getValue()));
+        controller.tableVariablesColumnCopy.setCellFactory(col -> new TableCell<>() {
+            final Button copyButton = new Button("Copy");
+            @Override
+            protected void updateItem(ScriptVariable vr, boolean empty) {
+                super.updateItem(vr, empty);
+                if (empty) {
+                    setGraphic(null);
+                } else {
+                    setGraphic(copyButton);
+                    if (vr != null) {
+                        copyButton.setOnAction(actionEvent -> controller.onCopyVariable(vr));
+                    }
+                }
+            }
+        });
         controller.tableVariablesColumnDelete.setCellValueFactory(cdf -> new SimpleObjectProperty<>(cdf.getValue()));
         controller.tableVariablesColumnDelete.setCellFactory(col -> new TableCell<>() {
             final Button delButton = new Button("Delete");
@@ -326,21 +342,21 @@ public class GuiTableSetup {
                 }
             }
         });
-        controller.tableEntryPointsColumnDuplicate.setCellValueFactory(cdf -> new SimpleObjectProperty<>(cdf.getValue()));
-        controller.tableEntryPointsColumnDuplicate.setCellFactory(col -> new TableCell<>() {
-            final Button dupeButton = new Button("Duplicate");
+        controller.tableEntryPointsColumnCopy.setCellValueFactory(cdf -> new SimpleObjectProperty<>(cdf.getValue()));
+        controller.tableEntryPointsColumnCopy.setCellFactory(col -> new TableCell<>() {
+            final Button copyButton = new Button("Copy");
             @Override
             protected void updateItem(ScriptJump ep, boolean empty) {
                 super.updateItem(ep, empty);
                 if (empty) {
                     setGraphic(null);
                 } else {
-                    setGraphic(dupeButton);
+                    setGraphic(copyButton);
                     if (ep != null && ep.isEntryPoint) {
-                        dupeButton.setDisable(false);
-                        dupeButton.setOnAction(actionEvent -> controller.onDuplicateEntryPoint(ep));
+                        copyButton.setDisable(false);
+                        copyButton.setOnAction(actionEvent -> controller.onCopyEntryPoint(ep));
                     } else {
-                        dupeButton.setDisable(true);
+                        copyButton.setDisable(true);
                     }
                 }
             }

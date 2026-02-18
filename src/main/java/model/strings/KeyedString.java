@@ -1,6 +1,7 @@
 package model.strings;
 
 import main.StringHelper;
+import reading.BytesHelper;
 
 import java.util.*;
 import java.util.stream.Stream;
@@ -10,30 +11,20 @@ public class KeyedString {
     public static int[] rebuildKeyedStrings(Stream<KeyedString> stringStream, String charset, final boolean optimize) {
         final Map<String, KeyedString> map = new HashMap<>();
         final List<Integer> byteList = new ArrayList<>();
-        byteList.add(0);
-        stringStream = stringStream.sorted(Comparator.comparingInt(s -> s.bytes.length));
-        stringStream.forEach((keyedString) -> {
+        final List<KeyedString> list = stringStream.sorted(Comparator.comparingInt(s -> s.bytes.length)).toList();
+        for (KeyedString keyedString : list) {
             String actualString = keyedString.getString();
-            if (actualString == null || actualString.isEmpty()) {
-                keyedString.offset = 0;
-                keyedString.key = 0;
-                return;
-            }
             if (map.containsKey(actualString)) {
                 keyedString.offset = map.get(actualString).offset;
                 keyedString.key = map.get(actualString).key;
-                return;
+            } else {
+                keyedString.offset = byteList.size();
+                keyedString.key = map.size();
+                map.put(actualString, keyedString);
+                StringHelper.fillByteList(actualString, byteList, charset);
             }
-            keyedString.offset = byteList.size();
-            keyedString.key = map.size();
-            map.put(actualString, keyedString);
-            StringHelper.fillByteList(actualString, byteList, charset);
-        });
-        final int[] stringBytes = new int[byteList.size()];
-        for (int i = 0; i < byteList.size(); i++) {
-            stringBytes[i] = byteList.get(i);
         }
-        return stringBytes;
+        return BytesHelper.intListToArray(byteList);
     }
 
     String charset;

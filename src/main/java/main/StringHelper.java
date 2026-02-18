@@ -506,11 +506,7 @@ public abstract class StringHelper {
 
     public static int[] stringToBytes(String string, String charset) {
         List<Integer> byteList = stringToByteList(string, charset);
-        final int[] stringBytes = new int[byteList.size()];
-        for (int i = 0; i < byteList.size(); i++) {
-            stringBytes[i] = byteList.get(i);
-        }
-        return stringBytes;
+        return BytesHelper.intListToArray(byteList);
     }
 
     public static List<Integer> parseCommand(String string, int startIndex) {

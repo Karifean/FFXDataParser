@@ -12,8 +12,10 @@ import atel.MonsterFile;
 import java.util.HashMap;
 import java.util.Map;
 
+import static reading.BytesHelper.get;
+
 public abstract class DataAccess {
-    public static CommandDataObject[] MOVES = new CommandDataObject[0x10000];
+    public static CommandDataObject[] COMMANDS = new CommandDataObject[0x10000];
     public static Map<String, EventFile> EVENTS = new HashMap<>();
     public static Map<String, EncounterFile> ENCOUNTERS = new HashMap<>();
     public static MonsterFile[] MONSTERS = new MonsterFile[0x1000];
@@ -81,14 +83,10 @@ public abstract class DataAccess {
     }
 
     public static CommandDataObject getCommand(int idx) {
-        if (MOVES == null) {
+        if (COMMANDS == null) {
             throw new UnsupportedOperationException();
         }
-        if (idx >= 0 && idx < MOVES.length) {
-            return MOVES[idx];
-        } else {
-            return null;
-        }
+        return get(COMMANDS, idx);
     }
 
     public static AutoAbilityDataObject getAutoAbility(int idx) {
@@ -98,50 +96,32 @@ public abstract class DataAccess {
         if (AUTO_ABILITIES == null) {
             throw new UnsupportedOperationException();
         }
-        int actual = idx - 0x8000;
-        if (actual >= 0 && actual < AUTO_ABILITIES.length) {
-            return AUTO_ABILITIES[actual];
-        } else {
-            return null;
-        }
+        return get(AUTO_ABILITIES, idx & 0x0FFF);
     }
 
     public static SphereGridNodeTypeDataObject getSgNodeType(int idx) {
         if (SG_NODE_TYPES == null) {
             throw new UnsupportedOperationException();
         }
-        if (idx >= 0 && idx < SG_NODE_TYPES.length) {
-            return SG_NODE_TYPES[idx];
-        } else {
-            return null;
-        }
+        return get(SG_NODE_TYPES, idx);
     }
 
     public static KeyItemDataObject getKeyItem(int idx) {
         if (KEY_ITEMS == null) {
             throw new UnsupportedOperationException();
         }
-        int actual = idx - 0xA000;
-        if (actual >= 0 && actual < KEY_ITEMS.length) {
-            return KEY_ITEMS[actual];
-        } else {
-            return null;
-        }
+        return get(KEY_ITEMS, idx & 0x0FFF);
     }
 
     public static TreasureDataObject getTreasure(int idx) {
         if (TREASURES == null) {
             throw new UnsupportedOperationException();
         }
-        if (idx >= 0 && idx < TREASURES.length) {
-            return TREASURES[idx];
-        } else {
-            return null;
-        }
+        return get(TREASURES, idx);
     }
 
     public static void addMonsterLocalizations(MonsterStatDataObject[] localizations) {
-        if (localizations == null) {
+        if (localizations == null || MONSTERS == null) {
             return;
         }
         for (int i = 0; i < localizations.length && i < MONSTERS.length; i++) {
@@ -152,8 +132,14 @@ public abstract class DataAccess {
     }
 
     public static MonsterFile getMonster(String id) {
+        if (id == null || id.isEmpty()) {
+            return null;
+        }
+        if (id.startsWith("m")) {
+            id = id.substring(1);
+        }
         try {
-            return getMonster(Integer.parseInt(id, 10) | 0x1000);
+            return getMonster(Integer.parseInt(id, 10));
         } catch (NumberFormatException e) {
             return null;
         }
@@ -163,11 +149,6 @@ public abstract class DataAccess {
         if (MONSTERS == null) {
             throw new UnsupportedOperationException();
         }
-        int actual = idx & 0x0FFF;
-        if (actual < MONSTERS.length) {
-            return MONSTERS[actual];
-        } else {
-            return null;
-        }
+        return get(MONSTERS, idx & 0x0FFF);
     }
 }

@@ -8,6 +8,9 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.function.IntFunction;
 
+import static reading.BytesHelper.read2Bytes;
+import static reading.BytesHelper.read4Bytes;
+
 public class DataFileReader<T> {
     private final DataObjectCreator<T> objectCreator;
     private final IntFunction<T[]> arrayCreator;
@@ -36,12 +39,7 @@ public class DataFileReader<T> {
                 for (int i = 0; i < totalLength; i++) {
                     dataBytes[i] = inputStream.read();
                 }
-                final byte[] stringBytes = inputStream.readAllBytes();
-                final int stringsLength = stringBytes.length;
-                final int[] allStrings = new int[stringsLength];
-                for (int i = 0; i < stringsLength; i++) {
-                    allStrings[i] = Byte.toUnsignedInt(stringBytes[i]);
-                }
+                final int[] allStrings = BytesHelper.byteToIntArray(inputStream.readAllBytes());
                 final int j = maxIndex - minIndex;
                 for (int i = 0; i <= j; i++) {
                     T obj = objectCreator.create(Arrays.copyOfRange(dataBytes, i * individualLength, (i + 1) * individualLength), allStrings, localization);
@@ -72,12 +70,7 @@ public class DataFileReader<T> {
                 for (int i = 0; i < totalLength; i++) {
                     dataBytes[i] = inputStream.read();
                 }
-                final byte[] stringBytes = inputStream.readAllBytes();
-                final int stringsLength = stringBytes.length;
-                final int[] allStrings = new int[stringsLength];
-                for (int i = 0; i < stringsLength; i++) {
-                    allStrings[i] = Byte.toUnsignedInt(stringBytes[i]);
-                }
+                final int[] allStrings = BytesHelper.byteToIntArray(inputStream.readAllBytes());
                 final int j = maxIndex - minIndex;
                 for (int i = 0; i <= j; i++) {
                     T obj = objectCreator.create(Arrays.copyOfRange(dataBytes, i * individualLength, (i + 1) * individualLength), allStrings, localization);
@@ -99,15 +92,5 @@ public class DataFileReader<T> {
             return null;
         }
         return list.toArray(arrayCreator);
-    }
-
-    private int read2Bytes(DataInputStream stream) throws IOException {
-        int x = stream.read();
-        return x + stream.read() * 0x100;
-    }
-
-    private int read4Bytes(DataInputStream stream) throws IOException {
-        int x = read2Bytes(stream);
-        return x + read2Bytes(stream) * 0x10000;
     }
 }

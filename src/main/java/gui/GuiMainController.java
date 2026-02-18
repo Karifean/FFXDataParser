@@ -19,7 +19,6 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import javafx.stage.Modality;
-import javafx.stage.Popup;
 import javafx.stage.Stage;
 import main.DataAccess;
 import main.DataReadingManager;
@@ -71,6 +70,14 @@ public class GuiMainController implements Initializable {
     Button branchLineButton;
     @FXML
     TextField hexLineInput;
+    @FXML
+    Button pasteWorkerButton;
+    @FXML
+    Button pasteVariableButton;
+    @FXML
+    Button pasteEntryPointButton;
+    @FXML
+    Button pasteLineButton;
 
     @FXML
     TableView<ScriptWorker> tableWorkers;
@@ -81,7 +88,7 @@ public class GuiMainController implements Initializable {
     @FXML
     TableColumn<ScriptWorker, ScriptWorker> tableWorkersColumnType;
     @FXML
-    TableColumn<ScriptWorker, ScriptWorker> tableWorkersColumnDuplicate;
+    TableColumn<ScriptWorker, ScriptWorker> tableWorkersColumnCopy;
     @FXML
     TableColumn<ScriptWorker, ScriptWorker> tableWorkersColumnDelete;
     @FXML
@@ -101,6 +108,8 @@ public class GuiMainController implements Initializable {
     @FXML
     TableColumn<ScriptVariable, ScriptVariable> tableVariablesColumnArray;
     @FXML
+    TableColumn<ScriptVariable, ScriptVariable> tableVariablesColumnCopy;
+    @FXML
     TableColumn<ScriptVariable, ScriptVariable> tableVariablesColumnDelete;
     @FXML
     TableView<ScriptJump> tableEntryPoints;
@@ -111,7 +120,7 @@ public class GuiMainController implements Initializable {
     @FXML
     TableColumn<ScriptJump, ScriptJump> tableEntryPointsColumnType;
     @FXML
-    TableColumn<ScriptJump, ScriptJump> tableEntryPointsColumnDuplicate;
+    TableColumn<ScriptJump, ScriptJump> tableEntryPointsColumnCopy;
     @FXML
     TableColumn<ScriptJump, ScriptJump> tableEntryPointsColumnDelete;
 
@@ -127,6 +136,11 @@ public class GuiMainController implements Initializable {
     List<ScriptLine> scriptLines;
     int selectedLineIndex = -1;
     ScriptLine selectedLine;
+
+    ScriptWorker clipboardWorker;
+    ScriptVariable clipboardVariable;
+    ScriptJump clipboardEntryPoint;
+    ScriptLine clipboardLine;
 
     private boolean choosingBranchTarget = false;
 
@@ -560,10 +574,34 @@ public class GuiMainController implements Initializable {
         middleTree.getRoot().getChildren().add(treeItem);
     }
 
+    @FXML
+    public void onCopyWorker() {
+        onCopyWorker(selectedWorker);
+    }
+
+    public void onCopyWorker(ScriptWorker worker) {
+        clipboardWorker = worker;
+        pasteWorkerButton.setDisable(worker == null);
+    }
+
     public void onDuplicateWorker(ScriptWorker worker) {
-        AtelScriptObject parentScript = worker.parentScript;
-        ScriptWorker clone = worker.cloneRecursively(parentScript);
-        parentScript.workers.add(clone);
+        onPasteWorker(worker, worker.parentScript);
+    }
+
+    @FXML
+    public void onPasteWorker() {
+        if (clipboardWorker == null || selectedAtelObject == null) {
+            return;
+        }
+        onPasteWorker(clipboardWorker, selectedAtelObject);
+    }
+
+    public void onPasteWorker(ScriptWorker worker, AtelScriptObject targetScript) {
+        ScriptWorker clone = worker.cloneRecursively(targetScript);
+        targetScript.workers.add(clone);
+        if (targetScript != selectedAtelObject) {
+            return;
+        }
         setScriptDetail();
         TreeItem<TreeEntry> treeItem = treeItem("wr", clone, null);
         treeItem.getChildren().add(treeItem("wg", clone, null));
@@ -633,12 +671,36 @@ public class GuiMainController implements Initializable {
         setWorkerDetail();
     }
 
+    @FXML
+    public void onCopyEntryPoint() {
+        onCopyEntryPoint(selectedEntryPoint);
+    }
+
+    public void onCopyEntryPoint(ScriptJump entryPoint) {
+        clipboardEntryPoint = entryPoint;
+        pasteEntryPointButton.setDisable(entryPoint == null);
+    }
+
     public void onDuplicateEntryPoint(ScriptJump entryPoint) {
-        ScriptWorker parentWorker = entryPoint.parentWorker;
-        ScriptJump clone = entryPoint.cloneEntryPointRecursively(parentWorker);
-        parentWorker.entryPoints.add(clone);
-        TreeItem<TreeEntry> item = treeItem("e", parentWorker, clone);
-        middleTree.getRoot().getChildren().stream().filter(i -> i.getValue().worker() == parentWorker).findAny().ifPresent(wr -> wr.getChildren().add(item));
+        onPasteEntryPoint(entryPoint, entryPoint.parentWorker);
+    }
+
+    @FXML
+    public void onPasteEntryPoint() {
+        if (clipboardEntryPoint == null || selectedWorker == null) {
+            return;
+        }
+        onPasteEntryPoint(clipboardEntryPoint, selectedWorker);
+    }
+
+    public void onPasteEntryPoint(ScriptJump entryPoint, ScriptWorker targetWorker) {
+        ScriptJump clone = entryPoint.cloneEntryPointRecursively(targetWorker);
+        targetWorker.entryPoints.add(clone);
+        if (targetWorker.parentScript != selectedAtelObject) {
+            return;
+        }
+        TreeItem<TreeEntry> item = treeItem("e", targetWorker, clone);
+        middleTree.getRoot().getChildren().stream().filter(i -> i.getValue().worker() == targetWorker).findAny().ifPresent(wr -> wr.getChildren().add(item));
         setWorkerDetail();
     }
 
@@ -659,10 +721,27 @@ public class GuiMainController implements Initializable {
 
     @FXML
     public void onAddVariable() {
-        if (selectedAtelObject == null) {
+        if (selectedAtelObject == null || selectedAtelObject.workers.isEmpty()) {
             return;
         }
         selectedAtelObject.addNewVariable();
+        setScriptDetail();
+    }
+
+    public void onCopyVariable(ScriptVariable vr) {
+        clipboardVariable = vr;
+        pasteVariableButton.setDisable(vr == null);
+    }
+
+    @FXML
+    public void onPasteVariable() {
+        if (clipboardVariable == null || selectedAtelObject == null || selectedAtelObject.workers.isEmpty()) {
+            return;
+        }
+        ScriptVariable clone = new ScriptVariable(clipboardVariable);
+        clone.parentWorker = selectedAtelObject.workers.getFirst();
+        clone.index = selectedAtelObject.variableDeclarations.size();
+        selectedAtelObject.variableDeclarations.add(clone);
         setScriptDetail();
     }
 
@@ -916,6 +995,41 @@ public class GuiMainController implements Initializable {
         System.out.println("onAddLine selectedLineIndex=" + selectedLineIndex + " and line=" + selectedLine);
         ScriptInstruction blankIns = new ScriptInstruction(0, 0x00);
         ScriptLine newLine = new ScriptLine(selectedEntryPoint.parentWorker, -1, List.of(blankIns), List.of());
+        insertLineAtSelection(newLine);
+    }
+
+    @FXML
+    public void onCopyLine() {
+        onCopyLine(selectedLine);
+    }
+
+    public void onCopyLine(ScriptLine line) {
+        clipboardLine = line;
+        pasteLineButton.setDisable(line == null);
+    }
+
+    @FXML
+    public void onPasteLine() {
+        if (clipboardLine == null) {
+            return;
+        }
+        ScriptWorker targetWorker = selectedEntryPoint.parentWorker;
+        ScriptLine clone = new ScriptLine(targetWorker, -1, clipboardLine.cloneInstructions(), List.of());
+        if (clone.lineEnder.dereferencedVar != null && clone.lineEnder.dereferencedVar.parentWorker != targetWorker) {
+            clone.lineEnder.dereferencedVar = null;
+        }
+        if (clone.lineEnder.getBranchIndex() != null) {
+            int jumpIndex = targetWorker.jumps.size();
+            ScriptJump clonedBranch = new ScriptJump(targetWorker, -1, jumpIndex, false);
+            targetWorker.jumps.add(clonedBranch);
+            clone.lineEnder.setArgv(jumpIndex);
+            clone.branch = clonedBranch;
+            clonedBranch.targetLine = scriptLines.getLast();
+        }
+        insertLineAtSelection(clone);
+    }
+
+    public void insertLineAtSelection(ScriptLine newLine) {
         if (selectedLineIndex < 0 || selectedLineIndex >= scriptLines.size() - 1) {
             scriptLines.add(0, newLine);
             ScriptLine previousStartLine = selectedEntryPoint.targetLine;

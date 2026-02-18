@@ -7,7 +7,6 @@ import model.*;
 import atel.EncounterFile;
 import atel.EventFile;
 import atel.MonsterFile;
-import reading.BytesHelper;
 import reading.FileAccessorWithMods;
 
 import java.util.*;
@@ -478,16 +477,16 @@ public class Main {
                 System.out.println("--- ATTACKS ---");
                 if (CsvEditExecutor.editCommands(true)) {
                     System.out.println("--- command.bin ---");
-                    CommandDataObject[] commands = Arrays.copyOfRange(DataAccess.MOVES, 0x3000, 0x3140);
+                    CommandDataObject[] commands = Arrays.copyOfRange(DataAccess.COMMANDS, 0x3000, 0x3140);
                     writeDataObjectsInAllLocalizations("battle/kernel/command.bin", commands, CommandDataObject.PCCOM_LENGTH, false);
                     System.out.println("--- monmagic1.bin ---");
-                    CommandDataObject[] monmagics1 = Arrays.copyOfRange(DataAccess.MOVES, 0x4000, 0x412C);
+                    CommandDataObject[] monmagics1 = Arrays.copyOfRange(DataAccess.COMMANDS, 0x4000, 0x412C);
                     writeDataObjectsInAllLocalizations("battle/kernel/monmagic1.bin", monmagics1, CommandDataObject.COM_LENGTH, false);
                     System.out.println("--- monmagic2.bin ---");
-                    CommandDataObject[] monmagics2 = Arrays.copyOfRange(DataAccess.MOVES, 0x6000, 0x60F7);
+                    CommandDataObject[] monmagics2 = Arrays.copyOfRange(DataAccess.COMMANDS, 0x6000, 0x60F7);
                     writeDataObjectsInAllLocalizations("battle/kernel/monmagic2.bin", monmagics2, CommandDataObject.COM_LENGTH, false);
                     System.out.println("--- item.bin ---");
-                    CommandDataObject[] items = Arrays.copyOfRange(DataAccess.MOVES, 0x2000, 0x2070);
+                    CommandDataObject[] items = Arrays.copyOfRange(DataAccess.COMMANDS, 0x2000, 0x2070);
                     writeDataObjectsInAllLocalizations("battle/kernel/item.bin", items, CommandDataObject.PCCOM_LENGTH, false);
                 }
                 System.out.println("--- AUTO ABILITIES ---");

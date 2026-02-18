@@ -73,17 +73,21 @@ public abstract class BytesHelper {
     }
 
     public static int[] fileToBytes(File file) {
-        byte[] allBytes = null;
         try (DataInputStream data = FileAccessorWithMods.readFile(file)) {
-            allBytes = data.readAllBytes();
-        } catch (IOException ignored) {}
-        if (allBytes == null) {
+            return byteToIntArray(data.readAllBytes());
+        } catch (IOException ignored) {
             return null;
         }
-        int byteCount = allBytes.length;
-        int[] bytes = new int[byteCount];
-        for (int j = 0; j < byteCount; j++) {
-            bytes[j] = Byte.toUnsignedInt(allBytes[j]);
+    }
+
+    public static int[] byteToIntArray(byte[] array) {
+        if (array == null) {
+            return null;
+        }
+        int length = array.length;
+        int[] bytes = new int[length];
+        for (int i = 0; i < length; i++) {
+            bytes[i] = Byte.toUnsignedInt(array[i]);
         }
         return bytes;
     }
@@ -158,18 +162,47 @@ public abstract class BytesHelper {
         return array;
     }
 
+    public static <T> T get(T[] array, int index) {
+        if (array == null || index < 0 || index >= array.length) {
+            return null;
+        }
+        return array[index];
+    }
+
+    public static <T> T get(List<T> list, int index) {
+        if (list == null || index < 0 || index >= list.size()) {
+            return null;
+        }
+        return list.get(index);
+    }
+
     public static int read2Bytes(int[] bytes, int offset) {
         if (bytes == null) {
             return 0;
         }
-        return bytes[offset] + bytes[offset+1] * 0x100;
+        return bytes[offset] | (bytes[offset + 1] << 8);
     }
 
     public static int read4Bytes(int[] bytes, int offset) {
         if (bytes == null) {
             return 0;
         }
-        return bytes[offset] + bytes[offset+1] * 0x100 + bytes[offset+2] * 0x10000 + bytes[offset+3] * 0x1000000;
+        return bytes[offset] | (bytes[offset + 1] << 8) | (bytes[offset + 2] << 16) | (bytes[offset + 3] << 24);
+    }
+
+    public static int read2Bytes(DataInputStream stream) throws IOException {
+        int x = stream.read();
+        return x | (stream.read() << 8);
+    }
+
+    public static int read4Bytes(DataInputStream stream) throws IOException {
+        int x = read2Bytes(stream);
+        return x | (read2Bytes(stream) << 16);
+    }
+
+    public static long read8Bytes(DataInputStream stream) throws IOException {
+        long x = read4Bytes(stream);
+        return x | ((long) read4Bytes(stream) << 32);
     }
 
     public static void write2Bytes(int[] bytes, int offset, int value) {
@@ -242,6 +275,9 @@ public abstract class BytesHelper {
     }
 
     public static int padLengthTo(int length, int alignment) {
+        if (alignment <= 1) {
+            return length;
+        }
         return (length + alignment - 1) & (-alignment);
     }
 }

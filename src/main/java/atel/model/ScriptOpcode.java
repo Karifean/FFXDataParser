@@ -138,7 +138,7 @@ public class ScriptOpcode extends ScriptField {
         putOpcode(0xF6, "System", "void", "SYSTEM");
         putOpcode(0x77, "await script", "void", "REQWAIT", p("w", "worker"), p("e", "int"));
         putOpcode(0x78, "PREQWAIT");
-        putOpcode(0x79, "Change interaction script", "void", "REQCHG", p("tableHolder", "pointer"), p("old", "int"), p("new", "int"));
+        putOpcode(0x79, "Change interaction script", "void", "REQCHG", p("tableHolder", "pointer"), p("old", "fieldInteraction"), p("new", "int"));
         putOpcode(0x7A, "ACTREQ");
         OPCODES[0xB5].isCall = true;
         OPCODES[0xD8].isCall = true;

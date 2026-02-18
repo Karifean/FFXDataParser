@@ -46,10 +46,11 @@ public class FieldString {
         final int contentOffset = count * 8;
         final Map<String, Integer> offsetMap = new HashMap<>();
         final List<Integer> byteList = new ArrayList<>();
-        byteList.add(0);
-        offsetMap.put("", 0);
-        Stream<FieldString> stringStream = strings.stream();
-        stringStream.forEach((fieldString) -> {
+        if (strings.stream().anyMatch(s -> "".equals(s.getRegularString()) || (s.hasDistinctSimplified() && "".equals(s.getSimplifiedString())))) {
+            byteList.add(0);
+            offsetMap.put("", 0);
+        }
+        for (FieldString fieldString : strings) {
             String regularString = fieldString.getRegularString();
             fieldString.regularChoices = StringHelper.getChoicesInString(regularString);
             if (regularString == null || regularString.isEmpty()) {
@@ -72,12 +73,8 @@ public class FieldString {
                 offsetMap.put(simplifiedString, byteList.size());
                 StringHelper.fillByteList(simplifiedString, byteList, charset);
             }
-        });
-        final int[] stringBytes = new int[byteList.size()];
-        for (int i = 0; i < byteList.size(); i++) {
-            stringBytes[i] = byteList.get(i);
         }
-        return stringBytes;
+        return BytesHelper.intListToArray(byteList);
     }
 
     String charset;

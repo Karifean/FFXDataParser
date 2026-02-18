@@ -152,7 +152,7 @@ public class AtelScriptObject {
         }
         int[] staticHeaderBytes = new int[STATIC_HEADER_LENGTH];
         write4Bytes(staticHeaderBytes, 0x00, scriptCodeLength);
-        if (HACK_TO_ALLOW_ANY_WORKER_ORDERING) {
+        if (!checkWorkersAreInOrder()) {
             write2Bytes(staticHeaderBytes, 0x14, 0);
             write2Bytes(staticHeaderBytes, 0x16, 0);
             write2Bytes(staticHeaderBytes, 0x1C, 0);
@@ -1249,12 +1249,7 @@ public class AtelScriptObject {
     }
 
     public void addNewVariable() {
-        ScriptVariable newVar = new ScriptVariable(workers.getFirst(), variableDeclarations.size(), 0, 0);
-        newVar.location = 3;
-        newVar.format = 3;
-        newVar.declaredType = "int";
-        newVar.elementCount = 1;
-        variableDeclarations.add(newVar);
+        variableDeclarations.add(new ScriptVariable(this, "int"));
     }
 
     private String ensureVariableValidWithArray(int index, StackObject p1) {
@@ -1274,6 +1269,44 @@ public class AtelScriptObject {
         }
         int activeBits = StackObject.bitfieldToList(obj.type, obj.valueUnsigned).size();
         return inactiveBits < activeBits;
+    }
+
+    private boolean checkWorkersAreInOrder() {
+        if (!HACK_TO_ALLOW_ANY_WORKER_ORDERING) {
+            return true;
+        }
+        int progression = 0;
+        for (ScriptWorker worker : workers) {
+            int type = worker.eventWorkerType;
+            if (type == 1) {
+                if (progression > 0) {
+                    return false;
+                }
+            } else if (type == 4) {
+                if (progression > 1) {
+                    return false;
+                } else {
+                    progression = 1;
+                }
+            } else if (type == 2 || type == 3) {
+                if (progression > 2) {
+                    return false;
+                } else {
+                    progression = 2;
+                }
+            } else if (type == 5 || type == 6) {
+                if (progression > 3) {
+                    return false;
+                } else {
+                    progression = 3;
+                }
+            } else if (type == 0) {
+                progression = 4;
+            } else {
+                throw new IllegalStateException("Unrecognized worker type " + type);
+            }
+        }
+        return true;
     }
 
     protected static boolean hasArgs(int opcode) {

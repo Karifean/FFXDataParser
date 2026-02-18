@@ -156,7 +156,7 @@
                                     <TreeView fx:id="middleTree" VBox.vgrow="ALWAYS" />
                                     <ToolBar prefHeight="40.0" prefWidth="200.0">
                                       <items>
-                                        <Button mnemonicParsing="false" onAction="#onSave" text="Save" />
+                                        <Button mnemonicParsing="false" onAction="#onSave" text="Save Script" />
                                       </items>
                                     </ToolBar>
                                  </children>
@@ -182,6 +182,8 @@
                                             <items>
                                               <Button mnemonicParsing="false" onAction="#onAddLine" text="+" />
                                                 <Button layoutX="10.0" layoutY="12.0" mnemonicParsing="false" onAction="#onRemoveLine" text="-" />
+                                                <Button layoutX="40.0" layoutY="10.0" mnemonicParsing="false" onAction="#onCopyLine" text="Copy" />
+                                                <Button fx:id="pasteLineButton" disable="true" layoutX="67.0" layoutY="10.0" mnemonicParsing="false" onAction="#onPasteLine" text="Paste" />
                                             </items>
                                           </ToolBar>
                                        </children>
@@ -267,13 +269,14 @@
                                                       <TableColumn fx:id="tableEntryPointsColumnIndex" editable="false" prefWidth="75.0" sortable="false" text="Index" />
                                                       <TableColumn fx:id="tableEntryPointsColumnLabel" editable="false" prefWidth="217.0" sortable="false" text="Label" />
                                                       <TableColumn fx:id="tableEntryPointsColumnType" editable="false" prefWidth="217.0" sortable="false" text="Type/Purpose" />
-                                                      <TableColumn fx:id="tableEntryPointsColumnDuplicate" prefWidth="75.0" text="Duplicate" />
-                                                      <TableColumn fx:id="tableEntryPointsColumnDelete" prefWidth="75.0" text="Delete" />
+                                                      <TableColumn fx:id="tableEntryPointsColumnCopy" prefWidth="55.0" text="Copy" />
+                                                      <TableColumn fx:id="tableEntryPointsColumnDelete" prefWidth="60.0" text="Delete" />
                                                    </columns>
                                                 </TableView>
                                                 <ToolBar prefHeight="40.0" prefWidth="200.0">
                                                   <items>
                                                     <Button mnemonicParsing="false" onAction="#onAddEntryPoint" text="Add Entry Point" />
+                                                      <Button fx:id="pasteEntryPointButton" disable="true" layoutX="10.0" layoutY="12.0" mnemonicParsing="false" onAction="#onPasteEntryPoint" text="Paste Entry Point" />
                                                   </items>
                                                 </ToolBar>
                                              </children>
@@ -311,13 +314,14 @@
                                                     <TableColumn fx:id="tableWorkersColumnIndex" editable="false" prefWidth="75.0" sortable="false" text="Index" />
                                                       <TableColumn fx:id="tableWorkersColumnLabel" editable="false" prefWidth="217.0" sortable="false" text="Label" />
                                                     <TableColumn fx:id="tableWorkersColumnType" editable="false" prefWidth="217.0" sortable="false" text="Type/Purpose" />
-                                                      <TableColumn fx:id="tableWorkersColumnDuplicate" prefWidth="75.0" text="Duplicate" />
-                                                      <TableColumn fx:id="tableWorkersColumnDelete" prefWidth="75.0" text="Delete" />
+                                                      <TableColumn fx:id="tableWorkersColumnCopy" prefWidth="55.0" text="Copy" />
+                                                      <TableColumn fx:id="tableWorkersColumnDelete" prefWidth="60.0" text="Delete" />
                                                   </columns>
                                                 </TableView>
                                                 <ToolBar prefHeight="40.0" prefWidth="200.0">
                                                   <items>
                                                     <Button mnemonicParsing="false" onAction="#onAddWorker" text="Add Worker" />
+                                                      <Button fx:id="pasteWorkerButton" disable="true" layoutX="10.0" layoutY="12.0" mnemonicParsing="false" onAction="#onPasteWorker" text="Paste Worker" />
                                                   </items>
                                                 </ToolBar>
                                              </children>
@@ -341,12 +345,14 @@
                                                       <TableColumn fx:id="tableVariablesColumnType" editable="false" prefWidth="100.0" sortable="false" text="Type" />
                                                       <TableColumn fx:id="tableVariablesColumnFormat" editable="false" sortable="false" text="Format" />
                                                       <TableColumn fx:id="tableVariablesColumnArray" editable="false" prefWidth="125.0" sortable="false" text="Array" />
-                                                      <TableColumn fx:id="tableVariablesColumnDelete" editable="false" prefWidth="75.0" sortable="false" text="Delete" />
+                                                      <TableColumn fx:id="tableVariablesColumnCopy" editable="false" prefWidth="55.0" sortable="false" text="Copy" />
+                                                      <TableColumn fx:id="tableVariablesColumnDelete" editable="false" prefWidth="60.0" sortable="false" text="Delete" />
                                                   </columns>
                                                 </TableView>
                                                 <ToolBar prefHeight="40.0" prefWidth="200.0">
                                                   <items>
                                                     <Button mnemonicParsing="false" onAction="#onAddVariable" text="Add Variable" />
+                                                      <Button fx:id="pasteVariableButton" disable="true" layoutX="10.0" layoutY="12.0" mnemonicParsing="false" onAction="#onPasteVariable" text="Paste Variable" />
                                                   </items>
                                                 </ToolBar>
                                              </children>

@@ -1,5 +1,6 @@
 package atel.model;
 
+import atel.AtelScriptObject;
 import main.StringHelper;
 
 import java.util.ArrayList;
@@ -38,6 +39,19 @@ public class ScriptVariable {
         this.unknownBit = (lb & 0x01000000) >> 24;
         this.elementCount = hb & 0xFFFF;
         this.elementSize = (hb & 0xFFFF0000) >> 16;
+    }
+
+    public ScriptVariable(AtelScriptObject script, String declaredType) {
+        this.parentWorker = script.workers.getFirst();
+        this.index = script.variableDeclarations.size();
+        this.offset = 0;
+        this.formatLocationByte = 0;
+        this.format = 3;
+        this.location = 3;
+        this.unknownBit = 0;
+        this.elementCount = 1;
+        this.elementSize = 0;
+        this.declaredType = declaredType;
     }
 
     public ScriptVariable(ScriptVariable vr) {

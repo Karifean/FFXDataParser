@@ -61,10 +61,10 @@ public class DataReadingManager {
     }
 
     public static void initializeInternals() {
-        CHARSETS.forEach((charset) -> prepareCharset(charset));
-        LOCALIZATIONS.forEach((key, value) -> prepareStringMacros(getLocalizationRoot(key) + "menu/macrodic.dcp", key, false));
-        ScriptConstants.FFX.initialize();
         ScriptOpcode.initialize();
+        CHARSETS.forEach((charset) -> prepareCharset(charset));
+        LOCALIZATIONS_LIST.forEach((key) -> prepareStringMacros(getLocalizationRoot(key) + "menu/macrodic.dcp", key, false));
+        ScriptConstants.FFX.initialize();
         ScriptFuncLib.FFX.initialize();
     }
 
@@ -171,7 +171,7 @@ public class DataReadingManager {
                 return StringHelper.formatHex4(idx + group * 0x1000);
             }
         }.read(path, false);
-        System.arraycopy(abilities, 0, DataAccess.MOVES, 0x1000 * group, abilities.length);
+        System.arraycopy(abilities, 0, DataAccess.COMMANDS, 0x1000 * group, abilities.length);
     }
 
     public static X2AbilityDataObject[] readX2AbilitiesFromFile(String filename, String localization, boolean print) {

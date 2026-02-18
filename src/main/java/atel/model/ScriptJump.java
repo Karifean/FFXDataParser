@@ -130,15 +130,14 @@ public class ScriptJump {
         if (!isEntryPoint) {
             return "j" + StringHelper.formatHex2(jumpIndex);
         } else {
-            String wPrefix = parentWorker.getReferenceLabel();
+            String wPrefix = parentWorker.getReferenceLabel() + ".";
             if (jumpIndex == 0) {
                 return wPrefix + "init";
             } else if (jumpIndex == 1) {
                 return wPrefix + "main";
             } else {
                 if (parentWorker.battleWorkerType != null) {
-                    String wePrefix = wPrefix + "e" + StringHelper.formatHex2(jumpIndex);
-                    return wePrefix + battleWorkerEntryPointToString();
+                    return wPrefix + battleWorkerEntryPointToString();
                 } else {
                     return wPrefix + eventWorkerEntryPointToStringWithFallback(parentWorker.eventWorkerType, jumpIndex);
                 }
@@ -147,7 +146,7 @@ public class ScriptJump {
     }
 
     public String getIndexLabel() {
-        return "w" + StringHelper.formatHex2(parentWorker.workerIndex) + "e" + StringHelper.formatHex2(jumpIndex);
+        return "w" + StringHelper.formatHex2(parentWorker.workerIndex) + ".e" + StringHelper.formatHex2(jumpIndex);
     }
 
     public void setTypes(ScriptState state) {
@@ -260,10 +259,11 @@ public class ScriptJump {
                 return "MagicCam" + StringHelper.formatHex4(cmd);
             }
         }
+        String strEntryPointIndexPrefix = "e" + StringHelper.formatHex2(jumpIndex);
         String strWorkerPurposeSlot = "s" + StringHelper.formatHex2(battleWorkerSlot);
         String strWorkerType = "t" + StringHelper.formatHex2(battleWorkerType);
         String strEntryPointPurposeSlot = "p" + StringHelper.formatHex2(battleWorkerEntryPointSlot);
-        return strWorkerPurposeSlot + strWorkerType + strEntryPointPurposeSlot;
+        return strEntryPointIndexPrefix + strWorkerPurposeSlot + strWorkerType + strEntryPointPurposeSlot;
     }
 
     private static String eventWorkerEntryPointToStringWithFallback(int eventWorkerType, int eventWorkerEntryPoint) {

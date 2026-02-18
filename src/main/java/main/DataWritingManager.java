@@ -18,8 +18,9 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-import static main.DataReadingManager.LOCALIZATIONS;
-import static main.DataReadingManager.getLocalizationRoot;
+import static main.DataReadingManager.*;
+import static reading.BytesHelper.add2Bytes;
+import static reading.BytesHelper.add4Bytes;
 
 public class DataWritingManager {
 
@@ -37,11 +38,7 @@ public class DataWritingManager {
             bytes.addAll(Arrays.stream(objectBytes).boxed().toList());
         }
         bytes.addAll(Arrays.stream(stringBytes).boxed().toList());
-        int[] fullBytes = new int[bytes.size()];
-        for (int i = 0; i < bytes.size(); i++) {
-            fullBytes[i] = bytes.get(i);
-        }
-        return fullBytes;
+        return BytesHelper.intListToArray(bytes);
     }
 
     public static int[] dataObjectWithStringsToBytes(Writable object, String localization) {
@@ -49,19 +46,14 @@ public class DataWritingManager {
         int[] stringBytes = KeyedString.rebuildKeyedStrings(stringStream, StringHelper.localizationToCharset(localization), false);
         List<Integer> bytes = new ArrayList<>(Arrays.stream(object.toBytes(localization)).boxed().toList());
         bytes.addAll(Arrays.stream(stringBytes).boxed().toList());
-        int[] fullBytes = new int[bytes.size()];
-        for (int i = 0; i < bytes.size(); i++) {
-            fullBytes[i] = bytes.get(i);
-        }
-        return fullBytes;
+        return BytesHelper.intListToArray(bytes);
     }
 
     public static void writeDataObjectsInAllLocalizations(String path, Writable[] objects, final int length, final int from, final int to, final boolean optimizeStrings) {
         final Writable[] subArray = from == 0 && to == objects.length ? objects : Arrays.copyOfRange(objects, from, to);
-        LOCALIZATIONS.forEach((key, value) -> {
-            String localePath = getLocalizationRoot(key) + path;
+        LOCALIZATIONS_LIST.forEach((key) -> {
             int[] bytes = dataObjectsToBytes(subArray, length, from, to, key, optimizeStrings);
-            FileAccessorWithMods.writeByteArrayToMods(localePath, bytes);
+            FileAccessorWithMods.writeByteArrayToMods(getLocalizationRoot(key) + path, bytes);
         });
     }
 
@@ -109,10 +101,9 @@ public class DataWritingManager {
         if (print) {
             System.out.printf("Writing string file: %s%n", path);
         }
-        LOCALIZATIONS.forEach((key, value) -> {
-            String localePath = getLocalizationRoot(key) + path;
+        LOCALIZATIONS_LIST.forEach((key) -> {
             int[] bytes = stringsToStringFileBytes(localizedStrings, key);
-            FileAccessorWithMods.writeByteArrayToMods(localePath, bytes);
+            FileAccessorWithMods.writeByteArrayToMods(getLocalizationRoot(key) + path, bytes);
         });
     }
 
@@ -131,11 +122,7 @@ public class DataWritingManager {
             add4Bytes(bytes, str.toSimplifiedHeaderBytes());
         });
         bytes.addAll(Arrays.stream(stringBytes).boxed().collect(Collectors.toList()));
-        int[] fullBytes = new int[bytes.size()];
-        for (int i = 0; i < bytes.size(); i++) {
-            fullBytes[i] = bytes.get(i);
-        }
-        return fullBytes;
+        return BytesHelper.intListToArray(bytes);
     }
 
     public static void remakeSizeTable() {
@@ -153,17 +140,5 @@ public class DataWritingManager {
             }
         }
         FileAccessorWithMods.writeByteArrayToMods(sizeTablePath, bytes);
-    }
-
-    private static void add2Bytes(List<Integer> array, int value) {
-        array.add(value & 0x00FF);
-        array.add((value & 0xFF00) >> 8);
-    }
-
-    private static void add4Bytes(List<Integer> array, int value) {
-        array.add(value & 0x00FF);
-        array.add((value & 0xFF00) >> 8);
-        array.add((value & 0xFF0000) >> 16);
-        array.add((value & 0xFF000000) >> 24);
     }
 }
