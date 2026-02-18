@@ -87,7 +87,7 @@ public class ScriptOpcode extends ScriptField {
         putOpcode(0x43, "PUSHVP");
         putOpcode(0x44, "PUSHFIX");
         putOpcode(0x45, "FREQ");
-        putOpcode(0x46, null, "exec", "TREQ", p("w", "worker"), p("e", "int"), p("level", "int"));
+        putOpcode(0x46, null, "exec", "TREQ", p("level", "int"), p("w", "worker"), p("e", "int"));
         putOpcode(0x47, "BREQ");
         putOpcode(0x48, "BFREQ");
         putOpcode(0x49, "BTREQ");

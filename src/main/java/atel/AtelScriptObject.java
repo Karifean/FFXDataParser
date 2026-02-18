@@ -152,23 +152,28 @@ public class AtelScriptObject {
         }
         int[] staticHeaderBytes = new int[STATIC_HEADER_LENGTH];
         write4Bytes(staticHeaderBytes, 0x00, scriptCodeLength);
-        if (!checkWorkersAreInOrder()) {
-            write2Bytes(staticHeaderBytes, 0x14, 0);
-            write2Bytes(staticHeaderBytes, 0x16, 0);
-            write2Bytes(staticHeaderBytes, 0x1C, 0);
-            write2Bytes(staticHeaderBytes, 0x36, 0);
-        } else {
-            int amountOfType2or3Scripts = (int) workers.stream().filter(w -> w.eventWorkerType == 2 || w.eventWorkerType == 3).count();
-            write2Bytes(staticHeaderBytes, 0x14, amountOfType2or3Scripts);
-            int amountOfType4Scripts = (int) workers.stream().filter(w -> w.eventWorkerType == 4).count();
-            write2Bytes(staticHeaderBytes, 0x16, amountOfType4Scripts);
-            int amountOfType5or6Scripts = (int) workers.stream().filter(w -> w.eventWorkerType == 5 || w.eventWorkerType == 6).count();
-            write2Bytes(staticHeaderBytes, 0x1C, amountOfType5or6Scripts);
-            int actorCount = (int) workers.stream().filter(w -> w.eventWorkerType != 0).count();
-            write2Bytes(staticHeaderBytes, 0x36, actorCount);
+        int amountOfType2or3Scripts = 0;
+        int amountOfType4Scripts = 0;
+        int amountOfType5or6Scripts = 0;
+        if (checkWorkersAreInOrder()) {
+            for (ScriptWorker worker : workers) {
+                int type = worker.eventWorkerType;
+                if (type == 2 || type == 3) {
+                    amountOfType2or3Scripts++;
+                } else if (type == 4) {
+                    amountOfType4Scripts++;
+                } else if (type == 5 || type == 6) {
+                    amountOfType5or6Scripts++;
+                }
+            }
         }
+        write2Bytes(staticHeaderBytes, 0x14, amountOfType2or3Scripts);
+        write2Bytes(staticHeaderBytes, 0x16, amountOfType4Scripts);
+        write2Bytes(staticHeaderBytes, 0x1C, amountOfType5or6Scripts);
         int workerCount = workers.size();
         write2Bytes(staticHeaderBytes, 0x34, workerCount);
+        int actorCount = (int) workers.stream().filter(w -> w.eventWorkerType != 0).count();
+        write2Bytes(staticHeaderBytes, 0x36, actorCount);
         write2Bytes(staticHeaderBytes, 0x18, mainScriptIndex);
         write2Bytes(staticHeaderBytes, 0x1A, unknown1A);
         int workerHeaderLength = workerCount * (ScriptWorker.LENGTH + 4);
@@ -1307,6 +1312,61 @@ public class AtelScriptObject {
             }
         }
         return true;
+    }
+
+    public ScriptWorker addWorker(int newType, boolean isEventWorker) {
+        int insertIndex = isEventWorker ? getWorkerInsertIndex(newType) : workers.size();
+        System.out.println("insert worker of type " + newType + " at index " + insertIndex);
+        ScriptWorker worker = new ScriptWorker(this, insertIndex, workers.getFirst(), newType);
+        worker.addBlankEntryPoints(newType, isEventWorker);
+        insertWorker(worker, insertIndex);
+        return worker;
+    }
+
+    public void insertWorker(ScriptWorker worker, int insertIndex) {
+        Set<ScriptInstruction> workerReferences = new HashSet<>();
+        for (int i = 0; i < workers.size(); i++) {
+            ScriptWorker scriptWorker = getWorker(i);
+            workerReferences.addAll(scriptWorker.gatherDirectWorkerReferences());
+            if (i >= insertIndex) {
+                scriptWorker.workerIndex++;
+            }
+        }
+        System.out.println("Found " + workerReferences.size() + " references to workers");
+        for (ScriptInstruction instruction : workerReferences) {
+            if (instruction.argvSigned >= insertIndex) {
+                instruction.setArgv(instruction.argvSigned + 1);
+            }
+        }
+        if (mainScriptIndex >= insertIndex) {
+            mainScriptIndex++;
+        }
+        workers.add(insertIndex, worker);
+    }
+
+    public int getWorkerInsertIndex(int newType) {
+        if (newType == 0) {
+            return workers.size();
+        }
+        int searchTypeA = switch (newType) {
+            case 1 -> 4;
+            case 4 -> 2;
+            case 2, 3 -> 5;
+            case 5, 6 -> 0;
+            default -> -1;
+        };
+        int searchTypeB = switch (newType) {
+            case 4 -> 3;
+            case 2, 3 -> 6;
+            default -> -1;
+        };
+        for (int i = 0; i < workers.size(); i++) {
+            int type = getWorker(i).eventWorkerType;
+            if (type == searchTypeA || type == searchTypeB) {
+                return i;
+            }
+        }
+        return workers.size();
     }
 
     protected static boolean hasArgs(int opcode) {

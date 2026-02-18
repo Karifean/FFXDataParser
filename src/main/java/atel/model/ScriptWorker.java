@@ -84,7 +84,12 @@ public class ScriptWorker {
         refIntsOffset = prototypeWorker.refIntsOffset;
         refFloatsOffset = prototypeWorker.refFloatsOffset;
         sharedDataOffset = prototypeWorker.sharedDataOffset;
-        parseReferences(parentScript.getBytes());
+        variableDeclarations = prototypeWorker.variableDeclarations;
+        refInts = prototypeWorker.refInts;
+        refFloats = prototypeWorker.refFloats;
+        entryPoints = new ArrayList<>();
+        jumps = new ArrayList<>();
+        privateDataBytes = new int[0];
     }
 
     public int[] toBytes() {
@@ -497,11 +502,15 @@ public class ScriptWorker {
         }
     }
 
-    public void addBlankEntryPoints(boolean isEventWorker) {
+    public void addBlankEntryPoints(int newType, boolean isEventWorker) {
         ScriptJump init = new ScriptJump(this, -1, 0, true);
         entryPoints.add(init);
         ScriptInstruction initIns = new ScriptInstruction(-1, 0x3C);
         init.targetLine = new ScriptLine(this, -1, List.of(initIns), List.of(init));
+
+        if (isEventWorker && newType == 0) {
+            return;
+        }
 
         ScriptJump main = new ScriptJump(this, -1, 1, true);
         entryPoints.add(main);
@@ -526,8 +535,8 @@ public class ScriptWorker {
         return extra;
     }
 
-    public ScriptWorker cloneRecursively(AtelScriptObject targetScript) {
-        ScriptWorker clone = new ScriptWorker(targetScript, targetScript.workers.size(), this, eventWorkerType);
+    public ScriptWorker cloneRecursively(AtelScriptObject targetScript, int clonedWorkerIndex) {
+        ScriptWorker clone = new ScriptWorker(targetScript, clonedWorkerIndex, this, eventWorkerType);
         for (ScriptJump ep : entryPoints) {
             ScriptJump clonedEp = new ScriptJump(clone, -1, clone.entryPoints.size(), true);
             clonedEp.targetLine = ep.targetLine.cloneRecursively(clone, new HashMap<>());
@@ -535,6 +544,17 @@ public class ScriptWorker {
             clone.entryPoints.add(clonedEp);
         }
         return clone;
+    }
+
+    public Set<ScriptInstruction> gatherDirectWorkerReferences() {
+        Set<ScriptInstruction> gathered = new HashSet<>();
+        for (ScriptJump entryPoint : entryPoints) {
+            ScriptState state = new ScriptState(entryPoint);
+            for (ScriptLine line : state.lines) {
+                line.gatherDirectWorkerReferences(state, gathered);
+            }
+        }
+        return gathered;
     }
 
     private void collectJumps(int cursor, Map<Integer, List<ScriptJump>> scriptJumpsByDestination, List<ScriptJump> jumpsOnLine, boolean isArgByte) {

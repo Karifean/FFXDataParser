@@ -10,6 +10,7 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
+import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
@@ -54,6 +55,12 @@ public class GuiMainController implements Initializable {
     VBox atelCodeDetail;
     @FXML
     VBox scriptGeneralDetail;
+    @FXML
+    ToolBar toolbarWorkers;
+    @FXML
+    Button addWorkerButton;
+    @FXML
+    MenuButton addWorkerMenuButton;
     @FXML
     VBox workerGeneralDetail;
     @FXML
@@ -254,6 +261,10 @@ public class GuiMainController implements Initializable {
         atelCodeDetail.setVisible(false);
         workerGeneralDetail.setVisible(false);
         scriptGeneralDetail.setVisible(false);
+        addWorkerButton.setVisible(false);
+        addWorkerMenuButton.setVisible(false);
+        toolbarWorkers.getItems().remove(addWorkerButton);
+        toolbarWorkers.getItems().remove(addWorkerMenuButton);
         choosingBranchTarget = false;
         onLineSelected(null);
         GuiAtelLineTree.clearDividersCache();
@@ -268,10 +279,22 @@ public class GuiMainController implements Initializable {
         }
         treeRoot.setGraphic(new Text(selectedAtelObject.scriptId));
         ObservableList<TreeItem<TreeEntry>> rootChildren = treeRoot.getChildren();
+        ObservableList<Node> toolbarWorkerItems = toolbarWorkers.getItems();
         if (selectedEvent != null) {
             treeRoot.setGraphic(new Text(selectedEvent.getName(mainLocalization)));
             TreeItem<TreeEntry> eventGeneralItem = treeItem("eg");
             rootChildren.add(eventGeneralItem);
+            addWorkerMenuButton.setVisible(true);
+            if (!toolbarWorkerItems.contains(addWorkerMenuButton)) {
+                toolbarWorkerItems.add(0, addWorkerMenuButton);
+                toolbarWorkerItems.remove(addWorkerButton);
+            }
+        } else {
+            addWorkerButton.setVisible(true);
+            if (!toolbarWorkerItems.contains(addWorkerButton)) {
+                toolbarWorkerItems.add(0, addWorkerButton);
+                toolbarWorkerItems.remove(addWorkerMenuButton);
+            }
         }
         if (selectedEncounter != null) {
             treeRoot.setGraphic(new Text(selectedEncounter.getName(mainLocalization)));
@@ -556,14 +579,16 @@ public class GuiMainController implements Initializable {
     @FXML
     public void onAddWorker() {
         System.out.println("onAddWorker");
-        List<ScriptWorker> workers = selectedAtelObject.workers;
-        if (workers.isEmpty()) {
+        boolean isEventWorker = selectedEvent != null;
+        onAddWorkerOfType(isEventWorker ? 1 : 2);
+    }
+
+    public void onAddWorkerOfType(int newType) {
+        System.out.println("onAddWorkerOfType " + newType);
+        if (selectedAtelObject.workers.isEmpty()) {
             return;
         }
-        boolean isEventWorker = selectedEvent != null;
-        ScriptWorker worker = new ScriptWorker(selectedAtelObject, workers.size(), workers.getFirst(), isEventWorker ? 1 : 2);
-        workers.add(worker);
-        worker.addBlankEntryPoints(isEventWorker);
+        ScriptWorker worker = selectedAtelObject.addWorker(newType, selectedEvent != null);
         setScriptDetail();
         TreeItem<TreeEntry> treeItem = treeItem("wr", worker, null);
         treeItem.getChildren().add(treeItem("wg", worker, null));
@@ -571,7 +596,8 @@ public class GuiMainController implements Initializable {
             TreeItem<TreeEntry> entryPointItem = treeItem("e", worker, entryPoint);
             treeItem.getChildren().add(entryPointItem);
         }
-        middleTree.getRoot().getChildren().add(treeItem);
+        middleTree.getRoot().getChildren().add(worker.workerIndex + 2, treeItem);
+        middleTree.refresh();
     }
 
     @FXML
@@ -597,8 +623,10 @@ public class GuiMainController implements Initializable {
     }
 
     public void onPasteWorker(ScriptWorker worker, AtelScriptObject targetScript) {
-        ScriptWorker clone = worker.cloneRecursively(targetScript);
-        targetScript.workers.add(clone);
+        int insertIndex = targetScript.getWorkerInsertIndex(worker.eventWorkerType);
+        ScriptWorker clone = worker.cloneRecursively(targetScript, insertIndex);
+        System.out.println("paste worker at index " + insertIndex);
+        targetScript.insertWorker(clone, insertIndex);
         if (targetScript != selectedAtelObject) {
             return;
         }
@@ -609,7 +637,8 @@ public class GuiMainController implements Initializable {
             TreeItem<TreeEntry> entryPointItem = treeItem("e", clone, entryPoint);
             treeItem.getChildren().add(entryPointItem);
         }
-        middleTree.getRoot().getChildren().add(treeItem);
+        middleTree.getRoot().getChildren().add(insertIndex + 2, treeItem);
+        middleTree.refresh();
     }
 
     public void onDeleteWorker(ScriptWorker worker) {
@@ -1083,6 +1112,41 @@ public class GuiMainController implements Initializable {
         scriptLines.remove(selectedLine);
         setScriptLines();
         scriptLineList.getSelectionModel().select(previousLineIndex);
+    }
+
+    @FXML
+    public void onAddWorkerType0() {
+        onAddWorkerOfType(0);
+    }
+
+    @FXML
+    public void onAddWorkerType1() {
+        onAddWorkerOfType(1);
+    }
+
+    @FXML
+    public void onAddWorkerType2() {
+        onAddWorkerOfType(2);
+    }
+
+    @FXML
+    public void onAddWorkerType3() {
+        onAddWorkerOfType(3);
+    }
+
+    @FXML
+    public void onAddWorkerType4() {
+        onAddWorkerOfType(4);
+    }
+
+    @FXML
+    public void onAddWorkerType5() {
+        onAddWorkerOfType(5);
+    }
+
+    @FXML
+    public void onAddWorkerType6() {
+        onAddWorkerOfType(6);
     }
 
     private static record TreeEntry(GuiMainController ctrl, String type, ScriptWorker worker, ScriptJump entryPoint) {

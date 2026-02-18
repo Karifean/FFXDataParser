@@ -1,5 +1,7 @@
 package atel.model;
 
+import reading.BytesHelper;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -104,7 +106,7 @@ public class ScriptFuncAccessor extends ScriptFunc {
     @Override
     public String getInputType(int index, List<ScriptInstruction> instructionInputs) {
         if (index == valueParamIndex) {
-            ScriptInstruction predParam = instructionInputs.get(predicateParamIndex);
+            ScriptInstruction predParam = BytesHelper.get(instructionInputs, predicateParamIndex);
             ScriptField predicate = fixedPredicate != null ? fixedPredicate : (predParam == null || predParam.opcode != 0xAE) ? null : accessMap.get(predParam.argvSigned);
             return predicate != null ? predicate.type : "unknown";
         }

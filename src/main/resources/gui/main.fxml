@@ -39,6 +39,8 @@
 <?import javafx.scene.control.ListView?>
 <?import javafx.scene.control.Menu?>
 <?import javafx.scene.control.MenuBar?>
+<?import javafx.scene.control.MenuButton?>
+<?import javafx.scene.control.MenuItem?>
 <?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.control.SplitPane?>
 <?import javafx.scene.control.Tab?>
@@ -318,9 +320,20 @@
                                                       <TableColumn fx:id="tableWorkersColumnDelete" prefWidth="60.0" text="Delete" />
                                                   </columns>
                                                 </TableView>
-                                                <ToolBar prefHeight="40.0" prefWidth="200.0">
+                                                <ToolBar fx:id="toolbarWorkers" prefHeight="40.0" prefWidth="200.0">
                                                   <items>
-                                                    <Button mnemonicParsing="false" onAction="#onAddWorker" text="Add Worker" />
+                                                    <Button fx:id="addWorkerButton" mnemonicParsing="false" onAction="#onAddWorker" text="Add Worker" />
+                                                      <MenuButton fx:id="addWorkerMenuButton" mnemonicParsing="false" text="Add Worker">
+                                                        <items>
+                                                          <MenuItem mnemonicParsing="false" onAction="#onAddWorkerType1" text="FieldObject" />
+                                                          <MenuItem mnemonicParsing="false" onAction="#onAddWorkerType4" text="Scenario" />
+                                                            <MenuItem mnemonicParsing="false" onAction="#onAddWorkerType2" text="PlayerEdge" />
+                                                            <MenuItem mnemonicParsing="false" onAction="#onAddWorkerType3" text="PlayerZone" />
+                                                            <MenuItem mnemonicParsing="false" onAction="#onAddWorkerType5" text="Edge" />
+                                                            <MenuItem mnemonicParsing="false" onAction="#onAddWorkerType6" text="Zone" />
+                                                            <MenuItem mnemonicParsing="false" onAction="#onAddWorkerType0" text="Subroutine" />
+                                                        </items>
+                                                      </MenuButton>
                                                       <Button fx:id="pasteWorkerButton" disable="true" layoutX="10.0" layoutY="12.0" mnemonicParsing="false" onAction="#onPasteWorker" text="Paste Worker" />
                                                   </items>
                                                 </ToolBar>

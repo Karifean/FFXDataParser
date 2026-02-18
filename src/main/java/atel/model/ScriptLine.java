@@ -226,6 +226,14 @@ public class ScriptLine {
         }
     }
 
+    public void gatherDirectWorkerReferences(ScriptState state, Set<ScriptInstruction> gathered) {
+        if (lineEnder.opcode == 0xB3) {
+            gathered.add(lineEnder);
+        } else {
+            lineEnder.gatherDirectWorkerReferences(state, gathered);
+        }
+    }
+
     public String asString(ScriptState state) {
         String ol = String.format("%-5s", StringHelper.formatHex4(offset) + ' ');
         String jl = consoleColorIfEnabled(ANSI_PURPLE) + String.format("%-" + JUMP_LINE_MINLENGTH + "s", getJumpsString(state)) + ' ';

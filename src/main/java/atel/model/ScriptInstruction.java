@@ -236,7 +236,6 @@ public class ScriptInstruction {
         if (!preventRecursion && (opcode >= 0x03 && opcode <= 0x05)) {
             int other = index == 0 ? 1 : 0;
             String otherType = inputs.get(other).getOutputType(state);
-            System.out.println("check otherType=" + otherType);
             if (otherType.startsWith("bitfield") || otherType.endsWith("Bitfield")) {
                 return otherType;
             }
@@ -669,6 +668,20 @@ public class ScriptInstruction {
         }
         addWarning("Variable index " + StringHelper.formatHex2(index) + " out of bounds!");
         return "unknown";
+    }
+
+    public void gatherDirectWorkerReferences(ScriptState state, Set<ScriptInstruction> gathered) {
+        if (inputs == null || inputs.isEmpty()) {
+            return;
+        }
+        for (int i = 0; i < inputs.size(); i++) {
+            ScriptInstruction input = getInput(i);
+            if (input.opcode == 0xAE && "worker".equals(getInputType(state, i))) {
+                gathered.add(input);
+            } else {
+                input.gatherDirectWorkerReferences(state, gathered);
+            }
+        }
     }
 
     public String getVariableIndexType(int index) {
