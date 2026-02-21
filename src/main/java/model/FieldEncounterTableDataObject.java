@@ -94,7 +94,7 @@ public class FieldEncounterTableDataObject {
         int id;
         int weight;
 
-        String encounter;
+        String battle;
         FieldEncounterTableDataObject parentTable;
         FieldFormationGroup parentGroup;
 
@@ -103,13 +103,13 @@ public class FieldEncounterTableDataObject {
             parentGroup = group;
             id = bytes[offset];
             weight = bytes[offset + 1];
-            encounter = String.format("%s_%02d", table.map, id);
+            battle = String.format("%s_%02d", table.map, id);
         }
 
         @Override
         public String toString() {
             int totalWeight = parentGroup.totalWeight;
-            return encounter +
+            return battle +
                     (weight > 0 || totalWeight > 0 ? " (" + (totalWeight > 0 ? weight + "/" + totalWeight : weight) + ")" : "");
         }
     }

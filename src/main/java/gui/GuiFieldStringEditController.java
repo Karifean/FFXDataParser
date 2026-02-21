@@ -12,10 +12,9 @@ import model.strings.LocalizedFieldStringObject;
 
 import java.net.URL;
 import java.util.List;
-import java.util.Map;
 import java.util.ResourceBundle;
 
-public class GuiStringEditController implements Initializable {
+public class GuiFieldStringEditController implements Initializable {
 
     @FXML
     ListView<Lang> langList;

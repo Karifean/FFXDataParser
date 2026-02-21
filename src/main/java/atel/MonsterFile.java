@@ -22,11 +22,11 @@ import static reading.BytesHelper.read4Bytes;
 public class MonsterFile implements Nameable {
     public Integer monsterIndex;
     public String scriptId;
-    public AtelScriptObject monsterScript;
+    public AtelScriptObject atelScript;
     public MonsterStatDataObject monsterStatData;
     public MonsterLootDataObject monsterLootData;
     public int binaryLength;
-    int[] scriptBytes;
+    int[] atelScriptBytes;
     int[] audioBytesApparently;
     int[] workerMappingBytes;
     int[] statBytes;
@@ -46,7 +46,7 @@ public class MonsterFile implements Nameable {
     }
 
     private void mapChunks(List<Chunk> chunks) {
-        scriptBytes = chunks.get(0).bytes;
+        atelScriptBytes = chunks.get(0).bytes;
         workerMappingBytes = chunks.get(1).bytes;
         statBytes = chunks.get(2).bytes;
         chunk3Bytes = chunks.get(3).bytes;
@@ -56,8 +56,8 @@ public class MonsterFile implements Nameable {
     }
 
     private void mapObjects() {
-        monsterScript = new AtelScriptObject(scriptBytes, workerMappingBytes);
-        scriptId = monsterScript.scriptId;
+        atelScript = new AtelScriptObject(atelScriptBytes, workerMappingBytes);
+        scriptId = atelScript.scriptId;
         monsterStatData = new MonsterStatDataObject(statBytes, Arrays.copyOfRange(statBytes, MonsterStatDataObject.LENGTH, statBytes.length), "jp");
         monsterLootData = new MonsterLootDataObject(lootBytes);
         MonsterStatDataObject englishTextStatData = new MonsterStatDataObject(englishTextBytes, Arrays.copyOfRange(englishTextBytes, MonsterStatDataObject.LENGTH, englishTextBytes.length), "us");
@@ -69,20 +69,20 @@ public class MonsterFile implements Nameable {
     }
 
     public void parseScript(boolean force) {
-        if (monsterScript != null && (force || !scriptParsed)) {
+        if (atelScript != null && (force || !scriptParsed)) {
             scriptParsed = true;
-            monsterScript.parseScript();
+            atelScript.parseScript();
         }
     }
 
     public int[] toBytes() {
         List<int[]> chunks = new ArrayList<>();
         if (AtelScriptObject.RECOMPILE_ATEL && scriptParsed) {
-            AtelScriptObject.AtelScriptObjectBytes atelScriptObjectBytes = monsterScript.toBytes();
+            AtelScriptObject.AtelScriptObjectBytes atelScriptObjectBytes = atelScript.toBytes();
             chunks.add(atelScriptObjectBytes.bytes());
             chunks.add(atelScriptObjectBytes.battleWorkerMappingBytes());
         } else {
-            chunks.add(scriptBytes);
+            chunks.add(atelScriptBytes);
             chunks.add(workerMappingBytes);
         }
         chunks.add(DataWritingManager.dataObjectWithStringsToBytes(monsterStatData, "jp"));
@@ -103,7 +103,7 @@ public class MonsterFile implements Nameable {
             DataWritingManager.writeMonsterStringsForAllLocalizations(false);
         }
         if (writeDeclarations) {
-            FileAccessorWithMods.writeStringToMods(path + ".dcl.csv", monsterScript.getDeclarationsAsCsvString());
+            FileAccessorWithMods.writeStringToMods(path + ".dcl.csv", atelScript.getDeclarationsAsCsvString());
         }
     }
 
@@ -112,14 +112,14 @@ public class MonsterFile implements Nameable {
         StringBuilder full = new StringBuilder();
         full.append(getName()).append(" (m").append(scriptId).append(')');
         if (monsterIndex != null) {
-            full.append(StringHelper.hex4Suffix(monsterIndex + 0x1000));
+            full.append(StringHelper.hex4Suffix(monsterIndex | 0x1000));
         }
         full.append('\n');
-        if (monsterScript != null) {
+        if (atelScript != null) {
             full.append("- Script Code -").append('\n');
-            full.append(monsterScript.allLinesString());
+            full.append(atelScript.allLinesString());
             full.append("- Script Workers -").append('\n');
-            full.append(monsterScript.workersString()).append('\n');
+            full.append(atelScript.workersString()).append('\n');
         } else {
             full.append("Monster AI missing");
         }

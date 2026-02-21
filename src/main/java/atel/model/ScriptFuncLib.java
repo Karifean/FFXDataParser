@@ -861,7 +861,7 @@ public class ScriptFuncLib {
         putUnknownFunc(0x6088, "camReset", 0);
         putUnknownFunc(0x7000, "btlTerminateAction", 0);
         putUnknownFunc(0x7001, "btlSetRandPosFlag", 1);
-        putVoidWithIdx(0x7002, new ScriptFunc("launchBattle", "unknown", "btlExe", p("encounter"), p("transition", "battleTransition")));
+        putVoidWithIdx(0x7002, new ScriptFunc("launchBattle", "unknown", "btlExe", p("battle"), p("transition", "battleTransition")));
         putUnknownFunc(0x7003, "btlDirTarget", 2);
         putUnknownFunc(0x7004, "btlSetDirRate", 1);
         putFuncWithIdx(0x7005, new ScriptFunc("isWater?", "int", "btlGetWater", false));
@@ -895,7 +895,7 @@ public class ScriptFuncLib {
         putFuncWithIdx(0x7021, new ScriptFunc("dereferenceCharacter", "btlChr", "btlGetChrNum", p("btlChr")));
         putFuncWithIdx(0x7022, new ScriptFunc("SetAmbushState", "unknown", "btlSetFirstAttack", p("ambushState")));
         putUnknownFunc(0x7023, "btlDistTarget", 1);
-        putFuncWithIdx(0x7024, new ScriptFunc("CurrentEncounter", "encounter", "btlGetBtlScene", false));
+        putFuncWithIdx(0x7024, new ScriptFunc("CurrentBattle", "battle", "btlGetBtlScene", false));
         putFuncWithIdx(0x7025, new ScriptFunc("findMatchingChrIncludingUntargetable?", "btlChr", "btlSearchChr2", p("group", "btlChr"), p("property", "btlChrProperty"), p("unknown"), p("selector")));
         putFuncWithIdx(0x7026, new ScriptFunc(null, "unknown", "btlSetWeak", p("weakState")));
         putUnknownFunc(0x7027, "btlGetWeak", "weakState", 0);
@@ -997,9 +997,9 @@ public class ScriptFuncLib {
         putFuncWithIdx(0x7087, new ScriptFunc(null, "unknown", "btlSoundEffectFade", p("btlChr"), p("sfx", "btlSoundEffect"), p(3)));
         putFuncWithIdx(0x7088, new ScriptFunc(null, "unknown", "btlRegSoundEffect", p("btlChr"), p(2)));
         putUnknownFunc(0x7089, "btlRegSoundEffectFade", 3);
-        putFuncWithIdx(0x708A, new ScriptFunc(null, "unknown", "btlInitEncount", p("encounter")));
-        putFuncWithIdx(0x708B, new ScriptFunc(null, "unknown", "btlGetEncount", p("encounter")));
-        putFuncWithIdx(0x708C, new ScriptFunc("setEncounterEnabled", "unknown", "btlSetEncount", p("encounter"), p("active", "bool")));
+        putFuncWithIdx(0x708A, new ScriptFunc(null, "unknown", "btlInitEncount", p("battle")));
+        putFuncWithIdx(0x708B, new ScriptFunc(null, "unknown", "btlGetEncount", p("battle")));
+        putFuncWithIdx(0x708C, new ScriptFunc("setEncounterEnabled", "unknown", "btlSetEncount", p("battle"), p("active", "bool")));
         putUnknownFunc(0x708D, "btlGetLastActionChr", "btlChr", 0);
         putUnknownFunc(0x708E, "btlCheckBtlPos2", 0);
         putUnknownFunc(0x708F, "btlDirPosBasic", 1);
@@ -1082,7 +1082,7 @@ public class ScriptFuncLib {
         putFuncWithIdx(0x70DC, new ScriptFunc("changeChrName", "unknown", "btlChangeChrNameID", p("btlChr"), p("string", "localString")));
         putUnknownFunc(0x70DD, "btlSetDebugCount", 1);
         putFuncWithIdx(0x70DE, new ScriptFunc("SubtitlesEnabled?", "bool", "btlGetSubTitle", false));
-        putFuncWithIdx(0x70DF, new ScriptFunc("IsBattleInField", "unknown", "btlCheckBtlScene", p("encounter")));
+        putFuncWithIdx(0x70DF, new ScriptFunc("IsBattleInField", "unknown", "btlCheckBtlScene", p("battle")));
         putFuncWithIdx(0x70E0, new ScriptFunc("isCounterattackAllowed", "bool", "btlGetReaction", true));
         putUnknownFunc(0x70E1, "btlGetNormalAttack", 0);
         putFuncWithIdx(0x70E2, new ScriptFunc(null, "unknown", "btlSetTexAnime", p("btlChr"), p(2)));
@@ -1237,7 +1237,7 @@ public class ScriptFuncLib {
         putUnknownFunc(0xC014, 0);
         putUnknownFunc(0xC018, 1);
         putUnknownFunc(0xC022, 1);
-        putFuncWithIdx(0xC024, new ScriptFunc("launchBattleAlwaysWin?", "unknown", null, p("encounter"), p("transition", "battleTransition")));
+        putFuncWithIdx(0xC024, new ScriptFunc("launchBattleAlwaysWin?", "unknown", null, p("battle"), p("transition", "battleTransition")));
         putUnknownFunc(0xC025, 1);
         putFuncWithIdx(0xC027, new ScriptFunc("RemoveAllKeyItemsAndPrimersRequireDebug", "unknown", null, true)); // Never called
         putUnknownFunc(0xC028, 0);

@@ -5,7 +5,7 @@ import model.*;
 import model.spheregrid.SphereGridLayoutDataObject;
 import model.spheregrid.SphereGridNodeTypeDataObject;
 import model.spheregrid.SphereGridSphereTypeDataObject;
-import atel.EncounterFile;
+import atel.BattleFile;
 import atel.EventFile;
 import atel.MonsterFile;
 
@@ -17,7 +17,7 @@ import static reading.BytesHelper.get;
 public abstract class DataAccess {
     public static CommandDataObject[] COMMANDS = new CommandDataObject[0x10000];
     public static Map<String, EventFile> EVENTS = new HashMap<>();
-    public static Map<String, EncounterFile> ENCOUNTERS = new HashMap<>();
+    public static Map<String, BattleFile> BATTLES = new HashMap<>();
     public static MonsterFile[] MONSTERS = new MonsterFile[0x1000];
     public static AtelScriptObject MENUMAIN;
     public static FieldEncounterTableDataObject[] ENCOUNTER_TABLES;
@@ -78,8 +78,8 @@ public abstract class DataAccess {
         return EVENTS.get(id);
     }
 
-    public static EncounterFile getEncounter(String id) {
-        return ENCOUNTERS.get(id);
+    public static BattleFile getBattle(String id) {
+        return BATTLES.get(id);
     }
 
     public static CommandDataObject getCommand(int idx) {

@@ -1,6 +1,6 @@
 package main;
 
-import atel.EncounterFile;
+import atel.BattleFile;
 import atel.EventFile;
 import atel.MonsterFile;
 import model.*;
@@ -169,8 +169,8 @@ public abstract class CsvEditExecutor {
         idSet.forEach(id -> DataWritingManager.writeEventStringsForAllLocalizations(id, print));
     }
 
-    public static void editAndSaveEncounterStrings(final boolean print) {
-        String path = EDIT_CSV_ROOT + "encounter.csv";
+    public static void editAndSaveBattleStrings(final boolean print) {
+        String path = EDIT_CSV_ROOT + "battles.csv";
         List<String[]> lines;
         try {
             lines = FileAccessorWithMods.csvToList(new File(path));
@@ -205,10 +205,10 @@ public abstract class CsvEditExecutor {
         for (String[] cells : values) {
             String id = cells[idCol];
             int stringIndex = Integer.parseInt(cells[stringIndexCol]);
-            EncounterFile encounter = DataAccess.getEncounter(id);
-            if (encounter != null) {
+            BattleFile battle = DataAccess.getBattle(id);
+            if (battle != null) {
                 idSet.add(id);
-                LocalizedFieldStringObject objToEdit = encounter.strings.get(stringIndex);
+                LocalizedFieldStringObject objToEdit = battle.strings.get(stringIndex);
                 if (print) {
                     String localizedStrings = colToLocalization.keySet().stream().flatMap(i -> i < cells.length ? Stream.of(cells[i]) : Stream.empty()).collect(Collectors.joining("\",\""));
                     System.out.printf("Copying [\"%s\"] into %s%n", localizedStrings, id);
@@ -221,6 +221,6 @@ public abstract class CsvEditExecutor {
                 });
             }
         }
-        idSet.forEach(id -> DataWritingManager.writeEncounterStringsForAllLocalizations(id, print));
+        idSet.forEach(id -> DataWritingManager.writeBattleStringsForAllLocalizations(id, print));
     }
 }

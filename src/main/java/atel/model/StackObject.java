@@ -1,6 +1,6 @@
 package atel.model;
 
-import atel.EncounterFile;
+import atel.BattleFile;
 import atel.EventFile;
 import main.DataAccess;
 import main.StringHelper;
@@ -143,15 +143,15 @@ public class StackObject {
             ScriptVariable scriptVariable = new ScriptVariable(parentWorker, 0, valueSigned, 1);
             return "&" + scriptVariable.getLabel(parentWorker) + hexSuffix;
         }
-        if ("encounter".equals(type)) {
+        if ("battle".equals(type)) {
             int map = (valueSigned & 0xFFFF0000) >> 16;
             int encIdx = valueSigned & 0x0000FFFF;
             ScriptField mapObj = ScriptConstants.FFX.getEnumMap("map").get(map);
             if (mapObj == null) {
                 return '?' + type + ':' + valueSigned + hexSuffix;
             } else {
-                String encounterId = mapObj.name + '_' + String.format("%02d", encIdx);
-                return encounterId + hexSuffix;
+                String battleId = mapObj.name + '_' + String.format("%02d", encIdx);
+                return battleId + hexSuffix;
             }
         }
         if ("menu".equals(type)) {
@@ -186,7 +186,7 @@ public class StackObject {
             return StringHelper.MACRO_LOOKUP.computeIfAbsent(valueSigned, k -> new LocalizedMacroStringObject()).getLocalizedString(localization);
         }
         if ("system01String".equals(type)) {
-            EncounterFile system01 = DataAccess.getEncounter("system_01");
+            BattleFile system01 = DataAccess.getBattle("system_01");
             if (system01 != null && system01.strings != null && system01.strings.size() > valueSigned) {
                 String fieldString = system01.strings.get(valueSigned).getLocalizedString(localization);
                 String noLineBreakString = fieldString != null ? fieldString.replace("\n", "{\\n}") : "null";

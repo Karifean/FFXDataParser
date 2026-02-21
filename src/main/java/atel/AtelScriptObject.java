@@ -37,10 +37,10 @@ public class AtelScriptObject {
     public int[] refFloats;
     public int[] refInts;
     public List<ScriptVariable> variableDeclarations;
-    private int variableStructsTableOffset;
-    private int intTableOffset;
-    private int floatTableOffset;
-    private int sharedDataOffset;
+    public int variableDeclarationsOffset;
+    public int refIntsOffset;
+    public int refFloatsOffset;
+    public int sharedDataOffset;
     private int jumpTablesOffset;
     private int map_start;
     private int creatorTagAddress;
@@ -563,33 +563,33 @@ public class AtelScriptObject {
     }
 
     private void syncVarIntFloatTables() {
-        variableStructsTableOffset = 0;
-        intTableOffset = 0;
-        floatTableOffset = 0;
+        variableDeclarationsOffset = 0;
+        refIntsOffset = 0;
+        refFloatsOffset = 0;
         sharedDataOffset = 0;
         jumpTablesOffset = 0;
         boolean first = true;
         for (ScriptWorker worker : workers) {
             if (first) {
                 first = false;
-                variableStructsTableOffset = worker.variableDeclarationsOffset;
+                variableDeclarationsOffset = worker.variableDeclarationsOffset;
                 variableDeclarations = worker.variableDeclarations;
-                intTableOffset = worker.refIntsOffset;
+                refIntsOffset = worker.refIntsOffset;
                 refInts = worker.refInts;
-                floatTableOffset = worker.refFloatsOffset;
+                refFloatsOffset = worker.refFloatsOffset;
                 refFloats = worker.refFloats;
                 sharedDataOffset = worker.sharedDataOffset;
                 jumpTablesOffset = worker.scriptEntryPointsOffset;
             } else {
-                if (worker.variableDeclarationsOffset != variableStructsTableOffset || worker.variablesCount != variableDeclarations.size()) {
+                if (worker.variableDeclarationsOffset != variableDeclarationsOffset || worker.variablesCount != variableDeclarations.size()) {
                     System.err.println("WARNING, variables table mismatch!");
                 }
                 worker.variableDeclarations = variableDeclarations;
-                if (worker.refIntsOffset != intTableOffset || worker.refIntCount != refInts.length) {
+                if (worker.refIntsOffset != refIntsOffset || worker.refIntCount != refInts.length) {
                     System.err.println("WARNING, int table mismatch!");
                 }
                 worker.refInts = refInts;
-                if (worker.refFloatsOffset != floatTableOffset || worker.refFloatCount != refFloats.length) {
+                if (worker.refFloatsOffset != refFloatsOffset || worker.refFloatCount != refFloats.length) {
                     System.err.println("WARNING, float table mismatch!");
                 }
                 worker.refFloats = refFloats;
@@ -1317,7 +1317,7 @@ public class AtelScriptObject {
     public ScriptWorker addWorker(int newType, boolean isEventWorker) {
         int insertIndex = isEventWorker ? getWorkerInsertIndex(newType) : workers.size();
         System.out.println("insert worker of type " + newType + " at index " + insertIndex);
-        ScriptWorker worker = new ScriptWorker(this, insertIndex, workers.getFirst(), newType);
+        ScriptWorker worker = new ScriptWorker(this, insertIndex, newType);
         worker.addBlankEntryPoints(newType, isEventWorker);
         insertWorker(worker, insertIndex);
         return worker;
@@ -1529,7 +1529,7 @@ public class AtelScriptObject {
         for (int i = 0; i < namespaceCount; i++) {
             lines.add("w" + StringHelper.formatHex2(i) + ": " + getWorker(i).getNonCommonString());
         }
-        lines.add("Variables (" + variableDeclarations.size() + " at offset " + StringHelper.formatHex4(variableStructsTableOffset) + ")");
+        lines.add("Variables (" + variableDeclarations.size() + " at offset " + StringHelper.formatHex4(variableDeclarationsOffset) + ")");
         if (variableDeclarations.size() > 0) {
             List<String> refsStrings = new ArrayList<>();
             for (int i = 0; i < variableDeclarations.size(); i++) {
@@ -1538,7 +1538,7 @@ public class AtelScriptObject {
             lines.add(String.join("\n", refsStrings));
         }
         if (PRINT_REF_INTS_FLOATS) {
-            lines.add("Integers (" + refInts.length + " at offset " + StringHelper.formatHex4(intTableOffset) + ")");
+            lines.add("Integers (" + refInts.length + " at offset " + StringHelper.formatHex4(refIntsOffset) + ")");
             if (refInts.length > 0) {
                 List<String> intStrings = new ArrayList<>();
                 for (int i = 0; i < refInts.length; i++) {
@@ -1546,7 +1546,7 @@ public class AtelScriptObject {
                 }
                 lines.add(String.join(", ", intStrings));
             }
-            lines.add("Floats (" + refFloats.length + " at offset " + StringHelper.formatHex4(floatTableOffset) + ")");
+            lines.add("Floats (" + refFloats.length + " at offset " + StringHelper.formatHex4(refFloatsOffset) + ")");
             if (refFloats.length > 0) {
                 List<String> floatStrings = new ArrayList<>();
                 for (int i = 0; i < refFloats.length; i++) {

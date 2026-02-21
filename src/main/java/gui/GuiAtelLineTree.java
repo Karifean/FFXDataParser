@@ -1,7 +1,6 @@
 package gui;
 
-import atel.AtelScriptObject;
-import atel.EncounterFile;
+import atel.BattleFile;
 import atel.EventFile;
 import atel.MonsterFile;
 import atel.model.*;
@@ -187,21 +186,21 @@ public class GuiAtelLineTree {
                 });
                 addItem(folderMenu, roomId, inputType, input, eventEntry.getKey(), selected);
             }
-        } else if ("encounter".equals(inputType)) {
+        } else if ("battle".equals(inputType)) {
             Map<String, Menu> folderMap = new HashMap<>();
-            for (Map.Entry<String, EncounterFile> encounterEntry : DataAccess.ENCOUNTERS.entrySet()) {
-                EncounterFile encounter = encounterEntry.getValue();
-                int encounterIndex = encounter.getIndex();
-                if (encounterIndex >= 0) {
-                    String submenuKey = encounter.scriptId.substring(0, 4);
-                    String label = encounter.getName(mainLocalization);
+            for (Map.Entry<String, BattleFile> battleEntry : DataAccess.BATTLES.entrySet()) {
+                BattleFile battle = battleEntry.getValue();
+                int battleIndex = battle.getIndex();
+                if (battleIndex >= 0) {
+                    String submenuKey = battle.scriptId.substring(0, 4);
+                    String label = battle.getName(mainLocalization);
                     Menu folderMenu = folderMap.computeIfAbsent(submenuKey, k -> {
                         Menu menu = new Menu();
                         menu.setGraphic(new Text(submenuKey));
                         enumMenu.getItems().add(menu);
                         return menu;
                     });
-                    addItem(folderMenu, label, inputType, input, encounterIndex, selected);
+                    addItem(folderMenu, label, inputType, input, battleIndex, selected);
                 }
             }
         } else if ("charCommand".equals(inputType)) {
@@ -247,7 +246,7 @@ public class GuiAtelLineTree {
             }
             enumMenu.getItems().add(itembin);
         } else if ("localString".equals(inputType) || "system01String".equals(inputType)) {
-            List<LocalizedFieldStringObject> strings = "system01String".equals(inputType) ? DataAccess.getEncounter("system_01").strings : controller.selectedAtelObject.strings;
+            List<LocalizedFieldStringObject> strings = "system01String".equals(inputType) ? DataAccess.getBattle("system_01").strings : controller.selectedAtelObject.strings;
             if (strings != null) {
                 if (selected >= 0 && selected < strings.size()) {
                     LocalizedFieldStringObject obj = strings.get(selected);
@@ -266,7 +265,7 @@ public class GuiAtelLineTree {
                     addItem(enumMenu, label, inputType, input, i, selected);
                 }
             }
-            if (!"localString".equals(inputType) || controller.selectedEvent != null || controller.selectedEncounter != null) {
+            if (!"localString".equals(inputType) || controller.selectedEvent != null || controller.selectedBattle != null) {
                 MenuItem newStringItem = new MenuItem();
                 newStringItem.setGraphic(new Text("<Add new String>"));
                 newStringItem.setOnAction(actionEvent -> onAddString(input, inputType, actionEvent));

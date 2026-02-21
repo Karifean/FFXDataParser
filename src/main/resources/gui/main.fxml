@@ -92,7 +92,7 @@
                               </AnchorPane>
                         </content>
                       </Tab>
-                      <Tab text="Encounters">
+                      <Tab text="Battles">
                         <content>
                           <AnchorPane minHeight="0.0" minWidth="0.0">
                                  <children>
@@ -100,7 +100,7 @@
                                        <content>
                                           <AnchorPane minHeight="0.0" minWidth="0.0">
                                              <children>
-                                                <ListView fx:id="encounterList" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+                                                <ListView fx:id="battleList" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
                                              </children>
                                           </AnchorPane>
                                        </content>

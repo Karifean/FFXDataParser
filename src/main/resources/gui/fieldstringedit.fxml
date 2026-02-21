@@ -9,7 +9,7 @@
 <?import javafx.scene.text.Text?>
 
 
-<VBox prefHeight="480.0" prefWidth="640.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="gui.GuiStringEditController">
+<VBox prefHeight="480.0" prefWidth="640.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="gui.GuiFieldStringEditController">
    <children>
       <ListView fx:id="langList" prefHeight="212.0" prefWidth="200.0" />
     <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="100.0" prefWidth="160.0" VBox.vgrow="ALWAYS">

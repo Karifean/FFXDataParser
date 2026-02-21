@@ -244,7 +244,7 @@ public class ScriptConstants {
         putEnum("battleWorkerType", 0x01, "MotionHandler");
         putEnum("battleWorkerType", 0x02, "CombatHandler");
         putEnum("battleWorkerType", 0x03, "BattleGruntHandler");
-        putEnum("battleWorkerType", 0x04, "EncounterScripts");
+        putEnum("battleWorkerType", 0x04, "BattleScenes");
         putEnum("battleWorkerType", 0x05, "VoiceHandler");
         putEnum("battleWorkerType", 0x06, "StartEndHooks");
         putEnum("battleWorkerType", 0x07, "MagicCameraHandler-Command");

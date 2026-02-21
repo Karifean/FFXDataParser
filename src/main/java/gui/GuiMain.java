@@ -1,14 +1,10 @@
 package gui;
 
 import javafx.application.Application;
-import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.control.ListView;
 import javafx.stage.Stage;
-import main.StringHelper;
-import reading.FileAccessorWithMods;
 
 import java.io.IOException;
 import java.net.URL;

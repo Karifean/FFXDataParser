@@ -11,7 +11,7 @@ import java.util.stream.Collectors;
 import static main.DataReadingManager.DEFAULT_LOCALIZATION;
 
 /**
- * Part of EncounterFile
+ * Part of BattleFile
  */
 public class FormationDataObject {
     public static final int LENGTH = 0x1C;
@@ -60,14 +60,9 @@ public class FormationDataObject {
         alwaysZero09 = bytes[0x09];
         alwaysZero0A = bytes[0x0A];
         alwaysZero0B = bytes[0x0B];
-        monsters[0] = read2Bytes(0x0C);
-        monsters[1] = read2Bytes(0x0E);
-        monsters[2] = read2Bytes(0x10);
-        monsters[3] = read2Bytes(0x12);
-        monsters[4] = read2Bytes(0x14);
-        monsters[5] = read2Bytes(0x16);
-        monsters[6] = read2Bytes(0x18);
-        monsters[7] = read2Bytes(0x1A);
+        for (int i = 0; i < 8; i++) {
+            monsters[i] = read2Bytes(0x0C + 2 * i);
+        }
     }
 
     private void mapFlags() {

@@ -4,7 +4,7 @@ import atel.AtelScriptObject;
 import atel.model.*;
 import gui.GuiMain;
 import model.*;
-import atel.EncounterFile;
+import atel.BattleFile;
 import atel.EventFile;
 import atel.MonsterFile;
 import reading.FileAccessorWithMods;
@@ -33,8 +33,8 @@ public class Main {
     private static final String MODE_PARSE_ATEL_FILE = "PARSE_ATEL_FILE";
     private static final String MODE_PARSE_MONSTER = "PARSE_MONSTER";
     private static final String MODE_PARSE_ALL_MONSTERS = "PARSE_ALL_MONSTERS";
-    private static final String MODE_PARSE_ENCOUNTER = "PARSE_ENCOUNTER";
-    private static final String MODE_PARSE_ALL_ENCOUNTERS = "PARSE_ALL_ENCOUNTERS";
+    private static final String MODE_PARSE_BATTLE = "PARSE_BATTLE";
+    private static final String MODE_PARSE_ALL_BATTLES = "PARSE_ALL_BATTLES";
     private static final String MODE_PARSE_EVENT = "PARSE_EVENT";
     private static final String MODE_PARSE_ALL_EVENTS = "PARSE_ALL_EVENTS";
     private static final String MODE_READ_SPHERE_GRID_NODE_TYPES = "READ_SPHERE_GRID_NODE_TYPES";
@@ -138,21 +138,21 @@ public class Main {
                     }
                 }
                 break;
-            case MODE_PARSE_ALL_ENCOUNTERS:
-                realArgs = DataAccess.ENCOUNTERS.keySet().stream().toList();
-            case MODE_PARSE_ENCOUNTER:
-                for (String encounterId : realArgs) {
-                    EncounterFile encounterFile = DataAccess.getEncounter(encounterId);
-                    if (encounterFile != null) {
-                        encounterFile.parseScript();
-                        String path = PATH_ORIGINALS_ENCOUNTER + encounterId + '/' + encounterId + ".bin";
+            case MODE_PARSE_ALL_BATTLES:
+                realArgs = DataAccess.BATTLES.keySet().stream().toList();
+            case MODE_PARSE_BATTLE:
+                for (String battleId : realArgs) {
+                    BattleFile battleFile = DataAccess.getBattle(battleId);
+                    if (battleFile != null) {
+                        battleFile.parseScript();
+                        String path = PATH_ORIGINALS_BATTLE + battleId + '/' + battleId + ".bin";
                         System.out.println("--- " + path + " ---");
-                        String textOutputPath = PATH_TEXT_OUTPUT_ROOT + "battle/btl/" + encounterId + ".txt";
-                        String encounterFileString = encounterFile.toString();
-                        FileAccessorWithMods.writeStringToFile(textOutputPath, encounterFileString);
-                        System.out.println(encounterFileString);
+                        String textOutputPath = PATH_TEXT_OUTPUT_ROOT + "battle/btl/" + battleId + ".txt";
+                        String battleFileString = battleFile.toString();
+                        FileAccessorWithMods.writeStringToFile(textOutputPath, battleFileString);
+                        System.out.println(battleFileString);
                     } else {
-                        System.err.println("Encounter with id " + encounterId + " not found");
+                        System.err.println("Battle with id " + battleId + " not found");
                     }
                 }
                 break;
@@ -167,11 +167,11 @@ public class Main {
                         String path = PATH_ORIGINALS_EVENT + shortened + '/' + eventId + '/' + eventId + ".ebp";
                         System.out.println("--- " + path + " ---");
                         String textOutputPath = PATH_TEXT_OUTPUT_ROOT + "event/obj/" + shortened + '/' + eventId + ".txt";
-                        String encounterFileString = eventFile.toString();
-                        FileAccessorWithMods.writeStringToFile(textOutputPath, encounterFileString);
-                        System.out.println(encounterFileString);
+                        String eventFileString = eventFile.toString();
+                        FileAccessorWithMods.writeStringToFile(textOutputPath, eventFileString);
+                        System.out.println(eventFileString);
                     } else {
-                        System.err.println("Encounter with id " + eventId + " not found");
+                        System.err.println("Event with id " + eventId + " not found");
                     }
                 }
                 break;
@@ -187,11 +187,11 @@ public class Main {
                             System.out.println("Null");
                         }
                     } else if (filename.contains("battle/btl")) {
-                        System.out.println("Encounter file: " + filename);
-                        EncounterFile encounterFile = readEncounterFile(null, filename, true, filename.contains("/inpc/"));
-                        if (encounterFile != null) {
-                            encounterFile.parseScript();
-                            System.out.println(encounterFile);
+                        System.out.println("Battle file: " + filename);
+                        BattleFile battleFile = readBattleFile(null, filename, true, filename.contains("/inpc/"));
+                        if (battleFile != null) {
+                            battleFile.parseScript();
+                            System.out.println(battleFile);
                         } else {
                             System.out.println("Null");
                         }
@@ -275,14 +275,14 @@ public class Main {
             case MODE_READ_BLITZBALL_STATS:
                 EventFile event = DataAccess.getEvent("bltz0002");
                 event.parseScript();
-                List<StackObject> hpValues = event.eventScript.getVariable(0x126).values;
-                List<StackObject> atValues = event.eventScript.getVariable(0x128).values;
-                List<StackObject> enValues = event.eventScript.getVariable(0x129).values;
-                List<StackObject> paValues = event.eventScript.getVariable(0x12A).values;
-                List<StackObject> shValues = event.eventScript.getVariable(0x12B).values;
-                List<StackObject> blValues = event.eventScript.getVariable(0x12C).values;
-                List<StackObject> caValues = event.eventScript.getVariable(0x12D).values;
-                List<StackObject> spValues = event.eventScript.getVariable(0x12E).values;
+                List<StackObject> hpValues = event.atelScript.getVariable(0x126).values;
+                List<StackObject> atValues = event.atelScript.getVariable(0x128).values;
+                List<StackObject> enValues = event.atelScript.getVariable(0x129).values;
+                List<StackObject> paValues = event.atelScript.getVariable(0x12A).values;
+                List<StackObject> shValues = event.atelScript.getVariable(0x12B).values;
+                List<StackObject> blValues = event.atelScript.getVariable(0x12C).values;
+                List<StackObject> caValues = event.atelScript.getVariable(0x12D).values;
+                List<StackObject> spValues = event.atelScript.getVariable(0x12E).values;
                 for (int i = 0; i < 0x3C; i++) {
                     System.out.println("- " + StackObject.enumToString("blitzballPlayer", i) + " -");
                     int baseOffset = i * 4;
@@ -299,7 +299,7 @@ public class Main {
                 DataAccess.EVENTS.values().forEach(e -> {
                     e.parseScript();
                     Map<Integer, String> matcherMap = new HashMap<>();
-                    e.eventScript.variableDeclarations.stream().forEach(d -> {
+                    e.atelScript.variableDeclarations.stream().forEach(d -> {
                         if (d.values.isEmpty() || d.values.size() < 100) {
                             return;
                         }
@@ -405,20 +405,20 @@ public class Main {
                 int count = Integer.parseInt(realArgs.get(3), 10);
                 AtelScriptObject scriptObject;
                 EventFile eventFileToSpace = null;
-                EncounterFile encounterFileToSpace = null;
+                BattleFile battleFileToSpace = null;
                 MonsterFile monsterFileToSpace = null;
                 if ("event".equals(type)) {
                     eventFileToSpace = DataAccess.getEvent(id);
                     eventFileToSpace.parseScript();
-                    scriptObject = eventFileToSpace.eventScript;
-                } else if ("encounter".equals(type)) {
-                    encounterFileToSpace = DataAccess.getEncounter(id);
-                    encounterFileToSpace.parseScript();
-                    scriptObject = encounterFileToSpace.encounterScript;
+                    scriptObject = eventFileToSpace.atelScript;
+                } else if ("battle".equals(type)) {
+                    battleFileToSpace = DataAccess.getBattle(id);
+                    battleFileToSpace.parseScript();
+                    scriptObject = battleFileToSpace.atelScript;
                 } else if ("monster".equals(type)) {
                     monsterFileToSpace = Objects.requireNonNull(DataAccess.getMonster(id));
                     monsterFileToSpace.parseScript();
-                    scriptObject = monsterFileToSpace.monsterScript;
+                    scriptObject = monsterFileToSpace.atelScript;
                 } else {
                     return;
                 }
@@ -433,9 +433,9 @@ public class Main {
                 if (eventFileToSpace != null) {
                     System.out.println("Added entry point " + newEntryPoint.getLabel() + " with " + count + " bytes of 00 to event " + id);
                     eventFileToSpace.writeToMods(false, false);
-                } else if (encounterFileToSpace != null) {
-                    System.out.println("Added entry point " + newEntryPoint.getLabel() + " with " + count + " bytes of 00 to encounter " + id);
-                    encounterFileToSpace.writeToMods(false, false);
+                } else if (battleFileToSpace != null) {
+                    System.out.println("Added entry point " + newEntryPoint.getLabel() + " with " + count + " bytes of 00 to battle " + id);
+                    battleFileToSpace.writeToMods(false, false);
                 } else {
                     System.out.println("Added entry point " + newEntryPoint.getLabel() + " with " + count + " bytes of 00 to monster " + id);
                     monsterFileToSpace.writeToMods(false, false);
@@ -444,10 +444,10 @@ public class Main {
             case MODE_RECOMPILE:
                 for (String variableId : realArgs) {
                     if (variableId.contains("_")) {
-                        EncounterFile encounterFile = DataAccess.getEncounter(variableId);
-                        if (encounterFile != null) {
-                            encounterFile.parseScript();
-                            encounterFile.writeToMods(false, false);
+                        BattleFile battleFile = DataAccess.getBattle(variableId);
+                        if (battleFile != null) {
+                            battleFile.parseScript();
+                            battleFile.writeToMods(false, false);
                         }
                     } else if (variableId.length() == 4 && variableId.startsWith("m")) {
                         int monsterIndex = Integer.parseInt(variableId.substring(1), 10);
@@ -505,8 +505,8 @@ public class Main {
                 }
                 System.out.println("--- EVENTS ---");
                 CsvEditExecutor.editAndSaveEventStrings(true);
-                System.out.println("--- ENCOUNTERS ---");
-                CsvEditExecutor.editAndSaveEncounterStrings(true);
+                System.out.println("--- BATTLES ---");
+                CsvEditExecutor.editAndSaveBattleStrings(true);
                 break;
             case MODE_GUI:
                 System.out.println("UI starting");

@@ -26,9 +26,9 @@ public class EventFile implements Nameable {
 
     public String filename;
     public String scriptId;
-    public AtelScriptObject eventScript;
+    public AtelScriptObject atelScript;
     public int binaryLength;
-    int[] scriptBytes;
+    int[] atelScriptBytes;
     int[] japaneseTextBytes;
     int[] unknownChunk2Bytes;
     int[] ftcxBytes;
@@ -47,7 +47,7 @@ public class EventFile implements Nameable {
     }
 
     private void mapChunks(List<Chunk> chunks) {
-        scriptBytes = chunks.get(0).bytes;
+        atelScriptBytes = chunks.get(0).bytes;
         japaneseTextBytes = chunks.get(1).bytes;
         unknownChunk2Bytes = chunks.get(2).bytes;
         ftcxBytes = chunks.get(3).bytes;
@@ -57,8 +57,8 @@ public class EventFile implements Nameable {
     }
 
     private void mapObjects() {
-        eventScript = new AtelScriptObject(scriptBytes, null);
-        scriptId = eventScript.scriptId;
+        atelScript = new AtelScriptObject(atelScriptBytes, null);
+        scriptId = atelScript.scriptId;
     }
 
     private void mapStrings() {
@@ -97,20 +97,20 @@ public class EventFile implements Nameable {
     }
 
     public void parseScript(boolean force) {
-        if (eventScript != null && (force || !scriptParsed)) {
+        if (atelScript != null && (force || !scriptParsed)) {
             scriptParsed = true;
-            eventScript.setStrings(strings);
-            eventScript.parseScript();
+            atelScript.setStrings(strings);
+            atelScript.parseScript();
         }
     }
 
     public int[] toBytes() {
         List<int[]> chunks = new ArrayList<>();
         if (AtelScriptObject.RECOMPILE_ATEL && scriptParsed) {
-            AtelScriptObject.AtelScriptObjectBytes atelScriptObjectBytes = eventScript.toBytes();
+            AtelScriptObject.AtelScriptObjectBytes atelScriptObjectBytes = atelScript.toBytes();
             chunks.add(atelScriptObjectBytes.bytes());
         } else {
-            chunks.add(scriptBytes);
+            chunks.add(atelScriptBytes);
         }
         chunks.add(DataWritingManager.stringsToStringFileBytes(strings, "jp"));
         chunks.add(unknownChunk2Bytes);
@@ -129,7 +129,7 @@ public class EventFile implements Nameable {
             DataWritingManager.writeEventStringsForAllLocalizations(this, false);
         }
         if (writeDeclarations) {
-            FileAccessorWithMods.writeStringToMods(path + ".dcl.csv", eventScript.getDeclarationsAsCsvString());
+            FileAccessorWithMods.writeStringToMods(path + ".dcl.csv", atelScript.getDeclarationsAsCsvString());
         }
     }
 
@@ -137,11 +137,11 @@ public class EventFile implements Nameable {
     public String toString() {
         StringBuilder full = new StringBuilder();
         full.append(getName()).append('\n');
-        if (eventScript != null) {
+        if (atelScript != null) {
             full.append("- Script Code -").append('\n');
-            full.append(eventScript.allLinesString());
+            full.append(atelScript.allLinesString());
             full.append("- Script Workers -").append('\n');
-            full.append(eventScript.workersString()).append('\n');
+            full.append(atelScript.workersString()).append('\n');
         } else {
             full.append("Event Script missing");
         }
@@ -150,10 +150,10 @@ public class EventFile implements Nameable {
 
     public String getName(String localization) {
         String id = scriptId != null ? scriptId : filename;
-        if (eventScript == null || eventScript.areaNameIndexes == null || eventScript.areaNameIndexes.isEmpty()) {
+        if (atelScript == null || atelScript.areaNameIndexes == null || atelScript.areaNameIndexes.isEmpty()) {
             return id;
         }
-        String areaName = MACRO_LOOKUP.get(0xB00 + eventScript.areaNameIndexes.get(0)).getLocalizedString(localization);
+        String areaName = MACRO_LOOKUP.get(0xB00 + atelScript.areaNameIndexes.get(0)).getLocalizedString(localization);
         return id + " (" + areaName + ")";
     }
 

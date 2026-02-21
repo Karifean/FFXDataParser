@@ -1,7 +1,7 @@
 package main;
 
 import atel.AtelScriptObject;
-import atel.EncounterFile;
+import atel.BattleFile;
 import atel.EventFile;
 import atel.MonsterFile;
 import atel.model.ScriptConstants;
@@ -33,8 +33,8 @@ public class DataReadingManager {
     public static final String PATH_ORIGINALS_ROOT = PATH_FFX_ROOT + ORIGINALS_FOLDER;
     public static final String PATH_ORIGINALS_KERNEL = PATH_ORIGINALS_ROOT + "battle/kernel/";
     public static final String PATH_MONSTER_FOLDER = PATH_ORIGINALS_ROOT + "battle/mon/";
-    public static final String PATH_ORIGINALS_ENCOUNTER = PATH_ORIGINALS_ROOT + "battle/btl/";
-    public static final String PATH_INTERNATIONAL_ENCOUNTER = PATH_FFX_ROOT + "inpc/battle/btl/";
+    public static final String PATH_ORIGINALS_BATTLE = PATH_ORIGINALS_ROOT + "battle/btl/";
+    public static final String PATH_INTERNATIONAL_BATTLE = PATH_FFX_ROOT + "inpc/battle/btl/";
     public static final String PATH_ORIGINALS_EVENT = PATH_ORIGINALS_ROOT + "event/obj/";
     public static final String PATH_ABMAP = PATH_ORIGINALS_ROOT + "menu/abmap/";
     public static final String PATH_TEXT_OUTPUT_ROOT = "target/text/";
@@ -54,7 +54,7 @@ public class DataReadingManager {
     public static final List<String> LOCALIZATIONS_LIST = List.of("us", "de", "fr", "it", "sp", "jp", "ch", "kr");
 
     private static final boolean ALLOW_DAT_FILES = false;
-    private static final boolean LOAD_EVENTS_AND_ENCOUNTERS = true;
+    private static final boolean LOAD_EVENTS_AND_BATTLES = true;
 
     public static String getLocalizationRoot(String localization) {
         return PATH_FFX_ROOT + "new_" + localization + "pc/";
@@ -99,9 +99,9 @@ public class DataReadingManager {
 
         ScriptCustomDeclarations customDeclarations = readScriptCustomDeclarations();
         readAllMonsters(customDeclarations.monsterMap);
-        if (LOAD_EVENTS_AND_ENCOUNTERS) {
+        if (LOAD_EVENTS_AND_BATTLES) {
             readAllEvents(customDeclarations.eventMap, false);
-            readAllEncounters(customDeclarations.encounterMap);
+            readAllBattles(customDeclarations.battleMap);
         }
         readEncounterTables(PATH_ORIGINALS_KERNEL + "btl.bin", false);
         addAllMonsterLocalizations();
@@ -284,7 +284,7 @@ public class DataReadingManager {
         return new MonsterFile(monsterIndex, bytes);
     }
 
-    public static EncounterFile readEncounterFile(String encounterId, String filename, final boolean print, final boolean isInpc) {
+    public static BattleFile readBattleFile(String battleId, String filename, final boolean print, final boolean isInpc) {
         if (!(filename.endsWith(".bin") || (ALLOW_DAT_FILES && filename.endsWith(".dat")))) {
             return null;
         }
@@ -292,7 +292,7 @@ public class DataReadingManager {
         if (bytes == null) {
             return null;
         }
-        return new EncounterFile(encounterId, bytes, isInpc);
+        return new BattleFile(battleId, bytes, isInpc);
     }
 
     public static EventFile readEventFile(String eventId, String filename, final boolean print) {
@@ -330,48 +330,48 @@ public class DataReadingManager {
         if (monsterFile == null) {
             return null;
         }
-        monsterFile.monsterScript.addVariableNamings(declarations.get(monsterFile.scriptId));
-        addVariableNamings(monsterFile.monsterScript, PATH_MONSTER_FOLDER + midPath + ".dcl.csv");
+        monsterFile.atelScript.addVariableNamings(declarations.get(monsterFile.scriptId));
+        addVariableNamings(monsterFile.atelScript, PATH_MONSTER_FOLDER + midPath + ".dcl.csv");
         return monsterFile;
     }
 
-    public static void readAllEncounters(Map<String, List<String>> declarations) {
-        File encountersFolder = FileAccessorWithMods.getRealFile(PATH_ORIGINALS_ENCOUNTER);
-        if (encountersFolder.isDirectory()) {
-            String[] contents = encountersFolder.list();
+    public static void readAllBattles(Map<String, List<String>> declarations) {
+        File battlesFolder = FileAccessorWithMods.getRealFile(PATH_ORIGINALS_BATTLE);
+        if (battlesFolder.isDirectory()) {
+            String[] contents = battlesFolder.list();
             if (contents != null) {
-                Stream<String> encounterFiles = Arrays.stream(contents).filter(sf -> !sf.startsWith(".")).sorted();
-                encounterFiles.forEach(encounterId -> {
-                    EncounterFile encounterFile = readEncounterFull(encounterId, declarations);
-                    if (encounterFile != null) {
-                        if (!encounterId.equals(encounterFile.scriptId)) {
-                            System.err.printf("mismatch! %s vs %s%n", encounterId, encounterFile.scriptId);
+                Stream<String> battleFiles = Arrays.stream(contents).filter(sf -> !sf.startsWith(".")).sorted();
+                battleFiles.forEach(battleId -> {
+                    BattleFile battleFile = readBattleFull(battleId, declarations);
+                    if (battleFile != null) {
+                        if (!battleId.equals(battleFile.scriptId)) {
+                            System.err.printf("mismatch! %s vs %s%n", battleId, battleFile.scriptId);
                         }
-                        DataAccess.ENCOUNTERS.put(encounterFile.scriptId, encounterFile);
+                        DataAccess.BATTLES.put(battleFile.scriptId, battleFile);
                     }
                 });
             }
         }
     }
 
-    public static EncounterFile readEncounterFull(String encounterId, Map<String, List<String>> declarations) {
-        String midPath = encounterId + '/' + encounterId;
+    public static BattleFile readBattleFull(String battleId, Map<String, List<String>> declarations) {
+        String midPath = battleId + '/' + battleId;
         String endPath = midPath + ".bin";
-        String originalsPath = PATH_ORIGINALS_ENCOUNTER + endPath;
-        EncounterFile encounterFile = readEncounterFile(encounterId, originalsPath, false, false);
-        if (encounterFile == null) {
+        String originalsPath = PATH_ORIGINALS_BATTLE + endPath;
+        BattleFile battleFile = readBattleFile(battleId, originalsPath, false, false);
+        if (battleFile == null) {
             return null;
         }
-        String internationalPath = PATH_INTERNATIONAL_ENCOUNTER + endPath;
-        EncounterFile internationalFile = readEncounterFile(encounterId, internationalPath, false, true);
+        String internationalPath = PATH_INTERNATIONAL_BATTLE + endPath;
+        BattleFile internationalFile = readBattleFile(battleId, internationalPath, false, true);
         if (internationalFile != null) {
-            encounterFile.addLocalizations(internationalFile.strings);
+            battleFile.addLocalizations(internationalFile.strings);
         }
         List<LocalizedFieldStringObject> localizedStrings = StringHelper.readLocalizedStringFiles("battle/btl/" + endPath);
-        encounterFile.addLocalizations(localizedStrings);
-        encounterFile.encounterScript.addVariableNamings(declarations.get(encounterFile.scriptId));
-        addVariableNamings(encounterFile.encounterScript, PATH_ORIGINALS_ENCOUNTER + midPath + ".dcl.csv");
-        return encounterFile;
+        battleFile.addLocalizations(localizedStrings);
+        battleFile.atelScript.addVariableNamings(declarations.get(battleFile.scriptId));
+        addVariableNamings(battleFile.atelScript, PATH_ORIGINALS_BATTLE + midPath + ".dcl.csv");
+        return battleFile;
     }
 
     public static void readAllEvents(Map<String, List<String>> declarations, final boolean skipBlitzballEvents) {
@@ -409,8 +409,8 @@ public class DataReadingManager {
         }
         List<LocalizedFieldStringObject> localizedStrings = StringHelper.readLocalizedStringFiles("event/obj_ps3/" + midPath + ".bin");
         eventFile.addLocalizations(localizedStrings);
-        eventFile.eventScript.addVariableNamings(declarations.get(eventFile.scriptId));
-        addVariableNamings(eventFile.eventScript, PATH_ORIGINALS_EVENT + midPath + ".dcl.csv");
+        eventFile.atelScript.addVariableNamings(declarations.get(eventFile.scriptId));
+        addVariableNamings(eventFile.atelScript, PATH_ORIGINALS_EVENT + midPath + ".dcl.csv");
         return eventFile;
     }
 
@@ -482,7 +482,7 @@ public class DataReadingManager {
     }
 
     public static void addAllMonsterLocalizations() {
-        LOCALIZATIONS.forEach((key, name) -> DataAccess.addMonsterLocalizations(readMonsterLocalizations(key,false)));
+        LOCALIZATIONS_LIST.forEach((key) -> DataAccess.addMonsterLocalizations(readMonsterLocalizations(key,false)));
     }
 
     public static SphereGridSphereTypeDataObject[] readSphereGridSphereTypes(String path, boolean print) {
@@ -510,9 +510,9 @@ public class DataReadingManager {
     private static ScriptCustomDeclarations readScriptCustomDeclarations() {
         File declarationsFile = new File(FileAccessorWithMods.RESOURCES_ROOT + "declarations.txt");
         Map<String, List<String>> eventMap = new HashMap<>();
-        Map<String, List<String>> encounterMap = new HashMap<>();
+        Map<String, List<String>> battleMap = new HashMap<>();
         Map<String, List<String>> monsterMap = new HashMap<>();
-        ScriptCustomDeclarations declarations = new ScriptCustomDeclarations(eventMap, encounterMap, monsterMap);
+        ScriptCustomDeclarations declarations = new ScriptCustomDeclarations(eventMap, battleMap, monsterMap);
         try {
             List<String> declarationLines = FileAccessorWithMods.textFileToLineList(declarationsFile);
             for (String line : declarationLines) {
@@ -521,8 +521,8 @@ public class DataReadingManager {
                 Map<String, List<String>> targetMap;
                 if ("event".equals(type)) {
                     targetMap = eventMap;
-                } else if ("encounter".equals(type)) {
-                    targetMap = encounterMap;
+                } else if ("battle".equals(type)) {
+                    targetMap = battleMap;
                 } else if ("monster".equals(type)) {
                     targetMap = monsterMap;
                 } else {
@@ -552,5 +552,5 @@ public class DataReadingManager {
         }
     }
 
-    private record ScriptCustomDeclarations(Map<String, List<String>> eventMap, Map<String, List<String>> encounterMap, Map<String, List<String>> monsterMap) {}
+    private record ScriptCustomDeclarations(Map<String, List<String>> eventMap, Map<String, List<String>> battleMap, Map<String, List<String>> monsterMap) {}
 }

@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * Part of EncounterFile
+ * Part of BattleFile
  */
 public class BattleAreasPositionsDataObject {
     int areaCount;

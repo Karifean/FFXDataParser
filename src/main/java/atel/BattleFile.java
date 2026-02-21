@@ -15,21 +15,21 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static main.DataReadingManager.PATH_ORIGINALS_ENCOUNTER;
+import static main.DataReadingManager.PATH_ORIGINALS_BATTLE;
 import static model.FormationDataObject.writeMonster;
 import static reading.BytesHelper.read4Bytes;
 
 /**
  * jppc/battle/btl/.../.bin
  */
-public class EncounterFile implements Nameable {
+public class BattleFile implements Nameable {
     public String filename;
     public String scriptId;
-    public AtelScriptObject encounterScript;
+    public AtelScriptObject atelScript;
     public FormationDataObject formation;
     public BattleAreasPositionsDataObject battleAreasPositions;
     public int binaryLength;
-    int[] scriptBytes;
+    int[] atelScriptBytes;
     int[] workerMappingBytes;
     int[] formationBytes;
     int[] battleAreasPositionsBytes;
@@ -41,7 +41,7 @@ public class EncounterFile implements Nameable {
     private final int chunkCount;
     private boolean scriptParsed = false;
 
-    public EncounterFile(String filename, int[] bytes, boolean isInpc) {
+    public BattleFile(String filename, int[] bytes, boolean isInpc) {
         binaryLength = bytes.length;
         this.filename = filename;
         chunkCount = read4Bytes(bytes, 0x00) - 1;
@@ -55,7 +55,7 @@ public class EncounterFile implements Nameable {
     }
 
     private void mapChunks(List<Chunk> chunks, boolean isInpc) {
-        scriptBytes = chunks.get(0).bytes;
+        atelScriptBytes = chunks.get(0).bytes;
         workerMappingBytes = chunks.get(1).bytes;
         formationBytes = chunks.get(2).bytes;
         battleAreasPositionsBytes = chunks.get(3).bytes;
@@ -76,8 +76,8 @@ public class EncounterFile implements Nameable {
     }
 
     private void mapObjects() {
-        encounterScript = new AtelScriptObject(scriptBytes, workerMappingBytes);
-        scriptId = encounterScript.scriptId;
+        atelScript = new AtelScriptObject(atelScriptBytes, workerMappingBytes);
+        scriptId = atelScript.scriptId;
         if (chunkCount == 4) {
             return;
         }
@@ -128,21 +128,21 @@ public class EncounterFile implements Nameable {
     }
 
     public void parseScript(boolean force) {
-        if (encounterScript != null && (force || !scriptParsed)) {
+        if (atelScript != null && (force || !scriptParsed)) {
             scriptParsed = true;
-            encounterScript.setStrings(strings);
-            encounterScript.parseScript();
+            atelScript.setStrings(strings);
+            atelScript.parseScript();
         }
     }
 
     public int[] toBytes() {
         List<int[]> chunks = new ArrayList<>();
         if (AtelScriptObject.RECOMPILE_ATEL && scriptParsed) {
-            AtelScriptObject.AtelScriptObjectBytes atelScriptObjectBytes = encounterScript.toBytes();
+            AtelScriptObject.AtelScriptObjectBytes atelScriptObjectBytes = atelScript.toBytes();
             chunks.add(atelScriptObjectBytes.bytes());
             chunks.add(atelScriptObjectBytes.battleWorkerMappingBytes());
         } else {
-            chunks.add(scriptBytes);
+            chunks.add(atelScriptBytes);
             chunks.add(workerMappingBytes);
         }
         chunks.add(formationBytes);
@@ -154,15 +154,15 @@ public class EncounterFile implements Nameable {
     }
 
     public void writeToMods(boolean writeStrings, boolean writeDeclarations) {
-        String path = PATH_ORIGINALS_ENCOUNTER + scriptId + '/' + scriptId;
+        String path = PATH_ORIGINALS_BATTLE + scriptId + '/' + scriptId;
         int[] bytes = toBytes();
         FileAccessorWithMods.writeByteArrayToMods(path + ".bin", bytes);
         binaryLength = bytes.length;
         if (writeStrings) {
-            DataWritingManager.writeEncounterStringsForAllLocalizations(this, false);
+            DataWritingManager.writeBattleStringsForAllLocalizations(this, false);
         }
         if (writeDeclarations) {
-            FileAccessorWithMods.writeStringToMods(path + ".dcl.csv", encounterScript.getDeclarationsAsCsvString());
+            FileAccessorWithMods.writeStringToMods(path + ".dcl.csv", atelScript.getDeclarationsAsCsvString());
         }
     }
 
@@ -208,18 +208,18 @@ public class EncounterFile implements Nameable {
             full.append("Unsafe format - ChunkCount is ").append(chunkCount).append('\n');
         }
         if (formation != null) {
-            full.append("- Encounter Formation -\n").append(formation).append('\n');
+            full.append("- Battle Formation -\n").append(formation).append('\n');
         }
         if (battleAreasPositions != null) {
-            full.append("- Encounter Areas/Positions -\n").append(battleAreasPositions).append('\n');
+            full.append("- Battle Areas/Positions -\n").append(battleAreasPositions).append('\n');
         }
-        if (encounterScript != null) {
+        if (atelScript != null) {
             full.append("- Script Code -").append('\n');
-            full.append(encounterScript.allLinesString());
+            full.append(atelScript.allLinesString());
             full.append("- Script Workers -").append('\n');
-            full.append(encounterScript.workersString()).append('\n');
+            full.append(atelScript.workersString()).append('\n');
         } else {
-            full.append("Encounter Script missing");
+            full.append("Battle Script missing");
         }
         return full.toString();
     }

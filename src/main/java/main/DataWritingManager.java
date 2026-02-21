@@ -1,6 +1,6 @@
 package main;
 
-import atel.EncounterFile;
+import atel.BattleFile;
 import atel.EventFile;
 import atel.MonsterFile;
 import model.MonsterStatDataObject;
@@ -83,18 +83,18 @@ public class DataWritingManager {
         writeStringFileForAllLocalizations(path, event.strings, print);
     }
 
-    public static void writeEncounterStringsForAllLocalizations(String id, final boolean print) {
-        EncounterFile encounter = DataAccess.getEncounter(id);
-        if (encounter == null) {
+    public static void writeBattleStringsForAllLocalizations(String id, final boolean print) {
+        BattleFile battle = DataAccess.getBattle(id);
+        if (battle == null) {
             return;
         }
-        writeEncounterStringsForAllLocalizations(encounter, print);
+        writeBattleStringsForAllLocalizations(battle, print);
     }
 
-    public static void writeEncounterStringsForAllLocalizations(EncounterFile encounter, final boolean print) {
-        String id = encounter.scriptId;
+    public static void writeBattleStringsForAllLocalizations(BattleFile battle, final boolean print) {
+        String id = battle.scriptId;
         String path = "battle/btl/" + id + '/' + id + ".bin";
-        writeStringFileForAllLocalizations(path, encounter.strings, print);
+        writeStringFileForAllLocalizations(path, battle.strings, print);
     }
 
     public static void writeStringFileForAllLocalizations(String path, List<LocalizedFieldStringObject> localizedStrings, final boolean print) {

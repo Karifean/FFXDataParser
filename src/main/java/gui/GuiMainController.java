@@ -1,7 +1,7 @@
 package gui;
 
 import atel.AtelScriptObject;
-import atel.EncounterFile;
+import atel.BattleFile;
 import atel.EventFile;
 import atel.MonsterFile;
 import atel.model.*;
@@ -42,7 +42,7 @@ public class GuiMainController implements Initializable {
     @FXML
     ListView<String> eventList;
     @FXML
-    ListView<String> encounterList;
+    ListView<String> battleList;
     @FXML
     ListView<String> monsterList;
     @FXML
@@ -133,7 +133,7 @@ public class GuiMainController implements Initializable {
 
     Stage stage;
     EventFile selectedEvent;
-    EncounterFile selectedEncounter;
+    BattleFile selectedBattle;
     MonsterFile selectedMonster;
     AtelScriptObject selectedMisc;
     AtelScriptObject selectedAtelObject;
@@ -154,7 +154,7 @@ public class GuiMainController implements Initializable {
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
         eventList.getSelectionModel().selectedItemProperty().addListener((o, s, newValue) -> onEventSelected(newValue));
-        encounterList.getSelectionModel().selectedItemProperty().addListener((o, s, newValue) -> onEncounterSelected(newValue));
+        battleList.getSelectionModel().selectedItemProperty().addListener((o, s, newValue) -> onBattleSelected(newValue));
         monsterList.getSelectionModel().selectedItemProperty().addListener((o, s, newValue) -> onMonsterSelected(newValue));
         middleTree.getSelectionModel().selectedItemProperty().addListener((o, s, newValue) -> onTreeEntrySelected(newValue));
         scriptLineList.getSelectionModel().selectedItemProperty().addListener((o, s, newValue) -> onLineSelected(newValue));
@@ -176,12 +176,12 @@ public class GuiMainController implements Initializable {
             eventList.getItems().add(label);
         }
         eventList.getItems().sort(Comparator.naturalOrder());
-        encounterList.getItems().clear();
-        for (Map.Entry<String, EncounterFile> encounterEntry : DataAccess.ENCOUNTERS.entrySet()) {
-            String label = encounterEntry.getValue().getName(mainLocalization);
-            encounterList.getItems().add(label);
+        battleList.getItems().clear();
+        for (Map.Entry<String, BattleFile> battleEntry : DataAccess.BATTLES.entrySet()) {
+            String label = battleEntry.getValue().getName(mainLocalization);
+            battleList.getItems().add(label);
         }
-        encounterList.getItems().sort(Comparator.naturalOrder());
+        battleList.getItems().sort(Comparator.naturalOrder());
         monsterList.getItems().clear();
         for (int i = 0; i <= 360; i++) {
             MonsterFile monster = DataAccess.getMonster(i);
@@ -214,23 +214,23 @@ public class GuiMainController implements Initializable {
             throw new RuntimeException("Event not found");
         }
         selectedEvent.parseScript();
-        selectedAtelObject = selectedEvent.eventScript;
+        selectedAtelObject = selectedEvent.atelScript;
         makeTree();
     }
 
-    public void onEncounterSelected(String label) {
-        System.out.println("encounter selected: " + label);
+    public void onBattleSelected(String label) {
+        System.out.println("battle selected: " + label);
         clearSelection();
         if (label == null) {
             return;
         }
-        String encounterId = label.split(" ")[0];
-        selectedEncounter = DataAccess.getEncounter(encounterId);
-        if (selectedEncounter == null) {
-            throw new RuntimeException("Encounter not found");
+        String battleId = label.split(" ")[0];
+        selectedBattle = DataAccess.getBattle(battleId);
+        if (selectedBattle == null) {
+            throw new RuntimeException("Battle not found");
         }
-        selectedEncounter.parseScript();
-        selectedAtelObject = selectedEncounter.encounterScript;
+        selectedBattle.parseScript();
+        selectedAtelObject = selectedBattle.atelScript;
         makeTree();
     }
 
@@ -246,13 +246,13 @@ public class GuiMainController implements Initializable {
             throw new RuntimeException("Monster not found");
         }
         selectedMonster.parseScript();
-        selectedAtelObject = selectedMonster.monsterScript;
+        selectedAtelObject = selectedMonster.atelScript;
         makeTree();
     }
 
     private void clearSelection() {
         selectedEvent = null;
-        selectedEncounter = null;
+        selectedBattle = null;
         selectedMonster = null;
         selectedMisc = null;
         selectedAtelObject = null;
@@ -296,10 +296,10 @@ public class GuiMainController implements Initializable {
                 toolbarWorkerItems.remove(addWorkerMenuButton);
             }
         }
-        if (selectedEncounter != null) {
-            treeRoot.setGraphic(new Text(selectedEncounter.getName(mainLocalization)));
-            TreeItem<TreeEntry> encounterGeneralItem = treeItem("bg");
-            rootChildren.add(encounterGeneralItem);
+        if (selectedBattle != null) {
+            treeRoot.setGraphic(new Text(selectedBattle.getName(mainLocalization)));
+            TreeItem<TreeEntry> battleGeneralItem = treeItem("bg");
+            rootChildren.add(battleGeneralItem);
         }
         if (selectedMonster != null) {
             treeRoot.setGraphic(new Text(selectedMonster.getName(mainLocalization)));
@@ -482,7 +482,7 @@ public class GuiMainController implements Initializable {
         LocalizedFieldStringObject obj = new LocalizedFieldStringObject();
         obj.setAllLocalizedContentToNothing();
         if ("system01String".equals(inputType)) {
-            EncounterFile sys01 = DataAccess.getEncounter("system_01");
+            BattleFile sys01 = DataAccess.getBattle("system_01");
             int idx = sys01.strings.size();
             sys01.strings.add(obj);
             return idx;
@@ -495,12 +495,12 @@ public class GuiMainController implements Initializable {
                 selectedEvent.strings.add(obj);
                 return idx;
             }
-            if (selectedEncounter != null) {
-                if (selectedEncounter.strings == null) {
-                    selectedEncounter.strings = new ArrayList<>();
+            if (selectedBattle != null) {
+                if (selectedBattle.strings == null) {
+                    selectedBattle.strings = new ArrayList<>();
                 }
-                int idx = selectedEncounter.strings.size();
-                selectedEncounter.strings.add(obj);
+                int idx = selectedBattle.strings.size();
+                selectedBattle.strings.add(obj);
                 return idx;
             }
         }
@@ -511,10 +511,10 @@ public class GuiMainController implements Initializable {
         LocalizedFieldStringObject obj;
         String title;
         if ("system01String".equals(type)) {
-            obj = DataAccess.getEncounter("system_01").strings.get(index);
+            obj = DataAccess.getBattle("system_01").strings.get(index);
             title = String.format("system_01 String %d", index);
         } else {
-            if (selectedEvent == null && selectedEncounter == null) {
+            if (selectedEvent == null && selectedBattle == null) {
                 return;
             }
             if (selectedEvent != null) {
@@ -524,11 +524,11 @@ public class GuiMainController implements Initializable {
                 obj = selectedEvent.strings.get(index);
                 title = String.format("%s String %d", selectedEvent.scriptId, index);
             } else {
-                if (selectedEncounter.strings == null || index >= selectedEncounter.strings.size()) {
+                if (selectedBattle.strings == null || index >= selectedBattle.strings.size()) {
                     return;
                 }
-                obj = selectedEncounter.strings.get(index);
-                title = String.format("%s String %d", selectedEncounter.scriptId, index);
+                obj = selectedBattle.strings.get(index);
+                title = String.format("%s String %d", selectedBattle.scriptId, index);
             }
         }
         System.out.println("editString (" + index + ") = " + obj);
@@ -538,10 +538,10 @@ public class GuiMainController implements Initializable {
                 popup.initOwner(stage);
             }
             popup.initModality(Modality.NONE);
-            URL fxmlUrl = getClass().getResource("/gui/stringedit.fxml");
+            URL fxmlUrl = getClass().getResource("/gui/fieldstringedit.fxml");
             FXMLLoader fxmlLoader = new FXMLLoader(Objects.requireNonNull(fxmlUrl));
             Parent root = fxmlLoader.load();
-            GuiStringEditController controller = fxmlLoader.getController();
+            GuiFieldStringEditController controller = fxmlLoader.getController();
             controller.fieldString = obj;
             controller.setUpLangList();
             popup.setTitle(title);
@@ -564,9 +564,9 @@ public class GuiMainController implements Initializable {
             selectedEvent.writeToMods(true, true);
             System.out.println("saved selected event");
         }
-        if (selectedEncounter != null) {
-            selectedEncounter.writeToMods(true, true);
-            System.out.println("saved selected encounter");
+        if (selectedBattle != null) {
+            selectedBattle.writeToMods(true, true);
+            System.out.println("saved selected battle");
         }
         if (selectedMonster != null) {
             selectedMonster.writeToMods(false, true);
@@ -1154,7 +1154,7 @@ public class GuiMainController implements Initializable {
         public String toString() {
             return switch (type) {
                 case "eg" -> "Event General";
-                case "bg" -> "Encounter General";
+                case "bg" -> "Battle General";
                 case "mg" -> "Monster General";
                 case "sg" -> "Script General";
                 case "wr" -> worker.getLabel(mainLocalization);

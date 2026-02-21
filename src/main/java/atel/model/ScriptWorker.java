@@ -68,7 +68,7 @@ public class ScriptWorker {
         sharedDataOffset = read4Bytes(headerBytes, 0x30);
     }
 
-    public ScriptWorker(AtelScriptObject parentScript, int workerIndex, ScriptWorker prototypeWorker, int eventWorkerType) {
+    public ScriptWorker(AtelScriptObject parentScript, int workerIndex, int eventWorkerType) {
         this.parentScript = parentScript;
         this.workerIndex = workerIndex;
         this.eventWorkerType = eventWorkerType;
@@ -80,13 +80,13 @@ public class ScriptWorker {
         alwaysZero0C = 0;
         privateDataLength = 0;
         alwaysZero28 = 0;
-        variableDeclarationsOffset = prototypeWorker.variableDeclarationsOffset;
-        refIntsOffset = prototypeWorker.refIntsOffset;
-        refFloatsOffset = prototypeWorker.refFloatsOffset;
-        sharedDataOffset = prototypeWorker.sharedDataOffset;
-        variableDeclarations = prototypeWorker.variableDeclarations;
-        refInts = prototypeWorker.refInts;
-        refFloats = prototypeWorker.refFloats;
+        variableDeclarationsOffset = parentScript.variableDeclarationsOffset;
+        refIntsOffset = parentScript.refIntsOffset;
+        refFloatsOffset = parentScript.refFloatsOffset;
+        sharedDataOffset = parentScript.sharedDataOffset;
+        variableDeclarations = parentScript.variableDeclarations;
+        refInts = parentScript.refInts;
+        refFloats = parentScript.refFloats;
         entryPoints = new ArrayList<>();
         jumps = new ArrayList<>();
         privateDataBytes = new int[0];
@@ -536,7 +536,10 @@ public class ScriptWorker {
     }
 
     public ScriptWorker cloneRecursively(AtelScriptObject targetScript, int clonedWorkerIndex) {
-        ScriptWorker clone = new ScriptWorker(targetScript, clonedWorkerIndex, this, eventWorkerType);
+        ScriptWorker clone = new ScriptWorker(targetScript, clonedWorkerIndex, eventWorkerType);
+        if (battleWorkerType != null) {
+            clone.battleWorkerType = battleWorkerType;
+        }
         for (ScriptJump ep : entryPoints) {
             ScriptJump clonedEp = new ScriptJump(clone, -1, clone.entryPoints.size(), true);
             clonedEp.targetLine = ep.targetLine.cloneRecursively(clone, new HashMap<>());
