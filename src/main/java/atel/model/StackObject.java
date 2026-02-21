@@ -319,6 +319,18 @@ public class StackObject {
         return hbs + "#" + lbs;
     }
 
+    public String asIntValue(boolean withHexSuffix) {
+        if (!withHexSuffix) {
+            return String.valueOf(valueSigned);
+        }
+        String format = "int32".equals(rawType) ? "%08X" : ((valueSigned & 0xFFFFFF00) != 0 ? "%04X" : "%02X");
+        String hex = String.format(format, valueSigned);
+        if (!"int32".equals(rawType) && hex.length() == 8 && hex.startsWith("FFFF")) {
+            hex = hex.substring(4);
+        }
+        return valueSigned + " [" + hex + "h]";
+    }
+
     public static String enumToString(String type, int value) {
         return enumToScriptField(type, value).toString();
     }

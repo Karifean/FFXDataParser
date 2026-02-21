@@ -114,8 +114,8 @@ public class MonsterStatDataObject implements Nameable, Writable, Localized<Mons
     boolean immunityScanAgainOrWhat;
     boolean immunityPhysicalDamage;
     boolean immunityMagicalDamage;
-    boolean immunityAllDamage;
-    boolean immunityDelay;
+    boolean immunityHpDamage;
+    boolean immunityCtbDamage;
     boolean immunitySlice;
     boolean immunityBribe;
 
@@ -270,8 +270,8 @@ public class MonsterStatDataObject implements Nameable, Writable, Localized<Mons
         immunityScanAgainOrWhat = (miscProperties28 & 0x10) > 0;
         immunityPhysicalDamage = (miscProperties28 & 0x20) > 0;
         immunityMagicalDamage = (miscProperties28 & 0x40) > 0;
-        immunityAllDamage = (miscProperties28 & 0x80) > 0;
-        immunityDelay = (miscProperties29 & 0x01) > 0;
+        immunityHpDamage = (miscProperties28 & 0x80) > 0;
+        immunityCtbDamage = (miscProperties29 & 0x01) > 0;
         immunitySlice = (miscProperties29 & 0x02) > 0;
         immunityBribe = (miscProperties29 & 0x04) > 0;
 
@@ -545,14 +545,14 @@ public class MonsterStatDataObject implements Nameable, Writable, Localized<Mons
         if (immunityMagicalDamage) {
             specials.add("Magical Damage");
         }
-        if (immunityAllDamage) {
-            specials.add("All Damage");
+        if (immunityHpDamage) {
+            specials.add("All HP Heal/Damage (except Poison/Regen)");
         }
-        if (immunityDelay) {
+        if (immunityCtbDamage) {
             specials.add("Delay (All CTB Heal/Damage)");
         }
         if (immunitySlice) {
-            specials.add("Zan/Slice");
+            specials.add("Slice");
         }
         if (immunityBribe) {
             specials.add("Bribe");

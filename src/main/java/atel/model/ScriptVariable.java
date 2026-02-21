@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static main.DataReadingManager.DEFAULT_LOCALIZATION;
 import static reading.BytesHelper.write2Bytes;
 import static reading.BytesHelper.write3Bytes;
 
@@ -151,7 +152,7 @@ public class ScriptVariable {
         List<String> list = new ArrayList<>();
         list.add(getDereference());
         list.add("type=" + fullTypeString());
-        list.add(valuesString());
+        list.add(valuesString(DEFAULT_LOCALIZATION, parentWorker));
         String full = list.stream().filter(s -> s != null && !s.isBlank()).collect(Collectors.joining(", "));
         return getLabel(null) + " { " + full + " }";
     }
@@ -258,11 +259,14 @@ public class ScriptVariable {
         return locationToString(location) + "[" + offsetStr + "]";
     }
 
-    public String valuesString() {
+    public String valuesString(String localization, ScriptWorker worker) {
         if (values.isEmpty() || values.stream().allMatch(o -> o.valueSigned == 0)) {
             return "";
         }
-        String joined = values.stream().map(StackObject::toString).collect(Collectors.joining(", "));
+        String joined = values.stream().map(obj -> {
+            String str = StackObject.asString(localization, getType(), obj.rawType, obj.valueSigned, obj.valueUnsigned, worker, ScriptField.PRINT_WITH_HEX_SUFFIX);
+            return str != null ? str : obj.asIntValue(ScriptField.PRINT_WITH_HEX_SUFFIX);
+        }).collect(Collectors.joining(", "));
         return values.size() > 1 ? "values=[" + joined + "]" : ("value=" + joined);
     }
 
