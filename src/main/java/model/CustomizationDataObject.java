@@ -59,16 +59,16 @@ public class CustomizationDataObject implements Writable {
     @Override
     public String toString() {
         String customizeTarget = customizeTargetByte == 0x01 ? "Weapon" : customizeTargetByte == 0x02 ? "Armor " : customizeTargetByte == 0x7F ? "Aeon" : "Target Unknown";
-        if (customizedAbility >= 0x1000) {
+        if ((customizedAbility & 0xF000) != 0) {
             AutoAbilityDataObject autoAbility = DataAccess.getAutoAbility(customizedAbility);
             CommandDataObject move = DataAccess.getCommand(customizedAbility);
-            Nameable relevantNameable = autoAbility != null ? autoAbility : move != null ? move : (l) -> "null";
+            Nameable relevantNameable = move != null ? move : autoAbility != null ? autoAbility : (l) -> "null";
             String result = relevantNameable.getName() + StringHelper.hex4Suffix(customizedAbility);
-            String costString = requiredItemQuantity + "x " + asMove(requiredItemType);
+            String costString = getCostString(requiredItemQuantity);
             return customizeTarget + " - " + result + ": " + costString;
         } else {
             String result = asStatIncrease(customizedAbility) + " +" + requiredItemQuantity;
-            String costString = requiredItemQuantityBase + "x " + asMove(requiredItemType);
+            String costString = getCostString(requiredItemQuantityBase);
             return customizeTarget + " - " + result + ": " + costString;
         }
     }
@@ -89,8 +89,8 @@ public class CustomizationDataObject implements Writable {
         };
     }
 
-    private static String asMove(int idx) {
-        CommandDataObject move = DataAccess.getCommand(idx);
-        return (move != null ? move.name : "null") + StringHelper.hex4Suffix(idx);
+    private String getCostString(int quantity) {
+        CommandDataObject move = DataAccess.getCommand(requiredItemType);
+        return quantity + "x " + (move != null ? move.name : "null") + StringHelper.hex4Suffix(requiredItemType);
     }
 }
