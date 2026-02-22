@@ -15,7 +15,7 @@ public class ScriptJump {
     public int addr;
     public final int workerIndex;
     public int jumpIndex;
-    public final boolean isEntryPoint;
+    public final boolean isFunctionEntryPoint;
 
     public String rAType = "unknown";
     public String rXType = "unknown";
@@ -24,24 +24,24 @@ public class ScriptJump {
     public List<ScriptJump> reachableFrom;
     public boolean hardMisaligned = false;
     public ScriptLine targetLine;
-    public Integer battleWorkerEntryPointSlot;
+    public Integer battleWorkerFunctionSlot;
 
     public String declaredLabel;
 
-    public ScriptJump(ScriptWorker parentWorker, int addr, int jumpIndex, boolean isEntryPoint) {
+    public ScriptJump(ScriptWorker parentWorker, int addr, int jumpIndex, boolean isFunctionEntryPoint) {
         this.parentWorker = parentWorker;
         this.parentScript = parentWorker != null ? parentWorker.parentScript : null;
         this.addr = addr;
         this.workerIndex = parentWorker != null ? parentWorker.workerIndex : -1;
         this.jumpIndex = jumpIndex;
-        this.isEntryPoint = isEntryPoint;
+        this.isFunctionEntryPoint = isFunctionEntryPoint;
     }
 
-    public ScriptJump cloneEntryPointRecursively(ScriptWorker targetWorker) {
-        if (!isEntryPoint) {
-            throw new IllegalStateException("Can only clone entry points!");
+    public ScriptJump cloneFunctionRecursively(ScriptWorker targetWorker) {
+        if (!isFunctionEntryPoint) {
+            throw new IllegalStateException("Can only clone functions!");
         }
-        ScriptJump clone = new ScriptJump(targetWorker, -1, targetWorker.entryPoints.size(), true);
+        ScriptJump clone = new ScriptJump(targetWorker, -1, targetWorker.functions.size(), true);
         clone.targetLine = targetLine.cloneRecursively(targetWorker, new HashMap<>());
         clone.targetLine.incomingJumps.add(clone);
         return clone;
@@ -105,9 +105,9 @@ public class ScriptJump {
         Stack<ScriptJump> linesToCheck = new Stack<>();
         linesToCheck.push(this);
         while (!linesToCheck.isEmpty()) {
-            ScriptJump entryPoint = linesToCheck.pop();
-            ScriptState state = new ScriptState(entryPoint);
-            ScriptLine cursor = entryPoint.targetLine;
+            ScriptJump func = linesToCheck.pop();
+            ScriptState state = new ScriptState(func);
+            ScriptLine cursor = func.targetLine;
             while (cursor != null && !alreadyVisited.contains(cursor)) {
                 alreadyVisited.add(cursor);
                 ScriptJump branch = cursor.branch;
@@ -127,20 +127,20 @@ public class ScriptJump {
     }
 
     public String getDefaultLabel() {
-        if (!isEntryPoint) {
+        if (!isFunctionEntryPoint) {
             return "j" + StringHelper.formatHex2(jumpIndex);
         } else {
-            String wPrefix = parentWorker.getReferenceLabel() + ".";
+            String wPrefix = parentWorker.getReferenceLabel() + "::";
             if (parentWorker.battleWorkerType != null && jumpIndex > 1) {
-                return wPrefix + battleWorkerEntryPointToString();
+                return wPrefix + battleWorkerFunctionToString();
             } else {
-                return wPrefix + eventWorkerEntryPointToStringWithFallback(parentWorker.eventWorkerType, jumpIndex);
+                return wPrefix + eventWorkerFunctionToStringWithFallback(parentWorker.eventWorkerType, jumpIndex);
             }
         }
     }
 
     public String getIndexLabel() {
-        return "w" + StringHelper.formatHex2(parentWorker.workerIndex) + ".e" + StringHelper.formatHex2(jumpIndex);
+        return "w" + StringHelper.formatHex2(parentWorker.workerIndex) + "::f" + StringHelper.formatHex2(jumpIndex);
     }
 
     public void setTypes(ScriptState state) {
@@ -156,12 +156,12 @@ public class ScriptJump {
         // this.tempITypes = tempITypes;
     }
 
-    public void setBattleWorkerEntryPointSlot(int entryPointSlot) {
-        battleWorkerEntryPointSlot = entryPointSlot;
+    public void setBattleWorkerFunctionSlot(int functionSlot) {
+        battleWorkerFunctionSlot = functionSlot;
     }
 
     public boolean canDelete() {
-        if (!isEntryPoint) {
+        if (!isFunctionEntryPoint) {
             return true;
         }
         if (jumpIndex <= 1) {
@@ -183,22 +183,22 @@ public class ScriptJump {
         }
     }
 
-    private String battleWorkerEntryPointToString() {
+    private String battleWorkerFunctionToString() {
         int battleWorkerType = parentWorker.battleWorkerType != null ? parentWorker.battleWorkerType : -1;
         int battleWorkerSlot = parentWorker.purposeSlot != null ? parentWorker.purposeSlot : -1;
-        int battleWorkerEntryPointSlot = this.battleWorkerEntryPointSlot != null ? this.battleWorkerEntryPointSlot : -1;
+        int battleWorkerFunctionSlot = this.battleWorkerFunctionSlot != null ? this.battleWorkerFunctionSlot : -1;
         if (battleWorkerType == 0) {
-            ScriptField s = ScriptConstants.FFX.getEnumMap("cameraHandlerTag").get(battleWorkerEntryPointSlot);
+            ScriptField s = ScriptConstants.FFX.getEnumMap("cameraHandlerTag").get(battleWorkerFunctionSlot);
             if (s != null) {
                 return "Cam" + s.getLabel();
             }
         } else if (battleWorkerType == 1) {
-            ScriptField s = ScriptConstants.FFX.getEnumMap("motionHandlerTag").get(battleWorkerEntryPointSlot);
+            ScriptField s = ScriptConstants.FFX.getEnumMap("motionHandlerTag").get(battleWorkerFunctionSlot);
             if (s != null) {
                 return "Motion" + s.getLabel();
             }
         } else if (battleWorkerType == 2) {
-            ScriptField s = ScriptConstants.FFX.getEnumMap("combatHandlerTag").get(battleWorkerEntryPointSlot);
+            ScriptField s = ScriptConstants.FFX.getEnumMap("combatHandlerTag").get(battleWorkerFunctionSlot);
             if (s != null) {
                 String prefix = "";
                 if (battleWorkerSlot >= 0x25 && battleWorkerSlot <= 0x28) {
@@ -212,39 +212,39 @@ public class ScriptJump {
                 return prefix + s.getLabel();
             }
         } else if (battleWorkerType == 3) {
-            ScriptField s = ScriptConstants.FFX.getEnumMap("battleGruntHandlerTag").get(battleWorkerEntryPointSlot);
+            ScriptField s = ScriptConstants.FFX.getEnumMap("battleGruntHandlerTag").get(battleWorkerFunctionSlot);
             if (s != null) {
                 return "Grunt" + s.getLabel();
             }
         } else if (battleWorkerType == 4) {
-            return "btlScene" + StringHelper.formatHex2(battleWorkerEntryPointSlot);
+            return "btlScene" + StringHelper.formatHex2(battleWorkerFunctionSlot);
         } else if (battleWorkerType == 5) {
             if (battleWorkerSlot >= 0x6D && battleWorkerSlot <= 0x7E) {
-                ScriptField s = ScriptConstants.FFX.getEnumMap("voiceHandlerTag").get(battleWorkerEntryPointSlot);
+                ScriptField s = ScriptConstants.FFX.getEnumMap("voiceHandlerTag").get(battleWorkerFunctionSlot);
                 if (s != null) {
                     String chr = StackObject.enumToScriptField("playerChar", battleWorkerSlot - 0x6D).getName();
                     return chr + "Voice" + s.getLabel();
                 }
             }
         } else if (battleWorkerType == 6) {
-            ScriptField s = ScriptConstants.FFX.getEnumMap("battleStartEndHookTag").get(battleWorkerEntryPointSlot);
+            ScriptField s = ScriptConstants.FFX.getEnumMap("battleStartEndHookTag").get(battleWorkerFunctionSlot);
             if (s != null) {
                 return "Hook" + s.getLabel();
             }
         }
         if (battleWorkerSlot == 0x00) {
-            return "?BattleCam" + StringHelper.formatHex2(battleWorkerEntryPointSlot);
+            return "?BattleCam" + StringHelper.formatHex2(battleWorkerFunctionSlot);
         }
         if (battleWorkerSlot >= 0x41 && battleWorkerSlot <= 0x4C) {
             int cmd;
             if (battleWorkerSlot == 0x41 || battleWorkerSlot == 0x42 || battleWorkerSlot == 0x43) {
-                cmd = 0x3000 + battleWorkerEntryPointSlot;
+                cmd = 0x3000 + battleWorkerFunctionSlot;
             } else if (battleWorkerSlot == 0x44 || battleWorkerSlot == 0x45 || battleWorkerSlot == 0x46) {
-                cmd = 0x2000 + battleWorkerEntryPointSlot;
+                cmd = 0x2000 + battleWorkerFunctionSlot;
             } else if (battleWorkerSlot == 0x47 || battleWorkerSlot == 0x48 || battleWorkerSlot == 0x49) {
-                cmd = 0x4000 + battleWorkerEntryPointSlot;
+                cmd = 0x4000 + battleWorkerFunctionSlot;
             } else {
-                cmd = 0x6000 + battleWorkerEntryPointSlot;
+                cmd = 0x6000 + battleWorkerFunctionSlot;
             }
             CommandDataObject command = DataAccess.getCommand(cmd);
             if (command != null) {
@@ -253,34 +253,34 @@ public class ScriptJump {
                 return "MagicCam" + StringHelper.formatHex4(cmd);
             }
         }
-        String strEntryPointIndexPrefix = "e" + StringHelper.formatHex2(jumpIndex);
+        String strFuncIndexPrefix = "f" + StringHelper.formatHex2(jumpIndex);
         String strWorkerPurposeSlot = "s" + StringHelper.formatHex2(battleWorkerSlot);
         String strWorkerType = "t" + StringHelper.formatHex2(battleWorkerType);
-        String strEntryPointPurposeSlot = "p" + StringHelper.formatHex2(battleWorkerEntryPointSlot);
-        return strEntryPointIndexPrefix + strWorkerPurposeSlot + strWorkerType + strEntryPointPurposeSlot;
+        String strFuncPurposeSlot = "p" + StringHelper.formatHex2(battleWorkerFunctionSlot);
+        return strFuncIndexPrefix + strWorkerPurposeSlot + strWorkerType + strFuncPurposeSlot;
     }
 
-    private static String eventWorkerEntryPointToStringWithFallback(int eventWorkerType, int eventWorkerEntryPoint) {
-        String label = eventWorkerEntryPointToString(eventWorkerType, eventWorkerEntryPoint);
+    private static String eventWorkerFunctionToStringWithFallback(int eventWorkerType, int eventWorkerFunction) {
+        String label = eventWorkerFunctionToString(eventWorkerType, eventWorkerFunction);
         if (label != null) {
             return label;
         }
-        return "e" + StringHelper.formatHex2(eventWorkerEntryPoint);
+        return "f" + StringHelper.formatHex2(eventWorkerFunction);
     }
 
-    public static String eventWorkerEntryPointToString(int eventWorkerType, int eventWorkerEntryPoint) {
+    public static String eventWorkerFunctionToString(int eventWorkerType, int eventWorkerFunction) {
         if (eventWorkerType == 0) {
-            return eventWorkerEntryPoint > 0 ? "run" + StringHelper.formatHex2(eventWorkerEntryPoint) : "run";
+            return eventWorkerFunction > 0 ? "run" + StringHelper.formatHex2(eventWorkerFunction) : "run";
         }
-        if (eventWorkerEntryPoint == 0) {
+        if (eventWorkerFunction == 0) {
             return "init";
         }
-        if (eventWorkerEntryPoint == 1) {
+        if (eventWorkerFunction == 1) {
             return "main";
         }
         return switch (eventWorkerType) {
             case 1 -> // FieldObject
-                    switch (eventWorkerEntryPoint) {
+                    switch (eventWorkerFunction) {
                         case 2 -> "talk";
                         case 3 -> "scout";
                         case 4 -> "?cross"; // cross on FieldObject maybe does something?
@@ -288,7 +288,7 @@ public class ScriptJump {
                         default -> null;
                     };
             case 2 -> // PlayerEdge
-                    switch (eventWorkerEntryPoint) {
+                    switch (eventWorkerFunction) {
                         case 2 -> "?talk"; // talk on PlayerEdge probably does nothing?
                         case 3 -> "?scout"; // scout on PlayerEdge probably does nothing?
                         case 4 -> "cross";
@@ -298,7 +298,7 @@ public class ScriptJump {
                         default -> null;
                     };
             case 3 -> // PlayerZone
-                    switch (eventWorkerEntryPoint) {
+                    switch (eventWorkerFunction) {
                         case 2 -> "talk";
                         case 3 -> "scout";
                         case 4 -> "cross";
@@ -308,12 +308,12 @@ public class ScriptJump {
                         default -> null;
                     };
             case 5 -> // Edge
-                    switch (eventWorkerEntryPoint) {
+                    switch (eventWorkerFunction) {
                         case 2 -> "cross";
                         default -> null;
                     };
             case 6 -> // Zone
-                    switch (eventWorkerEntryPoint) {
+                    switch (eventWorkerFunction) {
                         case 2 -> "enter";
                         case 3 -> "leave";
                         default -> null;

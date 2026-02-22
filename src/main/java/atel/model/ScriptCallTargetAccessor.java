@@ -7,7 +7,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-public class ScriptFuncAccessor extends ScriptFunc {
+public class ScriptCallTargetAccessor extends ScriptCallTarget {
 
     private final Map<Integer, ScriptField> accessMap;
     private final String subjectType;
@@ -20,7 +20,7 @@ public class ScriptFuncAccessor extends ScriptFunc {
     private int valueParamIndex;
     private int extraParams;
 
-    public ScriptFuncAccessor(String name, String subjectType, String internalName, String write, ScriptField predicate, ScriptField... extras) {
+    public ScriptCallTargetAccessor(String name, String subjectType, String internalName, String write, ScriptField predicate, ScriptField... extras) {
         super(name, "accessor", internalName, true);
         setInputs(subjectType, write != null, false, extras);
         this.subjectType = subjectType;
@@ -31,7 +31,7 @@ public class ScriptFuncAccessor extends ScriptFunc {
         this.accessMap = null;
     }
 
-    public ScriptFuncAccessor(String name, String subjectType, String internalName, String write, String predicateType, ScriptField... extras) {
+    public ScriptCallTargetAccessor(String name, String subjectType, String internalName, String write, String predicateType, ScriptField... extras) {
         super(name, "accessor", internalName, true);
         setInputs(subjectType, write != null, true, extras);
         this.subjectType = subjectType;
@@ -53,7 +53,7 @@ public class ScriptFuncAccessor extends ScriptFunc {
     public String callB5(List<StackObject> params, ScriptState state) {
         int len = params.size();
         if (len != (inputs == null ? 0 : inputs.size())) {
-            return "ERROR, func " + name + " called with " + len + " params but needs " + (inputs == null ? 0 : inputs.size()) + "!";
+            return "ERROR, call target " + name + " called with " + len + " params but needs " + (inputs == null ? 0 : inputs.size()) + "!";
         }
         StringBuilder str = new StringBuilder();
         if (PRINT_WITH_HEX_SUFFIX && !isNameless()) {

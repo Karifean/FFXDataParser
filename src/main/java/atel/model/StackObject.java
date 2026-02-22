@@ -130,7 +130,7 @@ public class StackObject {
             AtelScriptObject parentScript = parentWorker != null ? parentWorker.parentScript : null;
             ScriptWorker worker = parentScript != null ? parentScript.getWorker(valueSigned) : null;
             if (worker != null) {
-                return worker + hexSuffix;
+                return worker.getLabel(localization) + hexSuffix;
             } else {
                 return "w" + hex + hexSuffix;
             }

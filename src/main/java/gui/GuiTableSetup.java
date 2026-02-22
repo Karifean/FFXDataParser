@@ -293,9 +293,9 @@ public class GuiTableSetup {
                 }
             }
         });
-        controller.tableEntryPointsColumnIndex.setCellValueFactory(cdf -> new SimpleStringProperty(cdf.getValue().getIndexLabel()));
-        controller.tableEntryPointsColumnLabel.setCellValueFactory(cdf -> new SimpleObjectProperty<>(cdf.getValue()));
-        controller.tableEntryPointsColumnLabel.setCellFactory(col -> new TableCell<>() {
+        controller.tableFunctionsColumnIndex.setCellValueFactory(cdf -> new SimpleStringProperty(cdf.getValue().getIndexLabel()));
+        controller.tableFunctionsColumnLabel.setCellValueFactory(cdf -> new SimpleObjectProperty<>(cdf.getValue()));
+        controller.tableFunctionsColumnLabel.setCellFactory(col -> new TableCell<>() {
             final TextField input = new TextField();
             @Override
             protected void updateItem(ScriptJump ep, boolean empty) {
@@ -317,9 +317,9 @@ public class GuiTableSetup {
                 }
             }
         });
-        controller.tableEntryPointsColumnType.setCellValueFactory(cdf -> new SimpleObjectProperty<>(cdf.getValue()));
-        controller.tableEntryPointsColumnType.setCellFactory(col -> new TableCell<>() {
-            final MenuButton entryPointTypeChoiceBox = new MenuButton();
+        controller.tableFunctionsColumnType.setCellValueFactory(cdf -> new SimpleObjectProperty<>(cdf.getValue()));
+        controller.tableFunctionsColumnType.setCellFactory(col -> new TableCell<>() {
+            final MenuButton functionTypeChoiceBox = new MenuButton();
             @Override
             protected void updateItem(ScriptJump ep, boolean empty) {
                 super.updateItem(ep, empty);
@@ -328,13 +328,13 @@ public class GuiTableSetup {
                 } else {
                     if (ep != null) {
                         if (ep.parentWorker.battleWorkerType == null || ep.jumpIndex <= 1) {
-                            Text text = new Text(ScriptJump.eventWorkerEntryPointToString(ep.parentWorker.eventWorkerType, ep.jumpIndex));
+                            Text text = new Text(ScriptJump.eventWorkerFunctionToString(ep.parentWorker.eventWorkerType, ep.jumpIndex));
                             text.setDisable(true);
                             setGraphic(text);
                         } else {
-                            setGraphic(entryPointTypeChoiceBox);
-                            entryPointTypeChoiceBox.getItems().clear();
-                            addBattleWorkerEntryPointTypeChoices(controller, entryPointTypeChoiceBox, ep);
+                            setGraphic(functionTypeChoiceBox);
+                            functionTypeChoiceBox.getItems().clear();
+                            addBattleWorkerFunctionTypeChoices(controller, functionTypeChoiceBox, ep);
                         }
                     } else {
                         setGraphic(null);
@@ -342,8 +342,8 @@ public class GuiTableSetup {
                 }
             }
         });
-        controller.tableEntryPointsColumnCopy.setCellValueFactory(cdf -> new SimpleObjectProperty<>(cdf.getValue()));
-        controller.tableEntryPointsColumnCopy.setCellFactory(col -> new TableCell<>() {
+        controller.tableFunctionsColumnCopy.setCellValueFactory(cdf -> new SimpleObjectProperty<>(cdf.getValue()));
+        controller.tableFunctionsColumnCopy.setCellFactory(col -> new TableCell<>() {
             final Button copyButton = new Button("Copy");
             @Override
             protected void updateItem(ScriptJump ep, boolean empty) {
@@ -352,17 +352,17 @@ public class GuiTableSetup {
                     setGraphic(null);
                 } else {
                     setGraphic(copyButton);
-                    if (ep != null && ep.isEntryPoint) {
+                    if (ep != null && ep.isFunctionEntryPoint) {
                         copyButton.setDisable(false);
-                        copyButton.setOnAction(actionEvent -> controller.onCopyEntryPoint(ep));
+                        copyButton.setOnAction(actionEvent -> controller.onCopyFunction(ep));
                     } else {
                         copyButton.setDisable(true);
                     }
                 }
             }
         });
-        controller.tableEntryPointsColumnDelete.setCellValueFactory(cdf -> new SimpleObjectProperty<>(cdf.getValue()));
-        controller.tableEntryPointsColumnDelete.setCellFactory(col -> new TableCell<>() {
+        controller.tableFunctionsColumnDelete.setCellValueFactory(cdf -> new SimpleObjectProperty<>(cdf.getValue()));
+        controller.tableFunctionsColumnDelete.setCellFactory(col -> new TableCell<>() {
             final Button delButton = new Button("Delete");
             @Override
             protected void updateItem(ScriptJump ep, boolean empty) {
@@ -371,12 +371,12 @@ public class GuiTableSetup {
                     setGraphic(null);
                 } else {
                     setGraphic(delButton);
-                    if (ep != null && ep.isEntryPoint) {
+                    if (ep != null && ep.isFunctionEntryPoint) {
                         if (!ep.canDelete()) {
                             delButton.setDisable(true);
                         } else {
                             delButton.setDisable(false);
-                            delButton.setOnAction(actionEvent -> controller.onDeleteEntryPoint(ep));
+                            delButton.setOnAction(actionEvent -> controller.onDeleteFunction(ep));
                         }
                     }
                 }
@@ -422,7 +422,7 @@ public class GuiTableSetup {
         }
     }
 
-    private static void addBattleWorkerEntryPointTypeChoices(GuiMainController controller, MenuButton menu, ScriptJump ep) {
+    private static void addBattleWorkerFunctionTypeChoices(GuiMainController controller, MenuButton menu, ScriptJump ep) {
         ScriptWorker w = ep.parentWorker;
         String tagType = switch (w.battleWorkerType) {
             case 0 -> "cameraHandlerTag";
@@ -443,7 +443,7 @@ public class GuiTableSetup {
             default -> 0;
         };
         ObservableList<MenuItem> list = menu.getItems();
-        int selected = ep.battleWorkerEntryPointSlot != null ? ep.battleWorkerEntryPointSlot : -1;
+        int selected = ep.battleWorkerFunctionSlot != null ? ep.battleWorkerFunctionSlot : -1;
         for (int i = 0; i < w.battleWorkerTypeSlotCount; i++) {
             final int val = i;
             String s = StackObject.asString(mainLocalization, tagType, val + bonus);
@@ -452,7 +452,7 @@ public class GuiTableSetup {
                 menu.setText(s);
             }
             list.add(item);
-            item.setOnAction(actionEvent -> controller.setBattleWorkerEntryPointType(ep, val));
+            item.setOnAction(actionEvent -> controller.setBattleWorkerFunctionType(ep, val));
         }
     }
 }

@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Map;
 
 public class ScriptState {
-    public ScriptJump entryPoint;
+    public ScriptJump function;
     public ScriptWorker parentWorker;
     public AtelScriptObject parentScript;
     public String rAType;
@@ -19,23 +19,23 @@ public class ScriptState {
 
     public final List<ScriptLine> lines;
 
-    public ScriptState(ScriptJump entryPoint) {
-        this(entryPoint, null);
+    public ScriptState(ScriptJump function) {
+        this(function, null);
     }
 
-    public ScriptState(ScriptJump entryPoint, List<ScriptLine> lines) {
-        this.entryPoint = entryPoint;
-        this.lines = lines != null ? lines : entryPoint.getLines();
-        this.parentWorker = entryPoint.parentWorker;
-        this.parentScript = entryPoint.parentScript;
-        this.rAType = entryPoint.rAType;
-        this.rXType = entryPoint.rXType;
-        this.rYType = entryPoint.rYType;
-        this.tempITypes = entryPoint.tempITypes;
+    public ScriptState(ScriptJump function, List<ScriptLine> lines) {
+        this.function = function;
+        this.lines = lines != null ? lines : function.getLines();
+        this.parentWorker = function.parentWorker;
+        this.parentScript = function.parentScript;
+        this.rAType = function.rAType;
+        this.rXType = function.rXType;
+        this.rYType = function.rYType;
+        this.tempITypes = function.tempITypes;
     }
 
     public ScriptState(ScriptState state) {
-        this.entryPoint = state.entryPoint;
+        this.function = state.function;
         this.lines = state.lines;
         this.parentWorker = state.parentWorker;
         this.parentScript = state.parentScript;

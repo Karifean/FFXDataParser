@@ -83,7 +83,7 @@ public class ScriptLine {
 
     public void rereference(int newOffset, Map<ScriptLine, ScriptJump> workerJumpTargets, List<ScriptVariable> variableDeclarations, List<Integer> refInts, List<Integer> refFloats) {
         offset = newOffset;
-        incomingJumps.stream().filter(j -> j.isEntryPoint).forEach(j -> j.addr = newOffset);
+        incomingJumps.stream().filter(j -> j.isFunctionEntryPoint).forEach(j -> j.addr = newOffset);
         int cursor = newOffset;
         for (ScriptInstruction ins : instructions) {
             cursor = ins.rereference(cursor, variableDeclarations, refInts, refFloats);
@@ -244,7 +244,7 @@ public class ScriptLine {
     }
 
     public String getJumpsString(ScriptState state) {
-        List<String> jumps = incomingJumps.stream().filter(j -> !j.isEntryPoint).map(j -> j.getLabel()).toList();
+        List<String> jumps = incomingJumps.stream().filter(j -> !j.isFunctionEntryPoint).map(j -> j.getLabel()).toList();
         if (jumps.isEmpty()) {
             return "";
         }

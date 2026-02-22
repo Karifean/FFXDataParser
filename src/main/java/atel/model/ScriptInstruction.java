@@ -193,8 +193,8 @@ public class ScriptInstruction {
         if (opcodeObj == null) {
             return 0;
         } else if (opcodeObj.isCall) {
-            ScriptFunc func = ScriptFuncLib.FFX.get(argv, null);
-            return func != null && func.inputs != null ? func.inputs.size() : 0;
+            ScriptCallTarget ct = ScriptCallTargetLib.FFX.get(argv, null);
+            return ct != null && ct.inputs != null ? ct.inputs.size() : 0;
         } else {
             return opcodeObj.inputs.size();
         }
@@ -217,11 +217,11 @@ public class ScriptInstruction {
         }
         ScriptOpcode op = ScriptOpcode.OPCODES[opcode];
         if (op.isCall) {
-            ScriptFunc func = ScriptFuncLib.FFX.get(argv, null);
-            if (func == null || func.inputs == null) {
+            ScriptCallTarget ct = ScriptCallTargetLib.FFX.get(argv, null);
+            if (ct == null || ct.inputs == null) {
                 return "unknown";
             }
-            return func.getInputType(index, inputs);
+            return ct.getInputType(index, inputs);
         }
         if (opcode == 0xA2 || opcode == 0xA7) {
             return getVariableIndexType(argv);
@@ -267,11 +267,11 @@ public class ScriptInstruction {
         }
         ScriptOpcode op = ScriptOpcode.OPCODES[opcode];
         if (op.isCall) {
-            ScriptFunc func = ScriptFuncLib.FFX.get(argv, null);
-            if (func == null || func.inputs == null) {
+            ScriptCallTarget ct = ScriptCallTargetLib.FFX.get(argv, null);
+            if (ct == null || ct.inputs == null) {
                 return "unknown";
             }
-            return func.inputs.get(index).getLabel();
+            return ct.inputs.get(index).getLabel();
         }
         return op.inputs.get(index).getLabel();
     }
@@ -315,9 +315,9 @@ public class ScriptInstruction {
         } else if (opcode == 0xB5) {
             Stack<StackObject> stack = new Stack<>();
             inputsToStackObjects(state, stack);
-            List<StackObject> params = popParamsForFunc(stack);
-            ScriptFunc func = getFunc(params);
-            return func.getType(params);
+            List<StackObject> params = popParamsForCallTarget(stack);
+            ScriptCallTarget ct = getCallTarget(params);
+            return ct.getType(params);
         } else {
             return ScriptOpcode.OPCODES[opcode].type;
         }
@@ -327,10 +327,10 @@ public class ScriptInstruction {
         Stack<StackObject> stack = new Stack<>();
         inputsToStackObjects(state, stack);
         if (opcode == 0xD8) { // CALLPOPA / FUNC
-            List<StackObject> params = popParamsForFunc(stack);
-            ScriptFunc func = getFunc(params);
-            state.rAType = func.getType(params);
-            String call = func.callD8(params, state);
+            List<StackObject> params = popParamsForCallTarget(stack);
+            ScriptCallTarget ct = getCallTarget(params);
+            state.rAType = ct.getType(params);
+            String call = ct.callD8(params, state);
             return call + ';';
         }
         StackObject p1 = null, p2 = null, p3 = null;
@@ -375,28 +375,28 @@ public class ScriptInstruction {
         } else if (opcode >= 0x5D && opcode <= 0x66) { // POPF0..9 / SET_FLOAT
             int tempIndex = opcode - 0x5D;
             return "Set tmpF" + tempIndex + " = " + p1 + ";";
-        } else if (opcode == 0x77 || opcode == 0x78) { // (P)REQWAIT / WAIT_DELETE
+        } else if (opcode == 0x77 || opcode == 0x78) { // REQWAIT / WAIT_DELETE (PREQWAIT / WAIT_SPEC_DELETE)
             ScriptWorker targetWorker = opcode == 0x77 && !p1.expression && isWeakType(p1.type) ? parentScript.getWorker(p1.valueSigned) : null;
-            ScriptJump entryPoint = targetWorker != null && !p2.expression && isWeakType(p2.type) ? targetWorker.getEntryPoint(p2.valueSigned) : null;
-            String scriptLabel;
-            if (entryPoint != null) {
-                scriptLabel = entryPoint.getLabel();
+            ScriptJump func = targetWorker != null && !p2.expression && isWeakType(p2.type) ? targetWorker.getWorkerFunction(p2.valueSigned) : null;
+            String targetLabel;
+            if (func != null) {
+                targetLabel = func.getLabel();
             } else {
-                String wPrefix = opcode == 0x78 ? "Character#" : "w";
+                String wPrefix = opcode == 0x78 ? "FormationChar#" : "w";
                 String w = wPrefix + (p1.expression ? "(" + p1 + ")" : StringHelper.formatHex2(p1.valueSigned));
-                String e = "e" + (p2.expression ? "(" + p2 + ")" : StringHelper.formatHex2(p2.valueSigned));
-                scriptLabel = w + "." + e;
+                String f = "f" + (p2.expression ? "(" + p2 + ")" : StringHelper.formatHex2(p2.valueSigned));
+                targetLabel = w + "::" + f;
             }
-            return "await " + scriptLabel + ";";
+            return "await " + targetLabel + ";";
         } else if (opcode == 0x79) { // REQCHG / EDIT_ENTRY_TABLE
             int oldIdx = p2.valueSigned + 2;
             int newIdx = p3.valueSigned;
-            ScriptJump oldEntryPoint = !p2.expression && isWeakType(p2.type) ? parentWorker.getEntryPoint(oldIdx) : null;
-            ScriptJump newEntryPoint = !p3.expression && isWeakType(p3.type) ? parentWorker.getEntryPoint(newIdx) : null;
-            String oldScriptLabel = oldEntryPoint != null ? oldEntryPoint.getLabel() : ("e" + (p2.expression ? "(" + p2 + ")" : String.format((oldIdx & 0xFF00) != 0 ? "%04X" : "%02X", oldIdx)));
-            String newScriptLabel = newEntryPoint != null ? newEntryPoint.getLabel() : ("e" + (p3.expression ? "(" + p3 + ")" : String.format((newIdx & 0xFF00) != 0 ? "%04X" : "%02X", newIdx)));
+            ScriptJump oldFunc = !p2.expression && isWeakType(p2.type) ? parentWorker.getWorkerFunction(oldIdx) : null;
+            ScriptJump newFunc = !p3.expression && isWeakType(p3.type) ? parentWorker.getWorkerFunction(newIdx) : null;
+            String oldScriptLabel = oldFunc != null ? oldFunc.getLabel() : ("f" + (p2.expression ? "(" + p2 + ")" : String.format((oldIdx & 0xFF00) != 0 ? "%04X" : "%02X", oldIdx)));
+            String newScriptLabel = newFunc != null ? newFunc.getLabel() : ("f" + (p3.expression ? "(" + p3 + ")" : String.format((newIdx & 0xFF00) != 0 ? "%04X" : "%02X", newIdx)));
             String tableHolder = p1.expression ? ""+p1 : ""+p1.valueSigned;
-            return "Replace script " + oldScriptLabel + " with " + newScriptLabel + " (store table at " + tableHolder + ")";
+            return "Replace function " + oldScriptLabel + " with " + newScriptLabel + " (store table at " + tableHolder + ")";
         } else if (opcode == 0xA0 || opcode == 0xA1) { // POPV(L) / SET_DATUM_(W/T)
             String val = typed(p1, getVariableType(argv));
             return "Set " + (opcode == 0xA1 ? "(limit) " : "") + getVariableLabel(argv) + " = " + val + ";";
@@ -450,9 +450,9 @@ public class ScriptInstruction {
     public StackObject toStackObject(ScriptState state, Stack<StackObject> stack) {
         inputsToStackObjects(state, stack);
         if (opcode == 0xB5) { // CALL / FUNC_RET
-            List<StackObject> params = popParamsForFunc(stack);
-            ScriptFunc func = getFunc(params);
-            StackObject stackObject = new StackObject(parentWorker, this, func.getType(params), true, func.callB5(params, state));
+            List<StackObject> params = popParamsForCallTarget(stack);
+            ScriptCallTarget ct = getCallTarget(params);
+            StackObject stackObject = new StackObject(parentWorker, this, ct.getType(params), true, ct.callB5(params, state));
             stackObject.referenceIndex = argv;
             return stackObject;
         }
@@ -549,19 +549,19 @@ public class ScriptInstruction {
             boolean flagForce = opcode == 0x45 || opcode == 0x48 || opcode == 0x4A || opcode == 0x4D || opcode == 0x4F || opcode == 0x52;
             boolean flagTag = opcode == 0x46 || opcode == 0x49 || opcode == 0x4B || opcode == 0x4E || opcode == 0x50 || opcode == 0x53;
             boolean flagBranch = opcode >= 0x47 && opcode != 0x4A && opcode != 0x4B && opcode != 0x4F && opcode != 0x50;
-            String priority = p1.expression ? ""+p1 : ""+p1.valueSigned;
+            String level = p1.expression ? "(" + p1 + ")" : ""+p1.valueSigned;
             ScriptWorker targetWorker = !flagPly && !p2.expression && isWeakType(p2.type) ? parentScript.getWorker(p2.valueSigned) : null;
-            ScriptJump entryPoint = targetWorker != null && !p3.expression && isWeakType(p3.type) ? targetWorker.getEntryPoint(p3.valueSigned) : null;
-            String scriptLabel;
-            if (entryPoint != null) {
-                scriptLabel = entryPoint.getLabel();
+            ScriptJump func = targetWorker != null && !p3.expression && isWeakType(p3.type) ? targetWorker.getWorkerFunction(p3.valueSigned) : null;
+            String targetLabel;
+            if (func != null) {
+                targetLabel = func.getLabel();
             } else {
-                String wPrefix = flagPly ? "Character#" : "w";
+                String wPrefix = flagPly ? "FormationChar#" : "w";
                 String w = wPrefix + (p2.expression ? "(" + p2 + ")" : StringHelper.formatHex2(p2.valueSigned));
-                String e = "e" + (p3.expression ? "(" + p3 + ")" : StringHelper.formatHex2(p3.valueSigned));
-                scriptLabel = w + "." + e;
+                String f = "f" + (p3.expression ? "(" + p3 + ")" : StringHelper.formatHex2(p3.valueSigned));
+                targetLabel = w + "::" + f;
             }
-            String runLine = "run " + scriptLabel + " at priority " + priority;
+            String runLine = "run " + targetLabel + " at level " + level;
             List<String> list = new ArrayList<>();
             list.add(runLine);
             if (flagBranch) {
@@ -571,7 +571,7 @@ public class ScriptInstruction {
                 list.add("forced");
             }
             if (flagTag) {
-                list.add("if not running");
+                list.add("if not queued/running");
             }
             if (awaitStart) {
                 list.add("await start");
@@ -579,7 +579,7 @@ public class ScriptInstruction {
                 list.add("await end");
             }
             String content = String.join(", ", list);
-            return new StackObject(parentWorker, this, "exec", true, content);
+            return new StackObject(parentWorker, this, "bool", true, content);
         } else if (opcode >= 0x67 && opcode <= 0x6A) { // PUSHI0..3 / GET_INT
             int tempIndex = opcode - 0x67;
             StackObject stackObject = new StackObject(parentWorker, this, "tmpI", true, "tmpI" + tempIndex);
@@ -627,11 +627,11 @@ public class ScriptInstruction {
         }
     }
 
-    private List<StackObject> popParamsForFunc(Stack<StackObject> stack) {
+    private List<StackObject> popParamsForCallTarget(Stack<StackObject> stack) {
         List<StackObject> params = new ArrayList<>();
         try {
-            int functionParamCount = getStackPops();
-            switch (functionParamCount) {
+            int ctParamCount = getStackPops();
+            switch (ctParamCount) {
                 case 9: params.add(0, stack.pop());
                 case 8: params.add(0, stack.pop());
                 case 7: params.add(0, stack.pop());
@@ -646,17 +646,17 @@ public class ScriptInstruction {
                     break;
             }
         } catch (EmptyStackException e) {
-            addWarning("Empty stack for func " + StringHelper.formatHex4(argv));
+            addWarning("Empty stack for call target " + StringHelper.formatHex4(argv));
         }
         return params;
     }
 
-    private ScriptFunc getFunc(List<StackObject> params) {
-        ScriptFunc func = ScriptFuncLib.FFX.get(argv, params);
-        if (func == null) {
-            func = new ScriptFunc("Unknown:" + StringHelper.formatHex4(argv), "unknown", null, false);
+    private ScriptCallTarget getCallTarget(List<StackObject> params) {
+        ScriptCallTarget ct = ScriptCallTargetLib.FFX.get(argv, params);
+        if (ct == null) {
+            ct = new ScriptCallTarget("Unknown:" + StringHelper.formatHex4(argv), "unknown", null, false);
         }
-        return func;
+        return ct;
     }
 
     protected String resolveType(ScriptState state, StackObject obj) {

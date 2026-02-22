@@ -423,21 +423,21 @@ public class Main {
                     return;
                 }
                 ScriptWorker worker = scriptObject.getWorker(workerIndex);
-                List<ScriptJump> entryPointList = worker.entryPoints;
+                List<ScriptJump> functions = worker.functions;
                 int offset = scriptObject.scriptCodeLength;
-                ScriptJump newEntryPoint = new ScriptJump(worker, offset, entryPointList.size(), true);
+                ScriptJump newFunc = new ScriptJump(worker, offset, functions.size(), true);
                 ScriptInstruction noopInstruction = new ScriptInstruction(offset, 0x00, count);
                 ScriptInstruction endInstruction = new ScriptInstruction(offset + count, 0x3C);
-                newEntryPoint.targetLine = new ScriptLine(worker, offset, List.of(noopInstruction, endInstruction), List.of(newEntryPoint));
-                entryPointList.add(newEntryPoint);
+                newFunc.targetLine = new ScriptLine(worker, offset, List.of(noopInstruction, endInstruction), List.of(newFunc));
+                functions.add(newFunc);
                 if (eventFileToSpace != null) {
-                    System.out.println("Added entry point " + newEntryPoint.getLabel() + " with " + count + " bytes of 00 to event " + id);
+                    System.out.println("Added function " + newFunc.getLabel() + " with " + count + " bytes of 00 to event " + id);
                     eventFileToSpace.writeToMods(false, false);
                 } else if (battleFileToSpace != null) {
-                    System.out.println("Added entry point " + newEntryPoint.getLabel() + " with " + count + " bytes of 00 to battle " + id);
+                    System.out.println("Added function " + newFunc.getLabel() + " with " + count + " bytes of 00 to battle " + id);
                     battleFileToSpace.writeToMods(false, false);
                 } else {
-                    System.out.println("Added entry point " + newEntryPoint.getLabel() + " with " + count + " bytes of 00 to monster " + id);
+                    System.out.println("Added function " + newFunc.getLabel() + " with " + count + " bytes of 00 to monster " + id);
                     monsterFileToSpace.writeToMods(false, false);
                 }
                 break;

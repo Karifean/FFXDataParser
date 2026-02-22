@@ -90,7 +90,7 @@ public class GuiAtelLineTree {
     private Node makeOpcodeArgInput(String inputType, ScriptInstruction input) {
         int opcode = input.opcode;
         if (opcode == 0xD8 || opcode == 0xB5) {
-            MenuButton funcSelect = ScriptFuncLib.FFX.getCallChoices((choice, event) -> onIntArgvChanged(input, choice.func() != null ? choice.func().idx : null, event), inputType);
+            MenuButton funcSelect = ScriptCallTargetLib.FFX.getCallChoices((choice, event) -> onIntArgvChanged(input, choice.func() != null ? choice.func().idx : null, event), inputType);
             MenuItem selected = findSelectedFuncItem(funcSelect, input);
             if (selected != null) {
                 funcSelect.setText(selected.getText());
@@ -430,7 +430,7 @@ public class GuiAtelLineTree {
         List<MenuItem> toCheck = new ArrayList<>(funcSelect.getItems());
         while (!toCheck.isEmpty()) {
             MenuItem first = toCheck.removeFirst();
-            ScriptFuncLib.ScriptFuncChoice choice = (ScriptFuncLib.ScriptFuncChoice) first.getUserData();
+            ScriptCallTargetLib.ScriptFuncChoice choice = (ScriptCallTargetLib.ScriptFuncChoice) first.getUserData();
             if (choice != null && choice.func() != null && choice.func().idx == searchKey) {
                 return first;
             }

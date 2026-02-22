@@ -5,26 +5,26 @@ import main.StringHelper;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ScriptFunc extends ScriptOpcode {
+public class ScriptCallTarget extends ScriptOpcode {
     public int funcspace;
     public boolean canCallAsVoid = false;
 
-    public ScriptFunc(String name, String type, String internalName, boolean brackets) {
+    public ScriptCallTarget(String name, String type, String internalName, boolean brackets) {
         super(name, type, internalName);
         this.inputs = brackets ? new ArrayList<>() : null;
     }
 
-    public ScriptFunc(String name, String type, String internalName, ScriptField... inputs) {
+    public ScriptCallTarget(String name, String type, String internalName, ScriptField... inputs) {
         super(name, type, internalName);
         this.inputs = List.of(inputs);
     }
 
-    public ScriptFunc(String name, ScriptField... inputs) {
+    public ScriptCallTarget(String name, ScriptField... inputs) {
         super(name, "unknown", null);
         this.inputs = List.of(inputs);
     }
 
-    public ScriptFunc(ScriptField... inputs) {
+    public ScriptCallTarget(ScriptField... inputs) {
         super(null, "unknown", null);
         this.inputs = List.of(inputs);
     }
@@ -54,7 +54,7 @@ public class ScriptFunc extends ScriptOpcode {
     public String callB5(List<StackObject> params, ScriptState state) {
         int len = params.size();
         if (len != (inputs == null ? 0 : inputs.size())) {
-            return "ERROR, func " + this + " called with " + len + " params but needs " + (inputs == null ? 0 : inputs.size()) + "!";
+            return "ERROR, call target " + this + " called with " + len + " params but needs " + (inputs == null ? 0 : inputs.size()) + "!";
         }
         StringBuilder str = new StringBuilder();
         str.append(this);

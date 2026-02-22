@@ -2,8 +2,6 @@ package atel.model;
 
 import model.Nameable;
 
-import java.util.function.Function;
-
 public class ScriptField implements Nameable {
     protected static final boolean PRINT_WITH_HEX_SUFFIX = true;
 

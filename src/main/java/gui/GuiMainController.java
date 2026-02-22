@@ -82,7 +82,7 @@ public class GuiMainController implements Initializable {
     @FXML
     Button pasteVariableButton;
     @FXML
-    Button pasteEntryPointButton;
+    Button pasteFunctionButton;
     @FXML
     Button pasteLineButton;
 
@@ -119,17 +119,17 @@ public class GuiMainController implements Initializable {
     @FXML
     TableColumn<ScriptVariable, ScriptVariable> tableVariablesColumnDelete;
     @FXML
-    TableView<ScriptJump> tableEntryPoints;
+    TableView<ScriptJump> tableFunctions;
     @FXML
-    TableColumn<ScriptJump, String> tableEntryPointsColumnIndex;
+    TableColumn<ScriptJump, String> tableFunctionsColumnIndex;
     @FXML
-    TableColumn<ScriptJump, ScriptJump> tableEntryPointsColumnLabel;
+    TableColumn<ScriptJump, ScriptJump> tableFunctionsColumnLabel;
     @FXML
-    TableColumn<ScriptJump, ScriptJump> tableEntryPointsColumnType;
+    TableColumn<ScriptJump, ScriptJump> tableFunctionsColumnType;
     @FXML
-    TableColumn<ScriptJump, ScriptJump> tableEntryPointsColumnCopy;
+    TableColumn<ScriptJump, ScriptJump> tableFunctionsColumnCopy;
     @FXML
-    TableColumn<ScriptJump, ScriptJump> tableEntryPointsColumnDelete;
+    TableColumn<ScriptJump, ScriptJump> tableFunctionsColumnDelete;
 
     Stage stage;
     EventFile selectedEvent;
@@ -138,7 +138,7 @@ public class GuiMainController implements Initializable {
     AtelScriptObject selectedMisc;
     AtelScriptObject selectedAtelObject;
     ScriptWorker selectedWorker;
-    ScriptJump selectedEntryPoint;
+    ScriptJump selectedFunction;
     ScriptState scriptState;
     List<ScriptLine> scriptLines;
     int selectedLineIndex = -1;
@@ -146,7 +146,7 @@ public class GuiMainController implements Initializable {
 
     ScriptWorker clipboardWorker;
     ScriptVariable clipboardVariable;
-    ScriptJump clipboardEntryPoint;
+    ScriptJump clipboardFunction;
     ScriptLine clipboardLine;
 
     private boolean choosingBranchTarget = false;
@@ -257,7 +257,7 @@ public class GuiMainController implements Initializable {
         selectedMisc = null;
         selectedAtelObject = null;
         selectedWorker = null;
-        selectedEntryPoint = null;
+        selectedFunction = null;
         atelCodeDetail.setVisible(false);
         workerGeneralDetail.setVisible(false);
         scriptGeneralDetail.setVisible(false);
@@ -312,9 +312,9 @@ public class GuiMainController implements Initializable {
             TreeItem<TreeEntry> workerTreeItem = treeItem("wr", worker, null);
             rootChildren.add(workerTreeItem);
             workerTreeItem.getChildren().add(treeItem("wg", worker, null));
-            for (ScriptJump entryPoint : worker.getEntryPoints()) {
-                TreeItem<TreeEntry> entryPointItem = treeItem("e", worker, entryPoint);
-                workerTreeItem.getChildren().add(entryPointItem);
+            for (ScriptJump func : worker.getWorkerFunctions()) {
+                TreeItem<TreeEntry> funcItem = treeItem("f", worker, func);
+                workerTreeItem.getChildren().add(funcItem);
             }
         }
         setScriptDetail();
@@ -324,14 +324,14 @@ public class GuiMainController implements Initializable {
         return treeItem(type, null, null);
     }
 
-    private TreeItem<TreeEntry> treeItem(String type, ScriptWorker worker, ScriptJump entryPoint) {
-        return new TreeItem<>(new TreeEntry(this, type, worker, entryPoint));
+    private TreeItem<TreeEntry> treeItem(String type, ScriptWorker worker, ScriptJump func) {
+        return new TreeItem<>(new TreeEntry(this, type, worker, func));
     }
 
     public void onTreeEntrySelected(TreeItem<TreeEntry> item) {
         System.out.println("tree entry selected: " + item);
         selectedWorker = null;
-        selectedEntryPoint = null;
+        selectedFunction = null;
         choosingBranchTarget = false;
         atelCodeDetail.setVisible(false);
         workerGeneralDetail.setVisible(false);
@@ -339,8 +339,8 @@ public class GuiMainController implements Initializable {
         if (item != null) {
             TreeEntry entry = item.getValue();
             selectedWorker = entry.worker();
-            selectedEntryPoint = entry.entryPoint();
-            if (selectedEntryPoint != null) {
+            selectedFunction = entry.function();
+            if (selectedFunction != null) {
                 atelCodeDetail.setVisible(true);
             } else if (selectedWorker != null) {
                 workerGeneralDetail.setVisible(true);
@@ -348,15 +348,15 @@ public class GuiMainController implements Initializable {
                 scriptGeneralDetail.setVisible(true);
             }
         }
-        adaptToSelectedEntryPoint();
+        adaptToSelectedFunction();
     }
 
-    public void adaptToSelectedEntryPoint() {
-        if (selectedEntryPoint == null) {
+    public void adaptToSelectedFunction() {
+        if (selectedFunction == null) {
             scriptState = null;
             scriptLines = null;
         } else {
-            scriptState = new ScriptState(selectedEntryPoint);
+            scriptState = new ScriptState(selectedFunction);
             scriptLines = scriptState.lines;
             scriptState.writeJumpsAsIndexedLines = true;
             scriptState.localization = mainLocalization;
@@ -377,12 +377,12 @@ public class GuiMainController implements Initializable {
     }
 
     public void setWorkerDetail() {
-        tableEntryPoints.getItems().clear();
+        tableFunctions.getItems().clear();
         if (selectedWorker == null) {
             return;
         }
-        for (ScriptJump entryPoint : selectedWorker.entryPoints) {
-            tableEntryPoints.getItems().add(entryPoint);
+        for (ScriptJump func : selectedWorker.functions) {
+            tableFunctions.getItems().add(func);
         }
     }
 
@@ -455,7 +455,7 @@ public class GuiMainController implements Initializable {
         if (selectedLine == null || selectedLine.lineEnder == null) {
             return;
         }
-        ScriptState tempState = new ScriptState(selectedEntryPoint, scriptLines);
+        ScriptState tempState = new ScriptState(selectedFunction, scriptLines);
         tempState.writeJumpsAsIndexedLines = true;
         tempState.localization = mainLocalization;
         for (int i = 0; i < selectedLineIndex; i++) {
@@ -554,7 +554,7 @@ public class GuiMainController implements Initializable {
     }
 
     public void onStringEditClosed() {
-        adaptToSelectedEntryPoint();
+        adaptToSelectedFunction();
         fillLineGuiVbox();
     }
 
@@ -592,9 +592,9 @@ public class GuiMainController implements Initializable {
         setScriptDetail();
         TreeItem<TreeEntry> treeItem = treeItem("wr", worker, null);
         treeItem.getChildren().add(treeItem("wg", worker, null));
-        for (ScriptJump entryPoint : worker.getEntryPoints()) {
-            TreeItem<TreeEntry> entryPointItem = treeItem("e", worker, entryPoint);
-            treeItem.getChildren().add(entryPointItem);
+        for (ScriptJump func : worker.getWorkerFunctions()) {
+            TreeItem<TreeEntry> funcItem = treeItem("f", worker, func);
+            treeItem.getChildren().add(funcItem);
         }
         middleTree.getRoot().getChildren().add(worker.workerIndex + 2, treeItem);
         middleTree.refresh();
@@ -633,9 +633,9 @@ public class GuiMainController implements Initializable {
         setScriptDetail();
         TreeItem<TreeEntry> treeItem = treeItem("wr", clone, null);
         treeItem.getChildren().add(treeItem("wg", clone, null));
-        for (ScriptJump entryPoint : clone.getEntryPoints()) {
-            TreeItem<TreeEntry> entryPointItem = treeItem("e", clone, entryPoint);
-            treeItem.getChildren().add(entryPointItem);
+        for (ScriptJump func : clone.getWorkerFunctions()) {
+            TreeItem<TreeEntry> funcItem = treeItem("f", clone, func);
+            treeItem.getChildren().add(funcItem);
         }
         middleTree.getRoot().getChildren().add(insertIndex + 2, treeItem);
         middleTree.refresh();
@@ -668,9 +668,9 @@ public class GuiMainController implements Initializable {
         middleTree.refresh();
     }
 
-    public void setBattleWorkerEntryPointType(ScriptJump ep, int slot) {
-        ep.parentWorker.entryPoints.stream().filter(f -> f.battleWorkerEntryPointSlot != null && f.battleWorkerEntryPointSlot == slot).findAny().ifPresent(f -> f.setBattleWorkerEntryPointSlot(ep.battleWorkerEntryPointSlot));
-        ep.setBattleWorkerEntryPointSlot(slot);
+    public void setBattleWorkerFunctionType(ScriptJump ep, int slot) {
+        ep.parentWorker.functions.stream().filter(f -> f.battleWorkerFunctionSlot != null && f.battleWorkerFunctionSlot == slot).findAny().ifPresent(f -> f.setBattleWorkerFunctionSlot(ep.battleWorkerFunctionSlot));
+        ep.setBattleWorkerFunctionSlot(slot);
         setWorkerDetail();
         middleTree.refresh();
     }
@@ -690,60 +690,60 @@ public class GuiMainController implements Initializable {
     }
 
     @FXML
-    public void onAddEntryPoint() {
+    public void onAddFunction() {
         if (selectedWorker == null) {
             return;
         }
-        ScriptJump entryPoint = selectedWorker.addBlankEntryPoint();
-        TreeItem<TreeEntry> item = treeItem("e", selectedWorker, entryPoint);
+        ScriptJump function = selectedWorker.addBlankFunction();
+        TreeItem<TreeEntry> item = treeItem("f", selectedWorker, function);
         middleTree.getRoot().getChildren().stream().filter(i -> i.getValue().worker() == selectedWorker).findAny().ifPresent(wr -> wr.getChildren().add(item));
         setWorkerDetail();
     }
 
     @FXML
-    public void onCopyEntryPoint() {
-        onCopyEntryPoint(selectedEntryPoint);
+    public void onCopyFunction() {
+        onCopyFunction(selectedFunction);
     }
 
-    public void onCopyEntryPoint(ScriptJump entryPoint) {
-        clipboardEntryPoint = entryPoint;
-        pasteEntryPointButton.setDisable(entryPoint == null);
+    public void onCopyFunction(ScriptJump function) {
+        clipboardFunction = function;
+        pasteFunctionButton.setDisable(function == null);
     }
 
-    public void onDuplicateEntryPoint(ScriptJump entryPoint) {
-        onPasteEntryPoint(entryPoint, entryPoint.parentWorker);
+    public void onDuplicateFunction(ScriptJump function) {
+        onPasteFunction(function, function.parentWorker);
     }
 
     @FXML
-    public void onPasteEntryPoint() {
-        if (clipboardEntryPoint == null || selectedWorker == null) {
+    public void onPasteFunction() {
+        if (clipboardFunction == null || selectedWorker == null) {
             return;
         }
-        onPasteEntryPoint(clipboardEntryPoint, selectedWorker);
+        onPasteFunction(clipboardFunction, selectedWorker);
     }
 
-    public void onPasteEntryPoint(ScriptJump entryPoint, ScriptWorker targetWorker) {
-        ScriptJump clone = entryPoint.cloneEntryPointRecursively(targetWorker);
-        targetWorker.entryPoints.add(clone);
+    public void onPasteFunction(ScriptJump function, ScriptWorker targetWorker) {
+        ScriptJump clone = function.cloneFunctionRecursively(targetWorker);
+        targetWorker.functions.add(clone);
         if (targetWorker.parentScript != selectedAtelObject) {
             return;
         }
-        TreeItem<TreeEntry> item = treeItem("e", targetWorker, clone);
+        TreeItem<TreeEntry> item = treeItem("f", targetWorker, clone);
         middleTree.getRoot().getChildren().stream().filter(i -> i.getValue().worker() == targetWorker).findAny().ifPresent(wr -> wr.getChildren().add(item));
         setWorkerDetail();
     }
 
-    public void onDeleteEntryPoint(ScriptJump entryPoint) {
-        if (!entryPoint.canDelete()) {
+    public void onDeleteFunction(ScriptJump function) {
+        if (!function.canDelete()) {
             return;
         }
-        ScriptWorker parentWorker = entryPoint.parentWorker;
-        middleTree.getRoot().getChildren().stream().filter(i -> i.getValue().worker() == parentWorker).findAny().ifPresent(wr -> wr.getChildren().stream().filter(e -> e.getValue().entryPoint() == entryPoint).findAny().ifPresent(child -> wr.getChildren().remove(child)));
-        parentWorker.entryPoints.remove(entryPoint);
-        for (int i = 0; i < parentWorker.entryPoints.size(); i++) {
-            parentWorker.getEntryPoint(i).jumpIndex = i;
+        ScriptWorker parentWorker = function.parentWorker;
+        middleTree.getRoot().getChildren().stream().filter(i -> i.getValue().worker() == parentWorker).findAny().ifPresent(wr -> wr.getChildren().stream().filter(e -> e.getValue().function() == function).findAny().ifPresent(child -> wr.getChildren().remove(child)));
+        parentWorker.functions.remove(function);
+        for (int i = 0; i < parentWorker.functions.size(); i++) {
+            parentWorker.getWorkerFunction(i).jumpIndex = i;
         }
-        entryPoint.parentWorker = null;
+        function.parentWorker = null;
         setWorkerDetail();
         middleTree.refresh();
     }
@@ -1023,7 +1023,7 @@ public class GuiMainController implements Initializable {
     public void onAddLine() {
         System.out.println("onAddLine selectedLineIndex=" + selectedLineIndex + " and line=" + selectedLine);
         ScriptInstruction blankIns = new ScriptInstruction(0, 0x00);
-        ScriptLine newLine = new ScriptLine(selectedEntryPoint.parentWorker, -1, List.of(blankIns), List.of());
+        ScriptLine newLine = new ScriptLine(selectedFunction.parentWorker, -1, List.of(blankIns), List.of());
         insertLineAtSelection(newLine);
     }
 
@@ -1042,7 +1042,7 @@ public class GuiMainController implements Initializable {
         if (clipboardLine == null) {
             return;
         }
-        ScriptWorker targetWorker = selectedEntryPoint.parentWorker;
+        ScriptWorker targetWorker = selectedFunction.parentWorker;
         ScriptLine clone = new ScriptLine(targetWorker, -1, clipboardLine.cloneInstructions(), List.of());
         if (clone.lineEnder.dereferencedVar != null && clone.lineEnder.dereferencedVar.parentWorker != targetWorker) {
             clone.lineEnder.dereferencedVar = null;
@@ -1061,8 +1061,8 @@ public class GuiMainController implements Initializable {
     public void insertLineAtSelection(ScriptLine newLine) {
         if (selectedLineIndex < 0 || selectedLineIndex >= scriptLines.size() - 1) {
             scriptLines.add(0, newLine);
-            ScriptLine previousStartLine = selectedEntryPoint.targetLine;
-            selectedEntryPoint.targetLine = newLine;
+            ScriptLine previousStartLine = selectedFunction.targetLine;
+            selectedFunction.targetLine = newLine;
             newLine.successor = previousStartLine;
             previousStartLine.predecessor = newLine;
             setScriptLines();
@@ -1149,7 +1149,7 @@ public class GuiMainController implements Initializable {
         onAddWorkerOfType(6);
     }
 
-    private static record TreeEntry(GuiMainController ctrl, String type, ScriptWorker worker, ScriptJump entryPoint) {
+    private static record TreeEntry(GuiMainController ctrl, String type, ScriptWorker worker, ScriptJump function) {
         @Override
         public String toString() {
             return switch (type) {
@@ -1159,7 +1159,7 @@ public class GuiMainController implements Initializable {
                 case "sg" -> "Script General";
                 case "wr" -> worker.getLabel(mainLocalization);
                 case "wg" -> "Worker General";
-                case "e" -> entryPoint.getLabel();
+                case "f" -> function.getLabel();
                 default -> "";
             };
         }

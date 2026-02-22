@@ -55,7 +55,7 @@ You can then run the parser with the following command:
 | `READ_CTB_BASE` | | Reads the CTB to Tickspeed/ICV table. (from `ctb_base.bin`) |
 | `MAKE_EDITS` | | Apply string edits from csv files and write localized files in all languages into the `mods` folder. |
 | `RECOMPILE` | `<scriptId1, ex: lmyt000> [<scriptIndex2, ex: mtgz08_00>] [<scriptIndex3, ex: m111>] ...` | Recompile the given script/s and save them to the mods folder. Intended mainly for internal testing of the recompilation feature. |
-| `ADD_ATEL_SPACE` | `<type, "event"/"battle"/"monster"> <scriptId, ex: lmyt0000> <workerIndex in hex, ex: 0A> <count in decimal, ex: 900>` | Recompile the given script while also adding a new entry point to the given worker that consists of <count> bytes of 00. |
+| `ADD_ATEL_SPACE` | `<type, "event"/"battle"/"monster"> <scriptId, ex: lmyt0000> <workerIndex in hex, ex: 0A> <count in decimal, ex: 900>` | Recompile the given script while also adding a new function to the given worker that consists of <count> bytes of 00. |
 | `REMAKE_SIZE_TABLE` | | Rewrites the sizetbl.vita.bin (specifically the monster file section) according to actual monster file lengths. Output is written into mods folder. |
 
 
