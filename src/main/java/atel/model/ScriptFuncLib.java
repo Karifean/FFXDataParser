@@ -108,7 +108,7 @@ public class ScriptFuncLib {
         putFuncWithIdx(0x002E, new ScriptFunc("setRotationSpeed1", "unknown", null, p("float")));
         putFuncWithIdx(0x002F, new ScriptFunc("setRotationSpeed2", "unknown", null, p("float")));
         putFuncWithIdx(0x0030, new ScriptFunc("setRotationSpeed3", "unknown", null, p("float")));
-        putFuncWithIdx(0x0033, new ScriptFunc("getWorkerIndex", "worker", null, p("worker")));
+        putFuncWithIdx(0x0033, new ScriptFunc("getWorkerIndex", "worker", null, p("workerOrSelf")));
         putFuncWithIdx(0x0034, new ScriptFunc("enableFieldInteraction", "unknown", null, p("type", "fieldInteraction")));
         putFuncWithIdx(0x0035, new ScriptFunc("disableFieldInteraction", "unknown", null, p("type", "fieldInteraction")));
         putFuncWithIdx(0x0036, new ScriptFunc("stopMotion", "unknown", null, p("worker")));

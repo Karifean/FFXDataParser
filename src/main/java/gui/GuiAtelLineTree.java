@@ -165,7 +165,7 @@ public class GuiAtelLineTree {
 
     private Node makeExplicitValueInputs(String inputType, ScriptInstruction input, int selected, TextField textField) {
         HBox hBox = new HBox();
-        MenuButton enumMenu = new MenuButton("_" + StackObject.asString(mainLocalization, inputType, selected));
+        MenuButton enumMenu = new MenuButton("_" + StackObject.asString(mainLocalization, inputType, null, selected, selected, scriptLine.parentWorker, true));
         enumMenu.setMaxWidth(200);
         if ("room".equals(inputType)) {
             Map<String, Menu> folderMap = new HashMap<>();
@@ -202,6 +202,16 @@ public class GuiAtelLineTree {
                     });
                     addItem(folderMenu, label, inputType, input, battleIndex, selected);
                 }
+            }
+        } else if ("worker".equals(inputType) || "workerOrSelf".equals(inputType)) {
+            if ("workerOrSelf".equals(inputType)) {
+                addItem(enumMenu, "Self", inputType, input, -1, selected);
+            }
+            int workerCount = scriptLine.parentScript.workers.size();
+            for (int i = 0; i < workerCount; i++) {
+                ScriptWorker worker = scriptLine.parentScript.getWorker(i);
+                String workerLabel = worker.getLabel(mainLocalization);
+                addItem(enumMenu, workerLabel, inputType, input, i, selected);
             }
         } else if ("charCommand".equals(inputType)) {
             for (int i = 0x0000; i < 0x1000 && DataAccess.getCommand(i + 0x3000) != null; i++) {

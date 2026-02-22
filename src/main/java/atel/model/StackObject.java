@@ -123,16 +123,16 @@ public class StackObject {
         if ("bitfieldNegated".equals(type)) {
             return negatedBitfieldToString(null, valueUnsigned) + hexSuffix;
         }
-        if ("worker".equals(type)) {
-            if (valueSigned == -1) {
-                return "<Self>" + hexSuffix;
+        if ("worker".equals(type) || "workerOrSelf".equals(type)) {
+            if ("workerOrSelf".equals(type) && valueSigned == -1) {
+                return "Self" + hexSuffix;
             }
             AtelScriptObject parentScript = parentWorker != null ? parentWorker.parentScript : null;
-            ScriptWorker header = parentScript != null ? parentScript.getWorker(valueSigned) : null;
-            if (header != null) {
-                return header + hexSuffix;
+            ScriptWorker worker = parentScript != null ? parentScript.getWorker(valueSigned) : null;
+            if (worker != null) {
+                return worker + hexSuffix;
             } else {
-                return "<w" + hex + ">" + hexSuffix;
+                return "w" + hex + hexSuffix;
             }
         }
         if ("var".equals(type)) {

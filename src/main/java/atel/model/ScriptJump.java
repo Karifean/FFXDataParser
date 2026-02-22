@@ -131,16 +131,10 @@ public class ScriptJump {
             return "j" + StringHelper.formatHex2(jumpIndex);
         } else {
             String wPrefix = parentWorker.getReferenceLabel() + ".";
-            if (jumpIndex == 0) {
-                return wPrefix + "init";
-            } else if (jumpIndex == 1) {
-                return wPrefix + "main";
+            if (parentWorker.battleWorkerType != null && jumpIndex > 1) {
+                return wPrefix + battleWorkerEntryPointToString();
             } else {
-                if (parentWorker.battleWorkerType != null) {
-                    return wPrefix + battleWorkerEntryPointToString();
-                } else {
-                    return wPrefix + eventWorkerEntryPointToStringWithFallback(parentWorker.eventWorkerType, jumpIndex);
-                }
+                return wPrefix + eventWorkerEntryPointToStringWithFallback(parentWorker.eventWorkerType, jumpIndex);
             }
         }
     }
@@ -275,6 +269,9 @@ public class ScriptJump {
     }
 
     public static String eventWorkerEntryPointToString(int eventWorkerType, int eventWorkerEntryPoint) {
+        if (eventWorkerType == 0) {
+            return eventWorkerEntryPoint > 0 ? "run" + StringHelper.formatHex2(eventWorkerEntryPoint) : "run";
+        }
         if (eventWorkerEntryPoint == 0) {
             return "init";
         }

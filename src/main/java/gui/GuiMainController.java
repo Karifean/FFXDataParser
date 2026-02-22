@@ -455,7 +455,7 @@ public class GuiMainController implements Initializable {
         if (selectedLine == null || selectedLine.lineEnder == null) {
             return;
         }
-        ScriptState tempState = new ScriptState(selectedEntryPoint);
+        ScriptState tempState = new ScriptState(selectedEntryPoint, scriptLines);
         tempState.writeJumpsAsIndexedLines = true;
         tempState.localization = mainLocalization;
         for (int i = 0; i < selectedLineIndex; i++) {

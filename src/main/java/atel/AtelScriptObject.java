@@ -954,25 +954,44 @@ public class AtelScriptObject {
             } else if (opcode == 0x34) { // RTS / RETURN
                 textScriptLine += "return from subroutine;";
                 resetRegisterTypes();
-            } else if (opcode >= 0x36 && opcode <= 0x38) { // REQ / SIG_NOACK
-                String cmd = "run";
-                if (opcode == 0x37) { // REQSW / SIG_ONSTART
-                    cmd += "AndAwaitStart";
-                } else if (opcode == 0x38) { // REQEW / SIG_ONEND
-                    cmd += "AndAwaitEnd";
+            } else if ((opcode >= 0x36 && opcode <= 0x3B) || (opcode >= 0x45 && opcode <= 0x53)) { // REQ / SIG_NOACK
+                boolean awaitStart = opcode == 0x37 || opcode == 0x3A || (opcode >= 0x4A && opcode <= 0x4E);
+                boolean awaitEnd = opcode == 0x38 || opcode == 0x3B || opcode >= 0x4F;
+                boolean flagPly = opcode >= 0x39 && opcode <= 0x3B;
+                boolean flagForce = opcode == 0x45 || opcode == 0x48 || opcode == 0x4A || opcode == 0x4D || opcode == 0x4F || opcode == 0x52;
+                boolean flagTag = opcode == 0x46 || opcode == 0x49 || opcode == 0x4B || opcode == 0x4E || opcode == 0x50 || opcode == 0x53;
+                boolean flagBranch = opcode >= 0x47 && opcode != 0x4A && opcode != 0x4B && opcode != 0x4F && opcode != 0x50;
+                String priority = p1.expression ? ""+p1 : ""+p1.valueSigned;
+                ScriptWorker targetWorker = !flagPly && !p2.expression && isWeakType(p2.type) ? getWorker(p2.valueSigned) : null;
+                ScriptJump entryPoint = targetWorker != null && !p3.expression && isWeakType(p3.type) ? targetWorker.getEntryPoint(p3.valueSigned) : null;
+                String scriptLabel;
+                if (entryPoint != null) {
+                    scriptLabel = entryPoint.getLabel();
+                } else {
+                    String wPrefix = flagPly ? "FormationChar" : "w";
+                    String w = wPrefix + (p2.expression ? "(" + p2 + ")" : StringHelper.formatHex2(p2.valueSigned));
+                    String e = "e" + (p3.expression ? "(" + p3 + ")" : StringHelper.formatHex2(p3.valueSigned));
+                    scriptLabel = w + "." + e;
                 }
-                String level = p1.expression ? ""+p1 : ""+p1.valueSigned;
-                ScriptWorker worker = getWorker(p2.valueSigned);
-                ScriptJump entryPoint = worker != null ? worker.getEntryPoint(p3.valueSigned) : null;
-                boolean direct = !p2.expression && !p3.expression && isWeakType(p2.type) && isWeakType(p3.type) && entryPoint != null;
-                String w = p2.expression ? "(" + p2 + ")" : format2Or4Byte(p2.valueSigned);
-                String e = p3.expression ? "(" + p3 + ")" : format2Or4Byte(p3.valueSigned);
-                String scriptLabel = direct ? entryPoint.getLabel() : ("w" + w + "e" + e);
-                String content = cmd + " " + scriptLabel + " (Level " + level + ")";
-                stack.push(new StackObject(currentWorker, ins, "worker", true, content));
-            } else if (opcode == 0x39) { // PREQ
-                String content = "PREQ(" + p1 + ", " + p2 + ", " + p3 + ")";
-                stack.push(new StackObject(currentWorker, ins, "unknown", true, content));
+                String runLine = "run " + scriptLabel + " at priority " + priority;
+                List<String> list = new ArrayList<>();
+                list.add(runLine);
+                if (flagBranch) {
+                    list.add("Conditional");
+                }
+                if (flagForce) {
+                    list.add("Force");
+                }
+                if (flagTag) {
+                    list.add("if not running");
+                }
+                if (awaitStart) {
+                    list.add("await start");
+                } else if (awaitEnd) {
+                    list.add("await end");
+                }
+                String content = String.join(", ", list);
+                stack.push(new StackObject(currentWorker, ins, "exec", true, content));
             } else if (opcode == 0x3C) { // RET / END
                 textScriptLine += "return;";
                 resetRegisterTypes();
@@ -984,9 +1003,6 @@ public class AtelScriptObject {
             } else if (opcode == 0x40) { // HALT / DYNAMIC
                 textScriptLine += "halt";
                 resetRegisterTypes();
-            } else if (opcode == 0x46) { // TREQ
-                String content = "TREQ(" + p1 + ", " + p2 + ", " + p3 + ")";
-                stack.push(new StackObject(currentWorker, ins, "unknown", true, content));
             } else if (opcode == 0x54) { // DRET / CLEANUP_ALL_END
                 textScriptLine += "direct return;";
                 resetRegisterTypes();
@@ -1014,22 +1030,20 @@ public class AtelScriptObject {
                 stackObject.referenceIndex = tempIndex;
                 stack.push(stackObject);
             } else if (opcode == 0x77) { // REQWAIT / WAIT_DELETE
-                ScriptWorker worker = getWorker(p1.valueSigned);
-                ScriptJump entryPoint = worker != null ? worker.getEntryPoint(p2.valueSigned) : null;
-                boolean direct = !p1.expression && !p2.expression && isWeakType(p1.type) && isWeakType(p2.type) && entryPoint != null;
+                ScriptWorker worker = !p1.expression && isWeakType(p1.type) ? getWorker(p1.valueSigned) : null;
+                ScriptJump entryPoint = worker != null && !p2.expression && isWeakType(p2.type) ? worker.getEntryPoint(p2.valueSigned) : null;
                 String w = p1.expression ? "(" + p1 + ")" : format2Or4Byte(p1.valueSigned);
                 String e = p2.expression ? "(" + p2 + ")" : format2Or4Byte(p2.valueSigned);
-                String scriptLabel = direct ? entryPoint.getLabel() : ("w" + w + "e" + e);
+                String scriptLabel = entryPoint != null ? entryPoint.getLabel() : ("w" + w + ".e" + e);
                 textScriptLine += "await " + scriptLabel + ";";
             } else if (opcode == 0x78) { // Never used: PREQWAIT / WAIT_SPEC_DELETE
             } else if (opcode == 0x79) { // REQCHG / EDIT_ENTRY_TABLE
                 int oldIdx = p2.valueSigned + 2;
                 int newIdx = p3.valueSigned;
-                ScriptJump oldEntryPoint = currentWorker.getEntryPoint(oldIdx);
-                ScriptJump newEntryPoint = currentWorker.getEntryPoint(newIdx);
-                boolean direct = !p2.expression && !p3.expression && isWeakType(p2.type) && isWeakType(p3.type) && oldEntryPoint != null && newEntryPoint != null;
-                String oldScriptLabel = direct ? oldEntryPoint.getLabel() : ("e" + (p2.expression ? "(" + p2 + ")" : format2Or4Byte(oldIdx)));
-                String newScriptLabel = direct ? newEntryPoint.getLabel() : ("e" + (p3.expression ? "(" + p3 + ")" : format2Or4Byte(newIdx)));
+                ScriptJump oldEntryPoint = !p2.expression && isWeakType(p2.type) ? currentWorker.getEntryPoint(oldIdx) : null;
+                ScriptJump newEntryPoint = !p3.expression && isWeakType(p3.type) ? currentWorker.getEntryPoint(newIdx) : null;
+                String oldScriptLabel = oldEntryPoint != null ? oldEntryPoint.getLabel() : ("e" + (p2.expression ? "(" + p2 + ")" : format2Or4Byte(oldIdx)));
+                String newScriptLabel = newEntryPoint != null ? newEntryPoint.getLabel() : ("e" + (p3.expression ? "(" + p3 + ")" : format2Or4Byte(newIdx)));
                 String tableHolder = p1.expression ? ""+p1 : ""+p1.valueSigned;
                 if (p1.parentInstruction.opcode == 0xA7) {
                     addVarType(p1.valueSigned, "workerEventTable");
@@ -1367,6 +1381,74 @@ public class AtelScriptObject {
             }
         }
         return workers.size();
+    }
+
+    public void swapWorkers(ScriptWorker workerA, ScriptWorker workerB) {
+        int indexA = workers.indexOf(workerA);
+        int indexB = workers.indexOf(workerB);
+        if (indexA < 0 || indexB < 0) {
+            return;
+        }
+        Set<ScriptInstruction> workerReferences = new HashSet<>();
+        for (ScriptWorker worker : workers) {
+            workerReferences.addAll(worker.gatherDirectWorkerReferences());
+        }
+        workerA.workerIndex = indexB;
+        workerB.workerIndex = indexA;
+        for (ScriptInstruction instruction : workerReferences) {
+            if (instruction.argvSigned == indexA) {
+                instruction.setArgv(indexB);
+            } else if (instruction.argvSigned == indexB) {
+                instruction.setArgv(indexA);
+            }
+        }
+        if (mainScriptIndex == indexA) {
+            mainScriptIndex = indexB;
+        } else if (mainScriptIndex == indexB) {
+            mainScriptIndex = indexA;
+        }
+        workers.remove(indexA);
+        workers.add(indexA, workerB);
+        workers.remove(indexB);
+        workers.add(indexB, workerA);
+    }
+
+    public void moveWorker(ScriptWorker worker, int toIndex) {
+        if (toIndex < 0 || toIndex >= workers.size()) {
+            return;
+        }
+        int fromIndex = workers.indexOf(worker);
+        if (fromIndex < 0 || toIndex == fromIndex) {
+            return;
+        }
+        int lowIndex = toIndex > fromIndex ? fromIndex + 1 : toIndex;
+        int highIndex = toIndex > fromIndex ? toIndex : fromIndex - 1;
+        int inbetweenAdjust = toIndex > fromIndex ? -1 : 1;
+        Set<ScriptInstruction> workerReferences = new HashSet<>();
+        for (int i = 0; i < workers.size(); i++) {
+            ScriptWorker scriptWorker = getWorker(i);
+            workerReferences.addAll(scriptWorker.gatherDirectWorkerReferences());
+            if (scriptWorker != worker && i >= lowIndex && i <= highIndex) {
+                scriptWorker.workerIndex += inbetweenAdjust;
+            }
+        }
+        worker.workerIndex = toIndex;
+        for (ScriptInstruction instruction : workerReferences) {
+            if (instruction.argvSigned == fromIndex) {
+                instruction.setArgv(toIndex);
+            } else if (instruction.argvSigned >= lowIndex && instruction.argvSigned <= highIndex) {
+                instruction.setArgv(instruction.argvSigned + inbetweenAdjust);
+            }
+        }
+        if (mainScriptIndex == fromIndex) {
+            mainScriptIndex = toIndex;
+        }
+        if (mainScriptIndex >= lowIndex && mainScriptIndex <= highIndex) {
+            mainScriptIndex += inbetweenAdjust;
+        }
+        workers.remove(fromIndex);
+        int adjustedToIndex = fromIndex < toIndex ? toIndex - 1 : toIndex;
+        workers.add(adjustedToIndex, worker);
     }
 
     protected static boolean hasArgs(int opcode) {

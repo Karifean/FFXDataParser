@@ -20,8 +20,12 @@ public class ScriptState {
     public final List<ScriptLine> lines;
 
     public ScriptState(ScriptJump entryPoint) {
+        this(entryPoint, null);
+    }
+
+    public ScriptState(ScriptJump entryPoint, List<ScriptLine> lines) {
         this.entryPoint = entryPoint;
-        this.lines = entryPoint.getLines();
+        this.lines = lines != null ? lines : entryPoint.getLines();
         this.parentWorker = entryPoint.parentWorker;
         this.parentScript = entryPoint.parentScript;
         this.rAType = entryPoint.rAType;
