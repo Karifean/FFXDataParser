@@ -24,6 +24,7 @@ import javafx.stage.Stage;
 import main.DataAccess;
 import main.DataReadingManager;
 import main.DataWritingManager;
+import model.TreasureDataObject;
 import model.strings.LocalizedFieldStringObject;
 
 import java.io.IOException;
@@ -551,6 +552,11 @@ public class GuiMainController implements Initializable {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    public void editTreasure(int index) {
+        TreasureDataObject obj = DataAccess.getTreasure(index);
+        System.out.println("editTreasure (" + index + ") = " + obj);
     }
 
     public void onStringEditClosed() {

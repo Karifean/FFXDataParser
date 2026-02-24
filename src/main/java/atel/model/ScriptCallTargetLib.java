@@ -168,7 +168,7 @@ public class ScriptCallTargetLib {
         putCtWithIdx(0x0083, new ScriptCallTarget("getCurrentSpawnpointYaw", "float", null, true));
         putCtWithIdx(0x0084, new ScriptCallTarget("waitForText", "unknown", null, p("msgWindow", "int"), p(2)));
         putCtWithIdx(0x0085, new ScriptCallTarget("setTouchRadius", "unknown", null, p("radius", "float"))); // noclip: setCollisionRadius()
-        putCtWithIdx(0x0086, new ScriptCallTarget("CurrentMap", "map", null, false)); // the ID of the actual map geometry file, multiple "map"s can share these
+        putCtWithIdx(0x0086, new ScriptCallTarget("CurrentMap", "map", null, false)); // the ID of the actual map geometry file, multiple "rooms" can share these
         putCtWithIdx(0x0087, new ScriptCallTarget("CurrentRoom", "room", null, false));
         putCtWithIdx(0x0088, new ScriptCallTarget("LastMap", "map", null, false));
         putCtWithIdx(0x0089, new ScriptCallTarget("LastRoom", "room", null, false));
@@ -250,14 +250,14 @@ public class ScriptCallTargetLib {
         putCtWithIdx(0x00E9, new ScriptCallTarget("setMenuEnabled", "unknown", null, p("enabled", "bool")));
         putUnknownCt(0x00EB, 0);
         putCtWithIdx(0x00EC, new ScriptCallTarget("findPartyMemberFormationIndex", "int", null, p("playerChar")));
-        putCtWithIdx(0x00ED, new ScriptCallTarget("getWorkerLinkedChr", "btlChr", null, true)); // get ID of attached actor
+        putCtWithIdx(0x00ED, new ScriptCallTarget("getWorkerLinkedChr", "btlChr", null, true));
         putUnknownCt(0x00EE, 1);
         putUnknownCt(0x00EF, 1);
         putUnknownCt(0x00F2, 1);
         putUnknownCt(0x00F3, 1);
         putCtWithIdx(0x00F4, new ScriptCallTarget("pointToYaw?", "float", null, p("x", "float"), p("y", "float"), p("z", "float"))); // y is unused
         putCtWithIdx(0x00F5, new ScriptCallTarget("pointToPitch?", "float", null, p("x", "float"), p("y", "float"), p("z", "float")));
-        putCtWithIdx(0x00F6, new ScriptCallTarget("waitForWorker", "float", null, p("priority", "int"), p("worker"))); // waits until no signal is active or queued at level for the worker
+        putVoidWithIdx(0x00F6, new ScriptCallTarget("waitForWorker", "unknown", null, p("level", "int"), p("worker"))); // waits until no signal is active or queued at level for the worker
         putUnknownCt(0x00F8, 3);
         putUnknownCt(0x00F9, 0);
         putUnknownCt(0x00FA, 1);
@@ -302,10 +302,10 @@ public class ScriptCallTargetLib {
         putCtWithIdx(0x0129, new ScriptCallTarget("setSplashColor", "unknown", null, p("splashIndex", "int"), p("r", "int"), p("b", "int"), p("g", "int")));
         putUnknownCt(0x012A, 2);
         putUnknownCt(0x012B, 1);
-        putCtWithIdx(0x012D, new ScriptCallTarget("GetAffectionValue", "int", null, p("char")));
-        putCtWithIdx(0x012E, new ScriptCallTarget("IncreaseAffectionValue", "unknown", null, p("char"), p("amount", "int")));
-        putCtWithIdx(0x012F, new ScriptCallTarget("DecreaseAffectionValue", "unknown", null, p("char"), p("amount", "int"))); // Never used, will set to 0 if it would go negative
-        putCtWithIdx(0x0130, new ScriptCallTarget("SetAffectionValue", "unknown", null, p("char"), p("amount", "int")));
+        putCtWithIdx(0x012D, new ScriptCallTarget("GetAffectionValue", "int", null, p("playerChar")));
+        putCtWithIdx(0x012E, new ScriptCallTarget("IncreaseAffectionValue", "unknown", null, p("playerChar"), p("amount", "int")));
+        putCtWithIdx(0x012F, new ScriptCallTarget("DecreaseAffectionValue", "unknown", null, p("playerChar"), p("amount", "int"))); // Never used, will set to 0 if it would go negative
+        putCtWithIdx(0x0130, new ScriptCallTarget("SetAffectionValue", "unknown", null, p("playerChar"), p("amount", "int")));
         putCtWithIdx(0x0132, new ScriptCallTarget("setActorCollisionActive", "unknown", null, p("worker"), p("active", "bool")));
         putCtWithIdx(0x0133, new ScriptCallTarget("setActorCollisionActive2", "unknown", null, p("worker"), p("active", "bool"))); // same as 0132
         putCtWithIdx(0x0134, new ScriptCallTarget("loadModel2", "unknown", null, p("model"))); // same as 0001
@@ -329,7 +329,7 @@ public class ScriptCallTargetLib {
         putUnknownCt(0x0148, 2);
         putUnknownCt(0x0149, 1);
         putCtWithIdx(0x014A, new ScriptCallTarget("SetBattleFlags", "unknown", null, p("p1", "battleFlags1Bitfield"), p(2), p(3)));
-        putCtWithIdx(0x014D, new ScriptCallTarget("HighestAffectionChar", "char", null, false));
+        putCtWithIdx(0x014D, new ScriptCallTarget("HighestAffectionChar", "playerChar", null, false));
         putCtWithIdx(0x014E, new ScriptCallTarget("analogStickAngle", "float", null, p("deadzone", "float"), p("x", "float"), p("y", "float")));
         putUnknownCt(0x014F, 3);
         putUnknownCt(0x0151, 1);
@@ -381,7 +381,7 @@ public class ScriptCallTargetLib {
         putCtWithIdx(0x0197, new ScriptCallTarget("attachToMapPart", "unknown", null, p("partIndex", "int")));
         putCtWithIdx(0x0198, new ScriptCallTarget("enableVisualEffectIndex", "unknown", null, p("mapPartIndex", "int"), p("effectType"), p("runOnce", "bool")));
         putCtWithIdx(0x0199, new ScriptCallTarget("enableOwnVisualEffectIndex", "unknown", null, p("effectType"), p("runOnce", "bool")));
-        putCtWithIdx(0x019C, new ScriptCallTarget("True", "bool", null, false));
+        putCtWithIdx(0x019C, new ScriptCallTarget(null, "bool", null, false));
         putCtWithIdx(0x019D, new ScriptCallTarget("detach", "unknown", null, p("unloadModel", "bool")));
         putUnknownCt(0x019E, 0);
         putUnknownCt(0x019F, 1);

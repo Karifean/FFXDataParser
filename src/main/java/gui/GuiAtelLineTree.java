@@ -125,16 +125,17 @@ public class GuiAtelLineTree {
         } else if ((opcode >= 0x9F && opcode <= 0xA4) || opcode == 0xA7) {
             MenuButton variableSelect = new MenuButton();
             if (input.dereferencedVar != null) {
-                variableSelect.setText(input.dereferencedVar.getLabel(scriptLine.parentWorker));
+                String selectedLabel = input.dereferencedVar.getIndexLabel() + ": " + input.dereferencedVar.getLabel(scriptLine.parentWorker);
+                variableSelect.setText(selectedLabel);
             }
             for (int i = 0; i < scriptLine.parentScript.variableDeclarations.size(); i++) {
-                final int varIndex = i;
-                String variableLabel = scriptLine.parentScript.getVariableLabel(varIndex);
-                if (input.dereferencedVar == null && varIndex == input.argv) {
+                String variableLabel = scriptLine.parentWorker.getVariable(i).getIndexLabel() + ": " + scriptLine.parentWorker.getVariableLabel(i);
+                if (input.dereferencedVar == null && i == input.argv) {
                     variableSelect.setText(variableLabel);
                 }
-                if (!inputType.equals("float") || scriptLine.parentScript.getVariableType(varIndex).equals("float")) {
+                if (!inputType.equals("float") || scriptLine.parentScript.getVariableType(i).equals("float")) {
                     MenuItem variableMenuItem = new MenuItem(variableLabel);
+                    final int varIndex = i;
                     variableMenuItem.setOnAction(actionEvent -> onIntArgvChanged(input, varIndex, actionEvent));
                     variableSelect.getItems().add(variableMenuItem);
                 }
@@ -213,8 +214,47 @@ public class GuiAtelLineTree {
                 String workerLabel = worker.getLabel(mainLocalization);
                 addItem(enumMenu, workerLabel, inputType, input, i, selected);
             }
+        } else if ("menu".equals(inputType)) {
+            addItem(enumMenu, inputType, input, 0x40000000, selected);
+            addItem(enumMenu, inputType, input, 0x40010000, selected);
+            Menu itemShop = new Menu();
+            itemShop.setGraphic(new Text("Item Shop"));
+            for (int i = 0; i < DataAccess.GEAR_SHOPS.length; i++) {
+                addItem(itemShop, inputType, input, 0x40020000 | i, selected);
+            }
+            enumMenu.getItems().add(itemShop);
+            Menu weaponShop = new Menu();
+            weaponShop.setGraphic(new Text("Weapon Shop"));
+            for (int i = 0; i < DataAccess.GEAR_SHOPS.length; i++) {
+                addItem(weaponShop, inputType, input, 0x40040000 | i, selected);
+            }
+            enumMenu.getItems().add(weaponShop);
+            Menu enterName = new Menu();
+            enterName.setGraphic(new Text("Enter Name"));
+            for (int i = 0; i <= 0x11; i++) {
+                addItem(enterName, StackObject.asString(mainLocalization, "playerChar", i), inputType, input, 0x40080000 | i, selected);
+            }
+            addItem(enterName, "Airship Password", inputType, input, 0x40080020, selected);
+            enumMenu.getItems().add(enterName);
+            addItem(enumMenu, inputType, input, 0x40100000, selected);
+            addItem(enumMenu, inputType, input, 0x40200000, selected);
+            // addItem(enumMenu, inputType, input, 0x40400004, selected);
+            Menu tutorial = new Menu();
+            tutorial.setGraphic(new Text("Tutorial"));
+            for (int i = 1; i <= 5; i++) {
+                addItem(tutorial, inputType, input, 0x40800000 | i, selected);
+            }
+            enumMenu.getItems().add(tutorial);
         } else if ("charCommand".equals(inputType)) {
-            for (int i = 0x0000; i < 0x1000 && DataAccess.getCommand(i + 0x3000) != null; i++) {
+            for (int i = 0x0000; i < 0x1000 && DataAccess.getCommand(i | 0x3000) != null; i++) {
+                addItem(enumMenu, inputType, input, i, selected);
+            }
+        } else if ("keyItem".equals(inputType)) {
+            for (int i = 0xA000; i < 0xA100 && DataAccess.getKeyItem(i) != null; i++) {
+                addItem(enumMenu, inputType, input, i, selected);
+            }
+        } else if ("treasure".equals(inputType)) {
+            for (int i = 0; i < DataAccess.TREASURES.length; i++) {
                 addItem(enumMenu, inputType, input, i, selected);
             }
         } else if ("command".equals(inputType)) {
@@ -368,6 +408,11 @@ public class GuiAtelLineTree {
         if ("localString".equals(inputType) || "system01String".equals(inputType)) {
             Button editButton = new Button("Edit String");
             editButton.setOnAction(actionEvent -> controller.editString(selected, inputType));
+            hBox.getChildren().add(editButton);
+        }
+        if ("treasure".equals(inputType)) {
+            Button editButton = new Button("Edit Treasure");
+            editButton.setOnAction(actionEvent -> controller.editTreasure(selected));
             hBox.getChildren().add(editButton);
         }
         return hBox;

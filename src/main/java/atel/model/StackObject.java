@@ -136,8 +136,7 @@ public class StackObject {
             }
         }
         if ("var".equals(type)) {
-            AtelScriptObject parentScript = parentWorker != null ? parentWorker.parentScript : null;
-            return parentScript != null ? parentScript.getVariableLabel(valueSigned) : ("var" + hex);
+            return parentWorker != null ? parentWorker.getVariableLabel(valueSigned) : ("var" + hex);
         }
         if ("pointer".equals(type)) {
             ScriptVariable scriptVariable = new ScriptVariable(parentWorker, 0, valueSigned, 1);
@@ -295,28 +294,30 @@ public class StackObject {
             case 0x4080 -> "Tutorial";
             default -> "hb:?" + hb + ".";
         };
-        String lbs = "";
+        String lbs;
         if (hb == 0x4008) {
             if (lb == 0x20) {
-                lbs = "AirshipPassword";
+                lbs = "_AirshipPassword";
             } else if (lb <= 0x11) {
-                lbs = ScriptConstants.FFX.getEnumMap("playerChar").get(lb).name;
+                lbs = "_" + ScriptConstants.FFX.getEnumMap("playerChar").get(lb).name;
             } else {
                 lbs = "?" + lb;
             }
         } else if (hb == 0x4080) {
             lbs = switch (lb) {
-                case 0x01 -> "SphereGrid";
-                case 0x02 -> "SphereGridLockNodes";
-                case 0x03 -> "Customize";
-                case 0x04 -> "AeonAbilities";
-                case 0x05 -> "AeonAttributes";
+                case 0x01 -> "_SphereGrid";
+                case 0x02 -> "_SphereGridLockNodes";
+                case 0x03 -> "_Customize";
+                case 0x04 -> "_AeonAbilities";
+                case 0x05 -> "_AeonAttributes";
                 default -> "?" + lb;
             };
         } else if (lb != 0x00 || hb == 0x4002 || hb == 0x4004) {
-            lbs = ""+lb;
+            lbs = "#" + lb;
+        } else {
+            lbs = "";
         }
-        return hbs + "#" + lbs;
+        return hbs + lbs;
     }
 
     public String asIntValue(boolean withHexSuffix) {

@@ -1246,7 +1246,7 @@ public class ScriptConstants {
         putBattleActorProperty(0x0153, "?disableLowHealthSlump", "bool", null);
         // 0x0154 is missing
         putBattleActorProperty(0x0155, "?inBattleNotPetrifiedOrEjected", "bool", null);
-        putBattleActorProperty(0x0156, "?wasCaptured", "bool", null);
+        putBattleActorProperty(0x0156, "wasCaptured", "bool", null);
         // 0x0157 is missing
         // 0x0158 is missing
         putBattleActorProperty(0x0159, "?onlyTargetableBy", "command", null);

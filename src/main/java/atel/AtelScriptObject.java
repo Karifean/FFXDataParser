@@ -1261,7 +1261,7 @@ public class AtelScriptObject {
         return "unknown";
     }
 
-    public String getVariableLabel(int index) {
+    private String getVariableLabel(int index) {
         ScriptVariable variable = getVariable(index);
         if (variable != null) {
             return variable.getLabel(getWorker(currentWorkerIndex));

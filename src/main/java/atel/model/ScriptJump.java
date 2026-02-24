@@ -131,7 +131,10 @@ public class ScriptJump {
             return "j" + StringHelper.formatHex2(jumpIndex);
         } else {
             String wPrefix = parentWorker.getReferenceLabel() + "::";
-            if (parentWorker.battleWorkerType != null && jumpIndex > 1) {
+            if (parentWorker.battleWorkerType != null) {
+                if (parentWorker.purposeSlot != null) {
+                    wPrefix = StackObject.enumToScriptField("battleWorkerSlot", parentWorker.purposeSlot).getLabel() + "::";
+                }
                 return wPrefix + battleWorkerFunctionToString();
             } else {
                 return wPrefix + eventWorkerFunctionToStringWithFallback(parentWorker.eventWorkerType, jumpIndex);
@@ -184,6 +187,11 @@ public class ScriptJump {
     }
 
     private String battleWorkerFunctionToString() {
+        if (jumpIndex == 0) {
+            return "init";
+        } else if (jumpIndex == 1) {
+            return "main";
+        }
         int battleWorkerType = parentWorker.battleWorkerType != null ? parentWorker.battleWorkerType : -1;
         int battleWorkerSlot = parentWorker.purposeSlot != null ? parentWorker.purposeSlot : -1;
         int battleWorkerFunctionSlot = this.battleWorkerFunctionSlot != null ? this.battleWorkerFunctionSlot : -1;

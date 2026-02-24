@@ -244,6 +244,15 @@ public class ScriptWorker {
         return null;
     }
 
+    public String getVariableLabel(int index) {
+        ScriptVariable variable = getVariable(index);
+        if (variable != null) {
+            return variable.getLabel(this);
+        } else {
+            return "var" + StringHelper.formatHex2(index);
+        }
+    }
+
     public void setJumpTargets(Map<ScriptLine, ScriptJump> jumpTargets) {
         int jumpTargetCount = jumpTargets.size();
         ScriptJump[] jumpsArray = new ScriptJump[jumpTargetCount];
