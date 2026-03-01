@@ -145,7 +145,7 @@ public class BattleFile implements Nameable {
             chunks.add(atelScriptBytes);
             chunks.add(workerMappingBytes);
         }
-        chunks.add(formationBytes);
+        chunks.add(formation.toBytes());
         chunks.add(battleAreasPositionsBytes);
         chunks.add(DataWritingManager.stringsToStringFileBytes(strings, "jp"));
         chunks.add(ftcxBytes);

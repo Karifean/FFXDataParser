@@ -24,6 +24,7 @@ import javafx.stage.Stage;
 import main.DataAccess;
 import main.DataReadingManager;
 import main.DataWritingManager;
+import main.StringHelper;
 import model.TreasureDataObject;
 import model.strings.LocalizedFieldStringObject;
 
@@ -41,11 +42,11 @@ public class GuiMainController implements Initializable {
     @FXML
     Menu languageMenu;
     @FXML
-    ListView<String> eventList;
+    ListView<EventListEntry> eventList;
     @FXML
-    ListView<String> battleList;
+    ListView<BattleListEntry> battleList;
     @FXML
-    ListView<String> monsterList;
+    ListView<MonsterListEntry> monsterList;
     @FXML
     ListView<String> miscList;
     @FXML
@@ -132,6 +133,11 @@ public class GuiMainController implements Initializable {
     @FXML
     TableColumn<ScriptJump, ScriptJump> tableFunctionsColumnDelete;
 
+    @FXML
+    VBox battleGeneralDetail;
+    @FXML
+    VBox battleFormationVbox;
+
     Stage stage;
     EventFile selectedEvent;
     BattleFile selectedBattle;
@@ -168,29 +174,47 @@ public class GuiMainController implements Initializable {
             item.setOnAction(actionEvent -> setLocalization(localeId));
             languageMenu.getItems().add(item);
         }
+        for (int i = 0; i < 8; i++) {
+            final int slot = i;
+            MenuButton formationEnemyMenu = new MenuButton();
+            String text = "Monster#" + StringHelper.formatHex2(i) + ": ???";
+            formationEnemyMenu.setGraphic(new Text(text));
+            MenuItem noneItem = new MenuItem();
+            noneItem.setGraphic(new Text("<None>"));
+            noneItem.setOnAction(ev -> onFormationMonsterChanged(slot, 0xFFFF));
+            ObservableList<MenuItem> enemyMenuItems = formationEnemyMenu.getItems();
+            enemyMenuItems.add(noneItem);
+            for (int j = 0; j <= 360; j++) {
+                final int monsterIndex = j | 0x1000;
+                MonsterFile monster = DataAccess.getMonster(j);
+                if (monster != null) {
+                    MenuItem item = new MenuItem();
+                    String monsterLabel = String.format("m%03d - %s", j, monster.getName(mainLocalization));
+                    item.setGraphic(new Text(monsterLabel));
+                    item.setOnAction(ev -> onFormationMonsterChanged(slot, monsterIndex));
+                    enemyMenuItems.add(item);
+                }
+            }
+            battleFormationVbox.getChildren().add(formationEnemyMenu);
+        }
     }
 
     public void makeLists() {
         eventList.getItems().clear();
         for (Map.Entry<String, EventFile> eventEntry : DataAccess.EVENTS.entrySet()) {
-            String label = eventEntry.getValue().getName(mainLocalization);
-            eventList.getItems().add(label);
+            eventList.getItems().add(new EventListEntry(eventEntry.getValue()));
         }
-        eventList.getItems().sort(Comparator.naturalOrder());
+        eventList.getItems().sort(Comparator.comparing(EventListEntry::toString));
         battleList.getItems().clear();
         for (Map.Entry<String, BattleFile> battleEntry : DataAccess.BATTLES.entrySet()) {
-            String label = battleEntry.getValue().getName(mainLocalization);
-            battleList.getItems().add(label);
+            battleList.getItems().add(new BattleListEntry(battleEntry.getValue()));
         }
-        battleList.getItems().sort(Comparator.naturalOrder());
+        battleList.getItems().sort(Comparator.comparing(BattleListEntry::toString));
         monsterList.getItems().clear();
         for (int i = 0; i <= 360; i++) {
             MonsterFile monster = DataAccess.getMonster(i);
             if (monster != null) {
-                String idStr = String.format("m%03d", i);
-                String name = monster.getName(mainLocalization);
-                String label = idStr + " - " + name;
-                monsterList.getItems().add(label);
+                monsterList.getItems().add(new MonsterListEntry(monster));
             }
         }
         miscList.getItems().clear();
@@ -203,49 +227,37 @@ public class GuiMainController implements Initializable {
         makeTree();
     }
 
-    public void onEventSelected(String label) {
-        System.out.println("event selected: " + label);
+    public void onEventSelected(EventListEntry entry) {
+        System.out.println("event selected: " + entry);
         clearSelection();
-        if (label == null) {
+        if (entry == null) {
             return;
         }
-        String eventId = label.split(" ")[0];
-        selectedEvent = DataAccess.getEvent(eventId);
-        if (selectedEvent == null) {
-            throw new RuntimeException("Event not found");
-        }
+        selectedEvent = entry.event();
         selectedEvent.parseScript();
         selectedAtelObject = selectedEvent.atelScript;
         makeTree();
     }
 
-    public void onBattleSelected(String label) {
-        System.out.println("battle selected: " + label);
+    public void onBattleSelected(BattleListEntry entry) {
+        System.out.println("battle selected: " + entry);
         clearSelection();
-        if (label == null) {
+        if (entry == null) {
             return;
         }
-        String battleId = label.split(" ")[0];
-        selectedBattle = DataAccess.getBattle(battleId);
-        if (selectedBattle == null) {
-            throw new RuntimeException("Battle not found");
-        }
+        selectedBattle = entry.battle();
         selectedBattle.parseScript();
         selectedAtelObject = selectedBattle.atelScript;
         makeTree();
     }
 
-    public void onMonsterSelected(String label) {
-        System.out.println("monster selected: " + label);
+    public void onMonsterSelected(MonsterListEntry entry) {
+        System.out.println("monster selected: " + entry);
         clearSelection();
-        if (label == null) {
+        if (entry == null) {
             return;
         }
-        String monsterId = label.split(" ")[0].substring(1);
-        selectedMonster = DataAccess.getMonster(monsterId);
-        if (selectedMonster == null) {
-            throw new RuntimeException("Monster not found");
-        }
+        selectedMonster = entry.monster();
         selectedMonster.parseScript();
         selectedAtelObject = selectedMonster.atelScript;
         makeTree();
@@ -301,6 +313,7 @@ public class GuiMainController implements Initializable {
             treeRoot.setGraphic(new Text(selectedBattle.getName(mainLocalization)));
             TreeItem<TreeEntry> battleGeneralItem = treeItem("bg");
             rootChildren.add(battleGeneralItem);
+            setBattleDetail();
         }
         if (selectedMonster != null) {
             treeRoot.setGraphic(new Text(selectedMonster.getName(mainLocalization)));
@@ -337,6 +350,7 @@ public class GuiMainController implements Initializable {
         atelCodeDetail.setVisible(false);
         workerGeneralDetail.setVisible(false);
         scriptGeneralDetail.setVisible(false);
+        battleGeneralDetail.setVisible(false);
         if (item != null) {
             TreeEntry entry = item.getValue();
             selectedWorker = entry.worker();
@@ -347,6 +361,8 @@ public class GuiMainController implements Initializable {
                 workerGeneralDetail.setVisible(true);
             } else if ("sg".equals(entry.type())) {
                 scriptGeneralDetail.setVisible(true);
+            } else if ("bg".equals(entry.type())) {
+                battleGeneralDetail.setVisible(true);
             }
         }
         adaptToSelectedFunction();
@@ -398,6 +414,26 @@ public class GuiMainController implements Initializable {
         }
         for (ScriptVariable vr : selectedAtelObject.variableDeclarations) {
             tableVariables.getItems().add(vr);
+        }
+    }
+
+    public void setBattleDetail() {
+        ObservableList<Node> monsterChoiceBoxes = battleFormationVbox.getChildren();
+        for (int i = 0; i < monsterChoiceBoxes.size(); i++) {
+            MenuButton menuButton = (MenuButton) monsterChoiceBoxes.get(i);
+            int val = selectedBattle.formation.monsters[i];
+
+            String monsterLabel;
+            MonsterFile monster = DataAccess.getMonster(val);
+            if (monster != null) {
+                monsterLabel = String.format("m%03d - %s", val & 0x0FFF, monster.getName(mainLocalization));
+            } else if (val == 0xFFFF) {
+                monsterLabel = "<None>";
+            } else {
+                monsterLabel = "INVALID";
+            }
+            String text = "Monster#" + StringHelper.formatHex2(i) + ": " + monsterLabel + StringHelper.hex4Suffix(val);
+            menuButton.setGraphic(new Text(text));
         }
     }
 
@@ -1153,6 +1189,37 @@ public class GuiMainController implements Initializable {
     @FXML
     public void onAddWorkerType6() {
         onAddWorkerOfType(6);
+    }
+
+    public void onFormationMonsterChanged(int slot, int monsterIndex) {
+        if (selectedBattle == null) {
+            return;
+        }
+        selectedBattle.formation.monsters[slot] = monsterIndex;
+        setBattleDetail();
+        middleTree.getRoot().setGraphic(new Text(selectedBattle.getName(mainLocalization)));
+        battleList.refresh();
+    }
+
+    private static record EventListEntry(EventFile event) {
+        @Override
+        public String toString() {
+            return event.getName(mainLocalization);
+        }
+    }
+
+    private static record BattleListEntry(BattleFile battle) {
+        @Override
+        public String toString() {
+            return battle.getName(mainLocalization);
+        }
+    }
+
+    private static record MonsterListEntry(MonsterFile monster) {
+        @Override
+        public String toString() {
+            return String.format("m%03d - %s", monster.monsterIndex, monster.getName(mainLocalization));
+        }
     }
 
     private static record TreeEntry(GuiMainController ctrl, String type, ScriptWorker worker, ScriptJump function) {

@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static main.DataReadingManager.DEFAULT_LOCALIZATION;
+import static reading.BytesHelper.write2Bytes;
 
 /**
  * Part of BattleFile
@@ -74,6 +75,26 @@ public class FormationDataObject {
         byte02bit08 = (unknownByte02 & 0x08) > 0;
         byte02bit10 = (unknownByte02 & 0x10) > 0;
         inWater = inWaterByte > 0;
+    }
+
+    public int[] toBytes() {
+        int[] array = new int[FormationDataObject.LENGTH];
+        array[0x00] = commonVoiceLinesByte;
+        array[0x01] = unknownByte01;
+        array[0x02] = unknownByte02;
+        array[0x03] = inWaterByte;
+        array[0x04] = alwaysZero04;
+        array[0x05] = alwaysZero05;
+        array[0x06] = alwaysZero06;
+        array[0x07] = alwaysZero07;
+        array[0x08] = alwaysZero08;
+        array[0x09] = alwaysZero09;
+        array[0x0A] = alwaysZero0A;
+        array[0x0B] = alwaysZero0B;
+        for (int i = 0; i < 8; i++) {
+            write2Bytes(array, i * 2 + 0x0C, monsters[i]);
+        }
+        return array;
     }
 
     @Override
