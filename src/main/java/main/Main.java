@@ -15,6 +15,7 @@ import java.util.stream.IntStream;
 import static main.DataReadingManager.*;
 import static main.DataWritingManager.writeDataObjectsInAllLocalizations;
 import static reading.FileAccessorWithMods.GAME_FILES_ROOT;
+import static reading.FileAccessorWithMods.RESOURCES_ROOT;
 
 public class Main {
 
@@ -60,15 +61,16 @@ public class Main {
     public static void main(String[] args) {
         String mode;
         List<String> realArgs;
-        if (args.length > 1) {
+        if (args.length >= 1) {
             String pathRoot = args[0];
             if (!".".equals(pathRoot)) {
                 GAME_FILES_ROOT = pathRoot;
             }
-            mode = args[1];
-            realArgs = Arrays.asList(args).subList(2, args.length);
+            mode = args.length >= 2 ? args[1] : MODE_GUI;
+            realArgs = args.length >= 3 ? Arrays.asList(args).subList(2, args.length) : List.of();
         } else {
             GAME_FILES_ROOT = "../files/";
+            RESOURCES_ROOT = "../resources/";
             mode = MODE_GUI;
             realArgs = List.of();
         }

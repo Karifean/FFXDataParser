@@ -8,8 +8,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class FileAccessorWithMods {
-    public static final String RESOURCES_ROOT = "src/main/resources/";
-    public static String GAME_FILES_ROOT = RESOURCES_ROOT;
+    public static String DEFAULT_RESOURCES_ROOT = "src/main/resources/";
+    public static String RESOURCES_ROOT = DEFAULT_RESOURCES_ROOT;
+    public static String GAME_FILES_ROOT = DEFAULT_RESOURCES_ROOT;
     public static final String MODS_FOLDER = "mods/";
     private static final boolean DISABLE_MODS = false;
     private static final String CSV_LINE_REGEX = ",(?=([^\"]*\"[^\"]*\")*[^\"]*$)";

@@ -686,10 +686,7 @@ public class GuiMainController implements Initializable {
     public void onDeleteWorker(ScriptWorker worker) {
         middleTree.getRoot().getChildren().stream().filter(i -> i.getValue().worker() == worker).findAny().ifPresent(wr -> middleTree.getRoot().getChildren().remove(wr));
         AtelScriptObject parentScript = worker.parentScript;
-        parentScript.workers.remove(worker);
-        for (int i = 0; i < parentScript.workers.size(); i++) {
-            parentScript.getWorker(i).workerIndex = i;
-        }
+        parentScript.removeWorker(worker);
         worker.parentScript = null;
         setScriptDetail();
         middleTree.refresh();

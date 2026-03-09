@@ -18,6 +18,7 @@ import reading.*;
 import java.io.DataInputStream;
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -69,6 +70,10 @@ public class DataReadingManager {
     }
 
     public static void readAndPrepareDataModel() {
+        if (!FileAccessorWithMods.getRealFile("ffx_ps2").exists()) {
+            System.err.println("ERROR: Cannot find base data model!");
+            return;
+        }
         DataAccess.SG_SPHERE_TYPES = readSphereGridSphereTypes("battle/kernel/sphere.bin", false);
         prepareCommands();
         DataAccess.MENUMAIN = readDirectAtelScriptObject("menu/menumain.bin", false);
@@ -508,11 +513,15 @@ public class DataReadingManager {
     }
 
     private static ScriptCustomDeclarations readScriptCustomDeclarations() {
-        File declarationsFile = new File(FileAccessorWithMods.RESOURCES_ROOT + "declarations.txt");
         Map<String, List<String>> eventMap = new HashMap<>();
         Map<String, List<String>> battleMap = new HashMap<>();
         Map<String, List<String>> monsterMap = new HashMap<>();
         ScriptCustomDeclarations declarations = new ScriptCustomDeclarations(eventMap, battleMap, monsterMap);
+        URL declarationsUrl = DataReadingManager.class.getResource("/declarations.txt");
+        if (declarationsUrl == null) {
+            return declarations;
+        }
+        File declarationsFile = new File(declarationsUrl.getFile());
         try {
             List<String> declarationLines = FileAccessorWithMods.textFileToLineList(declarationsFile);
             for (String line : declarationLines) {

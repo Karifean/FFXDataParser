@@ -16,9 +16,9 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static main.DataReadingManager.LOCALIZATIONS;
+import static reading.FileAccessorWithMods.RESOURCES_ROOT;
 
 public abstract class CsvEditExecutor {
-    private static final String EDIT_CSV_ROOT = FileAccessorWithMods.RESOURCES_ROOT + "edits/";
 
     public static boolean editCommands(final boolean print) {
         return editItems("commands", 16, (id) -> DataAccess.getCommand(id), print);
@@ -42,8 +42,12 @@ public abstract class CsvEditExecutor {
         return sensorChanges || scanChanges;
     }
 
+    private static String getCsvFile(String filename) {
+        return RESOURCES_ROOT + "edits/" + filename + ".csv";
+    }
+
     private static boolean editItems(String file, int idRadix, Function<Integer, Writable> getter, final boolean print) {
-        String path = EDIT_CSV_ROOT + file + ".csv";
+        String path = getCsvFile(file);
         List<String[]> lines;
         try {
             lines = FileAccessorWithMods.csvToList(new File(path));
@@ -115,7 +119,7 @@ public abstract class CsvEditExecutor {
     }
 
     public static void editAndSaveEventStrings(final boolean print) {
-        String path = EDIT_CSV_ROOT + "events.csv";
+        String path = getCsvFile("events");
         List<String[]> lines;
         try {
             lines = FileAccessorWithMods.csvToList(new File(path));
@@ -170,7 +174,7 @@ public abstract class CsvEditExecutor {
     }
 
     public static void editAndSaveBattleStrings(final boolean print) {
-        String path = EDIT_CSV_ROOT + "battles.csv";
+        String path = getCsvFile("battles");
         List<String[]> lines;
         try {
             lines = FileAccessorWithMods.csvToList(new File(path));

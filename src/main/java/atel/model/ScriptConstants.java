@@ -5,13 +5,16 @@ import reading.FileAccessorWithMods;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static reading.FileAccessorWithMods.DEFAULT_RESOURCES_ROOT;
+import static reading.FileAccessorWithMods.RESOURCES_ROOT;
+
 public class ScriptConstants {
     public static ScriptConstants FFX = new ScriptConstants();
-    private static final String ENUM_CSV_ROOT = FileAccessorWithMods.RESOURCES_ROOT + "enums";
     public String[] FUNCSPACES;
     public static final List<String> INDEX_ENUMS_ONLY = List.of("var", "saveData", "battleVar");
     public final Map<String, Map<Integer, ScriptField>> ENUMERATIONS = new HashMap<>();
@@ -38,7 +41,15 @@ public class ScriptConstants {
         FUNCSPACES[0xE] = "UnknownE";
         FUNCSPACES[0xF] = "UnknownF";
 
-        addEnumsFromAllCsvsInFolder(new File(ENUM_CSV_ROOT));
+        URL defaultEnumsUrl = getClass().getResource("/enums");
+        if (defaultEnumsUrl != null) {
+            addEnumsFromAllCsvsInFolder(new File(defaultEnumsUrl.getFile()));
+        } else {
+            System.err.println("Warning: Failed to load default enums!");
+        }
+        if (RESOURCES_ROOT != null && !RESOURCES_ROOT.equals(DEFAULT_RESOURCES_ROOT)) {
+            addEnumsFromAllCsvsInFolder(new File(RESOURCES_ROOT + "enums"));
+        }
 
         putSaveDataVariable(0x1EF, "MoonflowFlags1", "int");
         putSaveDataVariable(0x1F0, "MoonflowFlags2", "int");

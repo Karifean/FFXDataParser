@@ -4,11 +4,18 @@ import javafx.event.ActionEvent;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuButton;
 import javafx.scene.control.MenuItem;
+import reading.FileAccessorWithMods;
 
+import java.io.File;
+import java.io.IOException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import static reading.FileAccessorWithMods.DEFAULT_RESOURCES_ROOT;
+import static reading.FileAccessorWithMods.RESOURCES_ROOT;
 
 public class ScriptCallTargetLib {
     public static ScriptCallTargetLib FFX = new ScriptCallTargetLib();
@@ -1258,6 +1265,74 @@ public class ScriptCallTargetLib {
         putUnknownCt(0xC057, 1);
         putUnknownCt(0xC058, 1);
         putUnknownCt(0xC05B, 1);
+
+        URL defaultCtsUrl = getClass().getResource("/calltargets");
+        if (defaultCtsUrl != null) {
+            addCallTargetsFromAllCsvsInFolder(new File(defaultCtsUrl.getFile()));
+        }
+        if (RESOURCES_ROOT != null && !RESOURCES_ROOT.equals(DEFAULT_RESOURCES_ROOT)) {
+            addCallTargetsFromAllCsvsInFolder(new File(RESOURCES_ROOT + "calltargets"));
+        }
+    }
+
+    private void addCallTargetsFromAllCsvsInFolder(File file) {
+        if (file.isDirectory()) {
+            File[] files = file.listFiles();
+            if (files == null) {
+                return;
+            }
+            for (File listFile : files) {
+                addCallTargetsFromAllCsvsInFolder(listFile);
+            }
+        } else if (file.getPath().endsWith(".csv")) {
+            try {
+                addCallTargetsFromCsv(file);
+            } catch (IOException e) {
+                System.err.println("IOException " + e.getLocalizedMessage());
+            }
+        }
+    }
+
+    private void addCallTargetsFromCsv(File file) throws IOException {
+        List<String[]> lines = FileAccessorWithMods.csvToList(file);
+        for (String[] cells : lines) {
+            if (cells.length >= 3) {
+                String indexString = nullIfBlankElseTrimmed(cells[0]);
+                if (indexString.startsWith("0x")) {
+                    indexString = indexString.substring(2);
+                }
+                String type = nullIfBlankElseTrimmed(cells[1]);
+                String internalName = nullIfBlankElseTrimmed(cells[2]);
+                try {
+                    int idx = Integer.parseInt(indexString, 16);
+                    String readableName = cells.length >= 4 ? nullIfBlankElseTrimmed(cells[3]) : null;
+                    List<ScriptField> inputs = new ArrayList<>();
+                    ScriptCallTarget ct = new ScriptCallTarget(readableName, type, internalName);
+                    int argCount = cells.length >= 5 ? Integer.parseInt(cells[4], 10) : 0;
+                    if (argCount > 0) {
+                        for (int i = 0; i < argCount; i++) {
+                            String inputType = nullIfBlankElseTrimmed(cells[5 + i * 2]);
+                            String inputName = nullIfBlankElseTrimmed(cells[6 + i * 2]);
+                            ScriptField input = new ScriptField(inputType, inputName);
+                            inputs.add(input);
+                        }
+                        ct.inputs = inputs;
+                    }
+                    putCtWithIdx(idx, ct);
+                } catch (NumberFormatException ignored) {
+                    System.err.println("Cannot parse index in csv=" + file.getPath() + " index=" + indexString);
+                }
+            } else {
+                System.err.println("Erroneous line in csv=" + file.getPath() + " line=" + String.join(",", cells));
+            }
+        }
+    }
+
+    private static String nullIfBlankElseTrimmed(String s) {
+        if (s == null || s.isBlank()) {
+            return null;
+        }
+        return s.trim();
     }
 
     public MenuButton getCallChoices(FuncChoiceAction action, String type) {

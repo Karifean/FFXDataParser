@@ -1455,6 +1455,31 @@ public class AtelScriptObject {
         workers.add(adjustedToIndex, worker);
     }
 
+    public void removeWorker(ScriptWorker worker) {
+        int removeIndex = workers.indexOf(worker);
+        if (removeIndex < 0) {
+            return;
+        }
+        Set<ScriptInstruction> workerReferences = new HashSet<>();
+        for (int i = 0; i < workers.size(); i++) {
+            ScriptWorker scriptWorker = getWorker(i);
+            workerReferences.addAll(scriptWorker.gatherDirectWorkerReferences());
+            if (i >= removeIndex && i > 0) {
+                scriptWorker.workerIndex--;
+            }
+        }
+        System.out.println("Found " + workerReferences.size() + " references to workers");
+        for (ScriptInstruction instruction : workerReferences) {
+            if (instruction.argvSigned >= removeIndex && instruction.argvSigned > 0) {
+                instruction.setArgv(instruction.argvSigned - 1);
+            }
+        }
+        if (mainScriptIndex >= removeIndex && mainScriptIndex > 0) {
+            mainScriptIndex--;
+        }
+        workers.remove(worker);
+    }
+
     protected static boolean hasArgs(int opcode) {
         return opcode >= 0x80 && opcode != 0xFF;
     }

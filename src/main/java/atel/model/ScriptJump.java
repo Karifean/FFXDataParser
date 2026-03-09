@@ -261,11 +261,9 @@ public class ScriptJump {
                 return "MagicCam" + StringHelper.formatHex4(cmd);
             }
         }
-        String strFuncIndexPrefix = "f" + StringHelper.formatHex2(jumpIndex);
-        String strWorkerPurposeSlot = "s" + StringHelper.formatHex2(battleWorkerSlot);
         String strWorkerType = "t" + StringHelper.formatHex2(battleWorkerType);
         String strFuncPurposeSlot = "p" + StringHelper.formatHex2(battleWorkerFunctionSlot);
-        return strFuncIndexPrefix + strWorkerPurposeSlot + strWorkerType + strFuncPurposeSlot;
+        return strWorkerType + strFuncPurposeSlot;
     }
 
     private static String eventWorkerFunctionToStringWithFallback(int eventWorkerType, int eventWorkerFunction) {
