@@ -64,7 +64,7 @@ public class PlayerCharStatDataObject implements Nameable, Writable, Localized<P
     int slvAvailable;
     int slvUsed;
 
-    int unknownByte3D;
+    int battlesUntilRecovery;
     int abilityField3E;
     int abilityField42;
     int abilityField46;
@@ -133,7 +133,7 @@ public class PlayerCharStatDataObject implements Nameable, Writable, Localized<P
         slvAvailable = bytes[0x3B];
         slvUsed = bytes[0x3C];
 
-        unknownByte3D = bytes[0x3D];
+        battlesUntilRecovery = bytes[0x3D];
         abilityField3E = read4Bytes(bytes, 0x3E);
         abilityField42 = read4Bytes(bytes, 0x42);
         abilityField46 = read4Bytes(bytes, 0x46);
@@ -222,7 +222,7 @@ public class PlayerCharStatDataObject implements Nameable, Writable, Localized<P
         array[0x3B] = slvAvailable;
         array[0x3C] = slvUsed;
 
-        array[0x3D] = unknownByte3D;
+        array[0x3D] = battlesUntilRecovery;
         write4Bytes(array, 0x3E, abilityField3E);
         write4Bytes(array, 0x42, abilityField42);
         write4Bytes(array, 0x46, abilityField46);
@@ -272,6 +272,9 @@ public class PlayerCharStatDataObject implements Nameable, Writable, Localized<P
         list.add("Max Overdrive=" + overdriveMax);
         list.add("Current Sphere Levels=" + slvAvailable);
         list.add("Used Sphere Levels=" + slvUsed);
+        if (battlesUntilRecovery != 0) {
+            list.add("Battles until recovery=" + battlesUntilRecovery);
+        }
         list.add("Abilities=[" + commandIds.stream().map(a -> asMove(a)).collect(Collectors.joining(", ")) + "]");
 
         list.add("--- Overdrive Modes ---");
