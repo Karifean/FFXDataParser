@@ -114,6 +114,6 @@ The following files can be placed, with the following expected columns (i.e. the
   
 # Resources for aspiring modders
 
-Cid's Salvage Ship (FFX Modding Discord Server) - https://discord.gg/vEu5wkjXGv
+Cid's Salvage Ship (FFX Modding Discord Server) - https://discord.gg/yAQc3ngwDF
 
 Fahrenheit Framework (For FFX Engine modifications) - https://github.com/fahrenheit-crew/fahrenheit/
