@@ -111,3 +111,9 @@ The following files can be placed, with the following expected columns (i.e. the
   - `id` - Contains battle ID written out as a string, ex. `cdsp07_00` or `stbv01_10` etc.
   - `string index` - Numeric ID of the given string in decimal
   - `us`/`de`/`fr`/`sp`/`it`/`jp`/`ch`/`kr` - String to insert in the given language, usual rules apply.
+  
+# Resources for aspiring modders
+
+Cid's Salvage Ship (FFX Modding Discord Server) - https://discord.gg/vEu5wkjXGv
+
+Fahrenheit Framework (For FFX Engine modifications) - https://github.com/fahrenheit-crew/fahrenheit/
