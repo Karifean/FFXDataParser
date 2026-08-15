@@ -540,6 +540,9 @@ public class ScriptConstants {
         putEnum("stdmotion", 0, null, "MOT_NONE");
         putEnum("stdmotion", 255, null, "MOT_ALL");
 
+        putEnum("fadeMode", 0x00, "Black", "Out");
+        putEnum("fadeMode", 0x01, "White", "OutW");
+
         putEnum("map", 0x0000, "system");
         putEnum("map", 0x0002, "test00");
         putEnum("map", 0x0005, "test10");

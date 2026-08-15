@@ -214,8 +214,8 @@ public class ScriptCallTargetLib {
         putUnknownCt(0x00B3, 1);
         putUnknownCt(0x00B4, 1);
         putUnknownCt(0x00BA, 0);
-        putUnknownCt(0x00BB, 1);
-        putUnknownCt(0x00BC, 1);
+        putCtWithIdx(0x00BB, new ScriptCallTarget("setRoomFadeoutTime", "unknown", null, p("frames", "int")));
+        putCtWithIdx(0x00BC, new ScriptCallTarget("setRoomFadeoutMode", "unknown", null, p("fadeMode")));
         putUnknownCt(0x00BD, 1);
         putUnknownCt(0x00BE, 1);
         putCtWithIdx(0x00BF, new ScriptCallTarget("getSpawnpointX", "float", null, p("spawnpoint", "int")));
@@ -533,7 +533,7 @@ public class ScriptCallTargetLib {
         putCtWithIdx(0x0265, new ScriptCallTarget("BlitzballDebugMode", "bool", null, false));
         putUnknownCt(0x0266, 0);
         putUnknownCt(0x0267, 7);
-        putCtWithIdx(0x1000, new ScriptCallTarget(p(1), p(2), p(3), p("pointer")));
+        putCtWithIdx(0x1000, new ScriptCallTarget("debugPrintVariable?", p("index", "int"), p("x?", "int"), p("y?", "int"), p("pointer")));
         putCtWithIdx(0x1001, new ScriptCallTarget("sin", "float", null, p("float")));
         putCtWithIdx(0x1002, new ScriptCallTarget("cos", "float", null, p("float")));
         putCtWithIdx(0x1005, new ScriptCallTarget("atan2", "float", null, p("y?", "float"), p("x?","float")));
@@ -565,7 +565,7 @@ public class ScriptCallTargetLib {
         putCtWithIdx(0x4016, new ScriptCallTarget("setMainCharMoveSpeed", "unknown", null, p("moveType"), p("speed", "float")));
         putCtWithIdx(0x4017, new ScriptCallTarget("setInvisibleWallState", "unknown", null, p("polygonGroup", "int"), p("state", "invisWallState")));
         putUnknownCt(0x4019, 1);
-        putCtWithIdx(0x401A, new ScriptCallTarget("cameraCrossFade", "unknown", null, p("frames", "int"), p("alpha", "int")));
+        putCtWithIdx(0x401A, new ScriptCallTarget("cameraCrossFade", "unknown", null, p("alpha", "int"), p("frames", "int")));
         putUnknownCt(0x401B, 1);
         putUnknownCt(0x401C, 1);
         putCtWithIdx(0x401D, new ScriptCallTarget("showModularMenu", "unknown", null, p("menu")));
