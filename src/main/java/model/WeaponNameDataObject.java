@@ -104,7 +104,14 @@ public class WeaponNameDataObject implements Writable, Localized<WeaponNameDataO
     @Override
     public int[] toBytes(String localization) {
         int[] array = new int[WeaponNameDataObject.LENGTH];
-        // TODO
+        for (int i = 0; i < names.length; i++) {
+            write4Bytes(array, i * 0x04, names[i].getLocalizedContent(localization).toHeaderBytes());
+            write4Bytes(array, i * 0x04 + 0x1C, simplifiedNames[i].getLocalizedContent(localization).toHeaderBytes());
+        }
+        for (int i = 0; i < models.length; i++) {
+            write2Bytes(array, 0x38 + i * 0x02, models[i]);
+        }
+        write2Bytes(array, 0x46, finalBytes);
         return array;
     }
 
